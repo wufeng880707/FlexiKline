@@ -347,40 +347,32 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
           defaultSubChartMaxCount,
     );
 
-Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) {
-  final val = <String, dynamic>{
-    'pixel': instance.pixel,
-    'textColor': const ColorConverter().toJson(instance.textColor),
-    'longColor': const ColorConverter().toJson(instance.longColor),
-    'shortColor': const ColorConverter().toJson(instance.shortColor),
-    'opacity': instance.opacity,
-    'loading': instance.loading.toJson(),
-    'mainRect': const RectConverter().toJson(instance.mainRect),
-    'mainMinSize': const SizeConverter().toJson(instance.mainMinSize),
-    'mainPadding': const EdgeInsetsConverter().toJson(instance.mainPadding),
-    'mainDrawBelowTipsArea': instance.mainDrawBelowTipsArea,
-    'minPaintBlankRate': instance.minPaintBlankRate,
-    'alwaysCalculateScreenOfCandlesIfEnough':
-        instance.alwaysCalculateScreenOfCandlesIfEnough,
-    'candleMaxWidth': instance.candleMaxWidth,
-    'candleWidth': instance.candleWidth,
-  };
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('candleFixedSpacing', instance.candleFixedSpacing);
-  val['candleSpacingParts'] = instance.candleSpacingParts;
-  val['candleLineWidth'] = instance.candleLineWidth;
-  val['firstCandleInitOffset'] = instance.firstCandleInitOffset;
-  val['showYAxisTick'] = instance.showYAxisTick;
-  val['ticksText'] = instance.ticksText.toJson();
-  val['subChartMaxCount'] = instance.subChartMaxCount;
-  return val;
-}
+Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
+    <String, dynamic>{
+      'pixel': instance.pixel,
+      'textColor': const ColorConverter().toJson(instance.textColor),
+      'longColor': const ColorConverter().toJson(instance.longColor),
+      'shortColor': const ColorConverter().toJson(instance.shortColor),
+      'opacity': instance.opacity,
+      'loading': instance.loading.toJson(),
+      'mainRect': const RectConverter().toJson(instance.mainRect),
+      'mainMinSize': const SizeConverter().toJson(instance.mainMinSize),
+      'mainPadding': const EdgeInsetsConverter().toJson(instance.mainPadding),
+      'mainDrawBelowTipsArea': instance.mainDrawBelowTipsArea,
+      'minPaintBlankRate': instance.minPaintBlankRate,
+      'alwaysCalculateScreenOfCandlesIfEnough':
+          instance.alwaysCalculateScreenOfCandlesIfEnough,
+      'candleMaxWidth': instance.candleMaxWidth,
+      'candleWidth': instance.candleWidth,
+      if (instance.candleFixedSpacing case final value?)
+        'candleFixedSpacing': value,
+      'candleSpacingParts': instance.candleSpacingParts,
+      'candleLineWidth': instance.candleLineWidth,
+      'firstCandleInitOffset': instance.firstCandleInitOffset,
+      'showYAxisTick': instance.showYAxisTick,
+      'ticksText': instance.ticksText.toJson(),
+      'subChartMaxCount': instance.subChartMaxCount,
+    };
 
 Value? _$JsonConverterFromJson<Json, Value>(
   Object? json,

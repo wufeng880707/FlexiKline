@@ -170,27 +170,18 @@ MagnifierConfig _$MagnifierConfigFromJson(Map<String, dynamic> json) =>
               .fromJson(json['shapeSide'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$MagnifierConfigToJson(MagnifierConfig instance) {
-  final val = <String, dynamic>{
-    'enable': instance.enable,
-    'margin': const EdgeInsetsConverter().toJson(instance.margin),
-    'size': const SizeConverter().toJson(instance.size),
-    'magnificationScale': instance.magnificationScale,
-    'clipBehavior': const ClipConverter().toJson(instance.clipBehavior),
-    'decorationOpactity': instance.decorationOpactity,
-  };
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull(
-      'decorationShadows',
-      instance.decorationShadows
-          ?.map(const BoxShadowConverter().toJson)
-          .toList());
-  val['shapeSide'] = const BorderSideConvert().toJson(instance.shapeSide);
-  return val;
-}
+Map<String, dynamic> _$MagnifierConfigToJson(MagnifierConfig instance) =>
+    <String, dynamic>{
+      'enable': instance.enable,
+      'margin': const EdgeInsetsConverter().toJson(instance.margin),
+      'size': const SizeConverter().toJson(instance.size),
+      'magnificationScale': instance.magnificationScale,
+      'clipBehavior': const ClipConverter().toJson(instance.clipBehavior),
+      'decorationOpactity': instance.decorationOpactity,
+      if (instance.decorationShadows
+              ?.map(const BoxShadowConverter().toJson)
+              .toList()
+          case final value?)
+        'decorationShadows': value,
+      'shapeSide': const BorderSideConvert().toJson(instance.shapeSide),
+    };
