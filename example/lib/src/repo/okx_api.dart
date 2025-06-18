@@ -21,7 +21,7 @@ import 'http_client.dart';
 late final HttpClient okxHttpClient;
 
 void initOkxHttpClient({
-  String baseUrl = "https://aws.okx.com",
+  String baseUrl = "https://www.okx.com",
   String? accessKey,
 }) {
   final initHeaders = <String, dynamic>{};
