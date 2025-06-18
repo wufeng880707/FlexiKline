@@ -28,7 +28,7 @@ void main() {
   final stopwatch = Stopwatch();
   final configuration = TestFlexiKlineConfiguration();
   final controller = FlexiKlineController(configuration: configuration);
-  late PaintObjectIndicator maIndicator;
+  late SinglePaintObjectIndicator maIndicator;
   final canvas = Canvas(PictureRecorder());
   const mainSize = Size(400, 300);
   int start = 50;
@@ -48,18 +48,18 @@ void main() {
 
     controller.setMainSize(mainSize);
 
-    // controller.addIndicatorInMain(IndicatorType.ma);
-    // controller.addIndicatorInMain(IndicatorType.ema);
-    // controller.addIndicatorInMain(IndicatorType.boll);
-    // controller.addIndicatorInMain(IndicatorType.volume);
+    controller.addIndicatorInMain(maKey);
+    controller.addIndicatorInMain(emaKey);
+    controller.addIndicatorInMain(bollKey);
+    controller.addIndicatorInMain(volumeKey);
 
     controller.curKlineData.ensureStartAndEndIndex(start, end);
 
-    // controller.mainIndicator.ensurePaintObject(controller);
+    controller.mainIndicator.ensurePaintObject(controller);
 
-    // maIndicator = controller.mainPaintObject.children.firstWhere(
-    //   (child) => child.key == IndicatorType.ma,
-    // );
+    maIndicator = controller.mainIndicator.children.firstWhere(
+      (child) => child.key == maKey,
+    );
   });
 
   setUp(() {
@@ -74,22 +74,22 @@ void main() {
   });
 
   group('paint-Ma', () {
-    // test('test-MA-preprocess', () {
-    //   debugPrint('test-MA-preprocess');
-    //   controller.curKlineData.precompute(
-    //     maIndicator.key,
-    //     calcParam: maIndicator.getCalcParams(),
-    //     range: Range(start, end),
-    //   );
-    // });
-    // test('test-MA-Paint', () async {
-    //   debugPrint('test-MA-Paint');
-    //   maIndicator.paintObject?.doInitState(
-    //     mainIndicatorSlot,
-    //     start: 0,
-    //     end: 100,
-    //   );
-    //   maIndicator.paintObject?.doPaintChart(canvas, mainSize);
-    // });
+    test('test-MA-preprocess', () {
+      debugPrint('test-MA-preprocess');
+      controller.curKlineData.precompute(
+        maIndicator.key,
+        calcParam: maIndicator.getCalcParams(),
+        range: Range(start, end),
+      );
+    });
+    test('test-MA-Paint', () async {
+      debugPrint('test-MA-Paint');
+      maIndicator.paintObject?.doInitState(
+        mainIndicatorSlot,
+        start: 0,
+        end: 100,
+      );
+      maIndicator.paintObject?.doPaintChart(canvas, mainSize);
+    });
   });
 }

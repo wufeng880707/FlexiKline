@@ -24,11 +24,11 @@ abstract class _$TooltipInfoCWProxy {
   /// TooltipInfo(...).copyWith(id: 12, name: "My name")
   /// ````
   TooltipInfo call({
-    String label,
+    String? label,
     TextStyle? labelStyle,
-    String value,
+    String? value,
     TextStyle? valueStyle,
-    int riseOrFall,
+    int? riseOrFall,
   });
 }
 
@@ -69,7 +69,7 @@ class _$TooltipInfoCWProxyImpl implements _$TooltipInfoCWProxy {
     Object? riseOrFall = const $CopyWithPlaceholder(),
   }) {
     return TooltipInfo(
-      label: label == const $CopyWithPlaceholder()
+      label: label == const $CopyWithPlaceholder() || label == null
           ? _value.label
           // ignore: cast_nullable_to_non_nullable
           : label as String,
@@ -77,7 +77,7 @@ class _$TooltipInfoCWProxyImpl implements _$TooltipInfoCWProxy {
           ? _value.labelStyle
           // ignore: cast_nullable_to_non_nullable
           : labelStyle as TextStyle?,
-      value: value == const $CopyWithPlaceholder()
+      value: value == const $CopyWithPlaceholder() || value == null
           ? _value.value
           // ignore: cast_nullable_to_non_nullable
           : value as String,
@@ -85,10 +85,11 @@ class _$TooltipInfoCWProxyImpl implements _$TooltipInfoCWProxy {
           ? _value.valueStyle
           // ignore: cast_nullable_to_non_nullable
           : valueStyle as TextStyle?,
-      riseOrFall: riseOrFall == const $CopyWithPlaceholder()
-          ? _value.riseOrFall
-          // ignore: cast_nullable_to_non_nullable
-          : riseOrFall as int,
+      riseOrFall:
+          riseOrFall == const $CopyWithPlaceholder() || riseOrFall == null
+              ? _value.riseOrFall
+              // ignore: cast_nullable_to_non_nullable
+              : riseOrFall as int,
     );
   }
 }

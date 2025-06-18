@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import 'package:decimal/decimal.dart';
-import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter_test/flutter_test.dart';
 

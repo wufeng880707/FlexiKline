@@ -13,8 +13,9 @@
 // limitations under the License.
 
 import 'package:decimal/decimal.dart';
-import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flutter/widgets.dart';
+
+import '../constant.dart';
 
 int valueToInt(dynamic value) {
   return parseInt(value) ?? 0;

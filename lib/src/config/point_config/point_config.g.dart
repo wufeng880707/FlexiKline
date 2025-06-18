@@ -24,9 +24,9 @@ abstract class _$PointConfigCWProxy {
   /// PointConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   PointConfig call({
-    double radius,
-    double width,
-    Color color,
+    double? radius,
+    double? width,
+    Color? color,
     double? borderWidth,
     Color? borderColor,
   });
@@ -70,15 +70,15 @@ class _$PointConfigCWProxyImpl implements _$PointConfigCWProxy {
     Object? borderColor = const $CopyWithPlaceholder(),
   }) {
     return PointConfig(
-      radius: radius == const $CopyWithPlaceholder()
+      radius: radius == const $CopyWithPlaceholder() || radius == null
           ? _value.radius
           // ignore: cast_nullable_to_non_nullable
           : radius as double,
-      width: width == const $CopyWithPlaceholder()
+      width: width == const $CopyWithPlaceholder() || width == null
           ? _value.width
           // ignore: cast_nullable_to_non_nullable
           : width as double,
-      color: color == const $CopyWithPlaceholder()
+      color: color == const $CopyWithPlaceholder() || color == null
           ? _value.color
           // ignore: cast_nullable_to_non_nullable
           : color as Color,

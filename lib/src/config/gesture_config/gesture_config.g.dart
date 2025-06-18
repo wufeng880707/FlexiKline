@@ -22,10 +22,6 @@ abstract class _$GestureConfigCWProxy {
 
   GestureConfig scaleSpeed(double scaleSpeed);
 
-  GestureConfig supportKeyboardShortcuts(bool supportKeyboardShortcuts);
-
-  GestureConfig zoomSpeed(int zoomSpeed);
-
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GestureConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -33,15 +29,13 @@ abstract class _$GestureConfigCWProxy {
   /// GestureConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   GestureConfig call({
-    bool supportLongPress,
-    bool isInertialPan,
+    bool? supportLongPress,
+    bool? isInertialPan,
     ToleranceConfig? tolerance,
     double? loadMoreWhenNoEnoughDistance,
-    int loadMoreWhenNoEnoughCandles,
-    ScalePosition scalePosition,
-    double scaleSpeed,
-    bool supportKeyboardShortcuts,
-    int zoomSpeed,
+    int? loadMoreWhenNoEnoughCandles,
+    ScalePosition? scalePosition,
+    double? scaleSpeed,
   });
 }
 
@@ -80,13 +74,6 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
   GestureConfig scaleSpeed(double scaleSpeed) => this(scaleSpeed: scaleSpeed);
 
   @override
-  GestureConfig supportKeyboardShortcuts(bool supportKeyboardShortcuts) =>
-      this(supportKeyboardShortcuts: supportKeyboardShortcuts);
-
-  @override
-  GestureConfig zoomSpeed(int zoomSpeed) => this(zoomSpeed: zoomSpeed);
-
-  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GestureConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -102,18 +89,18 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
     Object? loadMoreWhenNoEnoughCandles = const $CopyWithPlaceholder(),
     Object? scalePosition = const $CopyWithPlaceholder(),
     Object? scaleSpeed = const $CopyWithPlaceholder(),
-    Object? supportKeyboardShortcuts = const $CopyWithPlaceholder(),
-    Object? zoomSpeed = const $CopyWithPlaceholder(),
   }) {
     return GestureConfig(
-      supportLongPress: supportLongPress == const $CopyWithPlaceholder()
+      supportLongPress: supportLongPress == const $CopyWithPlaceholder() ||
+              supportLongPress == null
           ? _value.supportLongPress
           // ignore: cast_nullable_to_non_nullable
           : supportLongPress as bool,
-      isInertialPan: isInertialPan == const $CopyWithPlaceholder()
-          ? _value.isInertialPan
-          // ignore: cast_nullable_to_non_nullable
-          : isInertialPan as bool,
+      isInertialPan:
+          isInertialPan == const $CopyWithPlaceholder() || isInertialPan == null
+              ? _value.isInertialPan
+              // ignore: cast_nullable_to_non_nullable
+              : isInertialPan as bool,
       tolerance: tolerance == const $CopyWithPlaceholder()
           ? _value.tolerance
           // ignore: cast_nullable_to_non_nullable
@@ -124,27 +111,21 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
               // ignore: cast_nullable_to_non_nullable
               : loadMoreWhenNoEnoughDistance as double?,
       loadMoreWhenNoEnoughCandles:
-          loadMoreWhenNoEnoughCandles == const $CopyWithPlaceholder()
+          loadMoreWhenNoEnoughCandles == const $CopyWithPlaceholder() ||
+                  loadMoreWhenNoEnoughCandles == null
               ? _value.loadMoreWhenNoEnoughCandles
               // ignore: cast_nullable_to_non_nullable
               : loadMoreWhenNoEnoughCandles as int,
-      scalePosition: scalePosition == const $CopyWithPlaceholder()
-          ? _value.scalePosition
-          // ignore: cast_nullable_to_non_nullable
-          : scalePosition as ScalePosition,
-      scaleSpeed: scaleSpeed == const $CopyWithPlaceholder()
-          ? _value.scaleSpeed
-          // ignore: cast_nullable_to_non_nullable
-          : scaleSpeed as double,
-      supportKeyboardShortcuts:
-          supportKeyboardShortcuts == const $CopyWithPlaceholder()
-              ? _value.supportKeyboardShortcuts
+      scalePosition:
+          scalePosition == const $CopyWithPlaceholder() || scalePosition == null
+              ? _value.scalePosition
               // ignore: cast_nullable_to_non_nullable
-              : supportKeyboardShortcuts as bool,
-      zoomSpeed: zoomSpeed == const $CopyWithPlaceholder()
-          ? _value.zoomSpeed
-          // ignore: cast_nullable_to_non_nullable
-          : zoomSpeed as int,
+              : scalePosition as ScalePosition,
+      scaleSpeed:
+          scaleSpeed == const $CopyWithPlaceholder() || scaleSpeed == null
+              ? _value.scaleSpeed
+              // ignore: cast_nullable_to_non_nullable
+              : scaleSpeed as double,
     );
   }
 }
@@ -175,9 +156,6 @@ GestureConfig _$GestureConfigFromJson(Map<String, dynamic> json) =>
           : const ScalePositionConverter()
               .fromJson(json['scalePosition'] as String),
       scaleSpeed: (json['scaleSpeed'] as num?)?.toDouble() ?? 10,
-      supportKeyboardShortcuts:
-          json['supportKeyboardShortcuts'] as bool? ?? true,
-      zoomSpeed: (json['zoomSpeed'] as num?)?.toInt() ?? 1,
     );
 
 Map<String, dynamic> _$GestureConfigToJson(GestureConfig instance) =>
@@ -191,6 +169,4 @@ Map<String, dynamic> _$GestureConfigToJson(GestureConfig instance) =>
       'scalePosition':
           const ScalePositionConverter().toJson(instance.scalePosition),
       'scaleSpeed': instance.scaleSpeed,
-      'supportKeyboardShortcuts': instance.supportKeyboardShortcuts,
-      'zoomSpeed': instance.zoomSpeed,
     };

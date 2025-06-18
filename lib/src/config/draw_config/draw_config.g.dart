@@ -17,6 +17,8 @@ abstract class _$DrawConfigCWProxy {
 
   DrawConfig drawLine(LineConfig drawLine);
 
+  DrawConfig useDrawLineColor(bool useDrawLineColor);
+
   DrawConfig drawPoint(PointConfig drawPoint);
 
   DrawConfig ticksText(TextAreaConfig ticksText);
@@ -31,6 +33,8 @@ abstract class _$DrawConfigCWProxy {
 
   DrawConfig magnifier(MagnifierConfig magnifier);
 
+  DrawConfig drawParams(DrawParams drawParams);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `DrawConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -38,18 +42,20 @@ abstract class _$DrawConfigCWProxy {
   /// DrawConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   DrawConfig call({
-    bool enable,
-    bool allowSelectWhenExit,
-    PointConfig crosspoint,
-    LineConfig crosshair,
-    LineConfig drawLine,
-    PointConfig drawPoint,
-    TextAreaConfig ticksText,
-    double spacing,
-    double ticksGapBgOpacity,
-    double hitTestMinDistance,
-    double magnetMinDistance,
-    MagnifierConfig magnifier,
+    bool? enable,
+    bool? allowSelectWhenExit,
+    PointConfig? crosspoint,
+    LineConfig? crosshair,
+    LineConfig? drawLine,
+    bool? useDrawLineColor,
+    PointConfig? drawPoint,
+    TextAreaConfig? ticksText,
+    double? spacing,
+    double? ticksGapBgOpacity,
+    double? hitTestMinDistance,
+    double? magnetMinDistance,
+    MagnifierConfig? magnifier,
+    DrawParams? drawParams,
   });
 }
 
@@ -76,6 +82,10 @@ class _$DrawConfigCWProxyImpl implements _$DrawConfigCWProxy {
   DrawConfig drawLine(LineConfig drawLine) => this(drawLine: drawLine);
 
   @override
+  DrawConfig useDrawLineColor(bool useDrawLineColor) =>
+      this(useDrawLineColor: useDrawLineColor);
+
+  @override
   DrawConfig drawPoint(PointConfig drawPoint) => this(drawPoint: drawPoint);
 
   @override
@@ -100,6 +110,9 @@ class _$DrawConfigCWProxyImpl implements _$DrawConfigCWProxy {
   DrawConfig magnifier(MagnifierConfig magnifier) => this(magnifier: magnifier);
 
   @override
+  DrawConfig drawParams(DrawParams drawParams) => this(drawParams: drawParams);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `DrawConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -113,6 +126,7 @@ class _$DrawConfigCWProxyImpl implements _$DrawConfigCWProxy {
     Object? crosspoint = const $CopyWithPlaceholder(),
     Object? crosshair = const $CopyWithPlaceholder(),
     Object? drawLine = const $CopyWithPlaceholder(),
+    Object? useDrawLineColor = const $CopyWithPlaceholder(),
     Object? drawPoint = const $CopyWithPlaceholder(),
     Object? ticksText = const $CopyWithPlaceholder(),
     Object? spacing = const $CopyWithPlaceholder(),
@@ -120,56 +134,73 @@ class _$DrawConfigCWProxyImpl implements _$DrawConfigCWProxy {
     Object? hitTestMinDistance = const $CopyWithPlaceholder(),
     Object? magnetMinDistance = const $CopyWithPlaceholder(),
     Object? magnifier = const $CopyWithPlaceholder(),
+    Object? drawParams = const $CopyWithPlaceholder(),
   }) {
     return DrawConfig(
-      enable: enable == const $CopyWithPlaceholder()
+      enable: enable == const $CopyWithPlaceholder() || enable == null
           ? _value.enable
           // ignore: cast_nullable_to_non_nullable
           : enable as bool,
-      allowSelectWhenExit: allowSelectWhenExit == const $CopyWithPlaceholder()
-          ? _value.allowSelectWhenExit
-          // ignore: cast_nullable_to_non_nullable
-          : allowSelectWhenExit as bool,
-      crosspoint: crosspoint == const $CopyWithPlaceholder()
-          ? _value.crosspoint
-          // ignore: cast_nullable_to_non_nullable
-          : crosspoint as PointConfig,
-      crosshair: crosshair == const $CopyWithPlaceholder()
+      allowSelectWhenExit:
+          allowSelectWhenExit == const $CopyWithPlaceholder() ||
+                  allowSelectWhenExit == null
+              ? _value.allowSelectWhenExit
+              // ignore: cast_nullable_to_non_nullable
+              : allowSelectWhenExit as bool,
+      crosspoint:
+          crosspoint == const $CopyWithPlaceholder() || crosspoint == null
+              ? _value.crosspoint
+              // ignore: cast_nullable_to_non_nullable
+              : crosspoint as PointConfig,
+      crosshair: crosshair == const $CopyWithPlaceholder() || crosshair == null
           ? _value.crosshair
           // ignore: cast_nullable_to_non_nullable
           : crosshair as LineConfig,
-      drawLine: drawLine == const $CopyWithPlaceholder()
+      drawLine: drawLine == const $CopyWithPlaceholder() || drawLine == null
           ? _value.drawLine
           // ignore: cast_nullable_to_non_nullable
           : drawLine as LineConfig,
-      drawPoint: drawPoint == const $CopyWithPlaceholder()
+      useDrawLineColor: useDrawLineColor == const $CopyWithPlaceholder() ||
+              useDrawLineColor == null
+          ? _value.useDrawLineColor
+          // ignore: cast_nullable_to_non_nullable
+          : useDrawLineColor as bool,
+      drawPoint: drawPoint == const $CopyWithPlaceholder() || drawPoint == null
           ? _value.drawPoint
           // ignore: cast_nullable_to_non_nullable
           : drawPoint as PointConfig,
-      ticksText: ticksText == const $CopyWithPlaceholder()
+      ticksText: ticksText == const $CopyWithPlaceholder() || ticksText == null
           ? _value.ticksText
           // ignore: cast_nullable_to_non_nullable
           : ticksText as TextAreaConfig,
-      spacing: spacing == const $CopyWithPlaceholder()
+      spacing: spacing == const $CopyWithPlaceholder() || spacing == null
           ? _value.spacing
           // ignore: cast_nullable_to_non_nullable
           : spacing as double,
-      ticksGapBgOpacity: ticksGapBgOpacity == const $CopyWithPlaceholder()
+      ticksGapBgOpacity: ticksGapBgOpacity == const $CopyWithPlaceholder() ||
+              ticksGapBgOpacity == null
           ? _value.ticksGapBgOpacity
           // ignore: cast_nullable_to_non_nullable
           : ticksGapBgOpacity as double,
-      hitTestMinDistance: hitTestMinDistance == const $CopyWithPlaceholder()
+      hitTestMinDistance: hitTestMinDistance == const $CopyWithPlaceholder() ||
+              hitTestMinDistance == null
           ? _value.hitTestMinDistance
           // ignore: cast_nullable_to_non_nullable
           : hitTestMinDistance as double,
-      magnetMinDistance: magnetMinDistance == const $CopyWithPlaceholder()
+      magnetMinDistance: magnetMinDistance == const $CopyWithPlaceholder() ||
+              magnetMinDistance == null
           ? _value.magnetMinDistance
           // ignore: cast_nullable_to_non_nullable
           : magnetMinDistance as double,
-      magnifier: magnifier == const $CopyWithPlaceholder()
+      magnifier: magnifier == const $CopyWithPlaceholder() || magnifier == null
           ? _value.magnifier
           // ignore: cast_nullable_to_non_nullable
           : magnifier as MagnifierConfig,
+      drawParams:
+          drawParams == const $CopyWithPlaceholder() || drawParams == null
+              ? _value.drawParams
+              // ignore: cast_nullable_to_non_nullable
+              : drawParams as DrawParams,
     );
   }
 }
@@ -191,6 +222,7 @@ DrawConfig _$DrawConfigFromJson(Map<String, dynamic> json) => DrawConfig(
           PointConfig.fromJson(json['crosspoint'] as Map<String, dynamic>),
       crosshair: LineConfig.fromJson(json['crosshair'] as Map<String, dynamic>),
       drawLine: LineConfig.fromJson(json['drawLine'] as Map<String, dynamic>),
+      useDrawLineColor: json['useDrawLineColor'] as bool? ?? true,
       drawPoint:
           PointConfig.fromJson(json['drawPoint'] as Map<String, dynamic>),
       ticksText:
@@ -203,6 +235,9 @@ DrawConfig _$DrawConfigFromJson(Map<String, dynamic> json) => DrawConfig(
       magnifier: json['magnifier'] == null
           ? const MagnifierConfig()
           : MagnifierConfig.fromJson(json['magnifier'] as Map<String, dynamic>),
+      drawParams: json['drawParams'] == null
+          ? const DrawParams()
+          : DrawParams.fromJson(json['drawParams'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DrawConfigToJson(DrawConfig instance) =>
@@ -212,6 +247,7 @@ Map<String, dynamic> _$DrawConfigToJson(DrawConfig instance) =>
       'crosspoint': instance.crosspoint.toJson(),
       'crosshair': instance.crosshair.toJson(),
       'drawLine': instance.drawLine.toJson(),
+      'useDrawLineColor': instance.useDrawLineColor,
       'drawPoint': instance.drawPoint.toJson(),
       'ticksText': instance.ticksText.toJson(),
       'spacing': instance.spacing,
@@ -219,4 +255,5 @@ Map<String, dynamic> _$DrawConfigToJson(DrawConfig instance) =>
       'hitTestMinDistance': instance.hitTestMinDistance,
       'magnetMinDistance': instance.magnetMinDistance,
       'magnifier': instance.magnifier.toJson(),
+      'drawParams': instance.drawParams.toJson(),
     };

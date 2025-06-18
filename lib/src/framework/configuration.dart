@@ -12,24 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-import '../constant.dart';
 import '../config/export.dart';
+import '../constant.dart';
 import 'chart/indicator.dart';
 import 'draw/overlay.dart';
-import 'serializers.dart';
-
-const flexiKlineConfigKey = 'flexi_kline_config';
-const drawOverlayListConfigKey = 'draw_overlay_list_config';
-const drawOverlayListKey = 'list';
-const drawToolbarPositionKey = 'draw_toolbar_position';
 
 /// FlexiKline主题接口.
 ///
 /// 定义FlexiKline中通用颜色
 abstract interface class IFlexiKlineTheme {
+  /// 缓存Key
+  String get key;
+
+  ///是否是涨的为红色，默认配置的颜色：涨的配置为红色，跌的为绿色，所以根据这个配置，涨的就为绿色
+  bool get longRed;
+
+  /// 实际尺寸与UI设计的比例
+  int get barType;
+
   /// 实际尺寸与UI设计的比例
   double get scale;
 
@@ -48,17 +50,17 @@ abstract interface class IFlexiKlineTheme {
   Color get long;
   Color get short;
 
-  Color get transparent;
+  Color get indraTodayAvgColor;
+  Color get indraTodayCloseColor;
 
-  /// 背景色
-  // 拖拽区域背景色
-  Color get dragBg;
+  // 背景色
   Color get chartBg;
   Color get tooltipBg;
-  Color get crossTextBg;
-  Color get latestPriceTextBg;
-  Color get lastPriceTextBg;
   Color get countDownTextBg;
+  Color get crossTextBg;
+  Color get drawTextBg;
+  Color get transparent;
+  Color get lastPriceTextBg;
 
   /// 分隔线
   Color get gridLine;
@@ -71,13 +73,9 @@ abstract interface class IFlexiKlineTheme {
 
   /// 文本颜色配置
   Color get textColor;
-  // 刻度文本颜色
   Color get ticksTextColor;
-  // 最后价文本颜色
   Color get lastPriceTextColor;
-  // corssing时文本颜色
   Color get crossTextColor;
-  // Tips 文本默认颜色
   Color get tooltipTextColor;
 }
 
@@ -146,140 +144,30 @@ mixin FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
       );
 }
 
-abstract interface class IStorage {
-  Map<String, dynamic>? getConfig(String key);
-
-  Future<bool> setConfig(String key, Map<String, dynamic> value);
-}
-
 /// FlexiKline配置接口
-abstract interface class IConfiguration implements IStorage {
-  /// 当前配置主题
-  IFlexiKlineTheme get theme;
+abstract interface class IConfiguration {
+  /// FlexiKline初始化默认的主区的宽高.
+  Size get initialMainSize;
 
-  String get configKey;
+  /// 获取FlexiKline配置
+  /// 1. 如果本地有缓存, 则从缓存中获取.
+  /// 2. 如果本地没有缓存, 根据当前主题生成一套FlexiKline配置.
+  FlexiKlineConfig getFlexiKlineConfig();
 
-  /// 生成FlexiKline配置
-  /// 调用场景:
-  /// 1. 首次加载(无缓存)情况下, 生成默认的FlexiKlineConfig
-  /// 2. 从缓存中反序列化实现时调用, [origin]即是原始缓存配置, 这可能出现在后续追加/删除/修改配置时, 原有配置无法反序列化.
-  FlexiKlineConfig generateFlexiKlineConfig([Map<String, dynamic>? origin]);
+  /// 保存[config]配置信息到本地.
+  void saveFlexiKlineConfig(FlexiKlineConfig config);
 
-  /// 蜡烛指标配置构造器(主区)
-  IndicatorBuilder<CandleBaseIndicator> get candleIndicatorBuilder;
+  /// 自定义主区指标列表
+  /// @Deprecated('考虑优化中...')
+  Iterable<SinglePaintObjectIndicator> customMainIndicators();
 
-  /// 时间指标配置构造器(副区)
-  IndicatorBuilder<TimeBaseIndicator> get timeIndicatorBuilder;
+  /// 自定义副区指标列表
+  /// @Deprecated('考虑优化中...')
+  Iterable<Indicator> customSubIndicators();
 
-  /// 主区指标配置定制
-  Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders;
+  /// 从本地获取[instId]指定的[Overlay]缓存列表.
+  Iterable<Overlay> getOverlayListConfig(String instId);
 
-  /// 副区指标配置定制
-  Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders;
-
-  /// 绘制工具定制
-  Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders;
-}
-
-typedef FromJson<T> = T Function(Map<String, dynamic>);
-
-extension FromJsonExt<T> on FromJson<T> {
-  /// 将[json]数据转换为类型[T]的实例
-  T? toInstance(Map<String, dynamic>? json) {
-    return jsonToInstance(json, this);
-  }
-}
-
-/// 通过[fromJson]函数将[json]数据转换为类型[T]的实例
-T? jsonToInstance<T>(Map<String, dynamic>? json, FromJson<T> fromJson) {
-  if (json == null || json.isEmpty) return null;
-  try {
-    return fromJson(json);
-  } catch (error, stack) {
-    debugPrintStack(stackTrace: stack, label: error.toString());
-  }
-  return null;
-}
-
-extension IConfigurationExt on IConfiguration {
-  FlexiKlineConfig getFlexiKlineConfig() {
-    Map<String, dynamic>? json;
-    try {
-      json = getConfig(flexiKlineConfigKey);
-      if (json is Map<String, dynamic>) {
-        return FlexiKlineConfig.fromJson(json);
-      }
-    } catch (error, stack) {
-      debugPrintStack(stackTrace: stack, label: 'getFlexiKlineConfig$error');
-    }
-
-    return generateFlexiKlineConfig(json);
-  }
-
-  void saveFlexiKlineConfig(FlexiKlineConfig config) {
-    setConfig(flexiKlineConfigKey, config.toJson());
-  }
-
-  /// 从本地获取加载[key]指定的指标配置, 并转换成[Indicator]实例.
-  /// 如果指定[builder], 则不会从配置中查找.
-  T? getIndicator<T extends Indicator>(
-    IIndicatorKey key, {
-    IndicatorBuilder? builder,
-  }) {
-    try {
-      final json = getConfig(key.id);
-      builder ??= mainIndicatorBuilders[key];
-      builder ??= subIndicatorBuilders[key];
-      if (builder == null) return null;
-      final indicator = builder.call(json);
-      if (indicator is T) return indicator;
-    } catch (error, stack) {
-      debugPrintStack(stackTrace: stack, label: 'getIndicator$error');
-    }
-    return null;
-  }
-
-  /// 保存[indicator]配置到本地.
-  bool saveIndicator<T extends Indicator>(T indicator) {
-    final json = indicator.toJson();
-    if (json.isEmpty) return false;
-    setConfig(indicator.key.id, json);
-    return true;
-  }
-
-  void delIndicator(IIndicatorKey key) {
-    setConfig(key.id, {});
-  }
-
-  /// 从本地获取[instId]对应的绘制实例数据列表.
-  Iterable<Overlay> getDrawOverlayList(String instId) {
-    final json = getConfig('$instId-$drawOverlayListConfigKey');
-    if (json == null || json.isEmpty) return [];
-    final data = json[drawOverlayListKey];
-    if (data is List<dynamic>) {
-      return data.map((e) => Overlay.fromJson(e)).toList();
-    }
-    return [];
-  }
-
-  /// 以[instId]为key, 持久化绘制实例列表[list]到本地中.
-  void saveDrawOverlayList(String instId, Iterable<Overlay> list) {
-    if (list.isEmpty) return;
-    setConfig('$instId-$drawOverlayListConfigKey', {
-      drawOverlayListKey: list.map((e) => e.toJson()).toList(),
-    });
-  }
-
-  /// 获取DrawToolbar上次缓存的位置
-  Offset getDrawToolbarPosition() {
-    final json = getConfig(drawToolbarPositionKey);
-    if (json == null || json.isEmpty) return Offset.infinite;
-    return const OffsetConverter(defaultOffset: Offset.infinite).fromJson(json);
-  }
-
-  /// 保存DrawToolbar位置[position]
-  void saveDrawToolbarPosition(Offset position) {
-    final json = const OffsetConverter().toJson(position);
-    setConfig(drawToolbarPositionKey, json);
-  }
+  /// 以[instId]为key, 保存[list]持久化到本地中.
+  void saveOverlayListConfig(String instId, Iterable<Overlay> list);
 }

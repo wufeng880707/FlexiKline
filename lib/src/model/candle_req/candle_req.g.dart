@@ -30,13 +30,13 @@ abstract class _$CandleReqCWProxy {
   /// CandleReq(...).copyWith(id: 12, name: "My name")
   /// ````
   CandleReq call({
-    String instId,
-    String bar,
-    int limit,
-    int precision,
+    String? instId,
+    String? bar,
+    int? limit,
+    int? precision,
     int? after,
     int? before,
-    RequestState state,
+    RequestState? state,
     String? displayName,
   });
 }
@@ -90,19 +90,19 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
     Object? displayName = const $CopyWithPlaceholder(),
   }) {
     return CandleReq(
-      instId: instId == const $CopyWithPlaceholder()
+      instId: instId == const $CopyWithPlaceholder() || instId == null
           ? _value.instId
           // ignore: cast_nullable_to_non_nullable
           : instId as String,
-      bar: bar == const $CopyWithPlaceholder()
+      bar: bar == const $CopyWithPlaceholder() || bar == null
           ? _value.bar
           // ignore: cast_nullable_to_non_nullable
           : bar as String,
-      limit: limit == const $CopyWithPlaceholder()
+      limit: limit == const $CopyWithPlaceholder() || limit == null
           ? _value.limit
           // ignore: cast_nullable_to_non_nullable
           : limit as int,
-      precision: precision == const $CopyWithPlaceholder()
+      precision: precision == const $CopyWithPlaceholder() || precision == null
           ? _value.precision
           // ignore: cast_nullable_to_non_nullable
           : precision as int,
@@ -114,7 +114,7 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
           ? _value.before
           // ignore: cast_nullable_to_non_nullable
           : before as int?,
-      state: state == const $CopyWithPlaceholder()
+      state: state == const $CopyWithPlaceholder() || state == null
           ? _value.state
           // ignore: cast_nullable_to_non_nullable
           : state as RequestState,

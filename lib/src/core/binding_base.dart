@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-part of 'core.dart';
+import 'package:flutter/foundation.dart';
 
-abstract class KlineBindingBase
-    with KlineLog
-    implements ISetting, IPaintContext, IDrawContext {
+import '../framework/export.dart';
+import 'interface.dart';
+
+abstract class KlineBindingBase with KlineLog implements ISetting {
   final IConfiguration configuration;
 
   /// 对于Kline的操作是否自动保存到本地配置中.
@@ -27,24 +28,12 @@ abstract class KlineBindingBase
   /// 一个FlexiKlineController允许最多维护的KlineData个数.
   final int? klineDataCacheCapacity;
 
-  /// 指标绘制对象管理
-  final IndicatorPaintObjectManager _paintObjectManager;
-
-  final OverlayDrawObjectManager _drawObjectManager;
-
   KlineBindingBase({
     required this.configuration,
     this.autoSave = true,
     ILogger? logger,
     this.klineDataCacheCapacity,
-  })  : _paintObjectManager = IndicatorPaintObjectManager(
-          configuration: configuration,
-          logger: logger,
-        ),
-        _drawObjectManager = OverlayDrawObjectManager(
-          configuration: configuration,
-          logger: logger,
-        ) {
+  }) {
     logd("constrouct");
     loggerDelegate = logger;
     // initFlexiKlineConfig();
@@ -68,65 +57,12 @@ abstract class KlineBindingBase
   void dispose() {
     logd("dispose base");
     if (autoSave) storeFlexiKlineConfig();
-    _paintObjectManager.dispose();
-    _drawObjectManager.dispose();
-  }
-
-  @protected
-  @mustCallSuper
-  void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
-    logd("onThemeChanged base");
-  }
-
-  @protected
-  @mustCallSuper
-  void onLanguageChanged() {
-    logd("onLanguageChanged base");
-  }
-
-  @protected
-  @mustCallSuper
-  bool onTap(Offset position) {
-    logd("onTap base");
-    return false;
   }
 
   KlineBindingBase get instance => this;
 
   T getInstance<T extends KlineBindingBase>(T instance) {
     return instance;
-  }
-
-  @override
-  IFlexiKlineTheme get theme => configuration.theme;
-
-  @override
-  Map<String, dynamic>? getConfig(String key) {
-    return configuration.getConfig(key);
-  }
-
-  @override
-  Future<bool> setConfig(String key, Map<String, dynamic> value) {
-    return configuration.setConfig(key, value);
-  }
-}
-
-/// KlineController内部扩展
-extension on KlineBindingBase {
-  MainPaintObject get mainPaintObject {
-    return _paintObjectManager.mainPaintObject;
-  }
-
-  // CandleBasePaintObject get candlePaintObject {
-  //   return _paintObjectManager.candlePaintObject;
-  // }
-
-  TimeBasePaintObject get timePaintObject {
-    return _paintObjectManager.timePaintObject;
-  }
-
-  Iterable<PaintObject> get subPaintObjects {
-    return _paintObjectManager.subPaintObjects;
   }
 }
 

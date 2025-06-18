@@ -48,6 +48,30 @@ lib/
 * configuration.dart: 配置相关
 * logger.dart: 日志工具
 * serializers.dart: 序列化工具
+
+framework/
+├── chart/                 # 图表框架
+│   ├── common.dart        # 通用定义
+│   ├── delegate.dart      # 委托模式实现
+│   ├── indicator.dart     # 指标接口
+│   ├── manager.dart       # 管理器
+│   ├── model.dart         # 数据模型
+│   └── object.dart        # 对象定义
+├── collection/            # 集合工具
+│   ├── fifo_hash_map.dart # FIFO哈希映射
+│   ├── fixed_hash_queue.dart # 固定大小哈希队列
+│   └── sortable_hash_set.dart # 可排序哈希集
+├── draw/                  # 绘图框架
+│   ├── common.dart        # 通用定义
+│   ├── draw_state.dart    # 绘图状态
+│   ├── manager.dart       # 管理器
+│   ├── model.dart         # 数据模型
+│   ├── object.dart        # 对象定义
+│   └── overlay.dart       # 覆盖层
+├── configuration.dart     # 配置接口
+├── export.dart            # 导出
+├── logger.dart            # 日志系统
+└── serializers.dart       # 序列化
 主要组件及其作用
 1. 控制器
 FlexiKlineController是整个图表的中枢，集成了多种功能绑定：

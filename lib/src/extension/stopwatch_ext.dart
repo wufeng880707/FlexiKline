@@ -23,7 +23,7 @@ extension StopwatchExt on Stopwatch {
   /// 同步运行[runable]任务, 并打印耗时.
   T run<T>(
     ValueGetter runable, {
-    String debugLabel = 'runSync',
+    String debugLabel = 'runable',
     ILogger? logger,
   }) {
     reset();
@@ -34,10 +34,10 @@ extension StopwatchExt on Stopwatch {
     return result;
   }
 
-  /// 异步运行[computation]任务, 并打印耗时.
+  /// 异常运行[computation]任务, 并打印耗时.
   Future<T> runAsync<T>(
     TaskCallback<T> computation, {
-    String debugLabel = 'runAsync',
+    String debugLabel = 'compute',
   }) async {
     reset();
     start();

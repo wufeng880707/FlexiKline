@@ -24,11 +24,11 @@ abstract class _$PaintConfigCWProxy {
   /// PaintConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   PaintConfig call({
-    Color color,
-    double strokeWidth,
-    PaintingStyle style,
-    BlendMode blendMode,
-    bool isAntiAlias,
+    Color? color,
+    double? strokeWidth,
+    PaintingStyle? style,
+    BlendMode? blendMode,
+    bool? isAntiAlias,
   });
 }
 
@@ -69,26 +69,28 @@ class _$PaintConfigCWProxyImpl implements _$PaintConfigCWProxy {
     Object? isAntiAlias = const $CopyWithPlaceholder(),
   }) {
     return PaintConfig(
-      color: color == const $CopyWithPlaceholder()
+      color: color == const $CopyWithPlaceholder() || color == null
           ? _value.color
           // ignore: cast_nullable_to_non_nullable
           : color as Color,
-      strokeWidth: strokeWidth == const $CopyWithPlaceholder()
-          ? _value.strokeWidth
-          // ignore: cast_nullable_to_non_nullable
-          : strokeWidth as double,
-      style: style == const $CopyWithPlaceholder()
+      strokeWidth:
+          strokeWidth == const $CopyWithPlaceholder() || strokeWidth == null
+              ? _value.strokeWidth
+              // ignore: cast_nullable_to_non_nullable
+              : strokeWidth as double,
+      style: style == const $CopyWithPlaceholder() || style == null
           ? _value.style
           // ignore: cast_nullable_to_non_nullable
           : style as PaintingStyle,
-      blendMode: blendMode == const $CopyWithPlaceholder()
+      blendMode: blendMode == const $CopyWithPlaceholder() || blendMode == null
           ? _value.blendMode
           // ignore: cast_nullable_to_non_nullable
           : blendMode as BlendMode,
-      isAntiAlias: isAntiAlias == const $CopyWithPlaceholder()
-          ? _value.isAntiAlias
-          // ignore: cast_nullable_to_non_nullable
-          : isAntiAlias as bool,
+      isAntiAlias:
+          isAntiAlias == const $CopyWithPlaceholder() || isAntiAlias == null
+              ? _value.isAntiAlias
+              // ignore: cast_nullable_to_non_nullable
+              : isAntiAlias as bool,
     );
   }
 }

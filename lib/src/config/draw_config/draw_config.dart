@@ -15,6 +15,7 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 
 import '../../framework/serializers.dart';
+import '../draw_params/draw_params.dart';
 import '../magnifier_config/magnifier_config.dart';
 import '../point_config/point_config.dart';
 import '../line_config/line_config.dart';
@@ -31,7 +32,7 @@ class DrawConfig {
     required this.crosspoint,
     required this.crosshair,
     required this.drawLine,
-    // this.useDrawLineColor = true,
+    this.useDrawLineColor = true,
     required this.drawPoint,
     required this.ticksText,
     required this.spacing,
@@ -39,6 +40,7 @@ class DrawConfig {
     this.hitTestMinDistance = 10,
     this.magnetMinDistance = 10,
     this.magnifier = const MagnifierConfig(),
+    this.drawParams = const DrawParams(),
   });
 
   /// 是否启用Draw Overlay功能开关
@@ -56,8 +58,8 @@ class DrawConfig {
   /// 默认绘制线的样式配置
   final LineConfig drawLine;
 
-  // /// 绘制[drawPoint]和[ticksText]刻度时, 是否始终使用[drawLine]指定的颜色.
-  // final bool useDrawLineColor;
+  /// 绘制[drawPoint]和[ticksText]刻度时, 是否始终使用[drawLine]指定的颜色.
+  final bool useDrawLineColor;
 
   /// 选择绘制点配置
   final PointConfig drawPoint;
@@ -80,6 +82,9 @@ class DrawConfig {
 
   /// 放大镜配置
   final MagnifierConfig magnifier;
+
+  /// 绘制Overlay的Object时所需要的参数集
+  final DrawParams drawParams;
 
   factory DrawConfig.fromJson(Map<String, dynamic> json) =>
       _$DrawConfigFromJson(json);

@@ -30,14 +30,14 @@ abstract class _$MagnifierConfigCWProxy {
   /// MagnifierConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   MagnifierConfig call({
-    bool enable,
-    EdgeInsets margin,
-    Size size,
-    double magnificationScale,
-    Clip clipBehavior,
-    double decorationOpactity,
+    bool? enable,
+    EdgeInsets? margin,
+    Size? size,
+    double? magnificationScale,
+    Clip? clipBehavior,
+    double? decorationOpactity,
     List<BoxShadow>? decorationShadows,
-    BorderSide shapeSide,
+    BorderSide? shapeSide,
   });
 }
 
@@ -94,27 +94,30 @@ class _$MagnifierConfigCWProxyImpl implements _$MagnifierConfigCWProxy {
     Object? shapeSide = const $CopyWithPlaceholder(),
   }) {
     return MagnifierConfig(
-      enable: enable == const $CopyWithPlaceholder()
+      enable: enable == const $CopyWithPlaceholder() || enable == null
           ? _value.enable
           // ignore: cast_nullable_to_non_nullable
           : enable as bool,
-      margin: margin == const $CopyWithPlaceholder()
+      margin: margin == const $CopyWithPlaceholder() || margin == null
           ? _value.margin
           // ignore: cast_nullable_to_non_nullable
           : margin as EdgeInsets,
-      size: size == const $CopyWithPlaceholder()
+      size: size == const $CopyWithPlaceholder() || size == null
           ? _value.size
           // ignore: cast_nullable_to_non_nullable
           : size as Size,
-      magnificationScale: magnificationScale == const $CopyWithPlaceholder()
+      magnificationScale: magnificationScale == const $CopyWithPlaceholder() ||
+              magnificationScale == null
           ? _value.magnificationScale
           // ignore: cast_nullable_to_non_nullable
           : magnificationScale as double,
-      clipBehavior: clipBehavior == const $CopyWithPlaceholder()
-          ? _value.clipBehavior
-          // ignore: cast_nullable_to_non_nullable
-          : clipBehavior as Clip,
-      decorationOpactity: decorationOpactity == const $CopyWithPlaceholder()
+      clipBehavior:
+          clipBehavior == const $CopyWithPlaceholder() || clipBehavior == null
+              ? _value.clipBehavior
+              // ignore: cast_nullable_to_non_nullable
+              : clipBehavior as Clip,
+      decorationOpactity: decorationOpactity == const $CopyWithPlaceholder() ||
+              decorationOpactity == null
           ? _value.decorationOpactity
           // ignore: cast_nullable_to_non_nullable
           : decorationOpactity as double,
@@ -122,7 +125,7 @@ class _$MagnifierConfigCWProxyImpl implements _$MagnifierConfigCWProxy {
           ? _value.decorationShadows
           // ignore: cast_nullable_to_non_nullable
           : decorationShadows as List<BoxShadow>?,
-      shapeSide: shapeSide == const $CopyWithPlaceholder()
+      shapeSide: shapeSide == const $CopyWithPlaceholder() || shapeSide == null
           ? _value.shapeSide
           // ignore: cast_nullable_to_non_nullable
           : shapeSide as BorderSide,

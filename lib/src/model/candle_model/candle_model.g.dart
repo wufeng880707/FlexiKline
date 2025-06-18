@@ -32,15 +32,15 @@ abstract class _$CandleModelCWProxy {
   /// CandleModel(...).copyWith(id: 12, name: "My name")
   /// ````
   CandleModel call({
-    int ts,
-    Decimal o,
-    Decimal h,
-    Decimal l,
-    Decimal c,
-    Decimal v,
+    int? ts,
+    Decimal? o,
+    Decimal? h,
+    Decimal? l,
+    Decimal? c,
+    Decimal? v,
     Decimal? vc,
     Decimal? vcq,
-    String confirm,
+    String? confirm,
   });
 }
 
@@ -97,27 +97,27 @@ class _$CandleModelCWProxyImpl implements _$CandleModelCWProxy {
     Object? confirm = const $CopyWithPlaceholder(),
   }) {
     return CandleModel(
-      ts: ts == const $CopyWithPlaceholder()
+      ts: ts == const $CopyWithPlaceholder() || ts == null
           ? _value.ts
           // ignore: cast_nullable_to_non_nullable
           : ts as int,
-      o: o == const $CopyWithPlaceholder()
+      o: o == const $CopyWithPlaceholder() || o == null
           ? _value.o
           // ignore: cast_nullable_to_non_nullable
           : o as Decimal,
-      h: h == const $CopyWithPlaceholder()
+      h: h == const $CopyWithPlaceholder() || h == null
           ? _value.h
           // ignore: cast_nullable_to_non_nullable
           : h as Decimal,
-      l: l == const $CopyWithPlaceholder()
+      l: l == const $CopyWithPlaceholder() || l == null
           ? _value.l
           // ignore: cast_nullable_to_non_nullable
           : l as Decimal,
-      c: c == const $CopyWithPlaceholder()
+      c: c == const $CopyWithPlaceholder() || c == null
           ? _value.c
           // ignore: cast_nullable_to_non_nullable
           : c as Decimal,
-      v: v == const $CopyWithPlaceholder()
+      v: v == const $CopyWithPlaceholder() || v == null
           ? _value.v
           // ignore: cast_nullable_to_non_nullable
           : v as Decimal,
@@ -129,7 +129,7 @@ class _$CandleModelCWProxyImpl implements _$CandleModelCWProxy {
           ? _value.vcq
           // ignore: cast_nullable_to_non_nullable
           : vcq as Decimal?,
-      confirm: confirm == const $CopyWithPlaceholder()
+      confirm: confirm == const $CopyWithPlaceholder() || confirm == null
           ? _value.confirm
           // ignore: cast_nullable_to_non_nullable
           : confirm as String,

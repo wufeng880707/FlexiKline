@@ -9,6 +9,8 @@ part of 'tooltip_config.dart';
 abstract class _$TooltipConfigCWProxy {
   TooltipConfig show(bool show);
 
+  TooltipConfig background(Color background);
+
   TooltipConfig margin(EdgeInsets margin);
 
   TooltipConfig padding(EdgeInsets padding);
@@ -24,11 +26,12 @@ abstract class _$TooltipConfigCWProxy {
   /// TooltipConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   TooltipConfig call({
-    bool show,
-    EdgeInsets margin,
-    EdgeInsets padding,
-    BorderRadius radius,
-    TextStyle style,
+    bool? show,
+    Color? background,
+    EdgeInsets? margin,
+    EdgeInsets? padding,
+    BorderRadius? radius,
+    TextStyle? style,
   });
 }
 
@@ -40,6 +43,9 @@ class _$TooltipConfigCWProxyImpl implements _$TooltipConfigCWProxy {
 
   @override
   TooltipConfig show(bool show) => this(show: show);
+
+  @override
+  TooltipConfig background(Color background) => this(background: background);
 
   @override
   TooltipConfig margin(EdgeInsets margin) => this(margin: margin);
@@ -63,29 +69,35 @@ class _$TooltipConfigCWProxyImpl implements _$TooltipConfigCWProxy {
   /// ````
   TooltipConfig call({
     Object? show = const $CopyWithPlaceholder(),
+    Object? background = const $CopyWithPlaceholder(),
     Object? margin = const $CopyWithPlaceholder(),
     Object? padding = const $CopyWithPlaceholder(),
     Object? radius = const $CopyWithPlaceholder(),
     Object? style = const $CopyWithPlaceholder(),
   }) {
     return TooltipConfig(
-      show: show == const $CopyWithPlaceholder()
+      show: show == const $CopyWithPlaceholder() || show == null
           ? _value.show
           // ignore: cast_nullable_to_non_nullable
           : show as bool,
-      margin: margin == const $CopyWithPlaceholder()
+      background:
+          background == const $CopyWithPlaceholder() || background == null
+              ? _value.background
+              // ignore: cast_nullable_to_non_nullable
+              : background as Color,
+      margin: margin == const $CopyWithPlaceholder() || margin == null
           ? _value.margin
           // ignore: cast_nullable_to_non_nullable
           : margin as EdgeInsets,
-      padding: padding == const $CopyWithPlaceholder()
+      padding: padding == const $CopyWithPlaceholder() || padding == null
           ? _value.padding
           // ignore: cast_nullable_to_non_nullable
           : padding as EdgeInsets,
-      radius: radius == const $CopyWithPlaceholder()
+      radius: radius == const $CopyWithPlaceholder() || radius == null
           ? _value.radius
           // ignore: cast_nullable_to_non_nullable
           : radius as BorderRadius,
-      style: style == const $CopyWithPlaceholder()
+      style: style == const $CopyWithPlaceholder() || style == null
           ? _value.style
           // ignore: cast_nullable_to_non_nullable
           : style as TextStyle,
@@ -106,6 +118,7 @@ extension $TooltipConfigCopyWith on TooltipConfig {
 TooltipConfig _$TooltipConfigFromJson(Map<String, dynamic> json) =>
     TooltipConfig(
       show: json['show'] as bool? ?? true,
+      background: const ColorConverter().fromJson(json['background'] as String),
       margin: const EdgeInsetsConverter()
           .fromJson(json['margin'] as Map<String, dynamic>),
       padding: const EdgeInsetsConverter()
@@ -119,6 +132,7 @@ TooltipConfig _$TooltipConfigFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$TooltipConfigToJson(TooltipConfig instance) =>
     <String, dynamic>{
       'show': instance.show,
+      'background': const ColorConverter().toJson(instance.background),
       'margin': const EdgeInsetsConverter().toJson(instance.margin),
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'radius': const BorderRadiusConverter().toJson(instance.radius),

@@ -12,30 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library;
-
-import 'dart:math' as math;
+library indicator;
 
 import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-import '../../config/export.dart';
-import '../../core/core.dart';
-import '../../data/kline_data.dart';
 import '../../extension/export.dart';
+import '../../config/export.dart';
+import '../../core/export.dart';
+import '../../data/kline_data.dart';
 import '../../model/export.dart';
-import '../collection/fixed_hash_queue.dart';
+import '../../utils/decimal_format_util.dart';
 import '../collection/sortable_hash_set.dart';
-import '../configuration.dart';
 import '../logger.dart';
 import '../serializers.dart';
 
 part 'common.dart';
-part 'delegate.dart';
 part 'model.dart';
 part 'indicator.g.dart';
-part 'manager.dart';
 part 'object.dart';
 part 'object_helper.dart';

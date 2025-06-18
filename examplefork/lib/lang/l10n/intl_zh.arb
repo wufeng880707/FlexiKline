@@ -1,0 +1,11 @@
+{
+  "@@locale": "zh",
+  "appName": "FlexiKline 示例",
+  "home": "首页",
+  "settings": "设置",
+  "language": "语言",
+  "theme": "主题",
+  "systemDefault": "系统默认",
+  "lightMode": "浅色模式",
+  "darkMode": "深色模式"
+} 

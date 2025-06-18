@@ -16,7 +16,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flexi_kline/flexi_kline.dart';
-import 'package:flutter/material.dart' hide Overlay;
+import 'package:flutter/material.dart';
 
 class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
@@ -26,7 +26,7 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   double get scale {
     if (_scale != null) return _scale!;
-    final mediaQuery = MediaQueryData.fromView(window);
+    final mediaQuery = MediaQueryData.fromWindow(window);
     _scale = math.min(mediaQuery.size.width, mediaQuery.size.height) / 393;
     return _scale!;
   }
@@ -35,7 +35,7 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   double get pixel {
     if (_pixel != null) return _pixel!;
-    final mediaQuery = MediaQueryData.fromView(window);
+    final mediaQuery = MediaQueryData.fromWindow(window);
     _pixel = 1.0 / mediaQuery.devicePixelRatio;
     return _pixel!;
   }
@@ -64,8 +64,8 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color crossTextBg = const Color(0xFF111111);
 
-  // @override
-  // Color drawTextBg = Colors.blue;
+  @override
+  Color drawTextBg = Colors.blue;
 
   @override
   Color transparent = Colors.transparent;
@@ -104,39 +104,33 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   Color tooltipTextColor = const Color(0xFF949494);
 
   @override
-  // TODO: implement latestPriceTextBg
-  Color get latestPriceTextBg => throw UnimplementedError();
+  int barType = 1;
 
   @override
-  // TODO: implement dragBg
-  Color get dragBg => throw UnimplementedError();
+  Color indraTodayAvgColor = const Color(0xFF949494);
+
+  @override
+  Color indraTodayCloseColor = const Color(0xFF949494);
+
+  @override
+  // TODO: implement longRed
+  bool longRed = false;
 }
 
 class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   @override
-  IFlexiKlineTheme get theme => TestFlexiKlineTheme();
-
-  @override
-  Map<IDrawType, DrawObjectBuilder<Overlay, DrawObject<Overlay>>>
-      get drawObjectBuilders {
-    return {};
+  Size get initialMainSize {
+    final mediaQuery = MediaQueryData.fromWindow(window);
+    return Size(mediaQuery.size.width, 300);
   }
 
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
-    throw UnimplementedError();
+  FlexiKlineConfig getFlexiKlineConfig([TestFlexiKlineTheme? theme]) {
+    return genFlexiKlineConfig(TestFlexiKlineTheme());
   }
 
   @override
-  Map<String, dynamic>? getConfig(String key) {
-    throw UnimplementedError();
+  void saveFlexiKlineConfig(FlexiKlineConfig config) {
+    // TODO: implement saveFlexiKlineConfig
   }
-
-  @override
-  Future<bool> setConfig(String key, Map<String, dynamic> value) {
-    throw UnimplementedError();
-  }
-
-  @override
-  String get configKey => 'test';
 }

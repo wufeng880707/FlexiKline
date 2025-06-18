@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 
 import '../constant.dart';
 
@@ -22,11 +23,14 @@ import '../constant.dart';
 /// 2. 小于一天展示 "hh:MM:ss"
 /// 3. 小天一小时展示 "MM:ss"
 String? formatTimeDiff(DateTime nextUpdateDateTime) {
-  final timeLag = nextUpdateDateTime.difference(DateTime.now());
+  final now = DateTime.now();
+  final timeLag = nextUpdateDateTime.difference(now);
+  
+  // 添加调试信息
+  debugPrint('formatTimeDiff > next:$nextUpdateDateTime - now:$now = $timeLag');
+  
   if (timeLag.isNegative) {
-    // debugPrint(
-    //   'calculateTimeDiff > next:$nextUpdateDateTime - now:${DateTime.now()} = $timeLag',
-    // );
+    debugPrint('formatTimeDiff > 时间差为负数，返回null');
     return null;
   }
 

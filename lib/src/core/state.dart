@@ -12,15 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-part of 'core.dart';
+import 'dart:async';
+import 'dart:math' as math;
 
-/// LoadMore接口
-///
-/// 加载[request]指定范围[after, before]之前的历史数据.
-typedef OnLoadMoreCandles = Future<void> Function(CandleReq request);
+import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
+
+import '../constant.dart';
+import '../data/export.dart';
+import '../framework/export.dart';
+import '../model/export.dart';
+import 'binding_base.dart';
+import 'interface.dart';
+import 'setting.dart';
 
 /// 状态管理: 负责数据的管理, 缓存, 切换, 计算.
-mixin StateBinding on KlineBindingBase, SettingBinding {
+mixin StateBinding on KlineBindingBase, SettingBinding implements IState {
   @override
   void init() {
     super.init();
@@ -48,10 +55,12 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     _klineDataCache.clear();
   }
 
+  /// 加载更多回调
   OnLoadMoreCandles? onLoadMoreCandles;
 
   /// 首根蜡烛是否移出屏幕监听.
   final _isFirstCandleMoveOffScreenListener = ValueNotifier(false);
+  @override
   ValueListenable<bool> get isFirstCandleMoveOffScreenListener {
     return _isFirstCandleMoveOffScreenListener;
   }
@@ -79,7 +88,6 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     if (request.key == curDataKey) {
       _candleRequestListener.value = request;
       _timeBarListener.value = request.timeBar;
-      _drawObjectManager.onChangeCandleRequest(request, drawConfig);
     }
   }
 
@@ -100,17 +108,6 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   @override
   KlineData get curKlineData => _curKlineData;
 
-  void cleanUnlessKlineData() {
-    final curKey = curDataKey;
-    _klineDataCache.removeWhere((key, data) {
-      if (key != curKey) {
-        data.dispose();
-        return true;
-      }
-      return false;
-    });
-  }
-
   /// 设置当前KlineData:
   /// 1. 通知timeBar变更
   /// 2. 初始化首根蜡烛绘制位置于屏幕右侧[initPaintDxOffset]指定处.
@@ -121,11 +118,11 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     _updateCandleRequestListener(data.req);
     initPaintDxOffset();
     markRepaintChart(reset: true);
-    markRepaintDraw();
     cancelCross();
   }
 
   /// 数据缓存Key
+  @override
   String get curDataKey => curKlineData.key;
 
   /// 最大绘制宽度
@@ -140,20 +137,20 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   /// 将[dx]转换为当前绘制区域对应的蜡烛的下标.
   @override
   int? dxToIndex(double dx) {
-    return mainPaintObject.dxToIndex(dx).toInt();
+    return mainPaintObject?.dxToIndex(dx).toInt();
   }
 
   /// 将[index]转换为当前绘制区域对应的X轴坐标.
   @override
   double? indexToDx(int index, {bool check = false}) {
-    return mainPaintObject.indexToDx(index, check: check);
+    return mainPaintObject?.indexToDx(index, check: check);
   }
 
   /// 将[dx]精确转换为蜡烛的时间戳ts, 差异部分补充到ts中.
   @override
   int? dxToTimestamp(double dx) {
-    final indexValue = mainPaintObject.dxToIndex(dx);
-    // if (indexValue == null) return null;
+    final indexValue = mainPaintObject?.dxToIndex(dx);
+    if (indexValue == null) return null;
     final ts = curKlineData.indexToTimestamp(indexValue);
     return ts;
   }
@@ -163,18 +160,18 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   double? timestampToDx(int ts) {
     final indexValue = curKlineData.timestampToIndex(ts);
     if (indexValue == null) return null;
-    final dx = mainPaintObject.indexToDx(indexValue, check: false);
+    final dx = mainPaintObject?.indexToDx(indexValue, check: false);
     return dx;
   }
 
   @override
   double? valueToDy(BagNum value, {bool correct = false}) {
-    return mainPaintObject.valueToDy(value, correct: correct);
+    return mainPaintObject?.valueToDy(value, correct: correct);
   }
 
   @override
   BagNum? dyToValue(double dy, {bool check = false}) {
-    return mainPaintObject.dyToValue(dy, check: check);
+    return mainPaintObject?.dyToValue(dy, check: check);
   }
 
   /// 当前canvas绘制区域起始蜡烛右部dx值.
@@ -190,9 +187,11 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   }
 
   /// 画布是否可以从右向左进行平移.
+  @override
   bool get canPanRTL => paintDxOffset > minPaintDxOffset;
 
   /// 画布是否可以从左向右进行平移.
+  @override
   bool get canPanLTR {
     return paintDxOffset < maxPaintDxOffset;
   }
@@ -245,6 +244,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   }
 
   /// 计算绘制蜡烛图的起始数组索引下标
+  @override
   void calculateCandleDrawIndex() {
     if (paintDxOffset > 0) {
       final startIndex = (paintDxOffset / candleActualWidth).floor();
@@ -295,8 +295,8 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     // 确认当前数据的计算模式
     final computeMode = _computeMode;
 
-    // 待计算的指标对象集合
-    final paintObjects = [mainPaintObject, ...subPaintObjects];
+    // 待计算的指标参数
+    final calcParams = getIndicatorCalcParams();
 
     final watchPrecompute = Stopwatch();
 
@@ -323,10 +323,9 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
       return await SchedulerBinding.instance.scheduleTask(
         () => KlineData.precomputeKlineData(
           data,
-          indicatorCount: indicatorCount,
           newList: newList,
           computeMode: computeMode,
-          paintObjects: paintObjects,
+          calcParams: calcParams,
           reset: reset,
         ),
         Priority.animation,
@@ -348,6 +347,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   /// return
   ///   1. true:  代表使用了缓存, [curKlineData]的请求状态为[RequestState.none], 不展示loading
   ///   2. false: 代表未使用缓存; 且[curKlineData]数据会被清空(如果有).
+  @override
   bool switchKlineData(
     CandleReq req, {
     bool useCacheFirst = true,
@@ -378,6 +378,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   /// 结束加载中状态
   /// [forceStopCurReq] 强制结束当前请求蜡烛数据[curKlineData]的加载中状态
   /// [request]和[reqKey]指定要结束加载状态的请求, 如果[request]请求的状态非[RequestState.none], 即结束加载中状态
+  @override
   void stopLoading({
     CandleReq? request,
     String? reqKey,
@@ -388,27 +389,25 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     if (forceStopCurReq || reqKey == curDataKey) {
       if (curKlineData.req.state != RequestState.none) {
         _updateCandleRequestListener(
-          curKlineData.updateRequest(state: RequestState.none),
+          curKlineData.updateReqRange(state: RequestState.none),
         );
       }
     } else {
       if (reqKey != null) data = _klineDataCache[reqKey];
       if (data != null) {
-        data.updateRequest(state: RequestState.none);
+        data.updateReqRange(state: RequestState.none);
       }
     }
   }
 
   /// 更新[list]到[req]请求指定的[KlineData]中
+  @override
   Future<void> updateKlineData(
     CandleReq req,
     List<CandleModel> list,
   ) async {
     // 数据为空, 无需要更新.
-    if (list.isEmpty) {
-      stopLoading(request: req);
-      return;
-    }
+    if (list.isEmpty) return;
 
     KlineData? data = _klineDataCache[req.key];
     bool reset = data == null || data.isEmpty;
@@ -454,4 +453,151 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
       }
     }
   }
+
+  /// 当前平移结束(惯性平移之前)时,检查并加载更多蜡烛数据
+  /// [panDistance] 代表数据将要惯性平移的距离
+  /// [panDuration] 代表数据将要惯性平移的时长(单们ms)
+  /// [loadMoreDistanceOffset]的计算规则: [gestureConfig.loadMoreWhenNoEnoughDistance] 优先 [gestureConfig.loadMoreWhenNoEnoughCandles]
+  /// 以[paintDxOffset]为基础继续平移[panDistance],
+  ///   1. 当大于最大平移宽度[maxPaintDxOffset]减去[loadMoreDistanceOffset]的距离时, 请求状态为[RequestState.loadMore], 提前加载更多历史数据, 此时不展示loading.
+  ///   2. 当大于最大平移宽度[maxPaintDxOffset]时, 请求状态为[RequestState.loadingMore], 提前加载更多历史数据, 等待[panDuration]ms展示loading.
+  ///   3. 否则, 请求状态为[RequestState.none], 取消loading的展示.
+  @override
+  void checkAndLoadMoreCandlesWhenPanEnd({
+    double? panDistance,
+    int? panDuration,
+  }) {
+    final oldState = curKlineData.req.state;
+    if (oldState == RequestState.initLoading) {
+      logw('checkAndLoadMoreCandlesWhenPanEnd currently in init, no loadMore');
+      return;
+    }
+
+    panDistance ??= 0;
+    // 计算提前触发LoadMore的偏移量
+    final loadMoreDistanceOffset = gestureConfig.loadMoreWhenNoEnoughDistance ??
+        gestureConfig.loadMoreWhenNoEnoughCandles * candleActualWidth;
+
+    logd(
+      'checkAndLoadMoreCandlesWhenPanEnd(panDistance:$panDistance, panDuration:$panDuration) => length:${curKlineData.length}, paintDxOffset:$paintDxOffset, maxPaintDxOffset:$maxPaintDxOffset, loadMoreDistanceOffset:$loadMoreDistanceOffset',
+    );
+
+    final destination = paintDxOffset + panDistance;
+    final loadMoreMinPaintDxOffset = maxPaintDxOffset - loadMoreDistanceOffset;
+
+    RequestState newState;
+    if (destination > loadMoreMinPaintDxOffset) {
+      if (destination >= maxPaintDxOffset) {
+        newState = RequestState.loadingMore;
+      } else {
+        newState = RequestState.loadMore;
+      }
+    } else if (oldState.isLoadMore) {
+      newState = RequestState.loadMore;
+    } else {
+      newState = RequestState.none;
+    }
+
+    final request = curKlineData.updateReqRange(state: newState);
+    logd('checkAndLoadMoreCandlesWhenPanEnd new candle request:$request');
+
+    if (newState == RequestState.loadingMore && panDuration != null) {
+      Future.delayed(
+        // Duration(milliseconds: panDuration),
+        Duration.zero,
+        () => _updateCandleRequestListener(request),
+      );
+    } else {
+      _updateCandleRequestListener(request);
+    }
+
+    if (!oldState.isLoadMore && newState.isLoadMore) {
+      onLoadMoreCandles?.call(request);
+    }
+  }
+
+  @override
+  void moveChart(GestureData data) {
+    // super.handleMove(data);
+    if (!data.moved) return;
+
+    final newDxOffset = clampPaintDxOffset(paintDxOffset + data.dxDelta);
+    if (newDxOffset != paintDxOffset) {
+      paintDxOffset = newDxOffset;
+      markRepaintChart();
+      markRepaintDraw();
+    }
+  }
+
+  @override
+  void scaleChart(GestureData data) {
+    // super.handleScale(data);
+
+    double? newWidth;
+
+    if (data.scaled) {
+      // 处理触摸设备的缩放逻辑.
+      if (data.scale > 1 && candleWidth >= candleMaxWidth) return;
+      if (data.scale < 1 && candleWidth <= settingConfig.pixel) return;
+
+      final dxGrowth = data.scaleDelta * gestureConfig.scaleSpeed;
+      newWidth = (candleWidth + dxGrowth).clamp(
+        settingConfig.pixel,
+        candleMaxWidth,
+      );
+    } else if (data.isSignal) {
+      // 处理鼠标滚轴滚动/触控板向上向下的缩放逻辑.
+      newWidth = (candleWidth + data.scale).clamp(
+        settingConfig.pixel,
+        candleMaxWidth,
+      );
+    }
+
+    if (newWidth == null || newWidth == candleWidth) return;
+
+    final scaleFactor = (newWidth + settingConfig.candleSpacing) / candleActualWidth;
+    // logd('handleScale candleWidth:$candleWidth>$newWidth; factor:$scaleFactor');
+
+    /// 更新蜡烛宽度
+    candleWidth = newWidth;
+
+    double newDxOffset;
+    switch (data.initPosition) {
+      case ScalePosition.right:
+        if (paintDxOffset <= 0) {
+          newDxOffset = paintDxOffset; // 固定右侧空白
+        } else {
+          newDxOffset = paintDxOffset * scaleFactor;
+        }
+        break;
+      case ScalePosition.left:
+        final chartWidth = mainChartWidth;
+        newDxOffset = (chartWidth + paintDxOffset) * scaleFactor - chartWidth;
+        break;
+      case ScalePosition.auto:
+      case ScalePosition.middle:
+        if (paintDxOffset <= 0) {
+          final dxRight = mainChartWidth - data.offset.dx;
+          newDxOffset = (dxRight + paintDxOffset) * scaleFactor - dxRight;
+        } else {
+          final widthHalf = mainChartWidthHalf;
+          newDxOffset = (widthHalf + paintDxOffset) * scaleFactor - widthHalf;
+        }
+        break;
+    }
+
+    if (newDxOffset != paintDxOffset) {
+      // logd('handleScale paintDxOffset:$paintDxOffset > $newDxOffset');
+      paintDxOffset = newDxOffset;
+    }
+
+    markRepaintChart();
+    markRepaintDraw();
+  }
+
+  // @override
+  // void handleLongMove(GestureData data) {
+  //   super.handleLongMove(data);
+  //   if (!data.moved) return;
+  // }
 }

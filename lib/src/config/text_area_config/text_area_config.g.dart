@@ -36,8 +36,8 @@ abstract class _$TextAreaConfigCWProxy {
   /// TextAreaConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   TextAreaConfig call({
-    TextStyle style,
-    TextAlign textAlign,
+    TextStyle? style,
+    TextAlign? textAlign,
     StrutStyle? strutStyle,
     double? textWidth,
     double? minWidth,
@@ -113,11 +113,11 @@ class _$TextAreaConfigCWProxyImpl implements _$TextAreaConfigCWProxy {
     Object? borderRadius = const $CopyWithPlaceholder(),
   }) {
     return TextAreaConfig(
-      style: style == const $CopyWithPlaceholder()
+      style: style == const $CopyWithPlaceholder() || style == null
           ? _value.style
           // ignore: cast_nullable_to_non_nullable
           : style as TextStyle,
-      textAlign: textAlign == const $CopyWithPlaceholder()
+      textAlign: textAlign == const $CopyWithPlaceholder() || textAlign == null
           ? _value.textAlign
           // ignore: cast_nullable_to_non_nullable
           : textAlign as TextAlign,
@@ -176,6 +176,7 @@ TextAreaConfig _$TextAreaConfigFromJson(Map<String, dynamic> json) =>
       style: json['style'] == null
           ? const TextStyle(
               fontSize: defaulTextSize,
+              color: Color(0xFF000000),
               overflow: TextOverflow.ellipsis,
               height: defaultTextHeight)
           : const TextStyleConverter()

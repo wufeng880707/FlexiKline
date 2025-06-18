@@ -12,7 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-part of 'core.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
+
+import '../constant.dart';
+import '../data/export.dart';
+import '../extension/export.dart';
+import '../model/export.dart';
+import '../utils/decimal_format_util.dart';
+import 'binding_base.dart';
+import 'interface.dart';
+import 'setting.dart';
 
 /// 定制TooltipInfoList
 ///
@@ -36,7 +46,9 @@ typedef OnCrossI18nTooltipLables = Map<TooltipLabel, String>? Function();
 ///
 /// 处理cross事件.
 /// Tooltip的绘制.
-mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
+mixin CrossBinding
+    on KlineBindingBase, SettingBinding
+    implements ICross, IState, IChart {
   @override
   void initState() {
     super.initState();
@@ -51,8 +63,9 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
   }
 
   final ValueNotifier<int> _repaintCross = ValueNotifier(0);
+  @override
   Listenable get repaintCross => _repaintCross;
-  void _markRepaintCross() {
+  void _markRepaint() {
     _repaintCross.value++;
   }
 
@@ -61,24 +74,8 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
   void markRepaintCross() {
     if (isCrossing) {
       _updateOffset(_offset);
-      _markRepaintCross();
+      _markRepaint();
     }
-  }
-
-  LineConfig? _crosshair;
-  PointConfig? _crosspoint;
-
-  @override
-  void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
-    super.onThemeChanged(oldTheme);
-    _crosshair = null;
-    _crosspoint = null;
-  }
-
-  @override
-  void onLanguageChanged() {
-    super.onLanguageChanged();
-    markRepaintCross();
   }
 
   // 是否正在绘制Cross
@@ -120,14 +117,15 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
   }
 
   /// 启动Cross事件
-  bool onCrossStart(GestureData data, {bool force = false}) {
+  @override
+  bool startCross(GestureData data, {bool force = false}) {
     if (crossConfig.enable) {
       /// 如果其他手势与Cross手势事件允许共存 或者当前不在Crossing中时, 开启Cross.
       if (force || !isCrossing) {
         logd('handleTap cross > $force > ${data.offset}');
         // 更新并校正起始焦点.
         _updateOffset(data.offset);
-        _markRepaintCross();
+        _markRepaint();
         // 当Cross事件启动后, 调用markRepaintChart清理Chart图层的tips信息.
         markRepaintChart();
         return true;
@@ -141,10 +139,11 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
   }
 
   /// 更新Cross事件数据.
-  void onCrossUpdate(GestureData data) {
+  @override
+  void updateCross(GestureData data) {
     if (crossConfig.enable && isCrossing) {
       _updateOffset(data.offset);
-      _markRepaintCross();
+      _markRepaint();
     }
   }
 
@@ -155,11 +154,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       _updateOffset(null);
       // 当Cross事件结束后, 调用markRepaintChart触发绘制Chart图层首根蜡烛的tips信息.
       markRepaintChart();
-      _markRepaintCross();
+      _markRepaint();
     }
   }
 
   /// 绘制最新价与十字线
+  @override
   void paintCross(Canvas canvas, Size size) {
     if (crossConfig.enable != true) return;
 
@@ -188,9 +188,10 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       /// 绘制 Tooltip
       paintTooltip(canvas, offset, model: model);
 
-      mainPaintObject.doOnCross(canvas, offset, model: model);
-      for (var paintObject in subPaintObjects) {
-        paintObject.doOnCross(canvas, offset, model: model);
+      ensurePaintObjectInstance();
+
+      for (var indicator in [mainIndicator, ...subRectIndicators]) {
+        indicator.paintObject?.doOnCross(canvas, offset, model: model);
       }
     }
   }
@@ -204,28 +205,20 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       ..moveTo(offset.dx, 0)
       ..lineTo(offset.dx, canvasHeight);
 
-    _crosshair ??= crossConfig.crosshair.of(paintColor: theme.crossColor);
-
     canvas.drawLineByConfig(
       path,
-      _crosshair!,
+      crossConfig.crosshair,
     );
 
-    _crosspoint ??= crossConfig.crosspoint.of(color: theme.crossColor);
     canvas.drawCirclePoint(
       offset,
-      _crosspoint!,
+      crossConfig.crosspoint,
     );
   }
 
   /// 绘制 Tooltip
   void paintTooltip(Canvas canvas, Offset offset, {CandleModel? model}) {
-    final tooltipConfig = crossConfig.tooltipConfig;
     if (!tooltipConfig.show) return;
-    final tooltipTextStyle = tooltipConfig.style.copyWith(
-      color: theme.tooltipTextColor,
-    );
-
     int? index = dxToIndex(offset.dx);
     if (index == null) return;
     model ??= curKlineData.getCandle(index);
@@ -266,13 +259,13 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       String br = i < tooltipInfoList.length - 1 ? '\n' : '';
       labelSpanList.add(TextSpan(
         text: info.label + br,
-        style: info.labelStyle ?? tooltipTextStyle,
+        style: info.labelStyle ?? tooltipConfig.style,
       ));
-      TextStyle valStyle = info.valueStyle ?? tooltipTextStyle;
+      TextStyle valStyle = info.valueStyle ?? tooltipConfig.style;
       if (info.riseOrFall > 0) {
-        valStyle = valStyle.copyWith(color: theme.long);
+        valStyle = valStyle.copyWith(color: settingConfig.longColor);
       } else if (info.riseOrFall < 0) {
-        valStyle = valStyle.copyWith(color: theme.short);
+        valStyle = valStyle.copyWith(color: settingConfig.shortColor);
       }
       valueSpanList.add(TextSpan(
         text: info.value + br,
@@ -282,10 +275,8 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
 
     /// 开始绘制
     double top = tooltipConfig.margin.top;
-    if (isStartZoomChart) {
-      top += mainOriginPadding.top;
-    } else {
-      top += mainPadding.top;
+    if (mainIndicator.drawBelowTipsArea) {
+      top += mainIndicator.padding.top;
     }
 
     if (offset.dx > mainChartWidthHalf) {
@@ -301,12 +292,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         drawableRect: mainChartRect,
         textSpan: TextSpan(
           children: labelSpanList,
-          style: tooltipTextStyle,
+          style: tooltipConfig.style,
         ),
         textAlign: TextAlign.start,
         textWidthBasis: TextWidthBasis.longestLine,
         padding: tooltipConfig.padding,
-        backgroundColor: theme.tooltipBg,
+        backgroundColor: tooltipConfig.background,
         borderRadius: BorderRadius.only(
           topLeft: tooltipConfig.radius.topLeft,
           bottomLeft: tooltipConfig.radius.bottomLeft,
@@ -322,12 +313,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         drawableRect: mainChartRect,
         textSpan: TextSpan(
           children: valueSpanList,
-          style: tooltipTextStyle,
+          style: tooltipConfig.style,
         ),
         textAlign: TextAlign.end,
         textWidthBasis: TextWidthBasis.longestLine,
         padding: tooltipConfig.padding,
-        backgroundColor: theme.tooltipBg,
+        backgroundColor: tooltipConfig.background,
         borderRadius: BorderRadius.only(
           topRight: tooltipConfig.radius.topRight,
           bottomRight: tooltipConfig.radius.bottomRight,
@@ -346,12 +337,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         drawableRect: mainChartRect,
         textSpan: TextSpan(
           children: valueSpanList,
-          style: tooltipTextStyle,
+          style: tooltipConfig.style,
         ),
         textAlign: TextAlign.end,
         textWidthBasis: TextWidthBasis.longestLine,
         padding: tooltipConfig.padding,
-        backgroundColor: theme.tooltipBg,
+        backgroundColor: tooltipConfig.background,
         borderRadius: BorderRadius.only(
           topRight: tooltipConfig.radius.topRight,
           bottomRight: tooltipConfig.radius.bottomRight,
@@ -367,12 +358,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         drawableRect: mainChartRect,
         textSpan: TextSpan(
           children: labelSpanList,
-          style: tooltipTextStyle,
+          style: tooltipConfig.style,
         ),
         textAlign: TextAlign.start,
         textWidthBasis: TextWidthBasis.longestLine,
         padding: tooltipConfig.padding,
-        backgroundColor: theme.tooltipBg,
+        backgroundColor: tooltipConfig.background,
         borderRadius: BorderRadius.only(
           topLeft: tooltipConfig.radius.topLeft,
           bottomLeft: tooltipConfig.radius.bottomLeft,
@@ -424,12 +415,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
           value = formatPrice(model.change, precision: p);
           break;
         case TooltipLabel.chgRate:
-          value = formatPercentage(model.changeRate.d);
+          value = formatPercentage(model.changeRate);
           riseOrFall = model.change.signum;
           break;
         case TooltipLabel.range:
           if (pre != null) {
-            value = formatPercentage(model.rangeRate(pre).d);
+            value = formatPercentage(model.rangeRate(pre));
           } else {
             value = formatPrice(model.range, precision: p);
           }

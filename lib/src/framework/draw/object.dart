@@ -45,36 +45,6 @@ class OverlayObject implements Comparable<OverlayObject> {
   /// 当前绘制已完成, 修正中.
   bool get isEditing => points.fold(true, (ret, item) => ret && item != null);
 
-  Overlay clone() {
-    return Overlay.fromType(key: key, type: type, line: line);
-  }
-
-  void assertCheck([bool ignore = false]) {
-    if (ignore) return;
-    assert(
-      points.length == type.steps,
-      '${type.id}(${type.groupId}) only takes ${type.steps} point, but it has ${points.length}',
-      //'${type.id}(${type.groupId}) draw points.length:${points.length} must be equals ${type.steps}',
-    );
-  }
-
-  // void setDrawParam<T>(T params) {
-  //   // ignore: avoid_dynamic_calls
-  //   dynamic _defaultToEncodable(dynamic object) => object.toJson();
-  //   _overlay._extra = _defaultToEncodable(params);
-  // }
-
-  // T? getDrawParam<T>(T? Function(Map<String, dynamic> json) fromJson) {
-  //   if (_overlay._extra != null && _overlay._extra!.isNotEmpty) {
-  //     try {
-  //       return fromJson(_overlay._extra!);
-  //     } catch (err) {
-  //       debugPrint('$type getDrawParam catch an exception > ${err.toString()}');
-  //     }
-  //   }
-  //   return null;
-  // }
-
   @override
   int compareTo(OverlayObject other) {
     return _overlay.compareTo(other._overlay);
@@ -184,17 +154,15 @@ abstract class DrawStateObject extends OverlayObject with DrawConfigMixin {
 
   /// 计算所有point点构成的刻度区域矩形.
   Rect? getTicksMarksBounds() {
-    Offset? min, max, offset;
+    Offset? pre, offset;
+    Rect? bounds;
     for (var point in allPoints) {
       offset = point?.offset;
       if (offset == null || offset.isInfinite) continue;
-      min = offset.min(min);
-      max = offset.max(max);
+      bounds = Rect.fromPoints(pre ?? offset, offset);
+      pre = offset;
     }
-    if (min != null && max != null) {
-      return Rect.fromPoints(min, max);
-    }
-    return null;
+    return bounds;
   }
 }
 

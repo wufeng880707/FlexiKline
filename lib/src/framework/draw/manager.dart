@@ -27,11 +27,6 @@ final class OverlayDrawObjectManager with KlineLog {
     ILogger? logger,
   }) {
     loggerDelegate = logger;
-    final drawObjectbuilders = configuration.drawObjectBuilders;
-    for (final MapEntry(key: type, value: builder)
-        in drawObjectbuilders.entries) {
-      registerDrawOverlayObjectBuilder(type, builder);
-    }
   }
 
   final IConfiguration configuration;
@@ -40,7 +35,25 @@ final class OverlayDrawObjectManager with KlineLog {
   String get logTag => 'OverlayDrawObjectManager';
 
   /// DrawType的Overlay对应DrawObject的构建生成器集合
-  final Map<IDrawType, DrawObjectBuilder> _overlayBuilders = {};
+  final Map<IDrawType, DrawObjectBuilder> _overlayBuilders = {
+    DrawType.trendLine: TrendLineDrawObject.new,
+    DrawType.trendAngle: TrendAngleDrawObject.new,
+    DrawType.crossLine: CrossLineDrawObject.new,
+    DrawType.horizontalLine: HorizontalLineDrawObject.new,
+    DrawType.horizontalRayLine: HorizontalRayLineDrawObject.new,
+    DrawType.horizontalTrendLine: HorizontalTrendLineDrawObject.new,
+    DrawType.verticalLine: VerticalLineDrawObject.new,
+    DrawType.extendedTrendLine: ExtendedTrendLineDrawObject.new,
+    DrawType.arrowLine: ArrowLineDrawObject.new,
+    DrawType.rayLine: RayLineDrawObject.new,
+    DrawType.priceLine: PriceLineDrawObject.new,
+    // 多线
+    DrawType.parallelChannel: ParalleChannelDrawObject.new,
+    DrawType.rectangle: RectangleDrawObject.new,
+    DrawType.fibRetracement: FibRetracementDrawObject.new,
+    DrawType.fibExpansion: FibExpansionDrawObject.new,
+    DrawType.fibFans: FibFansDrawObject.new,
+  };
 
   Iterable<IDrawType>? _supportDrawTypes;
   Iterable<IDrawType> get supportDrawTypes {
@@ -94,14 +107,14 @@ final class OverlayDrawObjectManager with KlineLog {
     logd('onChangeCandleRequest $_instId => ${request.instId}');
     // 缓存上一次OverlayObject到本地.
     if (_instId.isNotEmpty && hasObject) {
-      cleanAllDrawObject();
+      saveOverlayListToLocal();
     }
     // 加载新的OverlayObject.
     _overlayObjectList.clear();
     _instId = request.instId;
-    final list = configuration.getDrawOverlayList(_instId);
+    final list = configuration.getOverlayListConfig(_instId);
     for (var overlay in list) {
-      final object = generateDrawObject(overlay, config);
+      final object = createDrawObject(overlay: overlay, config: config);
       if (object != null) {
         addDrawObject(object);
       }
@@ -109,45 +122,40 @@ final class OverlayDrawObjectManager with KlineLog {
   }
 
   /// 将当前[Overlay]列表缓存到本地
-  void storeDrawOverlaysConfig() {
-    configuration.saveDrawOverlayList(
+  void saveOverlayListToLocal({bool isDispose = true}) {
+    configuration.saveOverlayListConfig(
       _instId,
-      _overlayObjectList.map((obj) => obj._overlay),
+      _overlayObjectList.map((obj) {
+        if (isDispose) obj.dispose();
+        return obj._overlay;
+      }),
     );
+    _overlayObjectList.clear();
   }
 
   void dispose() {
-    for (var obj in _overlayObjectList) {
-      obj.dispose();
-    }
-    _overlayObjectList.clear();
+    saveOverlayListToLocal();
   }
 
   /// 清理当前所有的Overlay.
   void cleanAllDrawObject() {
-    storeDrawOverlaysConfig();
     for (var obj in _overlayObjectList) {
       obj.dispose();
     }
     _overlayObjectList.clear();
+    saveOverlayListToLocal(isDispose: false);
   }
 
   /// 通过[type]创建Overlay.
-  DrawObject? createDrawObject(
-    IDrawType type, {
-    required DrawConfig drawConfig,
+  /// 在Overlay未完成绘制时, 其line的配置使用crosshair.
+  DrawObject? createDrawObject({
+    IDrawType? type,
+    Overlay? overlay,
+    required DrawConfig config,
   }) {
-    return generateDrawObject(
-      Overlay.fromType(
-        key: _instId,
-        type: type,
-        line: drawConfig.drawLine,
-      ),
-      drawConfig,
-    );
-  }
+    if (overlay == null && type == null) return null;
+    overlay ??= Overlay(key: _instId, type: type!, line: config.drawLine);
 
-  DrawObject? generateDrawObject(Overlay overlay, DrawConfig config) {
     final builder = _overlayBuilders[overlay.type];
     if (builder == null) return null;
     return builder.call(overlay, config);

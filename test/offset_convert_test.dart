@@ -26,7 +26,7 @@ void main() {
   late FlexiKlineController controller;
   late CandleReq req;
   const mainSize = Size(400, 300);
-  late MainPaintObjectIndicator mainIndicator;
+  late MultiPaintObjectIndicator mainIndicator;
 
   setUpAll(() async {
     debugPrint('setUpAll');
@@ -41,13 +41,13 @@ void main() {
     controller.switchKlineData(req);
     await controller.updateKlineData(req, list);
     controller.calculateCandleDrawIndex();
-    // controller.ensurePaintObjectInstance();
-    // controller.mainIndicator.paintObject?.doInitState(
-    //   mainIndicatorSlot,
-    //   start: controller.curKlineData.start,
-    //   end: controller.curKlineData.end,
-    //   reset: true,
-    // );
+    controller.ensurePaintObjectInstance();
+    controller.mainIndicator.paintObject?.doInitState(
+      mainIndicatorSlot,
+      start: controller.curKlineData.start,
+      end: controller.curKlineData.end,
+      reset: true,
+    );
   });
 
   // group('group1 ', () {

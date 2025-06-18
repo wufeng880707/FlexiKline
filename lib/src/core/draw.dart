@@ -12,20 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-part of 'core.dart';
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
+
+import '../extension/export.dart';
+import '../framework/draw/overlay.dart';
+import '../framework/export.dart';
+import '../model/export.dart';
+import '../utils/platform_util.dart';
+import 'binding_base.dart';
+import 'interface.dart';
+import 'setting.dart';
 
 /// 图形绘制
-mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
+mixin DrawBinding
+    on KlineBindingBase, SettingBinding
+    implements IDraw, IState, IDrawContext, ICross {
   @override
   void init() {
     super.init();
     logd("init draw");
+    _drawObjectManager = OverlayDrawObjectManager(
+      configuration: configuration,
+      logger: loggerDelegate,
+    );
   }
 
   @override
   void initState() {
     super.initState();
     logd('initState draw');
+    candleRequestListener.addListener(() {
+      _drawObjectManager.onChangeCandleRequest(
+        candleRequestListener.value,
+        drawConfig,
+      );
+    });
   }
 
   @override
@@ -38,8 +61,10 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     _drawVisibilityListener.dispose();
     _drawMagnetModeListener.dispose();
     _drawContinuousListener.dispose();
+    _drawObjectManager.dispose();
   }
 
+  late final OverlayDrawObjectManager _drawObjectManager;
   final _repaintDraw = ValueNotifier(0);
   final _drawStateListener = KlineStateNotifier(DrawState.exited());
   final _drawPointerListener = KlineStateNotifier<Point?>(null);
@@ -47,14 +72,15 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   final _drawMagnetModeListener = ValueNotifier<MagnetMode>(MagnetMode.normal);
   final _drawContinuousListener = ValueNotifier<bool>(false);
 
+  @override
   Listenable get repaintDraw => _repaintDraw;
 
-  void _markRepaintDraw() => _repaintDraw.value++;
+  void _markRepaint() => _repaintDraw.value++;
 
   @override
   void markRepaintDraw() {
     if (drawState.isOngoing || _drawObjectManager.hasObject) {
-      _markRepaintDraw();
+      _markRepaint();
     }
   }
 
@@ -66,8 +92,8 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     return _drawObjectManager.supportDrawGroupTypes;
   }
 
-  /// 注册绘制工具构造器
-  void registerDrawObjectBuilder(
+  /// 自定义overlay绘制对象构建器
+  void registerDrawOverlayObjectBuilder(
     IDrawType type,
     DrawObjectBuilder builder,
   ) {
@@ -77,13 +103,16 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   /// 主动通知绘制状态变化
   void _notifyDrawStateChange() => _drawStateListener.notifyListeners();
 
+  @override
   DrawState get drawState => _drawStateListener.value;
   set _drawState(DrawState state) {
     _drawStateListener.value = state;
   }
 
-  ValueListenable<DrawState> get drawStateListener => _drawStateListener;
+  @override
+  ValueListenable<DrawState> get drawStateLinstener => _drawStateListener;
 
+  @override
   ValueListenable<Point?> get drawPointerListener => _drawPointerListener;
 
   ValueListenable<bool> get drawVisibilityListener => _drawVisibilityListener;
@@ -98,23 +127,25 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   @override
   MagnetMode get drawMagnet => drawMagnetModeListener.value;
 
-  void prepareDraw({bool force = false}) {
+  @override
+  void prepareDraw() {
     // 如果是非退出状态, 则无需变更状态.
-    if (!force && !drawState.isExited) return;
-    drawState.object?.dispose();
+    if (!drawState.isExited) return;
     _drawState = const Prepared();
-    _markRepaintDraw();
+    _markRepaint();
   }
 
+  @override
   void exitDraw() {
     drawState.object?.dispose();
     _drawState = const Exited();
-    _markRepaintDraw();
+    _markRepaint();
   }
 
   /// 开始绘制新的[type]类型
   /// 1. 重置状态为Drawing
   /// 2. 初始化第一个Point的位置为[mainRect]中心
+  @override
   void startDraw(IDrawType type, {bool? isInitPointer}) {
     if (!isDrawVisibility) return;
 
@@ -122,8 +153,8 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       _drawState = const Prepared();
     } else {
       final object = _drawObjectManager.createDrawObject(
-        type,
-        drawConfig: drawConfig,
+        type: type,
+        config: drawConfig,
       );
       if (object != null) {
         if (isInitPointer ?? PlatformUtil.isTouch) {
@@ -142,7 +173,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       }
     }
     cancelCross();
-    _markRepaintDraw();
+    _markRepaint();
   }
 
   /// 更新当前指针坐标
@@ -160,7 +191,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     final newOffset = magneticSnap(data.offset);
     if (newOffset != pointer.offset) {
       object.onUpdateDrawPoint(pointer, newOffset);
-      _markRepaintDraw();
+      _markRepaint();
     }
   }
 
@@ -185,16 +216,14 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
         object.setDrawLineConfig(drawConfig.drawLine);
         _drawObjectManager.addDrawObject(object, addToTop: true);
         if (drawContinuousListener.value) {
-          final nextObj = _drawObjectManager.generateDrawObject(
-            object.clone(),
-            drawConfig,
+          final nextObj = _drawObjectManager.createDrawObject(
+            type: object.type,
+            config: drawConfig,
           );
           if (nextObj != null) {
             final initOffset = object.lastPoint?.offset ?? data.offset;
             nextObj.setPointer(Point.pointer(0, magneticSnap(initOffset)));
             _drawState = DrawState.draw(nextObj);
-          } else {
-            _drawState = Editing(object);
           }
         } else {
           _drawState = Editing(object);
@@ -212,7 +241,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       }
     }
 
-    _markRepaintDraw();
+    _markRepaint();
   }
 
   bool onDrawMoveStart(GestureData data) {
@@ -229,7 +258,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       object.setMoveing(true);
       _drawPointerListener.updateValue(object.pointer);
       _notifyDrawStateChange();
-      _markRepaintDraw();
+      _markRepaint();
       return true;
     } else if (object.hitTest(this, position, isMove: true) == true) {
       // 检查当前焦点是否命中Overlay
@@ -237,7 +266,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       object.setMoveing(true);
       _drawPointerListener.updateValue(null);
       _notifyDrawStateChange();
-      _markRepaintDraw();
+      _markRepaint();
       return true;
     }
     return false;
@@ -257,7 +286,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       if (newOffset != pointer.offset) {
         object.onUpdateDrawPoint(pointer, newOffset);
         _drawPointerListener.updateValue(pointer);
-        _markRepaintDraw();
+        _markRepaint();
       }
     } else {
       for (var point in object.points) {
@@ -265,7 +294,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
           object.onUpdateDrawPoint(point, point.offset + delta);
         }
       }
-      _markRepaintDraw();
+      _markRepaint();
     }
   }
 
@@ -291,7 +320,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     object.setMoveing(false);
     _drawPointerListener.updateValue(null);
     _notifyDrawStateChange();
-    _markRepaintDraw();
+    _markRepaint();
   }
 
   void onDrawSelect(DrawObject object) {
@@ -300,7 +329,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     }
     _drawState = DrawState.edit(object);
     cancelCross();
-    _markRepaintDraw();
+    _markRepaint();
   }
 
   ////// 操作 //////
@@ -308,14 +337,14 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   void deleteDrawObject({DrawObject? object}) {
     if (object != null) {
       if (_drawObjectManager.removeDrawObject(object)) {
-        _markRepaintDraw();
+        _markRepaint();
       }
     } else {
       object = drawState.object;
       if (object != null) {
         _drawObjectManager.removeDrawObject(object);
         _drawState = const Prepared();
-        _markRepaintDraw();
+        _markRepaint();
       }
     }
   }
@@ -327,7 +356,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       _drawObjectManager.removeDrawObject(object);
       _drawState = const Prepared();
     }
-    _markRepaintDraw();
+    _markRepaint();
   }
 
   bool changeDrawLineStyle({
@@ -342,7 +371,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       strokeWidth: strokeWidth,
       lineType: lineType,
     )) {
-      _markRepaintDraw();
+      _markRepaint();
       _notifyDrawStateChange();
       return true;
     }
@@ -353,7 +382,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     final object = drawState.object;
     if (object == null) return false;
     object.setDrawLockState(isLock);
-    _markRepaintDraw();
+    _markRepaint();
     _notifyDrawStateChange();
     return true;
   }
@@ -376,16 +405,11 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
         magneticSnap(drawState.object!.pointer!.offset),
       );
     }
-    _markRepaintDraw();
+    _markRepaint();
   }
 
   void setDrawContinuous(bool isOn) {
     _drawContinuousListener.value = isOn;
-    if (!isOn) {
-      drawState.object?.dispose();
-      _drawState = const Prepared();
-      _markRepaintDraw();
-    }
   }
 
   bool moveDrawStateObjectToTop() {
@@ -393,7 +417,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     final object = drawState.object;
     if (object == null) return false;
     _drawObjectManager.moveToTop(object);
-    _markRepaintDraw();
+    _markRepaint();
     return true;
   }
 
@@ -408,7 +432,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     final object = drawState.object;
     if (object == null) return false;
     _drawObjectManager.moveToBottom(object);
-    _markRepaintDraw();
+    _markRepaint();
     return true;
   }
 
@@ -419,6 +443,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   }
 
   /// 测试[position]位置上是否有命中的Overly.
+  @override
   DrawObject? hitTestDrawObject(Offset position) {
     assert(
       position.isFinite,
@@ -435,6 +460,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   ////// 绘制 //////
 
   /// 绘制Draw图层
+  @override
   void paintDraw(Canvas canvas, Size size) {
     if (!drawConfig.enable) return;
 

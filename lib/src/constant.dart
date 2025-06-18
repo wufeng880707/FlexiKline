@@ -15,11 +15,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-/// double类型的计算精度误差
-const double precisionError = 0.000001;
-
 /// 默认数据格式化精度
 const int defaultPrecision = 4;
+
+// 默认Decimal除法精度
+const int defaultScaleOnInfinitePrecision = 17;
 
 // 默认主区指标高度
 const double defaultMainIndicatorHeight = 300;
@@ -38,6 +38,10 @@ const EdgeInsets defaultMainIndicatorPadding = EdgeInsets.only(
   top: 5, // 顶部留白
   bottom: 5, // 底部留白, 5: 最低价字体高度的一半, 保证最低价文本不会绘制到边线上.
 );
+
+// 默认主图区域最小Size
+const Size defaultMainRectMinSize = Size(20, 20);
+const Rect defaultCanvasRectMinRect = Rect.fromLTWH(0, 0, 20, 20);
 
 // 默认副图指标最大数量
 const int defaultSubChartMaxCount = 4;
@@ -62,6 +66,9 @@ const double defaultMultiTextHeight = 1.4;
 
 // 默认Tips文本高度
 const double defaultTipsTextHeight = 1.2;
+
+// 默认指标图TipsHeight
+// const double defaultIndicatorTipsHeight = 15;
 
 // 默认Tips文本区域的Padding: 左边缩进8个单位
 const EdgeInsets defaultTipsPadding = EdgeInsets.only(left: 8);
@@ -93,14 +100,15 @@ enum Timespan {
 enum TimeBar {
   // time(1000, 'time'), // 暂不支持; v0.8.0支持
   s1(1000, '1s', 1, Timespan.second),
-  m1(Duration.millisecondsPerMinute, '1m', 1, Timespan.minute),
-  m3(3 * Duration.millisecondsPerMinute, '3m', 3, Timespan.minute),
-  m5(5 * Duration.millisecondsPerMinute, '5m', 5, Timespan.minute),
-  m15(15 * Duration.millisecondsPerMinute, '15m', 15, Timespan.minute),
-  m30(30 * Duration.millisecondsPerMinute, '30m', 30, Timespan.minute),
+  IntraDay(Duration.millisecondsPerMinute, 'intraday', 1, Timespan.second),
+  m1(Duration.millisecondsPerMinute, '1min', 1, Timespan.minute),
+  m3(3 * Duration.millisecondsPerMinute, '3min', 3, Timespan.minute),
+  m5(5 * Duration.millisecondsPerMinute, '5min', 5, Timespan.minute),
+  m15(15 * Duration.millisecondsPerMinute, '15min', 15, Timespan.minute),
+  m30(30 * Duration.millisecondsPerMinute, '30min', 30, Timespan.minute),
   H1(Duration.millisecondsPerHour, '1H', 1, Timespan.hour),
   H2(2 * Duration.millisecondsPerHour, '2H', 2, Timespan.hour),
-  H4(4 * Duration.millisecondsPerHour, '4H', 4, Timespan.hour),
+  H4(4 * Duration.millisecondsPerHour, '4h', 4, Timespan.hour),
   H6(6 * Duration.millisecondsPerHour, '6H', 6, Timespan.hour),
   H12(12 * Duration.millisecondsPerHour, '12H', 12, Timespan.hour),
   D1(Duration.millisecondsPerDay, '1D', 1, Timespan.day),
@@ -170,3 +178,30 @@ const Map<TooltipLabel, String> defaultTooltipLables = {
   TooltipLabel.amount: 'Amount',
   TooltipLabel.turnover: 'Turnover',
 };
+
+enum ThousandUnit {
+  /// trillion
+  trillion('T'),
+
+  /// billion
+  billion('B'),
+
+  /// million
+  million('M'),
+
+  /// thousand
+  thousand('K'),
+
+  /// less than thousand
+  less('');
+
+  final String value;
+  const ThousandUnit(this.value);
+}
+
+enum RoundMode {
+  round,
+  floor,
+  ceil,
+  truncate,
+}

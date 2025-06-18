@@ -23,11 +23,6 @@ class MinMax {
 
   factory MinMax.same(BagNum val) => MinMax(max: val, min: val);
 
-  factory MinMax.from(BagNum a, BagNum b) {
-    if (a < b) (a, b) = (b, a);
-    return MinMax(max: a, min: b);
-  }
-
   MinMax clone() => MinMax(max: max, min: min);
 
   BagNum max;
