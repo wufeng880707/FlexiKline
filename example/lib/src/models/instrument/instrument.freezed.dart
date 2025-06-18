@@ -50,8 +50,12 @@ mixin _$Instrument {
   String get tickSz => throw _privateConstructorUsedError; // 下单价格精度
   String get uly => throw _privateConstructorUsedError;
 
+  /// Serializes this Instrument to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Instrument
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $InstrumentCopyWith<Instrument> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -104,6 +108,8 @@ class _$InstrumentCopyWithImpl<$Res, $Val extends Instrument>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Instrument
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -306,6 +312,8 @@ class __$$InstrumentImplCopyWithImpl<$Res>
       _$InstrumentImpl _value, $Res Function(_$InstrumentImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Instrument
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -616,7 +624,7 @@ class _$InstrumentImpl implements _Instrument {
             (identical(other.uly, uly) || other.uly == uly));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -651,7 +659,9 @@ class _$InstrumentImpl implements _Instrument {
         uly
       ]);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Instrument
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$InstrumentImplCopyWith<_$InstrumentImpl> get copyWith =>
@@ -703,8 +713,8 @@ abstract class _Instrument implements Instrument {
   @override
   String? get alias;
   @override
-  String get baseCcy;
-  @override // 交易货币币种
+  String get baseCcy; // 交易货币币种
+  @override
   String get ctMult;
   @override
   String get ctType;
@@ -717,16 +727,16 @@ abstract class _Instrument implements Instrument {
   @override
   String get instFamily;
   @override
-  String get instId;
-  @override // 产品id
+  String get instId; // 产品id
+  @override
   String get instType;
   @override
   String get lever;
   @override
   String get listTime;
   @override
-  String get lotSz;
-  @override // 下单数量精度
+  String get lotSz; // 下单数量精度
+  @override
   String get maxIcebergSz;
   @override
   String get maxLmtAmt;
@@ -747,19 +757,22 @@ abstract class _Instrument implements Instrument {
   @override
   String get optType;
   @override
-  String get quoteCcy;
-  @override // 计价货币币种
+  String get quoteCcy; // 计价货币币种
+  @override
   String get settleCcy;
   @override
   String get state;
   @override
   String get stk;
   @override
-  String get tickSz;
-  @override // 下单价格精度
-  String get uly;
+  String get tickSz; // 下单价格精度
   @override
-  @JsonKey(ignore: true)
+  String get uly;
+
+  /// Create a copy of Instrument
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InstrumentImplCopyWith<_$InstrumentImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

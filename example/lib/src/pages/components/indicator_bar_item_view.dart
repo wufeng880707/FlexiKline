@@ -16,6 +16,7 @@ import 'package:example/src/theme/flexi_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flexi_kline/flexi_kline.dart';
 
 class IndicatorBarItemView extends ConsumerWidget {
   const IndicatorBarItemView({
@@ -25,7 +26,7 @@ class IndicatorBarItemView extends ConsumerWidget {
     this.padding,
   });
 
-  final ValueKey indicatorKey;
+  final IIndicatorKey indicatorKey;
   final bool selected;
   final EdgeInsetsGeometry? padding;
 
@@ -33,10 +34,10 @@ class IndicatorBarItemView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     return Container(
-      key: indicatorKey,
+      key: ValueKey(indicatorKey.id),
       padding: padding ?? EdgeInsets.all(8.r),
       child: Text(
-        indicatorKey.value.toString().toUpperCase(),
+        indicatorKey.label.toUpperCase(),
         style: theme.t2s12w400.copyWith(
           color: selected ? theme.t1 : null,
           fontWeight: selected ? FontWeight.bold : null,

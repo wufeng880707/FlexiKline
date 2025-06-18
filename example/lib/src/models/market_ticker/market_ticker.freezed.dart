@@ -37,8 +37,12 @@ mixin _$MarketTicker {
   String get sodUtc0 => throw _privateConstructorUsedError;
   String get sodUtc8 => throw _privateConstructorUsedError;
 
+  /// Serializes this MarketTicker to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of MarketTicker
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $MarketTickerCopyWith<MarketTicker> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -78,6 +82,8 @@ class _$MarketTickerCopyWithImpl<$Res, $Val extends MarketTicker>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of MarketTicker
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -202,6 +208,8 @@ class __$$MarketTickerImplCopyWithImpl<$Res>
       _$MarketTickerImpl _value, $Res Function(_$MarketTickerImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of MarketTicker
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -378,7 +386,7 @@ class _$MarketTickerImpl implements _MarketTicker {
             (identical(other.sodUtc8, sodUtc8) || other.sodUtc8 == sodUtc8));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -399,7 +407,9 @@ class _$MarketTickerImpl implements _MarketTicker {
       sodUtc0,
       sodUtc8);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of MarketTicker
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$MarketTickerImplCopyWith<_$MarketTickerImpl> get copyWith =>
@@ -467,8 +477,11 @@ abstract class _MarketTicker implements MarketTicker {
   String get sodUtc0;
   @override
   String get sodUtc8;
+
+  /// Create a copy of MarketTicker
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MarketTickerImplCopyWith<_$MarketTickerImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

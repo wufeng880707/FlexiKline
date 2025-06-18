@@ -31,14 +31,14 @@ class KlineStateNotifier extends ChangeNotifier {
   final Ref ref;
   final FlexiKlineController controller;
 
-  Set<ValueKey> get supportMainIndicatorKeys =>
+  Set<IIndicatorKey> get supportMainIndicatorKeys =>
       controller.supportMainIndicatorKeys;
-  Set<ValueKey> get supportSubIndicatorKeys =>
+  Set<IIndicatorKey> get supportSubIndicatorKeys =>
       controller.supportSubIndicatorKeys;
-  Set<ValueKey> get mainIndicatorKeys => controller.mainIndicatorKeys;
-  Set<ValueKey> get subIndicatorKeys => controller.subIndicatorKeys;
+  Set<IIndicatorKey> get mainIndicatorKeys => controller.mainIndicatorKeys;
+  Set<IIndicatorKey> get subIndicatorKeys => controller.subIndicatorKeys;
 
-  void onTapMainIndicator(ValueKey key) {
+  void onTapMainIndicator(IIndicatorKey key) {
     if (controller.mainIndicatorKeys.contains(key)) {
       controller.delIndicatorInMain(key);
     } else {
@@ -47,7 +47,7 @@ class KlineStateNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void onTapSubIndicator(ValueKey key) {
+  void onTapSubIndicator(IIndicatorKey key) {
     if (controller.subIndicatorKeys.contains(key)) {
       controller.delIndicatorInSub(key);
     } else {

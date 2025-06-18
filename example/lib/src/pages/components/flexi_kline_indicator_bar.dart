@@ -71,7 +71,7 @@ class _FlexiKliineIndicatorBarState
           children: [
             ...klineState.supportMainIndicatorKeys.map((key) {
               return GestureDetector(
-                key: key,
+                key: ValueKey(key.id),
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
                   ref
@@ -92,7 +92,7 @@ class _FlexiKliineIndicatorBarState
             ),
             ...klineState.supportSubIndicatorKeys.map((key) {
               return GestureDetector(
-                key: key,
+                key: ValueKey(key.id),
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
                   ref

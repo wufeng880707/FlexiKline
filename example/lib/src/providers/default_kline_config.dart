@@ -150,7 +150,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   @override
   FlexiKlineConfig genFlexiKlineConfig(DefaultFlexiKlineTheme theme) {
-    return super.genFlexiKlineConfig(theme)..sub.add(macdKey);
+    return super.genFlexiKlineConfig(theme)..sub.add(IndicatorType.macd);
   }
 
   @override

@@ -23,7 +23,7 @@ part 'avl_indicator.g.dart';
 @FlexiIndicatorSerializable
 class AVLIndicator extends SinglePaintObjectIndicator {
   AVLIndicator({
-    super.key = const ValueKey('AVL'),
+    super.key = const FlexiIndicatorKey('AVL'),
     super.name = 'AVL',
     super.zIndex = 0,
     required super.height,

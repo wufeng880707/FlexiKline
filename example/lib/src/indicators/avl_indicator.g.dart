@@ -8,8 +8,8 @@ part of 'avl_indicator.dart';
 
 AVLIndicator _$AVLIndicatorFromJson(Map<String, dynamic> json) => AVLIndicator(
       key: json['key'] == null
-          ? const ValueKey('AVL')
-          : const ValueKeyConverter().fromJson(json['key'] as String),
+          ? const FlexiIndicatorKey('AVL')
+          : const IIndicatorKeyConvert().fromJson(json['key'] as String),
       name: json['name'] as String? ?? 'AVL',
       zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
       height: (json['height'] as num).toDouble(),
@@ -23,7 +23,7 @@ AVLIndicator _$AVLIndicatorFromJson(Map<String, dynamic> json) => AVLIndicator(
 
 Map<String, dynamic> _$AVLIndicatorToJson(AVLIndicator instance) =>
     <String, dynamic>{
-      'key': const ValueKeyConverter().toJson(instance.key),
+      'key': const IIndicatorKeyConvert().toJson(instance.key),
       'name': instance.name,
       'height': instance.height,
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
