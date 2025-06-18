@@ -31,7 +31,7 @@ class _KlineHomeScreenState extends ConsumerState<KlineHomeScreen> {
   void initState() {
     super.initState();
 
-    req = CandleReq(instId: 'e_btcusdt', bar: TimeBar.H4.bar, precision: 2, limit: 300);
+    req = CandleReq(instId: 'e_btcusdt', bar: TimeBar.H4.bar, precision: 2, limit: 100);
 
     // 初始化WebSocket服务
     _initWebSocket();
@@ -292,6 +292,7 @@ extension _Action on _KlineHomeScreenState {
     final result = await ref.read(klineDataSourceProvider).publicMarketKlineRequest({
       'symbol': req.instId,
       'scaleType': req.bar,
+      'limit': req.limit,
     });
 
     if (result.data['data'] != null) {
@@ -312,6 +313,7 @@ extension _Action on _KlineHomeScreenState {
     final result = await ref.read(klineDataSourceProvider).publicMarketKlineRequest({
       'symbol': req.instId,
       'scaleType': req.bar,
+      'limit': req.limit,
       'endIdx': lastTs / 1000,
     });
 
