@@ -38,8 +38,8 @@ class AVLIndicator extends SinglePaintObjectIndicator {
   final EdgeInsets tipsPadding;
 
   @override
-  AVLPaintObject createPaintObject(covariant KlineBindingBase controller) {
-    return AVLPaintObject(controller: controller, indicator: this);
+  AVLPaintObject createPaintObject(covariant IPaintContext context) {
+    return AVLPaintObject(context: context, indicator: this);
   }
 
   factory AVLIndicator.fromJson(Map<String, dynamic> json) =>
@@ -50,7 +50,7 @@ class AVLIndicator extends SinglePaintObjectIndicator {
 
 class AVLPaintObject extends SinglePaintObjectBox<AVLIndicator> {
   AVLPaintObject({
-    required super.controller,
+    required super.context,
     required super.indicator,
   });
 
