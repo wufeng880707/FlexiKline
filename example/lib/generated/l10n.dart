@@ -18,8 +18,10 @@ class S {
   static S? _current;
 
   static S get current {
-    assert(_current != null,
-        'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.');
+    assert(
+      _current != null,
+      'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.',
+    );
     return _current!;
   }
 
@@ -41,8 +43,10 @@ class S {
 
   static S of(BuildContext context) {
     final instance = S.maybeOf(context);
-    assert(instance != null,
-        'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?');
+    assert(
+      instance != null,
+      'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?',
+    );
     return instance!;
   }
 
@@ -52,52 +56,27 @@ class S {
 
   /// `FlexiKline`
   String get title {
-    return Intl.message(
-      'FlexiKline',
-      name: 'title',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('FlexiKline', name: 'title', desc: '', args: []);
   }
 
   /// `About`
   String get about {
-    return Intl.message(
-      'About',
-      name: 'about',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('About', name: 'about', desc: '', args: []);
   }
 
   /// `Demo`
   String get demo {
-    return Intl.message(
-      'Demo',
-      name: 'demo',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Demo', name: 'demo', desc: '', args: []);
   }
 
   /// `Ok`
   String get ok {
-    return Intl.message(
-      'Ok',
-      name: 'ok',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Ok', name: 'ok', desc: '', args: []);
   }
 
   /// `Bit`
   String get bit {
-    return Intl.message(
-      'Bit',
-      name: 'bit',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Bit', name: 'bit', desc: '', args: []);
   }
 
   /// `Client connection timeout`
@@ -132,12 +111,7 @@ class S {
 
   /// `Canceled`
   String get canceled {
-    return Intl.message(
-      'Canceled',
-      name: 'canceled',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Canceled', name: 'canceled', desc: '', args: []);
   }
 
   /// `Request syntax error`
@@ -262,12 +236,7 @@ class S {
 
   /// `Setting`
   String get setting {
-    return Intl.message(
-      'Setting',
-      name: 'setting',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Setting', name: 'setting', desc: '', args: []);
   }
 
   /// `Language`
@@ -292,132 +261,67 @@ class S {
 
   /// `System`
   String get themeModeSystem {
-    return Intl.message(
-      'System',
-      name: 'themeModeSystem',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('System', name: 'themeModeSystem', desc: '', args: []);
   }
 
   /// `Light`
   String get themeModeLight {
-    return Intl.message(
-      'Light',
-      name: 'themeModeLight',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Light', name: 'themeModeLight', desc: '', args: []);
   }
 
   /// `Dark`
   String get themeModeDark {
-    return Intl.message(
-      'Dark',
-      name: 'themeModeDark',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Dark', name: 'themeModeDark', desc: '', args: []);
   }
 
   /// `Load failed!`
   String get loadFailed {
-    return Intl.message(
-      'Load failed!',
-      name: 'loadFailed',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Load failed!', name: 'loadFailed', desc: '', args: []);
   }
 
   /// `Time`
   String get tooltipTime {
-    return Intl.message(
-      'Time',
-      name: 'tooltipTime',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Time', name: 'tooltipTime', desc: '', args: []);
   }
 
   /// `Open`
   String get tooltipOpen {
-    return Intl.message(
-      'Open',
-      name: 'tooltipOpen',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Open', name: 'tooltipOpen', desc: '', args: []);
   }
 
   /// `High`
   String get tooltipHigh {
-    return Intl.message(
-      'High',
-      name: 'tooltipHigh',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('High', name: 'tooltipHigh', desc: '', args: []);
   }
 
   /// `Low`
   String get tooltipLow {
-    return Intl.message(
-      'Low',
-      name: 'tooltipLow',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Low', name: 'tooltipLow', desc: '', args: []);
   }
 
   /// `Close`
   String get tooltipClose {
-    return Intl.message(
-      'Close',
-      name: 'tooltipClose',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Close', name: 'tooltipClose', desc: '', args: []);
   }
 
   /// `Chg`
   String get tooltipChg {
-    return Intl.message(
-      'Chg',
-      name: 'tooltipChg',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Chg', name: 'tooltipChg', desc: '', args: []);
   }
 
   /// `%Chg`
   String get tooltipChgRate {
-    return Intl.message(
-      '%Chg',
-      name: 'tooltipChgRate',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('%Chg', name: 'tooltipChgRate', desc: '', args: []);
   }
 
   /// `Range`
   String get tooltipRange {
-    return Intl.message(
-      'Range',
-      name: 'tooltipRange',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Range', name: 'tooltipRange', desc: '', args: []);
   }
 
   /// `Amount`
   String get tooltipAmount {
-    return Intl.message(
-      'Amount',
-      name: 'tooltipAmount',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Amount', name: 'tooltipAmount', desc: '', args: []);
   }
 
   /// `Turnover`
@@ -432,32 +336,17 @@ class S {
 
   /// `Indicators`
   String get indicators {
-    return Intl.message(
-      'Indicators',
-      name: 'indicators',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Indicators', name: 'indicators', desc: '', args: []);
   }
 
   /// `24h high`
   String get h24_high {
-    return Intl.message(
-      '24h high',
-      name: 'h24_high',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('24h high', name: 'h24_high', desc: '', args: []);
   }
 
   /// `24h low`
   String get h24_low {
-    return Intl.message(
-      '24h low',
-      name: 'h24_low',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('24h low', name: 'h24_low', desc: '', args: []);
   }
 
   /// `24h vol({unit})`
@@ -492,42 +381,22 @@ class S {
 
   /// `Landscape`
   String get landscape {
-    return Intl.message(
-      'Landscape',
-      name: 'landscape',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Landscape', name: 'landscape', desc: '', args: []);
   }
 
   /// `Drawings`
   String get drawings {
-    return Intl.message(
-      'Drawings',
-      name: 'drawings',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Drawings', name: 'drawings', desc: '', args: []);
   }
 
   /// `More`
   String get more {
-    return Intl.message(
-      'More',
-      name: 'more',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('More', name: 'more', desc: '', args: []);
   }
 
   /// `Last price`
   String get lastPrice {
-    return Intl.message(
-      'Last price',
-      name: 'lastPrice',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Last price', name: 'lastPrice', desc: '', args: []);
   }
 
   /// `Price scale(y-axis)`
@@ -542,12 +411,7 @@ class S {
 
   /// `Countdown`
   String get countdown {
-    return Intl.message(
-      'Countdown',
-      name: 'countdown',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Countdown', name: 'countdown', desc: '', args: []);
   }
 
   /// `Chart Height`
@@ -562,32 +426,17 @@ class S {
 
   /// `Chart Width`
   String get chartWidth {
-    return Intl.message(
-      'Chart Width',
-      name: 'chartWidth',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Chart Width', name: 'chartWidth', desc: '', args: []);
   }
 
   /// `High Price`
   String get highPrice {
-    return Intl.message(
-      'High Price',
-      name: 'highPrice',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('High Price', name: 'highPrice', desc: '', args: []);
   }
 
   /// `Low Price`
   String get lowPrice {
-    return Intl.message(
-      'Low Price',
-      name: 'lowPrice',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Low Price', name: 'lowPrice', desc: '', args: []);
   }
 
   /// `Select Trading Pair`
@@ -602,22 +451,12 @@ class S {
 
   /// `Name/Vol`
   String get labelNameVol {
-    return Intl.message(
-      'Name/Vol',
-      name: 'labelNameVol',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Name/Vol', name: 'labelNameVol', desc: '', args: []);
   }
 
   /// `Price`
   String get labelPrice {
-    return Intl.message(
-      'Price',
-      name: 'labelPrice',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Price', name: 'labelPrice', desc: '', args: []);
   }
 
   /// `24H Change`
@@ -642,12 +481,7 @@ class S {
 
   /// `Intervals`
   String get intervals {
-    return Intl.message(
-      'Intervals',
-      name: 'intervals',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Intervals', name: 'intervals', desc: '', args: []);
   }
 
   /// `Main-chart indicators`
