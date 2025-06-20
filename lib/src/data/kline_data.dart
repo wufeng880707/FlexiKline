@@ -31,21 +31,36 @@ import 'sar_data.dart';
 import 'volma_data.dart';
 
 class KlineData extends BaseData
-    with
-        CandleData,
-        MAData,
-        VOLMAData,
-        EMAData,
-        MACDData,
-        KDJData,
-        BOLLData,
-        SARData,
-        RSIData {
+    with CandleData, MAData, VOLMAData, EMAData, MACDData, KDJData, BOLLData, SARData, RSIData {
   KlineData(
     super.req, {
     super.list,
     super.logger,
   });
+
+  String get instId => req.instId;
+  int get precision => req.precision;
+  String get key => req.key;
+  String get reqKey => req.reqKey;
+  TimeBar? get timeBar => req.timeBar;
+  bool get invalid => req.instId.isEmpty;
+
+  // TODO: 解除对CandleReq的依赖.
+  CandleReq updateReqRange({RequestState state = RequestState.none}) {
+    req = req.copyWith(
+      after: list.lastOrNull?.ts,
+      before: list.firstOrNull?.ts,
+      state: state,
+    );
+    return req;
+  }
+
+  CandleReq getLoadMoreRequest() {
+    return req.copyWith(
+      after: list.lastOrNull?.ts,
+      before: null,
+    );
+  }
 
   static final KlineData empty = KlineData(
     const CandleReq(instId: "", bar: ""),
@@ -155,29 +170,29 @@ Future<KlineData> precomputeKlineDataByCompute(
   return data;
 }
 
-extension KlineDataExt on KlineData {
-  String get instId => req.instId;
-  int get precision => req.precision;
-  String get key => req.key;
-  String get reqKey => req.reqKey;
-  TimeBar? get timeBar => req.timeBar;
-
-  bool get invalid => req.instId.isEmpty;
-
-  // TODO: 解除对CandleReq的依赖.
-  CandleReq updateReqRange({RequestState state = RequestState.none}) {
-    req = req.copyWith(
-      after: list.lastOrNull?.ts,
-      before: list.firstOrNull?.ts,
-      state: state,
-    );
-    return req;
-  }
-
-  CandleReq getLoadMoreRequest() {
-    return req.copyWith(
-      after: list.lastOrNull?.ts,
-      before: null,
-    );
-  }
-}
+// extension KlineDataExt on KlineData {
+//   String get instId => req.instId;
+//   int get precision => req.precision;
+//   String get key => req.key;
+//   String get reqKey => req.reqKey;
+//   TimeBar? get timeBar => req.timeBar;
+//
+//   bool get invalid => req.instId.isEmpty;
+//
+//   // TODO: 解除对CandleReq的依赖.
+//   CandleReq updateReqRange({RequestState state = RequestState.none}) {
+//     req = req.copyWith(
+//       after: list.lastOrNull?.ts,
+//       before: list.firstOrNull?.ts,
+//       state: state,
+//     );
+//     return req;
+//   }
+//
+//   CandleReq getLoadMoreRequest() {
+//     return req.copyWith(
+//       after: list.lastOrNull?.ts,
+//       before: null,
+//     );
+//   }
+// }
