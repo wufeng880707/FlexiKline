@@ -47,8 +47,7 @@ class IIndicatorKeyConvert implements JsonConverter<IIndicatorKey, String> {
   }
 }
 
-class SetIndicatorKeyConverter
-    implements JsonConverter<Set<IIndicatorKey>, List<dynamic>> {
+class SetIndicatorKeyConverter implements JsonConverter<Set<IIndicatorKey>, List<dynamic>> {
   const SetIndicatorKeyConverter();
 
   @override
@@ -162,8 +161,7 @@ class LineTypeConverter implements JsonConverter<LineType, String> {
   }
 }
 
-class EdgeInsetsConverter
-    implements JsonConverter<EdgeInsets, Map<String, dynamic>> {
+class EdgeInsetsConverter implements JsonConverter<EdgeInsets, Map<String, dynamic>> {
   const EdgeInsetsConverter();
 
   @override
@@ -201,8 +199,7 @@ class EdgeInsetsConverter
         edgeInsets.right == 0 &&
         edgeInsets.bottom == 0) return {};
 
-    if (edgeInsets.left == edgeInsets.right &&
-        edgeInsets.top == edgeInsets.bottom) {
+    if (edgeInsets.left == edgeInsets.right && edgeInsets.top == edgeInsets.bottom) {
       return {
         "horizontal": edgeInsets.left,
         "vertical": edgeInsets.top,
@@ -274,8 +271,7 @@ class RectConverter implements JsonConverter<Rect, Map<String, dynamic>> {
   }
 }
 
-class BorderSideConvert
-    implements JsonConverter<BorderSide, Map<String, dynamic>> {
+class BorderSideConvert implements JsonConverter<BorderSide, Map<String, dynamic>> {
   const BorderSideConvert();
 
   @override
@@ -324,8 +320,7 @@ class BorderConverter implements JsonConverter<Border, Map<String, dynamic>> {
 }
 
 // 仅支持圆角类型
-class BorderRadiusConverter
-    implements JsonConverter<BorderRadius, Map<String, dynamic>> {
+class BorderRadiusConverter implements JsonConverter<BorderRadius, Map<String, dynamic>> {
   const BorderRadiusConverter();
 
   @override
@@ -373,8 +368,7 @@ class TextAlignConvert implements JsonConverter<TextAlign, String> {
   }
 }
 
-class TextStyleConverter
-    implements JsonConverter<TextStyle, Map<String, dynamic>> {
+class TextStyleConverter implements JsonConverter<TextStyle, Map<String, dynamic>> {
   const TextStyleConverter();
 
   @override
@@ -411,8 +405,7 @@ class TextStyleConverter
   }
 }
 
-class StrutStyleConverter
-    implements JsonConverter<StrutStyle, Map<String, dynamic>> {
+class StrutStyleConverter implements JsonConverter<StrutStyle, Map<String, dynamic>> {
   const StrutStyleConverter();
 
   @override
@@ -464,8 +457,7 @@ class ClipConverter implements JsonConverter<Clip, String> {
   }
 }
 
-class BoxShadowConverter
-    implements JsonConverter<BoxShadow, Map<String, dynamic>> {
+class BoxShadowConverter implements JsonConverter<BoxShadow, Map<String, dynamic>> {
   const BoxShadowConverter();
 
   @override
@@ -576,8 +568,7 @@ class MagnetModeConverter implements JsonConverter<MagnetMode, String> {
   }
 }
 
-class IDrawTypeConverter
-    implements JsonConverter<IDrawType, Map<String, dynamic>> {
+class IDrawTypeConverter implements JsonConverter<IDrawType, Map<String, dynamic>> {
   const IDrawTypeConverter();
 
   @override
@@ -586,17 +577,14 @@ class IDrawTypeConverter
     final String? id = json.getItem('id');
     final int? steps = json.getItem('steps');
     if (id != null && steps != null) {
-      IDrawType? type = DrawType.values.firstWhereOrNull((type) {
-        return type.groupId == groupId && type.id == id && type.steps == steps;
-      });
-      return type ?? FlexiDrawType(id, steps, groupId: groupId);
+      return FlexiDrawType(id, steps, groupId: groupId);
     }
     return unknownDrawType;
   }
 
   @override
   Map<String, dynamic> toJson(IDrawType object) {
-    return {'id': object.id, 'steps': object.steps};
+    return {'id': object.id, 'steps': object.steps, 'groupId': object.groupId};
   }
 }
 
