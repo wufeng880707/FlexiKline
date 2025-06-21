@@ -20,18 +20,8 @@ import '../framework/chart/indicator.dart';
 import '../framework/logger.dart';
 import '../model/export.dart';
 import 'base_data.dart';
-import 'boll_data.dart';
-import 'candle_data.dart';
-import 'ema_data.dart';
-import 'kdj_data.dart';
-import 'ma_data.dart';
-import 'macd_data.dart';
-import 'rsi_data.dart';
-import 'sar_data.dart';
-import 'volma_data.dart';
 
-class KlineData extends BaseData
-    with CandleData, MAData, VOLMAData, EMAData, MACDData, KDJData, BOLLData, SARData, RSIData {
+class KlineData extends BaseData {
   KlineData(
     super.req, {
     super.list,
@@ -69,12 +59,14 @@ class KlineData extends BaseData
 
   /// 预计算Kline指标数据
   /// [data] 待计算的Kline蜡烛数据
+  /// [indicatorCount]指标图个数
   /// [newList] 新增的蜡烛数据
   /// [computeMode] 计算模式
   /// [calcParams] 指标计算参数
   /// [reset] 是否重置; 如果有, 忽略之前的计算结果.
   static Future<KlineData> precomputeKlineData(
     KlineData data, {
+    required int indicatorCount,
     required List<CandleModel> newList,
     required ComputeMode computeMode,
     required Map<IIndicatorKey, dynamic> calcParams,
@@ -97,7 +89,12 @@ class KlineData extends BaseData
 
     ///3. 根据计算模式初始化基础数据
     await stopwatch.runAsync(
-      () => data.initBasicData(computeMode, reset: reset),
+      () => data.initBasicData(
+        computeMode,
+        range!,
+        indicatorCount,
+        reset: reset,
+      ),
       debugLabel: 'initBasicData\t$range|$reset',
     );
 
@@ -127,6 +124,7 @@ class KlineData extends BaseData
 /// [data]的序列化反序列化耗时较大, 暂不使用此方式.
 Future<KlineData> precomputeKlineDataByCompute(
   KlineData data, {
+  required int indicatorCount,
   required List<CandleModel> newList,
   required ComputeMode computeMode,
   required Map<IIndicatorKey, dynamic> calcParams,
@@ -147,14 +145,15 @@ Future<KlineData> precomputeKlineDataByCompute(
       (List<dynamic> params) async {
         final newData = await KlineData.precomputeKlineData(
           params[0],
-          newList: params[1],
-          computeMode: params[2],
-          calcParams: params[3],
-          reset: params[4],
+          indicatorCount: params[1],
+          newList: params[2],
+          computeMode: params[3],
+          calcParams: params[4],
+          reset: params[5],
         );
         return newData;
       },
-      [data, newList, computeMode, calcParams, reset],
+      [data, indicatorCount, newList, computeMode, calcParams, reset],
       debugLabel: debugLabel,
     );
     logger?.logd('compute End:${DateTime.now()}');
@@ -169,30 +168,3 @@ Future<KlineData> precomputeKlineDataByCompute(
   }
   return data;
 }
-
-// extension KlineDataExt on KlineData {
-//   String get instId => req.instId;
-//   int get precision => req.precision;
-//   String get key => req.key;
-//   String get reqKey => req.reqKey;
-//   TimeBar? get timeBar => req.timeBar;
-//
-//   bool get invalid => req.instId.isEmpty;
-//
-//   // TODO: 解除对CandleReq的依赖.
-//   CandleReq updateReqRange({RequestState state = RequestState.none}) {
-//     req = req.copyWith(
-//       after: list.lastOrNull?.ts,
-//       before: list.firstOrNull?.ts,
-//       state: state,
-//     );
-//     return req;
-//   }
-//
-//   CandleReq getLoadMoreRequest() {
-//     return req.copyWith(
-//       after: list.lastOrNull?.ts,
-//       before: null,
-//     );
-//   }
-// }
