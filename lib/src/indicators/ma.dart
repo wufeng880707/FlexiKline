@@ -31,7 +31,6 @@ part 'ma.g.dart';
 @FlexiIndicatorSerializable
 class MAIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
   MAIndicator({
-    super.name = 'MA',
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
