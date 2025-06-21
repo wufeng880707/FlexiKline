@@ -31,7 +31,6 @@ part 'ma.g.dart';
 @FlexiIndicatorSerializable
 class MAIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
   MAIndicator({
-    super.key = IndicatorType.ma,
     super.name = 'MA',
     super.zIndex = 0,
     required super.height,
@@ -39,14 +38,12 @@ class MAIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
     required this.calcParams,
     required this.tipsPadding,
     required this.lineWidth,
-  });
+  }) : super(key: IndicatorType.ma);
 
+  @override
   final List<MaParam> calcParams;
   final EdgeInsets tipsPadding;
   final double lineWidth;
-
-  @override
-  dynamic getCalcParam() => calcParams;
 
   @override
   SinglePaintObjectBox createPaintObject(IPaintContext context) {
