@@ -56,9 +56,6 @@ class VolMaIndicator extends SinglePaintObjectIndicator
   final int precision;
 
   @override
-  dynamic getCalcParam() => calcParams;
-
-  @override
   VolMaPaintObject createPaintObject(IPaintContext context) {
     return VolMaPaintObject(context: context, indicator: this);
   }
