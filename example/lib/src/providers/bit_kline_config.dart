@@ -25,9 +25,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-abstract class BaseBitFlexiKlineTheme
-    with FlexiKlineThemeTextStyle
-    implements IFlexiKlineTheme {
+abstract class BaseBitFlexiKlineTheme with FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
   double? _scale;
   @override
   double get scale => _scale ??= math.min(
@@ -307,4 +305,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
           ),
         );
   }
+
+  @override
+  // TODO: implement theme
+  IFlexiKlineTheme get theme => throw UnimplementedError();
 }
