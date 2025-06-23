@@ -14,11 +14,14 @@
 
 library macd;
 
+import 'dart:ui';
 import 'dart:math' as math;
 
 import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/painting.dart';
+import 'package:decimal/decimal.dart';
+import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import '../../config/export.dart';
 import 'macd_param.dart';

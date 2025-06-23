@@ -54,7 +54,8 @@ class MACDIndicator extends SinglePaintObjectIndicator implements IPrecomputable
   Map<String, dynamic> toJson() => _$MACDIndicatorToJson(this);
 }
 
-class MACDPaintObject<T extends MACDIndicator> extends SinglePaintObjectBox<T> with MacdDataMixin<T> {
+class MACDPaintObject<T extends MACDIndicator> extends SinglePaintObjectBox<T>
+    with MacdDataMixin<T>, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   MACDPaintObject({required super.context, required super.indicator});
 
   @override
@@ -70,12 +71,41 @@ class MACDPaintObject<T extends MACDIndicator> extends SinglePaintObjectBox<T> w
   @override
   void paintChart(Canvas canvas, Size size) {
     paintMacdChart(canvas, size);
-    // 如需绘制Y轴刻度，可在此调用paintYAxisTicks等
+    if (settingConfig.showYAxisTick) {
+      paintYAxisTicks(
+        canvas,
+        size,
+        tickCount: indicator.tickCount,
+        precision: indicator.precision,
+      );
+    }
+  }
+
+  @override
+  String fromatTicksValue(BagNum value, {required int precision}) {
+    return formatNumber(
+      value.toDecimal(),
+      precision: precision,
+      cutInvalidZero: false,
+    );
   }
 
   @override
   void onCross(Canvas canvas, Offset offset) {
-    // MACD不需要特殊十字线处理，可留空
+    paintYAxisTicksOnCross(
+      canvas,
+      offset,
+      precision: indicator.precision,
+    );
+  }
+
+  @override
+  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+    return formatNumber(
+      value.toDecimal(),
+      precision: precision,
+      cutInvalidZero: false,
+    );
   }
 
   /// 绘制MACD图
