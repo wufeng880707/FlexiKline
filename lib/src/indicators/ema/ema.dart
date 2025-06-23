@@ -18,8 +18,9 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-import '../../config/ma_param/ma_param.dart' as ma_param;
-import '../../config/ma_param/ma_param.dart';
+import '../../config/export.dart';
+import '../ma/ma_param.dart' as ma_param;
+import '../ma/ma_param.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
 import '../../extension/export.dart';

@@ -167,7 +167,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
     final theme = ref.watch(themeProvider);
     ref.listen(defaultKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        final config = configuration.getFlexiKlineConfig(next);
+        final config = configuration.getFlexiKlineConfig();
         controller.updateFlexiKlineConfig(config);
       }
     });

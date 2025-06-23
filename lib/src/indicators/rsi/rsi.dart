@@ -21,7 +21,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 import '../../config/export.dart';
-import '../../config/rsi_param/rsi_param.dart';
+import 'rsi_param.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
 import '../../extension/export.dart';

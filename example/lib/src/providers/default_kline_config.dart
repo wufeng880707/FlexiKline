@@ -17,7 +17,8 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:example/generated/l10n.dart';
-import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flexi_kline/flexi_kline.dart' hide Overlay;
+import 'package:flexi_kline/src/framework/draw/overlay.dart' as flexi_overlay show Overlay;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -42,8 +43,7 @@ Map<TooltipLabel, String> tooltipLables() {
   };
 }
 
-class DefaultFlexiKlineTheme extends BaseFlexiKlineTheme
-    with FlexiKlineThemeTextStyle {
+class DefaultFlexiKlineTheme extends BaseFlexiKlineTheme with FlexiKlineThemeTextStyle {
   final FKTheme theme;
 
   DefaultFlexiKlineTheme({
@@ -131,10 +131,12 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  FlexiKlineConfig getFlexiKlineConfig([DefaultFlexiKlineTheme? theme]) {
-    theme ??= ref.read(defaultKlineThemeProvider);
+  IFlexiKlineTheme get theme => ref.read(defaultKlineThemeProvider);
+
+  @override
+  FlexiKlineConfig getFlexiKlineConfig() {
     try {
-      final String? jsonStr = CacheUtil().get(theme!.key);
+      final String? jsonStr = CacheUtil().get(theme.key);
       if (jsonStr != null && jsonStr.isNotEmpty) {
         final json = jsonDecode(jsonStr);
         if (json is Map<String, dynamic>) {
@@ -145,12 +147,12 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       defLogger.e('getFlexiKlineConfig error:$err', stackTrace: stack);
     }
 
-    return genFlexiKlineConfig(theme!);
+    return genFlexiKlineConfig();
   }
 
   @override
-  FlexiKlineConfig genFlexiKlineConfig(DefaultFlexiKlineTheme theme) {
-    return super.genFlexiKlineConfig(theme)..sub.add(IndicatorType.macd);
+  FlexiKlineConfig genFlexiKlineConfig() {
+    return super.genFlexiKlineConfig()..sub.add(const FlexiIndicatorKey('rsi'));
   }
 
   @override
@@ -160,8 +162,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  CandleIndicator genCandleIndicator(DefaultFlexiKlineTheme theme) {
-    return super.genCandleIndicator(theme).copyWith(
+  CandleIndicator genCandleIndicator(SettingConfig setting) {
+    return super.genCandleIndicator(setting).copyWith(
           useCandleColorAsLatestBg: false, // 不使用蜡烛色做背景
           latest: MarkConfig(
             show: true,
@@ -206,10 +208,132 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  List<SinglePaintObjectIndicator> customMainIndicators() {
+  Map<IIndicatorKey, IndicatorBuilder> mainIndicatorBuilders() {
     final theme = ref.read(defaultKlineThemeProvider);
-    return [
-      AVLIndicator(
+    return {
+      // MA 移动平均线
+      const FlexiIndicatorKey('ma'): (setting) => MAIndicator(
+        height: theme.mainIndicatorHeight,
+        padding: theme.mainIndicatorPadding,
+        calcParams: [
+          MaParam(
+            count: 5,
+            tips: TipsConfig(
+              label: 'MA5: ',
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: theme.normalTextSize,
+                height: defaultTextHeight,
+              ),
+            ),
+          ),
+          MaParam(
+            count: 10,
+            tips: TipsConfig(
+              label: 'MA10: ',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: theme.normalTextSize,
+                height: defaultTextHeight,
+              ),
+            ),
+          ),
+          MaParam(
+            count: 20,
+            tips: TipsConfig(
+              label: 'MA20: ',
+              style: TextStyle(
+                color: Colors.green,
+                fontSize: theme.normalTextSize,
+                height: defaultTextHeight,
+              ),
+            ),
+          ),
+        ],
+        tipsPadding: theme.tipsPadding,
+        lineWidth: 1.r,
+      ),
+      
+      // BOLL 布林带
+      const FlexiIndicatorKey('boll'): (setting) => BOLLIndicator(
+        height: theme.mainIndicatorHeight,
+        padding: theme.mainIndicatorPadding,
+        calcParam: const BOLLParam(
+          n: 20,
+          std: 2,
+        ),
+        mbTips: const TipsConfig(
+          label: 'BOLL: ',
+          style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+        ),
+        upTips: const TipsConfig(
+          label: 'UB: ',
+          style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+        ),
+        dnTips: const TipsConfig(
+          label: 'LB: ',
+          style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+        ),
+        tipsPadding: theme.tipsPadding,
+        lineWidth: 1.r,
+      ),
+      
+      // EMA 指数移动平均线
+      const FlexiIndicatorKey('ema'): (setting) => EMAIndicator(
+        height: theme.mainIndicatorHeight,
+        padding: theme.mainIndicatorPadding,
+        calcParams: [
+          MaParam(
+            count: 12,
+            tips: TipsConfig(
+              label: 'EMA12: ',
+              style: TextStyle(
+                color: Colors.orange,
+                fontSize: theme.normalTextSize,
+                height: defaultTextHeight,
+              ),
+            ),
+          ),
+          MaParam(
+            count: 26,
+            tips: TipsConfig(
+              label: 'EMA26: ',
+              style: TextStyle(
+                color: Colors.purple,
+                fontSize: theme.normalTextSize,
+                height: defaultTextHeight,
+              ),
+            ),
+          ),
+        ],
+        tipsPadding: theme.tipsPadding,
+        lineWidth: 1.r,
+      ),
+      
+      // SAR 抛物线转向指标
+      const FlexiIndicatorKey('sar'): (setting) => SARIndicator(
+        height: theme.mainIndicatorHeight,
+        padding: theme.mainIndicatorPadding,
+        calcParam: const SARParam(
+          startAf: 0.02,
+          step: 0.02,
+          maxAf: 0.2,
+        ),
+        paint: PaintConfig(
+          color: Colors.red,
+          strokeWidth: 1.r,
+        ),
+        tipsPadding: theme.tipsPadding,
+        tipsStyle: TextStyle(
+          color: Colors.red,
+          fontSize: theme.normalTextSize,
+          height: defaultTextHeight,
+        ),
+        tickCount: 5,
+      ),
+      
+      // AVL 均价线
+      const FlexiIndicatorKey('avl'): (setting) => AVLIndicator(
         height: theme.mainIndicatorHeight,
         padding: theme.mainIndicatorPadding,
         line: LineConfig(
@@ -229,6 +353,171 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         ),
         tipsPadding: theme.tipsPadding,
       ),
-    ];
+    };
+  }
+
+  @override
+  Map<IIndicatorKey, IndicatorBuilder> subIndicatorBuilders() {
+    final theme = ref.read(defaultKlineThemeProvider);
+    return {
+      // RSI 相对强弱指标
+      const FlexiIndicatorKey('rsi'): (setting) => RSIIndicator(
+        height: 100.r,
+        calcParams: [
+          const RsiParam(
+            count: 6,
+            tips: TipsConfig(
+              label: 'RSI6: ',
+              style: TextStyle(
+                color: Colors.orange,
+                fontSize: 12,
+                height: 1.2,
+              ),
+            ),
+          ),
+          const RsiParam(
+            count: 12,
+            tips: TipsConfig(
+              label: 'RSI12: ',
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 12,
+                height: 1.2,
+              ),
+            ),
+          ),
+          const RsiParam(
+            count: 24,
+            tips: TipsConfig(
+              label: 'RSI24: ',
+              style: TextStyle(
+                color: Colors.purple,
+                fontSize: 12,
+                height: 1.2,
+              ),
+            ),
+          ),
+        ],
+        tipsPadding: theme.tipsPadding,
+        lineWidth: 1.r,
+        precision: 2,
+      ),
+      
+      // KDJ 随机指标
+      const FlexiIndicatorKey('kdj'): (setting) => KDJIndicator(
+        height: 100.r,
+        calcParam: const KDJParam(
+          n: 9,
+          m1: 3,
+          m2: 3,
+        ),
+        ktips: const TipsConfig(
+          label: 'K: ',
+          style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+        ),
+        dtips: const TipsConfig(
+          label: 'D: ',
+          style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+        ),
+        jtips: const TipsConfig(
+          label: 'J: ',
+          style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+        ),
+        tipsPadding: theme.tipsPadding,
+        lineWidth: 1.r,
+        precision: 2,
+      ),
+      
+      // MACD 指数平滑异同移动平均线
+      const FlexiIndicatorKey('macd'): (setting) => MACDIndicator(
+        height: 120.r,
+        calcParam: const MACDParam(
+          s: 12,
+          l: 26,
+          m: 9,
+        ),
+        difTips: const TipsConfig(
+          label: 'DIF: ',
+          style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+        ),
+        deaTips: const TipsConfig(
+          label: 'DEA: ',
+          style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+        ),
+        macdTips: const TipsConfig(
+          label: 'MACD: ',
+          style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+        ),
+        tipsPadding: theme.tipsPadding,
+        lineWidth: 1.r,
+        precision: 2,
+      ),
+      
+      // VOL_MA 成交量移动平均线
+      const FlexiIndicatorKey('volMa'): (setting) => VolMaIndicator(
+        height: 100.r,
+        volTips: TipsConfig(
+          label: 'VOL: ',
+          style: TextStyle(
+            color: theme.textColor,
+            fontSize: theme.normalTextSize,
+            height: defaultTextHeight,
+          ),
+        ),
+        calcParams: [
+          MaParam(
+            count: 5,
+            tips: TipsConfig(
+              label: 'VOL_MA5: ',
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: theme.normalTextSize,
+                height: defaultTextHeight,
+              ),
+            ),
+          ),
+          MaParam(
+            count: 10,
+            tips: TipsConfig(
+              label: 'VOL_MA10: ',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: theme.normalTextSize,
+                height: defaultTextHeight,
+              ),
+            ),
+          ),
+        ],
+        tipsPadding: theme.tipsPadding,
+        maLineWidth: 1.r,
+        precision: 2,
+      ),
+      
+      // VOLUME 成交量
+      const FlexiIndicatorKey('volume'): (setting) => VolumeIndicator(
+        height: 100.r,
+        volTips: TipsConfig(
+          label: 'VOL: ',
+          style: TextStyle(
+            color: theme.textColor,
+            fontSize: theme.normalTextSize,
+            height: defaultTextHeight,
+          ),
+        ),
+        tipsPadding: theme.tipsPadding,
+        tickCount: 5,
+        precision: 2,
+      ),
+    };
+  }
+
+  @override
+  Iterable<flexi_overlay.Overlay> getOverlayListConfig(String instId) {
+    return [];
+  }
+
+  @override
+  void saveOverlayListConfig(String instId, Iterable<flexi_overlay.Overlay> list) {
+    // 暂不实现
   }
 }

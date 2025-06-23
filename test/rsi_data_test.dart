@@ -14,7 +14,7 @@
 
 import 'package:decimal/decimal.dart';
 import 'package:flexi_kline/flexi_kline.dart';
-import 'package:flexi_kline/src/config/rsi_param/rsi_param.dart';
+import 'package:flexi_kline/src/indicators/rsi/rsi_param.dart';
 import 'package:flexi_kline/src/data/kline_data.dart';
 import 'package:flexi_kline/src/indicators/rsi/rsi.dart';
 import 'package:flexi_kline/src/model/candle_model/candle_model.dart';

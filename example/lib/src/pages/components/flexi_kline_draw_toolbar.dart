@@ -59,7 +59,7 @@ class FlexiKlineDrawToolbar extends ConsumerWidget {
       height: 38.r,
       padding: EdgeInsets.symmetric(horizontal: 2.r, vertical: 2.r),
       child: ValueListenableBuilder(
-        valueListenable: controller.drawStateLinstener,
+        valueListenable: controller.drawStateListener,
         builder: (context, state, child) {
           final object = state.object;
           if (object == null) return const SizedBox.shrink();

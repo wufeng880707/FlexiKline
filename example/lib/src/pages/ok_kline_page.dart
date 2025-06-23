@@ -20,17 +20,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../config.dart';
-import '../indicators/avl_indicator.dart';
-import '../providers/instruments_provider.dart';
 import '../providers/default_kline_config.dart';
+import '../providers/instruments_provider.dart';
 import '../theme/flexi_theme.dart';
+import 'common/kline_page_data_update_mixin.dart';
 import 'components/flexi_kline_draw_toolbar.dart';
 import 'components/flexi_kline_indicator_bar.dart';
 import 'components/flexi_kline_mark_view.dart';
-import 'components/market_ticker_view.dart';
 import 'components/flexi_kline_setting_bar.dart';
+import 'components/market_ticker_view.dart';
 import 'components/trading_pair_select_title.dart';
-import 'common/kline_page_data_update_mixin.dart';
 import 'index_page.dart';
 
 class OkKlinePage extends ConsumerStatefulWidget {
@@ -76,29 +75,17 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
       klineDataCacheCapacity: 3,
     );
 
-    final klineTheme = ref.read(defaultKlineThemeProvider);
-    controller.addCustomMainIndicatorConfig(
-      AVLIndicator(
-        height: klineTheme.mainIndicatorHeight,
-        padding: klineTheme.mainIndicatorPadding,
-        line: LineConfig(
-          type: LineType.solid,
-          paint: PaintConfig(
-            color: Colors.deepOrangeAccent,
-            strokeWidth: 1.r,
-          ),
-        ),
-        tips: TipsConfig(
-          label: 'AVL',
-          style: TextStyle(
-            color: Colors.orangeAccent,
-            fontSize: klineTheme.normalTextSize,
-            height: defaultTextHeight,
-          ),
-        ),
-        tipsPadding: klineTheme.tipsPadding,
-      ),
-    );
+    // 添加所有支持的主图指标
+    for (final key in controller.supportMainIndicatorKeys) {
+      if (key.id != 'candle') { // 跳过蜡烛图，因为它是默认的
+        controller.addIndicatorInMain(key);
+      }
+    }
+    
+    // 添加所有支持的副图指标
+    for (final key in controller.supportSubIndicatorKeys) {
+      controller.addIndicatorInSub(key);
+    }
 
     controller.onCrossI18nTooltipLables = tooltipLables;
 
@@ -120,7 +107,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     final theme = ref.watch(themeProvider);
     ref.listen(defaultKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        final config = configuration.getFlexiKlineConfig(next);
+        final config = configuration.getFlexiKlineConfig();
         controller.updateFlexiKlineConfig(config);
       }
     });
@@ -247,9 +234,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
             padding: EdgeInsets.zero,
             style: theme.circleBtnStyle(bg: theme.markBg.withOpacity(0.6)),
             iconSize: 16.r,
-            icon: Icon(isFullScreen
-                ? Icons.close_fullscreen_outlined
-                : Icons.open_in_full_rounded),
+            icon: Icon(isFullScreen ? Icons.close_fullscreen_outlined : Icons.open_in_full_rounded),
             onPressed: setFullScreen,
           ),
         ),

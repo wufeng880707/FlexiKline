@@ -21,7 +21,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 import '../../config/export.dart';
-import '../../config/kdj_param/kdj_param.dart';
+import 'kdj_param.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
 import '../../extension/export.dart';

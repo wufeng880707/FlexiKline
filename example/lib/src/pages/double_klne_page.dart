@@ -33,8 +33,7 @@ class DoubleKlinePage extends ConsumerStatefulWidget {
   final String instId2;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _DoubleKlinePageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _DoubleKlinePageState();
 }
 
 class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
@@ -92,7 +91,7 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
   Widget build(BuildContext context) {
     ref.listen(defaultKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        final config = configuration.getFlexiKlineConfig(next);
+        final config = configuration.getFlexiKlineConfig();
         controller1.updateFlexiKlineConfig(config);
         controller2.updateFlexiKlineConfig(config);
       }

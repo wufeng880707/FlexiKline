@@ -115,7 +115,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     final klineTheme = ref.watch(bitFlexiKlineThemeProvider);
     ref.listen(bitFlexiKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        final config = configuration.getFlexiKlineConfig(next);
+        final config = configuration.getFlexiKlineConfig();
         controller.updateFlexiKlineConfig(config);
       }
     });

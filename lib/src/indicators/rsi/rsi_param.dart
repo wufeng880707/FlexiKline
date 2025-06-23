@@ -16,22 +16,22 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../framework/serializers.dart';
-import '../tips_config/tips_config.dart';
+import '../../config/tips_config/tips_config.dart';
 
-part 'ma_param.g.dart';
+part 'rsi_param.g.dart';
 
 @CopyWith()
 @FlexiParamSerializable
-final class MaParam extends Equatable {
+final class RsiParam extends Equatable {
   final int count;
   final TipsConfig tips;
 
-  const MaParam({
+  const RsiParam({
     required this.count,
     required this.tips,
   });
 
-  static int? getMaxCountByList(List<MaParam> list) {
+  static int? getMaxCountByList(List<RsiParam> list) {
     if (list.isEmpty) return null;
     int? count;
     for (var param in list) {
@@ -41,7 +41,7 @@ final class MaParam extends Equatable {
     return count;
   }
 
-  static int? getMinCountByList(List<MaParam> list) {
+  static int? getMinCountByList(List<RsiParam> list) {
     if (list.isEmpty) return null;
     int? count;
     for (var param in list) {
@@ -51,9 +51,9 @@ final class MaParam extends Equatable {
     return count;
   }
 
-  factory MaParam.fromJson(Map<String, dynamic> json) =>
-      _$MaParamFromJson(json);
-  Map<String, dynamic> toJson() => _$MaParamToJson(this);
+  factory RsiParam.fromJson(Map<String, dynamic> json) =>
+      _$RsiParamFromJson(json);
+  Map<String, dynamic> toJson() => _$RsiParamToJson(this);
 
   @override
   bool? get stringify => true;

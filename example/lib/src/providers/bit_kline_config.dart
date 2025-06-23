@@ -20,7 +20,8 @@ import 'package:example/src/config.dart';
 import 'package:example/src/theme/export.dart';
 import 'package:example/src/theme/flexi_theme.dart';
 import 'package:example/src/utils/cache_util.dart';
-import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flexi_kline/flexi_kline.dart' hide Overlay;
+import 'package:flexi_kline/src/framework/draw/overlay.dart' as flexi_overlay;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -88,7 +89,7 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   Color get lastPriceTextBg => Colors.black54;
 
   @override
-  Color get gridLine => const Color(0xFFE9E9E9);
+  Color get gridLine => textColor;
 
   @override
   Color get markLine => textColor;
@@ -180,16 +181,17 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   final WidgetRef ref;
 
   BitFlexiKlineConfiguration({required this.ref});
+  
   @override
   Size get initialMainSize {
     return Size(ScreenUtil().screenWidth, 300.r);
   }
 
   @override
-  FlexiKlineConfig getFlexiKlineConfig([BaseBitFlexiKlineTheme? theme]) {
-    theme ??= ref.read(bitFlexiKlineThemeProvider);
+  FlexiKlineConfig getFlexiKlineConfig() {
+    final theme = ref.read(bitFlexiKlineThemeProvider);
     try {
-      final String? jsonStr = CacheUtil().get(theme!.key);
+      final String? jsonStr = CacheUtil().get(theme.key);
       if (jsonStr != null && jsonStr.isNotEmpty) {
         final json = jsonDecode(jsonStr);
         if (json is Map<String, dynamic>) {
@@ -200,7 +202,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       defLogger.e('getFlexiKlineConfig error:$err', stackTrace: stack);
     }
 
-    return genFlexiKlineConfig(theme!);
+    return genFlexiKlineConfig();
   }
 
   @override
@@ -210,103 +212,70 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  LoadingConfig genInnerLoadingConfig(BaseBitFlexiKlineTheme theme) {
-    return super.genInnerLoadingConfig(theme).copyWith(
+  LoadingConfig genInnerLoadingConfig() {
+    final theme = ref.read(bitFlexiKlineThemeProvider);
+    return super.genInnerLoadingConfig().copyWith(
           background: theme.countDownTextBg,
           valueColor: theme.crossColor,
         );
   }
 
   @override
-  CrossConfig genCrossConfig(BaseBitFlexiKlineTheme theme) {
-    return super.genCrossConfig(theme).copyWith(
+  CrossConfig genCrossConfig() {
+    return super.genCrossConfig().copyWith(
           moveByCandleInBlank: true,
         );
   }
 
   @override
-  GestureConfig genGestureConfig(BaseBitFlexiKlineTheme theme) {
-    return super.genGestureConfig(theme).copyWith(
+  GestureConfig genGestureConfig() {
+    return super.genGestureConfig().copyWith(
           tolerance: ToleranceConfig(distanceFactor: 0.5),
         );
   }
 
   @override
-  SettingConfig genSettingConfig(BaseBitFlexiKlineTheme theme) {
-    return super.genSettingConfig(theme).copyWith(
+  SettingConfig genSettingConfig() {
+    return super.genSettingConfig().copyWith(
           candleFixedSpacing: null,
           candleSpacingParts: 7,
         );
   }
 
   @override
-  TimeIndicator genTimeIndicator(BaseBitFlexiKlineTheme theme) {
-    return super.genTimeIndicator(theme).copyWith(
+  TimeIndicator genTimeIndicator(SettingConfig setting) {
+    return super.genTimeIndicator(setting).copyWith(
           position: DrawPosition.bottom,
         );
   }
 
   @override
-  BOLLIndicator genBollIndicator(BaseBitFlexiKlineTheme theme) {
-    final defBoll = super.genBollIndicator(theme);
-    return defBoll.copyWith(
-      mbTips: defBoll.mbTips.copyWith(
-        style: defBoll.mbTips.style.copyWith(color: Colors.orangeAccent),
-      ),
-      upTips: defBoll.upTips.copyWith(
-        style: defBoll.upTips.style.copyWith(color: Colors.lightBlueAccent),
-      ),
-      dnTips: defBoll.dnTips.copyWith(
-        style: defBoll.dnTips.style.copyWith(color: Colors.lightBlueAccent),
-      ),
-      fillColor: Colors.blueGrey.withOpacity(0.05),
-    );
+  Iterable<flexi_overlay.Overlay> getOverlayListConfig(String instId) {
+    try {
+      final String? jsonStr = CacheUtil().get('overlay_$instId');
+      if (jsonStr != null && jsonStr.isNotEmpty) {
+        final json = jsonDecode(jsonStr);
+        if (json is List) {
+          return json.map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>)).toList();
+        }
+      }
+    } catch (err, stack) {
+      defLogger.e('getOverlayListConfig error:$err', stackTrace: stack);
+    }
+    return [];
   }
 
   @override
-  BOLLIndicator genSubBollIndicator(BaseBitFlexiKlineTheme theme) {
-    final defBoll = super.genSubBollIndicator(theme);
-    return defBoll.copyWith(
-      mbTips: defBoll.mbTips.copyWith(
-        style: defBoll.mbTips.style.copyWith(color: Colors.orangeAccent),
-      ),
-      upTips: defBoll.upTips.copyWith(
-        style: defBoll.upTips.style.copyWith(color: Colors.lightBlueAccent),
-      ),
-      dnTips: defBoll.dnTips.copyWith(
-        style: defBoll.dnTips.style.copyWith(color: Colors.lightBlueAccent),
-      ),
-      fillColor: Colors.blueGrey.withOpacity(0.05),
-    );
+  void saveOverlayListConfig(String instId, Iterable<flexi_overlay.Overlay> list) {
+    try {
+      final jsonList = list.map((overlay) => overlay.toJson()).toList();
+      final jsonSrc = jsonEncode(jsonList);
+      CacheUtil().setString('overlay_$instId', jsonSrc);
+    } catch (err, stack) {
+      defLogger.e('saveOverlayListConfig error:$err', stackTrace: stack);
+    }
   }
 
   @override
-  SARIndicator genSarIndicator(BaseBitFlexiKlineTheme theme) {
-    return super.genSarIndicator(theme).copyWith(
-          radius: 2 * theme.scale,
-          useCandleColor: false,
-          paint: const PaintConfig(
-            color: Colors.blue,
-            strokeWidth: 0,
-            style: PaintingStyle.fill,
-          ),
-        );
-  }
-
-  @override
-  SARIndicator genSubSarIndicator(BaseBitFlexiKlineTheme theme) {
-    return super.genSubSarIndicator(theme).copyWith(
-          radius: 2 * theme.scale,
-          useCandleColor: false,
-          paint: const PaintConfig(
-            color: Colors.blue,
-            strokeWidth: 0,
-            style: PaintingStyle.fill,
-          ),
-        );
-  }
-
-  @override
-  // TODO: implement theme
-  IFlexiKlineTheme get theme => throw UnimplementedError();
+  IFlexiKlineTheme get theme => ref.read(bitFlexiKlineThemeProvider);
 }
