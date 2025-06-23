@@ -37,6 +37,7 @@ mixin MacdDataMixin<T extends MACDIndicator> on SinglePaintObjectBox<T> {
     );
   }
 
+  /// 计算EMA，要求传入的`values`是按时间从旧到新排列的.
   List<BagNum?> _ema(List<BagNum?> values, int period) {
     final len = values.length;
     final result = List<BagNum?>.filled(len, null);
@@ -44,6 +45,7 @@ mixin MacdDataMixin<T extends MACDIndicator> on SinglePaintObjectBox<T> {
 
     final multiplier = BagNum.fromNum(2.0 / (period + 1));
 
+    // 寻找第一个非空值作为计算起点
     int firstValidIndex = -1;
     for (int i = 0; i < len; i++) {
       if (values[i] != null) {
@@ -56,18 +58,21 @@ mixin MacdDataMixin<T extends MACDIndicator> on SinglePaintObjectBox<T> {
       return result;
     }
 
+    // 第一个EMA值是前`period`个数据的简单移动平均(SMA)
     BagNum sum = BagNum.zero;
     for (int i = firstValidIndex; i < firstValidIndex + period; i++) {
       sum += values[i]!;
     }
     result[firstValidIndex + period - 1] = sum.divNum(period);
 
+    // 迭代计算后续的EMA值
     for (int i = firstValidIndex + period; i < len; i++) {
       final value = values[i];
       final prevEma = result[i - 1];
       if (value != null && prevEma != null) {
         result[i] = value * multiplier + prevEma * (BagNum.one - multiplier);
       } else if (prevEma != null) {
+        // 如果当前值为空, 则沿用上一个EMA值.
         result[i] = prevEma;
       }
     }
@@ -92,11 +97,14 @@ mixin MacdDataMixin<T extends MACDIndicator> on SinglePaintObjectBox<T> {
 
     if (len < l) return;
 
-    final closeValues = list.map((c) => c.close).toList();
+    // klineData.list 是从新到旧的, 需要反转为从旧到新来计算.
+    final closeValues = list.map((c) => c.close).toList().reversed.toList();
 
+    // 1. 计算短期和长期EMA
     final emaS = _ema(closeValues, s);
     final emaL = _ema(closeValues, l);
 
+    // 2. 计算DIF
     final difList = List<BagNum?>.filled(len, null);
     for (int i = 0; i < len; i++) {
       if (emaS[i] != null && emaL[i] != null) {
@@ -104,14 +112,28 @@ mixin MacdDataMixin<T extends MACDIndicator> on SinglePaintObjectBox<T> {
       }
     }
 
+    // 3. 计算DEA (DIF的EMA)
     final deaList = _ema(difList, m);
 
+    // 4. 计算MACD柱
+    final macdList = List<BagNum?>.filled(len, null);
     for (int i = 0; i < len; i++) {
       final dif = difList[i];
       final dea = deaList[i];
       if (dif != null && dea != null) {
-        final macd = (dif - dea) * BagNum.two;
-        list[i].macdList = [dif, dea, macd];
+        macdList[i] = (dif - dea) * BagNum.two;
+      }
+    }
+
+    // 5. 将所有计算结果(从旧到新)反转回来, 以匹配原始list(从新到旧)的顺序.
+    final finalDif = difList.reversed.toList();
+    final finalDea = deaList.reversed.toList();
+    final finalMacd = macdList.reversed.toList();
+
+    // 6. 赋值
+    for (int i = 0; i < len; i++) {
+      if (finalDif[i] != null && finalDea[i] != null && finalMacd[i] != null) {
+        list[i].macdList = [finalDif[i], finalDea[i], finalMacd[i]];
       } else {
         if (reset) {
           list[i].macdList = null;
@@ -139,13 +161,10 @@ mixin MacdDataMixin<T extends MACDIndicator> on SinglePaintObjectBox<T> {
 
         if (minmax == null) {
           minmax = MinMax(max: dif, min: dif);
-          minmax.updateMinMaxBy(dea);
-          minmax.updateMinMaxBy(macd);
-        } else {
-          minmax.updateMinMaxBy(dif);
-          minmax.updateMinMaxBy(dea);
-          minmax.updateMinMaxBy(macd);
         }
+        minmax.updateMinMaxBy(dif);
+        minmax.updateMinMaxBy(dea);
+        minmax.updateMinMaxBy(macd);
       }
     }
     return minmax;
