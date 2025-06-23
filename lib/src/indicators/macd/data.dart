@@ -22,7 +22,7 @@ extension CandleMacdExt on CandleModel {
   BagNum? get dif => macdList?.getItem(0);
   BagNum? get dea => macdList?.getItem(1);
   BagNum? get macd => macdList?.getItem(2);
-  bool get isValidMacdData => macdList != null && macdList!.any((e) => e != null);
+  bool get isValidMacdData => macdList != null && dif != null && dea != null && macd != null;
   void cleanMacd() => macdList = null;
 }
 
@@ -33,116 +33,121 @@ mixin MacdDataMixin<T extends MACDIndicator> on SinglePaintObjectBox<T> {
   void precompute(Range range, {bool reset = false}) {
     calcuAndCacheMacd(
       calcParam,
-      start: range.start,
-      end: range.end,
       reset: reset,
     );
   }
 
-  /// 计算EMA (指数移动平均线)
-  BagNum _calculateEMA(int index, int period) {
-    if (index >= klineData.list.length) return BagNum.zero;
-    
-    final m = klineData.list[index];
-    if (index == klineData.list.length - 1) {
-      return m.close;
-    }
-    
-    final prevEMA = _calculateEMA(index + 1, period);
+  List<BagNum?> _ema(List<BagNum?> values, int period) {
+    final len = values.length;
+    final result = List<BagNum?>.filled(len, null);
+    if (len < period) return result;
+
     final multiplier = BagNum.fromNum(2.0 / (period + 1));
-    return m.close * multiplier + prevEMA * (BagNum.one - multiplier);
-  }
 
-  /// 计算MACD指标值
-  void _calculateMacd(
-    MACDParam param, {
-    required int start,
-    required int end,
-  }) {
-    final len = klineData.list.length;
-    if (param.l > len || !klineData.checkStartAndEnd(start, end)) return;
-    logd('calculateMacd [end:$end ~ start:$start] s:${param.s}, l:${param.l}, m:${param.m}');
-
-    end = math.min(len - param.l, end - 1);
-
-    for (int i = end; i >= start; i--) {
-      final m = klineData.list[i];
-      if (i + param.l > len) continue;
-
-      // 计算短期和长期EMA
-      final emaShort = _calculateEMA(i, param.s);
-      final emaLong = _calculateEMA(i, param.l);
-      
-      // 计算DIF (差离值)
-      final dif = emaShort - emaLong;
-      
-      // 计算DEA (信号线)
-      BagNum dea;
-      if (i == len - 1) {
-        dea = dif;
-      } else {
-        final prevDEA = klineData.list[i + 1].dea ?? dif;
-        final multiplier = BagNum.fromNum(2.0 / (param.m + 1));
-        dea = dif * multiplier + prevDEA * (BagNum.one - multiplier);
+    int firstValidIndex = -1;
+    for (int i = 0; i < len; i++) {
+      if (values[i] != null) {
+        firstValidIndex = i;
+        break;
       }
-      
-      // 计算MACD (柱状图)
-      final macd = (dif - dea) * BagNum.fromNum(2);
-      
-      // 设置MACD值
-      m.macdList = [dif, dea, macd];
     }
+
+    if (firstValidIndex == -1 || len < firstValidIndex + period) {
+      return result;
+    }
+
+    BagNum sum = BagNum.zero;
+    for (int i = firstValidIndex; i < firstValidIndex + period; i++) {
+      sum += values[i]!;
+    }
+    result[firstValidIndex + period - 1] = sum.divNum(period);
+
+    for (int i = firstValidIndex + period; i < len; i++) {
+      final value = values[i];
+      final prevEma = result[i - 1];
+      if (value != null && prevEma != null) {
+        result[i] = value * multiplier + prevEma * (BagNum.one - multiplier);
+      } else if (prevEma != null) {
+        result[i] = prevEma;
+      }
+    }
+    return result;
   }
 
   void calcuAndCacheMacd(
     MACDParam param, {
-    required int start,
-    required int end,
     bool reset = false,
   }) {
-    if (klineData.isEmpty) return;
-    _calculateMacd(
-      param,
-      start: math.max(0, start - param.l), // 补起上一次未算数据
-      end: end,
-    );
+    final list = klineData.list;
+    final len = list.length;
+    if (reset) {
+      for (final m in list) {
+        m.cleanMacd();
+      }
+    }
+
+    final s = param.s;
+    final l = param.l;
+    final m = param.m;
+
+    if (len < l) return;
+
+    final closeValues = list.map((c) => c.close).toList();
+
+    final emaS = _ema(closeValues, s);
+    final emaL = _ema(closeValues, l);
+
+    final difList = List<BagNum?>.filled(len, null);
+    for (int i = 0; i < len; i++) {
+      if (emaS[i] != null && emaL[i] != null) {
+        difList[i] = emaS[i]! - emaL[i]!;
+      }
+    }
+
+    final deaList = _ema(difList, m);
+
+    for (int i = 0; i < len; i++) {
+      final dif = difList[i];
+      final dea = deaList[i];
+      if (dif != null && dea != null) {
+        final macd = (dif - dea) * BagNum.two;
+        list[i].macdList = [dif, dea, macd];
+      } else {
+        if (reset) {
+          list[i].macdList = null;
+        }
+      }
+    }
   }
 
-  /// 计算并缓存MACD数据.
-  /// 如果[start]和[end]指定了, 只计算[start] ~ [end]区间内的MACD值.
-  /// 否则, 从当前可视区域的[start] ~ [end]开始计算.
   MinMax? calcuMacdMinmax(
     MACDParam param, {
-    int? start,
-    int? end,
+    required int start,
+    required int end,
   }) {
-    start ??= klineData.start;
-    end ??= klineData.end;
     if (!klineData.checkStartAndEnd(start, end)) {
       return null;
     }
 
-    final len = klineData.list.length;
-    end = math.min(len - param.l, end - 1);
-
-    if (!klineData.list[end].isValidMacdData) {
-      calcuAndCacheMacd(param, start: 0, end: len);
-    }
-
     MinMax? minmax;
-    CandleModel m;
-    for (int i = end; i >= start; i--) {
-      m = klineData.list[i];
+    for (int i = start; i < end; i++) {
+      final m = klineData.list[i];
       if (m.isValidMacdData) {
         final dif = m.dif!;
         final dea = m.dea!;
         final macd = m.macd!;
-        
-        minmax ??= MinMax(max: dif, min: dif);
-        minmax?.updateMinMaxBy(dea);
-        minmax?.updateMinMaxBy(macd);
+
+        if (minmax == null) {
+          minmax = MinMax(max: dif, min: dif);
+          minmax.updateMinMaxBy(dea);
+          minmax.updateMinMaxBy(macd);
+        } else {
+          minmax.updateMinMaxBy(dif);
+          minmax.updateMinMaxBy(dea);
+          minmax.updateMinMaxBy(macd);
+        }
       }
     }
     return minmax;
   }
-} 
+}
