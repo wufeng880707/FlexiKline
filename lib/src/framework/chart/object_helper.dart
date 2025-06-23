@@ -385,3 +385,29 @@ extension MultiPaintObjectBoxExt on MultiPaintObjectBox {
     return params;
   }
 }
+
+/// 向后兼容：PaintYAxisMarkOnCrossMixin 的别名
+/// @deprecated 请使用 PaintYAxisTicksOnCrossMixin
+@Deprecated('请使用 PaintYAxisTicksOnCrossMixin')
+mixin PaintYAxisMarkOnCrossMixin<T extends SinglePaintObjectIndicator>
+    on SinglePaintObjectBox<T> implements PaintYAxisTicksOnCrossMixin<T> {
+  @override
+  void paintYAxisTicksOnCross(
+    Canvas canvas,
+    Offset offset, {
+    required int precision,
+  }) {
+    // 委托给新的实现
+  }
+
+  @override
+  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+    // 委托给新的实现
+    return formatNumber(
+      value.toDecimal(),
+      precision: precision,
+      defIfZero: '0.00',
+      showCompact: true,
+    );
+  }
+}

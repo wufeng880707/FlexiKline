@@ -21,6 +21,7 @@ import '../../extension/export.dart';
 import '../../framework/serializers.dart';
 import '../../utils/export.dart';
 import '../bag_num.dart';
+import '../minmax.dart';
 
 part 'candle_helper.dart';
 part 'candle_model.g.dart';

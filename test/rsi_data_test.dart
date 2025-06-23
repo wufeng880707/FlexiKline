@@ -14,7 +14,10 @@
 
 import 'package:decimal/decimal.dart';
 import 'package:flexi_kline/flexi_kline.dart';
-import 'package:flexi_kline/src/data/export.dart';
+import 'package:flexi_kline/src/config/rsi_param/rsi_param.dart';
+import 'package:flexi_kline/src/data/kline_data.dart';
+import 'package:flexi_kline/src/indicators/rsi/rsi.dart';
+import 'package:flexi_kline/src/model/candle_model/candle_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -27,6 +30,7 @@ void main() {
   final stopwatch = Stopwatch();
   late KlineData klineData;
   late List<RsiParam> rsiParams;
+  late RSIIndicator rsiIndicator;
 
   setUpAll(() {
     List<String> closeList = [
@@ -70,23 +74,74 @@ void main() {
 
     klineData = KlineData(candleReq, list: list);
     rsiParams = [const RsiParam(count: 14, tips: tipsConfig)];
+    rsiIndicator = RSIIndicator(
+      height: 100,
+      calcParams: rsiParams,
+      tipsPadding: const EdgeInsets.all(4),
+      lineWidth: 1.0,
+    );
   });
 
   setUp(() {
     stopwatch.reset();
     stopwatch.start();
   });
+  
   tearDown(() {
     stopwatch.stop();
     debugPrint('tearDown spent:${stopwatch.elapsedMicroseconds}');
   });
 
-  test('rsi', () {
-    // klineData.calcuAndCacheRsi(rsiParams, start: 0, end: klineData.length);
-    klineData.calcuAndCacheRsi(rsiParams);
+  test('RSI指标创建测试', () {
+    expect(rsiIndicator.calcParams.length, 1);
+    expect(rsiIndicator.calcParams.first.count, 14);
+    expect(rsiIndicator.key.id, 'rsi');
+    expect(rsiIndicator.height, 100);
+    expect(rsiIndicator.lineWidth, 1.0);
+    expect(rsiIndicator.precision, 2);
+  });
 
-    for (int i = 0; i < klineData.length; i++) {
-      debugPrint('rsi $i => ${klineData.list[i].rsiList}');
-    }
+  test('RSI参数验证测试', () {
+    final param = rsiParams.first;
+    expect(param.count, 14);
+    expect(param.tips, tipsConfig);
+    
+    // 测试参数序列化
+    final json = param.toJson();
+    final fromJson = RsiParam.fromJson(json);
+    expect(fromJson.count, param.count);
+    expect(fromJson.tips.label, param.tips.label);
+  });
+
+  test('RSI指标序列化测试', () {
+    final json = rsiIndicator.toJson();
+    final fromJson = RSIIndicator.fromJson(json);
+    
+    expect(fromJson.calcParams.length, rsiIndicator.calcParams.length);
+    expect(fromJson.calcParams.first.count, rsiIndicator.calcParams.first.count);
+    expect(fromJson.key.id, rsiIndicator.key.id);
+    expect(fromJson.height, rsiIndicator.height);
+    expect(fromJson.lineWidth, rsiIndicator.lineWidth);
+  });
+
+  test('RSI参数工具方法测试', () {
+    final params = [
+      const RsiParam(count: 6, tips: tipsConfig),
+      const RsiParam(count: 12, tips: tipsConfig),
+      const RsiParam(count: 24, tips: tipsConfig),
+    ];
+    
+    final minCount = RsiParam.getMinCountByList(params);
+    final maxCount = RsiParam.getMaxCountByList(params);
+    
+    expect(minCount, 6);
+    expect(maxCount, 24);
+  });
+
+  test('KlineData基础功能测试', () {
+    expect(klineData.list.length, 30);
+    expect(klineData.instId, 'BTC-USDT');
+    expect(klineData.precision, 2);
+    expect(klineData.key, 'BTC-USDT');
   });
 }

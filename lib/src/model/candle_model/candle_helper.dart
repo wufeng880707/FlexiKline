@@ -73,3 +73,27 @@ extension CandleModelExt on CandleModel {
     return CandleModel.fromJson(toJson());
   }
 }
+
+// --- RSI 扩展 ---
+extension CandleRsiExt on CandleModel {
+  // 假设RSI的dataIndex为5（如有不同请调整，需与全局一致）
+  static const int _rsiIndex = 5;
+
+  List<double?>? get rsiList => calcuData.getData(_rsiIndex);
+  set rsiList(List<double?>? value) => calcuData.setData(_rsiIndex, value);
+
+  bool get isValidRsiList => rsiList != null && rsiList!.any((e) => e != null);
+
+  MinMax get rsiListMinmax {
+    if (!isValidRsiList) return MinMax.zero;
+    final values = rsiList!.whereType<double>().toList();
+    if (values.isEmpty) return MinMax.zero;
+    double min = values.reduce((a, b) => a < b ? a : b);
+    double max = values.reduce((a, b) => a > b ? a : b);
+    return MinMax(max: BagNum.fromNum(max), min: BagNum.fromNum(min));
+  }
+
+  void cleanRsi() {
+    rsiList = null;
+  }
+}

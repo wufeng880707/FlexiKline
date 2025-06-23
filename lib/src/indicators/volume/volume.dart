@@ -12,34 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library overlay;
+library volume;
 
-import 'dart:collection';
-import 'dart:ui';
+import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:flutter/painting.dart';
 
-import 'package:flutter/foundation.dart';
-import 'package:json_annotation/json_annotation.dart';
-
-import '../../config/draw_params/draw_params.dart';
 import '../../config/export.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
-import '../../data/kline_data.dart';
-import '../../draw_objects/export.dart';
 import '../../extension/export.dart';
+import '../../framework/export.dart';
 import '../../model/export.dart';
-import '../../utils/date_time.dart';
-import '../../utils/decimal_format_util.dart';
-import '../../utils/vector_util.dart';
-import '../collection/sortable_hash_set.dart';
-import '../configuration.dart';
-import '../logger.dart';
-import '../serializers.dart';
+import '../../utils/export.dart';
 
-part 'common.dart';
-part 'draw_state.dart';
-part 'manager.dart';
-part 'model.dart';
-part 'object.dart';
-part 'object_helper.dart';
-part 'overlay.g.dart';
+part 'data.dart';
+part 'indicator.dart';
+part 'volume.g.dart';
