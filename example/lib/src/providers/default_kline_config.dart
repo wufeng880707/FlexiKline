@@ -152,7 +152,9 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   @override
   FlexiKlineConfig genFlexiKlineConfig() {
-    return super.genFlexiKlineConfig()..sub.add(const FlexiIndicatorKey('rsi'));
+    return super.genFlexiKlineConfig()
+      ..sub.add(const FlexiIndicatorKey('rsi'))
+      ..main.add(const FlexiIndicatorKey('trade_mark'));
   }
 
   @override
@@ -352,6 +354,29 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
           ),
         ),
         tipsPadding: theme.tipsPadding,
+      ),
+      
+      // 交易标记指标
+      const FlexiIndicatorKey('trade_mark'): (setting) => TradeMarkIndicator(
+        height: theme.mainIndicatorHeight,
+        padding: theme.mainIndicatorPadding,
+        calcParam: const TradeMarkParam(
+          show: true,
+          spacing: 4.0,
+          markerRadius: 8.0,
+          buyBgColor: Color(0xff03a66d),
+          sellBgColor: Color(0xfff15057),
+          buyStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+          sellStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     };
   }

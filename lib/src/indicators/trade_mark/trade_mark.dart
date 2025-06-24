@@ -12,12 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'bag_num.dart';
-export 'candle_model/candle_model.dart';
-export 'candle_req/candle_req.dart';
-// 内置数据类型
-export 'gesture_data.dart';
-export 'minmax.dart';
-export 'range.dart';
-export 'tooltip_info/tooltip_info.dart';
-export 'trade_signal.dart';
+library trade_mark;
+
+import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+import '../../constant.dart';
+import '../../core/core.dart';
+import '../../framework/export.dart';
+import '../../model/export.dart';
+import '../../model/trade_signal.dart';
+
+part 'data.dart';
+part 'trade_mark_param.dart';
+part 'indicator.dart';
+part 'trade_mark.g.dart'; 

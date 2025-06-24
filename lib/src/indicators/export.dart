@@ -40,3 +40,6 @@ export 'ema/ema.dart';
 export 'vol_ma/vol_ma.dart';
 
 export 'volume/volume.dart';
+
+// 交易标记指标
+export 'trade_mark/trade_mark.dart';
