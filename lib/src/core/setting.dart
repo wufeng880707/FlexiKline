@@ -15,8 +15,7 @@
 part of 'core.dart';
 
 /// 负责FlexiKline的各种设置与配置的获取.
-mixin SettingBinding on KlineBindingBase
-    implements ISetting, IGrid, IChart, ICross, IDraw {
+mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICross, IDraw {
   @override
   void init() {
     super.init();
@@ -28,6 +27,7 @@ mixin SettingBinding on KlineBindingBase
         this,
         initMainIndicatorKeys: _flexiKlineConfig.main,
         initSubIndicatorKeys: _flexiKlineConfig.sub,
+        initTradeIndicatorKeys: _flexiKlineConfig.trade,
       );
   }
 
@@ -49,8 +49,7 @@ mixin SettingBinding on KlineBindingBase
   late final IndicatorPaintObjectManager _paintObjectManager;
 
   /// KlineData整个图表区域大小变化监听器
-  final _canvasSizeChangeListener =
-      KlineStateNotifier(defaultCanvasRectMinRect);
+  final _canvasSizeChangeListener = KlineStateNotifier(defaultCanvasRectMinRect);
   @override
   ValueListenable<Rect> get canvasSizeChangeListener {
     return _canvasSizeChangeListener;
@@ -296,12 +295,20 @@ mixin SettingBinding on KlineBindingBase
     return _paintObjectManager.supportSubIndicatorKeys;
   }
 
+  Iterable<IIndicatorKey> get supportTradeIndicatorKeys {
+    return _paintObjectManager.supportTradeIndicatorKeys;
+  }
+
   Iterable<IIndicatorKey> get mainIndicatorKeys {
     return _paintObjectManager.mainIndciatorKeys;
   }
 
   Iterable<IIndicatorKey> get subIndicatorKeys {
     return _paintObjectManager.subIndicatorKeys;
+  }
+
+  Iterable<IIndicatorKey> get tradeIndicatorKeys {
+    return _paintObjectManager.tradeIndicatorKeys;
   }
 
   @override
@@ -312,6 +319,11 @@ mixin SettingBinding on KlineBindingBase
   @override
   Iterable<PaintObject> get subPaintObjects {
     return _paintObjectManager.subPaintObjects;
+  }
+
+  @override
+  Iterable<PaintObject> get tradePaintObjects {
+    return _paintObjectManager.tradePaintObjects;
   }
 
   @override
@@ -396,6 +408,27 @@ mixin SettingBinding on KlineBindingBase
     }
   }
 
+  /// 在交易图中添加指标
+  void addTradeIndicator(IIndicatorKey key) {
+    final newObj = _paintObjectManager.addTradeIndicator(key, this);
+    if (newObj != null) {
+      // TODO: 后续优化执行时机
+      newObj.doPrecompute(Range(0, curKlineData.length), reset: true);
+      _flexiKlineConfig.trade.add(key);
+      markRepaintChart(reset: true);
+      markRepaintCross();
+    }
+  }
+
+  /// 删除交易图[key]指定的指标
+  void delTradeIndicator(IIndicatorKey key) {
+    if (_paintObjectManager.delTradeIndicator(key)) {
+      _flexiKlineConfig.trade.remove(key);
+      markRepaintChart(reset: true);
+      markRepaintCross();
+    }
+  }
+
   //// Config ////
 
   FlexiKlineConfig? __flexiKlineConfig;
@@ -431,6 +464,7 @@ mixin SettingBinding on KlineBindingBase
   void storeFlexiKlineConfig() {
     _flexiKlineConfig.main = _paintObjectManager.mainIndciatorKeys.toSet();
     _flexiKlineConfig.sub = _paintObjectManager.subIndicatorKeys.toSet();
+    _flexiKlineConfig.trade = _paintObjectManager.tradeIndicatorKeys.toSet();
     configuration.saveFlexiKlineConfig(_flexiKlineConfig);
   }
 

@@ -10,14 +10,16 @@ final class TradeMarkParam {
     this.markerRadius = 8.0,
     this.buyBgColor = const Color(0xff03a66d),
     this.sellBgColor = const Color(0xfff15057),
+    this.width = 20.0,
+    this.height = 24.0,
     this.buyStyle = const TextStyle(
       color: Colors.white,
-      fontSize: 10,
+      fontSize: 12,
       fontWeight: FontWeight.bold,
     ),
     this.sellStyle = const TextStyle(
       color: Colors.white,
-      fontSize: 10,
+      fontSize: 12,
       fontWeight: FontWeight.bold,
     ),
   });
@@ -27,13 +29,14 @@ final class TradeMarkParam {
   final double markerRadius;
   final Color buyBgColor;
   final Color sellBgColor;
+  final double width;
+  final double height;
   @JsonKey(includeFromJson: false, includeToJson: false)
   final TextStyle buyStyle;
   @JsonKey(includeFromJson: false, includeToJson: false)
   final TextStyle sellStyle;
 
-  factory TradeMarkParam.fromJson(Map<String, dynamic> json) =>
-      _$TradeMarkParamFromJson(json);
+  factory TradeMarkParam.fromJson(Map<String, dynamic> json) => _$TradeMarkParamFromJson(json);
 
   Map<String, dynamic> toJson() => _$TradeMarkParamToJson(this);
-} 
+}

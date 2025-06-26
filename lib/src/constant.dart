@@ -46,6 +46,9 @@ const Rect defaultCanvasRectMinRect = Rect.fromLTWH(0, 0, 20, 20);
 // 默认副图指标最大数量
 const int defaultSubChartMaxCount = 4;
 
+// 默认交易图指标最大数量
+const int defaultTradeChartMaxCount = 2;
+
 // 默认副图指标刻度数量: 高中低=>top, middle, bottom
 const int defaultSubTickCount = 3;
 

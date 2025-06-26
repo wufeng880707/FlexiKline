@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'dart:math' as math;
+
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/foundation.dart';
@@ -50,7 +51,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
   late final FlexiKlineController controller;
   late final DefaultFlexiKlineConfiguration configuration;
   bool isFullScreen = false;
-  
+
   // 交易信号数据
   final Map<int, Set<TradeSignalType>> _tradeSignals = {};
 
@@ -79,19 +80,13 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
       klineDataCacheCapacity: 3,
     );
 
-    // 添加所有支持的主图指标
-    for (final key in controller.supportMainIndicatorKeys) {
-      if (key.id != 'candle') { // 跳过蜡烛图，因为它是默认的
-        controller.addIndicatorInMain(key);
-      }
-    }
-    
     // 打印支持的主图指标列表
-    print('TradeMark: Supported main indicators: ${controller.supportMainIndicatorKeys.map((k) => k.id).toList()}');
-    
-    // 添加交易标记指标到主图
-    controller.addIndicatorInMain(const FlexiIndicatorKey('trade_mark'));
-    
+    print(
+        'TradeMark: Supported main indicators: ${controller.supportMainIndicatorKeys.map((k) => k.id).toList()}');
+
+    // 添加交易标记指标到交易区
+    controller.addTradeIndicator(const FlexiIndicatorKey('trade_mark'));
+
     // 添加所有支持的副图指标
     for (final key in controller.supportSubIndicatorKeys) {
       controller.addIndicatorInSub(key);
@@ -110,12 +105,12 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
   void _generateMockTradeSignals(List<CandleModel> candles) {
     _tradeSignals.clear();
     final random = math.Random(42); // 固定种子，确保每次生成相同的数据
-    
+
     // 为部分K线添加交易信号
     for (int i = 0; i < candles.length; i++) {
       final candle = candles[i];
       final signals = <TradeSignalType>{};
-      
+
       // 随机生成买卖信号，概率为10%
       if (random.nextDouble() < 0.1) {
         if (random.nextBool()) {
@@ -124,32 +119,33 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
           signals.add(TradeSignalType.sell);
         }
       }
-      
+
       // 偶尔同时出现买卖信号（比如做T）
       if (random.nextDouble() < 0.02) {
         signals.addAll([TradeSignalType.buy, TradeSignalType.sell]);
       }
-      
+
       if (signals.isNotEmpty) {
         _tradeSignals[candle.ts] = signals;
       }
     }
-    
+
     // 添加调试信息
     print('TradeMark: Generated ${_tradeSignals.length} trade signals');
     if (_tradeSignals.isNotEmpty) {
-      print('TradeMark: Sample signals: ${_tradeSignals.entries.take(3).map((e) => '${e.key}: ${e.value}').join(', ')}');
+      print(
+          'TradeMark: Sample signals: ${_tradeSignals.entries.take(3).map((e) => '${e.key}: ${e.value}').join(', ')}');
     }
-    
+
     // 更新交易标记指标的数据
     _updateTradeMarkData();
   }
-  
+
   /// 更新交易标记指标的数据
   void _updateTradeMarkData() {
     // 使用静态方法设置全局交易信号数据
     TradeMarkDataMixin.setGlobalTradeSignals(_tradeSignals);
-    
+
     // 触发重绘
     controller.markRepaintChart();
   }
@@ -276,16 +272,16 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
               if (latest != null) {
                 final signals = <TradeSignalType>{};
                 final random = math.Random();
-                
+
                 if (random.nextBool()) {
                   signals.add(TradeSignalType.buy);
                 } else {
                   signals.add(TradeSignalType.sell);
                 }
-                
+
                 _tradeSignals[latest.ts] = signals;
                 _updateTradeMarkData();
-                
+
                 // 触发重绘
                 controller.markRepaintChart();
               }
@@ -373,11 +369,11 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
       ],
     );
   }
-  
+
   @override
   Future<void> initKlineData(CandleReq request, {bool reset = false}) async {
     await super.initKlineData(request, reset: reset);
-    
+
     // 生成模拟交易信号数据
     if (controller.curKlineData.list.isNotEmpty) {
       _generateMockTradeSignals(controller.curKlineData.list);

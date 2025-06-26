@@ -50,6 +50,8 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig subChartMaxCount(int subChartMaxCount);
 
+  SettingConfig tradeChartMaxCount(int tradeChartMaxCount);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SettingConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -78,6 +80,7 @@ abstract class _$SettingConfigCWProxy {
     bool? showYAxisTick,
     TextAreaConfig? ticksText,
     int? subChartMaxCount,
+    int? tradeChartMaxCount,
   });
 }
 
@@ -168,6 +171,10 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
       this(subChartMaxCount: subChartMaxCount);
 
   @override
+  SettingConfig tradeChartMaxCount(int tradeChartMaxCount) =>
+      this(tradeChartMaxCount: tradeChartMaxCount);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SettingConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -198,6 +205,7 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
     Object? showYAxisTick = const $CopyWithPlaceholder(),
     Object? ticksText = const $CopyWithPlaceholder(),
     Object? subChartMaxCount = const $CopyWithPlaceholder(),
+    Object? tradeChartMaxCount = const $CopyWithPlaceholder(),
   }) {
     return SettingConfig(
       pixel: pixel == const $CopyWithPlaceholder() || pixel == null
@@ -300,6 +308,11 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
           ? _value.subChartMaxCount
           // ignore: cast_nullable_to_non_nullable
           : subChartMaxCount as int,
+      tradeChartMaxCount: tradeChartMaxCount == const $CopyWithPlaceholder() ||
+              tradeChartMaxCount == null
+          ? _value.tradeChartMaxCount
+          // ignore: cast_nullable_to_non_nullable
+          : tradeChartMaxCount as int,
     );
   }
 }
@@ -345,6 +358,8 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
           TextAreaConfig.fromJson(json['ticksText'] as Map<String, dynamic>),
       subChartMaxCount: (json['subChartMaxCount'] as num?)?.toInt() ??
           defaultSubChartMaxCount,
+      tradeChartMaxCount: (json['tradeChartMaxCount'] as num?)?.toInt() ??
+          defaultTradeChartMaxCount,
     );
 
 Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
@@ -372,6 +387,7 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
       'showYAxisTick': instance.showYAxisTick,
       'ticksText': instance.ticksText.toJson(),
       'subChartMaxCount': instance.subChartMaxCount,
+      'tradeChartMaxCount': instance.tradeChartMaxCount,
     };
 
 Value? _$JsonConverterFromJson<Json, Value>(

@@ -64,6 +64,8 @@ class SettingConfig {
     /// 副图配置
     // 副区的指标图最大数量
     this.subChartMaxCount = defaultSubChartMaxCount,
+    // 交易区的指标图最大数量
+    this.tradeChartMaxCount = defaultTradeChartMaxCount,
   }) : mainMinSize = mainMinSize ?? Size(20 / pixel, 20 / pixel);
 
   /// 单个像素值
@@ -118,6 +120,8 @@ class SettingConfig {
 
   // 副区的指标图最大数量
   final int subChartMaxCount;
+  // 交易区的指标图最大数量
+  final int tradeChartMaxCount;
 
   /// 蜡烛间距 [candleFixedSpacing] 优先于 [candleSpacingParts]
   double? _candleSpacing;

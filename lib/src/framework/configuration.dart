@@ -163,6 +163,9 @@ abstract interface class IConfiguration {
   /// 副区指标定制
   Map<IIndicatorKey, IndicatorBuilder> subIndicatorBuilders();
 
+  /// 交易指标定制
+  Map<IIndicatorKey, IndicatorBuilder> tradeIndicatorBuilders();
+
   /// 绘制工具定制
   Map<IDrawType, DrawObjectBuilder> drawObjectBuilders();
 

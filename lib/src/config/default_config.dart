@@ -12,27 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart' hide Overlay;
-
-import '../constant.dart';
-import '../extension/render/common.dart';
-import '../framework/export.dart';
-import '../indicators/export.dart';
-import 'cross_config/cross_config.dart';
-import 'magnifier_config/magnifier_config.dart';
-import 'point_config/point_config.dart';
-import 'draw_config/draw_config.dart';
-import 'flexi_kline_config/flexi_kline_config.dart';
-import 'gesture_config/gesture_config.dart';
-import 'grid_config/grid_config.dart';
-import 'line_config/line_config.dart';
-import 'loading_config/loading_config.dart';
-import 'mark_config/mark_config.dart';
-import 'paint_config/paint_config.dart';
-import 'setting_config/setting_config.dart';
-import 'text_area_config/text_area_config.dart';
-import 'tolerance_config/tolerance_config.dart';
-import 'tooltip_config/tooltip_config.dart';
 
 extension IFlexiKlineThemeExt on IFlexiKlineTheme {
   /// 默认时间指标高度
@@ -180,6 +161,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       tooltip: genTooltipConfig(),
       main: {},
       sub: {},
+      trade: {},
     );
   }
 
@@ -198,6 +180,9 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
   @override
   Map<IIndicatorKey, IndicatorBuilder> subIndicatorBuilders() => {};
+
+  @override
+  Map<IIndicatorKey, IndicatorBuilder> tradeIndicatorBuilders() => {};
 
   @override
   Map<IDrawType, DrawObjectBuilder> drawObjectBuilders() => {};
@@ -278,6 +263,9 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
       /// 副区的指标图最大数量
       subChartMaxCount: defaultSubChartMaxCount,
+
+      /// 交易区的指标图最大数量
+      tradeChartMaxCount: defaultTradeChartMaxCount,
     );
   }
 
@@ -535,9 +523,10 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           height: defaultTextHeight,
         ),
         textAlign: TextAlign.center,
-        background: theme.countDownTextBg,
-        padding: theme.textPading,
-        borderRadius: BorderRadius.all(Radius.circular(2 * theme.scale)),
+        padding: EdgeInsets.symmetric(
+          horizontal: 2 * theme.scale,
+          vertical: 1 * theme.scale,
+        ),
       ),
     );
   }

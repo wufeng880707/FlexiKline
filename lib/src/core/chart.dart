@@ -15,9 +15,7 @@
 part of 'core.dart';
 
 /// 负责绘制蜡烛图以及相关指标图
-mixin ChartBinding
-    on KlineBindingBase, SettingBinding, StateBinding
-    implements IChart {
+mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements IChart {
   @override
   void init() {
     super.init();
@@ -81,10 +79,7 @@ mixin ChartBinding
   DateTime _lastPaintTime = DateTime.now();
   int get diffTime {
     // 计算两次绘制时间差
-    return _lastPaintTime
-        .difference(_lastPaintTime = DateTime.now())
-        .inMilliseconds
-        .abs();
+    return _lastPaintTime.difference(_lastPaintTime = DateTime.now()).inMilliseconds.abs();
   }
 
   void paintChart(Canvas canvas, Size size) {
@@ -98,7 +93,7 @@ mixin ChartBinding
     // ensurePaintObjectInstance();
 
     int solt = mainIndicatorSlot;
-    for (var paintObject in [mainPaintObject, ...subPaintObjects]) {
+    for (var paintObject in [mainPaintObject, ...tradePaintObjects, ...subPaintObjects]) {
       /// 初始化副区指标数据.
       paintObject.doInitState(
         solt++,
@@ -212,8 +207,7 @@ mixin ChartBinding
 
     if (newWidth == null || newWidth == candleWidth) return;
 
-    final scaleFactor =
-        (newWidth + settingConfig.candleSpacing) / candleActualWidth;
+    final scaleFactor = (newWidth + settingConfig.candleSpacing) / candleActualWidth;
     // logd('handleScale candleWidth:$candleWidth>$newWidth; factor:$scaleFactor');
 
     /// 更新蜡烛宽度

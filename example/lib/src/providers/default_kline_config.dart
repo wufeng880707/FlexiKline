@@ -153,8 +153,9 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   @override
   FlexiKlineConfig genFlexiKlineConfig() {
     return super.genFlexiKlineConfig()
+      ..main.add(const FlexiIndicatorKey('ma'))
       ..sub.add(const FlexiIndicatorKey('rsi'))
-      ..main.add(const FlexiIndicatorKey('trade_mark'));
+      ..trade.add(const FlexiIndicatorKey('trade_mark'));
   }
 
   @override
@@ -215,169 +216,169 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     return {
       // MA 移动平均线
       const FlexiIndicatorKey('ma'): (setting) => MAIndicator(
-        height: theme.mainIndicatorHeight,
-        padding: theme.mainIndicatorPadding,
-        calcParams: [
-          MaParam(
-            count: 5,
-            tips: TipsConfig(
-              label: 'MA5: ',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: theme.normalTextSize,
-                height: defaultTextHeight,
+            height: theme.mainIndicatorHeight,
+            padding: theme.mainIndicatorPadding,
+            calcParams: [
+              MaParam(
+                count: 5,
+                tips: TipsConfig(
+                  label: 'MA5: ',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
               ),
-            ),
-          ),
-          MaParam(
-            count: 10,
-            tips: TipsConfig(
-              label: 'MA10: ',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: theme.normalTextSize,
-                height: defaultTextHeight,
+              MaParam(
+                count: 10,
+                tips: TipsConfig(
+                  label: 'MA10: ',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
               ),
-            ),
-          ),
-          MaParam(
-            count: 20,
-            tips: TipsConfig(
-              label: 'MA20: ',
-              style: TextStyle(
-                color: Colors.green,
-                fontSize: theme.normalTextSize,
-                height: defaultTextHeight,
+              MaParam(
+                count: 20,
+                tips: TipsConfig(
+                  label: 'MA20: ',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
               ),
-            ),
+            ],
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
           ),
-        ],
-        tipsPadding: theme.tipsPadding,
-        lineWidth: 1.r,
-      ),
-      
+
       // BOLL 布林带
       const FlexiIndicatorKey('boll'): (setting) => BOLLIndicator(
-        height: theme.mainIndicatorHeight,
-        padding: theme.mainIndicatorPadding,
-        calcParam: const BOLLParam(
-          n: 20,
-          std: 2,
-        ),
-        mbTips: const TipsConfig(
-          label: 'BOLL: ',
-          style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-        ),
-        upTips: const TipsConfig(
-          label: 'UB: ',
-          style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
-        ),
-        dnTips: const TipsConfig(
-          label: 'LB: ',
-          style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
-        ),
-        tipsPadding: theme.tipsPadding,
-        lineWidth: 1.r,
-      ),
-      
+            height: theme.mainIndicatorHeight,
+            padding: theme.mainIndicatorPadding,
+            calcParam: const BOLLParam(
+              n: 20,
+              std: 2,
+            ),
+            mbTips: const TipsConfig(
+              label: 'BOLL: ',
+              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+            ),
+            upTips: const TipsConfig(
+              label: 'UB: ',
+              style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+            ),
+            dnTips: const TipsConfig(
+              label: 'LB: ',
+              style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+            ),
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+          ),
+
       // EMA 指数移动平均线
       const FlexiIndicatorKey('ema'): (setting) => EMAIndicator(
-        height: theme.mainIndicatorHeight,
-        padding: theme.mainIndicatorPadding,
-        calcParams: [
-          MaParam(
-            count: 12,
-            tips: TipsConfig(
-              label: 'EMA12: ',
-              style: TextStyle(
-                color: Colors.orange,
-                fontSize: theme.normalTextSize,
-                height: defaultTextHeight,
+            height: theme.mainIndicatorHeight,
+            padding: theme.mainIndicatorPadding,
+            calcParams: [
+              MaParam(
+                count: 12,
+                tips: TipsConfig(
+                  label: 'EMA12: ',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
               ),
-            ),
-          ),
-          MaParam(
-            count: 26,
-            tips: TipsConfig(
-              label: 'EMA26: ',
-              style: TextStyle(
-                color: Colors.purple,
-                fontSize: theme.normalTextSize,
-                height: defaultTextHeight,
+              MaParam(
+                count: 26,
+                tips: TipsConfig(
+                  label: 'EMA26: ',
+                  style: TextStyle(
+                    color: Colors.purple,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
               ),
-            ),
+            ],
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
           ),
-        ],
-        tipsPadding: theme.tipsPadding,
-        lineWidth: 1.r,
-      ),
-      
+
       // SAR 抛物线转向指标
       const FlexiIndicatorKey('sar'): (setting) => SARIndicator(
-        height: theme.mainIndicatorHeight,
-        padding: theme.mainIndicatorPadding,
-        calcParam: const SARParam(
-          startAf: 0.02,
-          step: 0.02,
-          maxAf: 0.2,
-        ),
-        paint: PaintConfig(
-          color: Colors.red,
-          strokeWidth: 1.r,
-        ),
-        tipsPadding: theme.tipsPadding,
-        tipsStyle: TextStyle(
-          color: Colors.red,
-          fontSize: theme.normalTextSize,
-          height: defaultTextHeight,
-        ),
-        tickCount: 5,
-      ),
-      
+            height: theme.mainIndicatorHeight,
+            padding: theme.mainIndicatorPadding,
+            calcParam: const SARParam(
+              startAf: 0.02,
+              step: 0.02,
+              maxAf: 0.2,
+            ),
+            paint: PaintConfig(
+              color: Colors.red,
+              strokeWidth: 1.r,
+            ),
+            tipsPadding: theme.tipsPadding,
+            tipsStyle: TextStyle(
+              color: Colors.red,
+              fontSize: theme.normalTextSize,
+              height: defaultTextHeight,
+            ),
+            tickCount: 5,
+          ),
+
       // AVL 均价线
       const FlexiIndicatorKey('avl'): (setting) => AVLIndicator(
-        height: theme.mainIndicatorHeight,
-        padding: theme.mainIndicatorPadding,
-        line: LineConfig(
-          type: LineType.solid,
-          paint: PaintConfig(
-            color: Colors.deepOrange,
-            strokeWidth: 1.r,
+            height: theme.mainIndicatorHeight,
+            padding: theme.mainIndicatorPadding,
+            line: LineConfig(
+              type: LineType.solid,
+              paint: PaintConfig(
+                color: Colors.deepOrange,
+                strokeWidth: 1.r,
+              ),
+            ),
+            tips: TipsConfig(
+              label: 'AVL',
+              style: TextStyle(
+                color: Colors.deepOrange,
+                fontSize: theme.normalTextSize,
+                height: defaultTextHeight,
+              ),
+            ),
+            tipsPadding: theme.tipsPadding,
           ),
-        ),
-        tips: TipsConfig(
-          label: 'AVL',
-          style: TextStyle(
-            color: Colors.deepOrange,
-            fontSize: theme.normalTextSize,
-            height: defaultTextHeight,
-          ),
-        ),
-        tipsPadding: theme.tipsPadding,
-      ),
-      
-      // 交易标记指标
-      const FlexiIndicatorKey('trade_mark'): (setting) => TradeMarkIndicator(
-        height: theme.mainIndicatorHeight,
-        padding: theme.mainIndicatorPadding,
-        calcParam: const TradeMarkParam(
-          show: true,
-          spacing: 4.0,
-          markerRadius: 8.0,
-          buyBgColor: Color(0xff03a66d),
-          sellBgColor: Color(0xfff15057),
-          buyStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-          sellStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+
+      // // 交易标记指标
+      // const FlexiIndicatorKey('trade_mark'): (setting) => TradeMarkIndicator(
+      //   height: 0, // 叠加显示，不占用主图高度
+      //   padding: EdgeInsets.zero,
+      //   calcParam: const TradeMarkParam(
+      //     show: true,
+      //     spacing: 4.0,
+      //     markerRadius: 8.0,
+      //     buyBgColor: Color(0xff03a66d),
+      //     sellBgColor: Color(0xfff15057),
+      //     buyStyle: TextStyle(
+      //       color: Colors.white,
+      //       fontSize: 10,
+      //       fontWeight: FontWeight.bold,
+      //     ),
+      //     sellStyle: TextStyle(
+      //       color: Colors.white,
+      //       fontSize: 10,
+      //       fontWeight: FontWeight.bold,
+      //     ),
+      //   ),
+      // ),
     };
   }
 
@@ -387,152 +388,182 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     return {
       // RSI 相对强弱指标
       const FlexiIndicatorKey('rsi'): (setting) => RSIIndicator(
-        height: 100.r,
-        calcParams: [
-          const RsiParam(
-            count: 6,
-            tips: TipsConfig(
-              label: 'RSI6: ',
-              style: TextStyle(
-                color: Colors.orange,
-                fontSize: 12,
-                height: 1.2,
+            height: 100.r,
+            calcParams: [
+              const RsiParam(
+                count: 6,
+                tips: TipsConfig(
+                  label: 'RSI6: ',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const RsiParam(
-            count: 12,
-            tips: TipsConfig(
-              label: 'RSI12: ',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: 12,
-                height: 1.2,
+              const RsiParam(
+                count: 12,
+                tips: TipsConfig(
+                  label: 'RSI12: ',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const RsiParam(
-            count: 24,
-            tips: TipsConfig(
-              label: 'RSI24: ',
-              style: TextStyle(
-                color: Colors.purple,
-                fontSize: 12,
-                height: 1.2,
+              const RsiParam(
+                count: 24,
+                tips: TipsConfig(
+                  label: 'RSI24: ',
+                  style: TextStyle(
+                    color: Colors.purple,
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                ),
               ),
-            ),
+            ],
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+            precision: 2,
           ),
-        ],
-        tipsPadding: theme.tipsPadding,
-        lineWidth: 1.r,
-        precision: 2,
-      ),
-      
+
       // KDJ 随机指标
       const FlexiIndicatorKey('kdj'): (setting) => KDJIndicator(
-        height: 100.r,
-        calcParam: const KDJParam(
-          n: 9,
-          m1: 3,
-          m2: 3,
-        ),
-        ktips: const TipsConfig(
-          label: 'K: ',
-          style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-        ),
-        dtips: const TipsConfig(
-          label: 'D: ',
-          style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
-        ),
-        jtips: const TipsConfig(
-          label: 'J: ',
-          style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
-        ),
-        tipsPadding: theme.tipsPadding,
-        lineWidth: 1.r,
-        precision: 2,
-      ),
-      
+            height: 100.r,
+            calcParam: const KDJParam(
+              n: 9,
+              m1: 3,
+              m2: 3,
+            ),
+            ktips: const TipsConfig(
+              label: 'K: ',
+              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+            ),
+            dtips: const TipsConfig(
+              label: 'D: ',
+              style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+            ),
+            jtips: const TipsConfig(
+              label: 'J: ',
+              style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+            ),
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+            precision: 2,
+          ),
+
       // MACD 指数平滑异同移动平均线
       const FlexiIndicatorKey('macd'): (setting) => MACDIndicator(
-        height: 120.r,
-        calcParam: const MACDParam(
-          s: 12,
-          l: 26,
-          m: 9,
-        ),
-        difTips: const TipsConfig(
-          label: 'DIF: ',
-          style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-        ),
-        deaTips: const TipsConfig(
-          label: 'DEA: ',
-          style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
-        ),
-        macdTips: const TipsConfig(
-          label: 'MACD: ',
-          style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
-        ),
-        tipsPadding: theme.tipsPadding,
-        lineWidth: 1.r,
-        precision: 2,
-      ),
-      
+            height: 120.r,
+            calcParam: const MACDParam(
+              s: 12,
+              l: 26,
+              m: 9,
+            ),
+            difTips: const TipsConfig(
+              label: 'DIF: ',
+              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+            ),
+            deaTips: const TipsConfig(
+              label: 'DEA: ',
+              style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+            ),
+            macdTips: const TipsConfig(
+              label: 'MACD: ',
+              style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+            ),
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+            precision: 2,
+          ),
+
       // VOL_MA 成交量移动平均线
       const FlexiIndicatorKey('volMa'): (setting) => VolMaIndicator(
-        height: 100.r,
-        volTips: TipsConfig(
-          label: 'VOL: ',
-          style: TextStyle(
-            color: theme.textColor,
-            fontSize: theme.normalTextSize,
-            height: defaultTextHeight,
-          ),
-        ),
-        calcParams: [
-          MaParam(
-            count: 5,
-            tips: TipsConfig(
-              label: 'VOL_MA5: ',
+            height: 100.r,
+            volTips: TipsConfig(
+              label: 'VOL: ',
               style: TextStyle(
-                color: Colors.blue,
+                color: theme.textColor,
                 fontSize: theme.normalTextSize,
                 height: defaultTextHeight,
               ),
             ),
-          ),
-          MaParam(
-            count: 10,
-            tips: TipsConfig(
-              label: 'VOL_MA10: ',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: theme.normalTextSize,
-                height: defaultTextHeight,
+            calcParams: [
+              MaParam(
+                count: 5,
+                tips: TipsConfig(
+                  label: 'VOL_MA5: ',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
               ),
-            ),
+              MaParam(
+                count: 10,
+                tips: TipsConfig(
+                  label: 'VOL_MA10: ',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
+              ),
+            ],
+            tipsPadding: theme.tipsPadding,
+            maLineWidth: 1.r,
+            precision: 2,
           ),
-        ],
-        tipsPadding: theme.tipsPadding,
-        maLineWidth: 1.r,
-        precision: 2,
-      ),
-      
+
       // VOLUME 成交量
       const FlexiIndicatorKey('volume'): (setting) => VolumeIndicator(
-        height: 100.r,
-        volTips: TipsConfig(
-          label: 'VOL: ',
-          style: TextStyle(
-            color: theme.textColor,
-            fontSize: theme.normalTextSize,
-            height: defaultTextHeight,
+            height: 100.r,
+            volTips: TipsConfig(
+              label: 'VOL: ',
+              style: TextStyle(
+                color: theme.textColor,
+                fontSize: theme.normalTextSize,
+                height: defaultTextHeight,
+              ),
+            ),
+            tipsPadding: theme.tipsPadding,
+            tickCount: 5,
+            precision: 2,
           ),
-        ),
-        tipsPadding: theme.tipsPadding,
-        tickCount: 5,
-        precision: 2,
-      ),
+    };
+  }
+
+  @override
+  Map<IIndicatorKey, IndicatorBuilder<Indicator>> tradeIndicatorBuilders() {
+    final theme = ref.read(defaultKlineThemeProvider);
+
+    return {
+      // 交易标记指标
+      const FlexiIndicatorKey('trade_mark'): (setting) => TradeMarkIndicator(
+            height: theme.mainIndicatorHeight,
+            padding: theme.mainIndicatorPadding,
+            calcParam: const TradeMarkParam(
+              show: true,
+              spacing: 4.0,
+              markerRadius: 8.0,
+              buyBgColor: Color(0xff03a66d),
+              sellBgColor: Color(0xfff15057),
+              buyStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              sellStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
     };
   }
 

@@ -37,6 +37,7 @@ class FlexiKlineConfig {
     // required this.indicators,
     this.main = const <IIndicatorKey>{},
     this.sub = const <IIndicatorKey>{},
+    this.trade = const <IIndicatorKey>{},
   });
 
   final String key;
@@ -48,6 +49,7 @@ class FlexiKlineConfig {
   TooltipConfig tooltip;
   Set<IIndicatorKey> main;
   Set<IIndicatorKey> sub;
+  Set<IIndicatorKey> trade;
 
   FlexiKlineConfig clone() {
     try {
@@ -61,6 +63,7 @@ class FlexiKlineConfig {
   void update(FlexiKlineConfig config) {
     main = config.main;
     sub = config.sub;
+    trade = config.trade;
     setting.update(config.setting);
   }
 
