@@ -368,17 +368,27 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     return totalHeight;
   }
 
-  /// 在主图中添加指标
+  // /// 在主图中添加指标
+  // void addIndicatorInMain(IIndicatorKey key) {
+  //   final newObj = _paintObjectManager.addIndicatorInMain(key, this);
+  //   if (newObj != null) {
+  //     // TODO: 后续优化执行时机
+  //     newObj.doPrecompute(Range(0, curKlineData.length), reset: true);
+  //     _flexiKlineConfig.main.add(key);
+  //     markRepaintChart(reset: true);
+  //     markRepaintCross();
+  //   }
+  // }
+
   void addIndicatorInMain(IIndicatorKey key) {
-    final newObj = _paintObjectManager.addIndicatorInMain(key, this);
-    if (newObj != null) {
-      // TODO: 后续优化执行时机
-      newObj.doPrecompute(Range(0, curKlineData.length), reset: true);
-      _flexiKlineConfig.main.add(key);
-      markRepaintChart(reset: true);
-      markRepaintCross();
-    }
+  final newObj = _paintObjectManager.addIndicatorInMain(key, this);
+  if (newObj != null) {
+    newObj.doPrecompute(Range(0, curKlineData.length), reset: true);
+    _flexiKlineConfig.main.add(key); // 确保这里真的加进去了
+    markRepaintChart(reset: true);
+    markRepaintCross();
   }
+}
 
   /// 删除主图中[key]指定的指标
   void delIndicatorInMain(IIndicatorKey key) {

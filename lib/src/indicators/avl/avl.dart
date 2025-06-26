@@ -12,24 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// 技术指标
-export 'boll/boll.dart';
-export 'boll/boll_param.dart';
-// 基础指标
-export 'candle/candle.dart';
-export 'ema/ema.dart';
-export 'kdj/kdj.dart';
-export 'kdj/kdj_param.dart';
-export 'ma/ma.dart';
-export 'ma/ma_param.dart';
-export 'macd/macd.dart';
-export 'macd/macd_param.dart';
-export 'rsi/rsi.dart';
-export 'rsi/rsi_param.dart';
-export 'sar/sar.dart';
-export 'sar/sar_param.dart';
-export 'time/time.dart';
-export 'vol_ma/vol_ma.dart';
-export 'volume/volume.dart';
-export 'avl/avl.dart';
-export 'avl/avl_param.dart';
+library avl;
+
+import 'dart:math' as math;
+
+import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
+
+import '../../config/export.dart';
+import 'avl_param.dart';
+import '../../constant.dart';
+import '../../core/core.dart';
+import '../../extension/export.dart';
+import '../../framework/export.dart';
+import '../../model/export.dart';
+import '../../utils/export.dart';
+
+part 'data.dart';
+part 'indicator.dart';
+part 'avl.g.dart'; 

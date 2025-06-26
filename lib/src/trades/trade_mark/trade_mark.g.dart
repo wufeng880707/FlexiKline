@@ -17,6 +17,10 @@ abstract class _$TradeMarkParamCWProxy {
 
   TradeMarkParam sellBgColor(Color sellBgColor);
 
+  TradeMarkParam width(double width);
+
+  TradeMarkParam height(double height);
+
   TradeMarkParam buyStyle(TextStyle buyStyle);
 
   TradeMarkParam sellStyle(TextStyle sellStyle);
@@ -33,6 +37,8 @@ abstract class _$TradeMarkParamCWProxy {
     double? markerRadius,
     Color? buyBgColor,
     Color? sellBgColor,
+    double? width,
+    double? height,
     TextStyle? buyStyle,
     TextStyle? sellStyle,
   });
@@ -62,6 +68,12 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
       this(sellBgColor: sellBgColor);
 
   @override
+  TradeMarkParam width(double width) => this(width: width);
+
+  @override
+  TradeMarkParam height(double height) => this(height: height);
+
+  @override
   TradeMarkParam buyStyle(TextStyle buyStyle) => this(buyStyle: buyStyle);
 
   @override
@@ -81,6 +93,8 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
     Object? markerRadius = const $CopyWithPlaceholder(),
     Object? buyBgColor = const $CopyWithPlaceholder(),
     Object? sellBgColor = const $CopyWithPlaceholder(),
+    Object? width = const $CopyWithPlaceholder(),
+    Object? height = const $CopyWithPlaceholder(),
     Object? buyStyle = const $CopyWithPlaceholder(),
     Object? sellStyle = const $CopyWithPlaceholder(),
   }) {
@@ -108,6 +122,14 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
               ? _value.sellBgColor
               // ignore: cast_nullable_to_non_nullable
               : sellBgColor as Color,
+      width: width == const $CopyWithPlaceholder() || width == null
+          ? _value.width
+          // ignore: cast_nullable_to_non_nullable
+          : width as double,
+      height: height == const $CopyWithPlaceholder() || height == null
+          ? _value.height
+          // ignore: cast_nullable_to_non_nullable
+          : height as double,
       buyStyle: buyStyle == const $CopyWithPlaceholder() || buyStyle == null
           ? _value.buyStyle
           // ignore: cast_nullable_to_non_nullable
@@ -225,6 +247,8 @@ TradeMarkParam _$TradeMarkParamFromJson(Map<String, dynamic> json) =>
       sellBgColor: json['sellBgColor'] == null
           ? const Color(0xfff15057)
           : const ColorConverter().fromJson(json['sellBgColor'] as String),
+      width: (json['width'] as num?)?.toDouble() ?? 20.0,
+      height: (json['height'] as num?)?.toDouble() ?? 24.0,
     );
 
 Map<String, dynamic> _$TradeMarkParamToJson(TradeMarkParam instance) =>
@@ -234,6 +258,8 @@ Map<String, dynamic> _$TradeMarkParamToJson(TradeMarkParam instance) =>
       'markerRadius': instance.markerRadius,
       'buyBgColor': const ColorConverter().toJson(instance.buyBgColor),
       'sellBgColor': const ColorConverter().toJson(instance.sellBgColor),
+      'width': instance.width,
+      'height': instance.height,
     };
 
 TradeMarkIndicator _$TradeMarkIndicatorFromJson(Map<String, dynamic> json) =>

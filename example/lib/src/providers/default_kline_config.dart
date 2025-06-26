@@ -24,7 +24,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../config.dart';
-import '../indicators/avl_indicator.dart';
 import '../theme/export.dart';
 import '../utils/cache_util.dart';
 
@@ -339,6 +338,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const FlexiIndicatorKey('avl'): (setting) => AVLIndicator(
             height: theme.mainIndicatorHeight,
             padding: theme.mainIndicatorPadding,
+            calcParam: const AVLParam(),
             line: LineConfig(
               type: LineType.solid,
               paint: PaintConfig(
@@ -356,29 +356,6 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
             ),
             tipsPadding: theme.tipsPadding,
           ),
-
-      // // 交易标记指标
-      // const FlexiIndicatorKey('trade_mark'): (setting) => TradeMarkIndicator(
-      //   height: 0, // 叠加显示，不占用主图高度
-      //   padding: EdgeInsets.zero,
-      //   calcParam: const TradeMarkParam(
-      //     show: true,
-      //     spacing: 4.0,
-      //     markerRadius: 8.0,
-      //     buyBgColor: Color(0xff03a66d),
-      //     sellBgColor: Color(0xfff15057),
-      //     buyStyle: TextStyle(
-      //       color: Colors.white,
-      //       fontSize: 10,
-      //       fontWeight: FontWeight.bold,
-      //     ),
-      //     sellStyle: TextStyle(
-      //       color: Colors.white,
-      //       fontSize: 10,
-      //       fontWeight: FontWeight.bold,
-      //     ),
-      //   ),
-      // ),
     };
   }
 

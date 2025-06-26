@@ -93,11 +93,6 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
         );
       }
     }
-
-    // 添加调试信息
-    if (signalCount > 0) {
-      print('TradeMark: Painted $signalCount signals in range $start-$end');
-    }
   }
 
   void _drawSignal(
