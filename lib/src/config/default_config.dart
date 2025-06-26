@@ -33,8 +33,8 @@ extension IFlexiKlineThemeExt on IFlexiKlineTheme {
 
   /// 默认主图区域Padding
   EdgeInsets get mainIndicatorPadding => EdgeInsets.only(
-        top: 5 * scale, // 顶部留白
-        bottom: 5 * scale, // 底部留白, 5: 最低价字体高度的一半, 保证最低价文本不会绘制到边线上.
+        top: 20 * scale, // 顶部留白
+        bottom: 20 * scale, // 底部留白, 5: 最低价字体高度的一半, 保证最低价文本不会绘制到边线上.
       );
 
   /// 默认副指标图Padding
