@@ -28,6 +28,7 @@ export 'paint_config/paint_config.dart';
 export 'point_config/point_config.dart';
 export 'setting_config/setting_config.dart';
 export 'text_area_config/text_area_config.dart';
+export 'time_bar_config/time_bar_config.dart';
 export 'tips_config/tips_config.dart';
 export 'tolerance_config/tolerance_config.dart';
 export 'tooltip_config/tooltip_config.dart';

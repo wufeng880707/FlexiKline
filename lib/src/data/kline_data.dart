@@ -14,13 +14,8 @@
 
 library kline_data;
 
+import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/foundation.dart';
-
-import '../constant.dart';
-import '../extension/export.dart';
-import '../framework/chart/indicator.dart';
-import '../framework/logger.dart';
-import '../model/export.dart';
 
 part 'base_data.dart';
 
@@ -35,7 +30,7 @@ class KlineData extends BaseData {
   int get precision => req.precision;
   String get key => req.key;
   String get reqKey => req.reqKey;
-  TimeBar? get timeBar => req.timeBar;
+  TimeBarConfig? get timeBar => req.timeBar;
   bool get invalid => req.instId.isEmpty;
 
   // TODO: 解除对CandleReq的依赖.
@@ -56,7 +51,15 @@ class KlineData extends BaseData {
   }
 
   static final KlineData empty = KlineData(
-    const CandleReq(instId: "", bar: ""),
+    const CandleReq(
+        instId: "",
+        timeBar: TimeBarConfig(
+            key: '',
+            bar: '',
+            milliseconds: 0,
+            multiplier: 0,
+            timespan: Timespan.minute,
+            showName: '')),
     list: List.empty(growable: false),
   );
 

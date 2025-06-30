@@ -114,12 +114,20 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
 
   @override
   Color get drawColor => Colors.blue;
+
+  @override
+  Color get indraTodayAvgColor => const Color(0xffff9933);
+  @override
+  Color get indraTodayCloseColor => const Color(0xff4d78ff);
 }
 
 class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   @override
   String key = 'flexi_kline_config_key_bit-dark';
-
+  @override
+  Color get indraTodayAvgColor => const Color(0xffff9933);
+  @override
+  Color get indraTodayCloseColor => const Color(0xff4d78ff);
   @override
   Color chartBg = const Color(0xFF111111);
 
@@ -181,7 +189,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   final WidgetRef ref;
 
   BitFlexiKlineConfiguration({required this.ref});
-  
+
   @override
   Size get initialMainSize {
     return Size(ScreenUtil().screenWidth, 300.r);
@@ -256,7 +264,9 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       if (jsonStr != null && jsonStr.isNotEmpty) {
         final json = jsonDecode(jsonStr);
         if (json is List) {
-          return json.map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>)).toList();
+          return json
+              .map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>))
+              .toList();
         }
       }
     } catch (err, stack) {

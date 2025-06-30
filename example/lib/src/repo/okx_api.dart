@@ -81,7 +81,7 @@ Future<ApiResult<List<CandleModel>>> getMarketCandles(
     '/api/v5/market/candles',
     _dataToCandleList,
     method: HttpMethod.get,
-    queryParameters: req.toJson(),
+    queryParameters: req.queryParameters(),
     cancelToken: cancelToken,
   );
 }

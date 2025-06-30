@@ -61,15 +61,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
   @override
   void initState() {
     super.initState();
-    final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
-          widget.instId,
-        );
-    req = CandleReq(
-      instId: widget.instId,
-      bar: TimeBar.m15.bar,
-      precision: p ?? 2,
-      limit: 300,
-    );
+
     configuration = DefaultFlexiKlineConfiguration(ref: ref);
     controller = FlexiKlineController(
       configuration: configuration,
@@ -80,6 +72,18 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
       klineDataCacheCapacity: 3,
     );
 
+    final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
+          widget.instId,
+        );
+    final m15TimeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'm15');
+
+    req = CandleReq(
+      instId: widget.instId,
+      timeBar: m15TimeBar,
+      precision: p ?? 2,
+      limit: 300,
+    );
+
     // 打印支持的主图指标列表
     print(
         'TradeMark: Supported main indicators: ${controller.supportMainIndicatorKeys.map((k) => k.id).toList()}');
@@ -87,10 +91,10 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     // 添加交易标记指标到交易区
     controller.addTradeIndicator(const FlexiIndicatorKey('trade_mark'));
 
-    // 添加所有支持的副图指标
-    for (final key in controller.supportSubIndicatorKeys) {
-      controller.addIndicatorInSub(key);
-    }
+    // // 添加所有支持的副图指标
+    // for (final key in controller.supportSubIndicatorKeys) {
+    //   controller.addIndicatorInSub(key);
+    // }
 
     controller.onCrossI18nTooltipLables = tooltipLables;
 

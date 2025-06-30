@@ -29,8 +29,8 @@ class TimerBarSelectDialog extends ConsumerWidget {
   });
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBar> onTapTimeBar;
-  final List<TimeBar> preferTimeBarList;
+  final ValueChanged<TimeBarConfig> onTapTimeBar;
+  final List<TimeBarConfig> preferTimeBarList;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -89,7 +89,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
                 onPressed: () => onTapTimeBar(bar),
                 child: FittedBox(
                   child: Text(
-                    bar.bar,
+                    bar.showName,
                     style: theme.t2s12w400.copyWith(
                       color: theme.t1,
                       fontWeight: selected ? FontWeight.bold : null,
@@ -117,17 +117,17 @@ class TimerBarSelectDialog extends ConsumerWidget {
           alignment: WrapAlignment.start,
           spacing: 12.r,
           runSpacing: 8.r,
-          children: TimeBar.values.map((bar) {
-            final selected = value == bar;
+          children: controller.configuration.timeBarBuilders().map((timeBar) {
+            final selected = value == timeBar;
             return SizedBox(
               width: barWidth,
               child: TextButton(
-                key: ValueKey(bar),
+                key: ValueKey(timeBar),
                 style: theme.outlinedBtnStyle(showOutlined: selected),
-                onPressed: () => onTapTimeBar(bar),
+                onPressed: () => onTapTimeBar(timeBar),
                 child: FittedBox(
                   child: Text(
-                    bar.bar,
+                    timeBar.showName,
                     style: theme.t2s12w400.copyWith(
                       color: theme.t1,
                       fontWeight: selected ? FontWeight.bold : null,

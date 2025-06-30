@@ -14,7 +14,7 @@
 
 import 'dart:math' as math;
 
-import '../constant.dart';
+import 'package:flexi_kline/flexi_kline.dart';
 
 /// 计算时间差, 并格式化展示
 ///
@@ -87,15 +87,15 @@ String formatyyMMddHHMMss(
 
 String formatDateTimeByTimeBar(
   int ts, {
-  TimeBar? bar,
+  TimeBarConfig? timeBar,
 }) {
   final dt = DateTime.fromMillisecondsSinceEpoch(ts);
-  if (bar == null) {
+  if (timeBar == null) {
     return '${dt.year}/${twoDigits(dt.month)}/${twoDigits(dt.day)} ${twoDigits(dt.hour)}:${twoDigits(dt.minute)}:${twoDigits(dt.second)}';
-  } else if (bar.milliseconds >= Duration.millisecondsPerDay) {
+  } else if (timeBar.milliseconds >= Duration.millisecondsPerDay) {
     // 展示: 年/月/日
     return '${dt.year}/${twoDigits(dt.month)}/${twoDigits(dt.day)}';
-  } else if (bar.milliseconds >= Duration.millisecondsPerMinute) {
+  } else if (timeBar.milliseconds >= Duration.millisecondsPerMinute) {
     // 展示: 月/日 时:分
     return '${twoDigits(dt.month)}/${twoDigits(dt.day)} ${twoDigits(dt.hour)}:${twoDigits(dt.minute)}';
   } else {

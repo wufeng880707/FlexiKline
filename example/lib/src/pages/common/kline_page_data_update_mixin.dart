@@ -29,8 +29,8 @@ abstract interface class IKlinePage {
   FlexiKlineController get flexiKlineController;
 }
 
-mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget>
-    on ConsumerState<T> implements IKlinePage {
+mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T>
+    implements IKlinePage {
   late CandleReq req;
 
   CancelToken? cancelToken;
@@ -120,7 +120,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget>
         );
     req = CandleReq(
       instId: ticker.instId,
-      bar: req.bar,
+      timeBar: req.timeBar,
       precision: p ?? ticker.precision,
     );
     initKlineData(req);
@@ -128,11 +128,15 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget>
   }
 
   /// TimerBar变更回调
-  void onTapTimerBar(TimeBar bar) {
-    if (bar.bar != req.bar) {
-      req = req.copyWith(bar: bar.bar);
-      initKlineData(req);
+  void onTapTimerBar(TimeBarConfig timeBar) {
+    try {
+      req = req.copyWith(timeBar: timeBar);
+      print('copyWith 执行成功');
       setState(() {});
+      initKlineData(req);
+      print('initKlineData 执行成功');
+    } catch (e, stack) {
+      print('copyWith 或 initKlineData 抛异常: $e\n$stack');
     }
   }
 }

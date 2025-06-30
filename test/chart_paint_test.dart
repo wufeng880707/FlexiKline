@@ -14,15 +14,14 @@
 
 import 'dart:ui';
 
-import 'package:flexi_kline/src/constant.dart';
 import 'package:flexi_kline/src/framework/export.dart';
 import 'package:flexi_kline/src/kline_controller.dart';
 import 'package:flexi_kline/src/model/export.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'base/test_flexi_kline_configuration.dart';
 import 'base/mock.dart';
+import 'base/test_flexi_kline_configuration.dart';
 
 void main() {
   final stopwatch = Stopwatch();
@@ -37,11 +36,15 @@ void main() {
   setUpAll(() {
     debugPrint('setUpAll');
     final list = getCandleModelList();
+
+    final m15TimeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == '15m');
+
     controller.updateKlineData(
       CandleReq(
         instId: 'BTC-USDT',
-        bar: TimeBar.m15.bar,
+        timeBar: m15TimeBar,
         precision: 4,
+        limit: 300,
       ),
       list,
     );

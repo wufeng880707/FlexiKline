@@ -58,22 +58,24 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
   void initState() {
     super.initState();
     const count = 500;
-    const timeBar = TimeBar.D1;
+
+    configuration = DefaultFlexiKlineConfiguration(ref: ref);
+    controller = FlexiKlineController(
+      configuration: configuration,
+      logger: logger,
+    );
+
+    final timeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'm15');
     final now = DateTime.now().millisecondsSinceEpoch;
     final before = now - (now % timeBar.milliseconds);
     final after = before - count * timeBar.milliseconds;
     req = CandleReq(
       instId: 'AAPL',
-      bar: timeBar.bar,
+      timeBar: timeBar,
       precision: 2,
       displayName: 'Apple Inc.',
       after: after,
       before: before,
-    );
-    configuration = DefaultFlexiKlineConfiguration(ref: ref);
-    controller = FlexiKlineController(
-      configuration: configuration,
-      logger: logger,
     );
 
     controller.onCrossCustomTooltip = onCrossCustomTooltip;
@@ -154,9 +156,9 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
     }
   }
 
-  void onTapTimeBar(TimeBar bar) {
-    if (bar.bar != req.bar) {
-      req = req.copyWith(bar: bar.bar);
+  void onTapTimeBar(TimeBarConfig bar) {
+    if (bar != req.timeBar) {
+      req = req.copyWith(timeBar: bar);
       setState(() {});
       initKlineData(req);
     }
@@ -247,7 +249,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
           final newList = await genRandomCandleList(
             count: 3,
             dateTime: dateTime,
-            bar: controller.curKlineData.req.timeBar!,
+            timeBar: controller.curKlineData.req.timeBar!,
             isHistory: false,
           );
 

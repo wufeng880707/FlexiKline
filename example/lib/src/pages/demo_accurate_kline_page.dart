@@ -33,8 +33,7 @@ class AccurateKlineDemoPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _AccurateKlinePageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _AccurateKlinePageState();
 }
 
 class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
@@ -53,15 +52,17 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
   @override
   void initState() {
     super.initState();
+    final timeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'H1');
+
     req1 = CandleReq(
       instId: 'SATS-USDT',
-      bar: TimeBar.H1.bar,
+      timeBar: timeBar,
       precision: 33,
       displayName: 'Sats',
     );
     req2 = CandleReq(
       instId: 'SATS-USDT',
-      bar: TimeBar.H1.bar,
+      timeBar: timeBar,
       precision: 4,
       displayName: 'Sats',
     );
@@ -103,17 +104,17 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
     SmartDialog.showToast('This is a simulation operation!');
   }
 
-  void onTapTimeBar1(TimeBar bar) {
-    if (bar.bar != req1.bar) {
-      req1 = req1.copyWith(bar: bar.bar);
+  void onTapTimeBar1(TimeBarConfig timeBar) {
+    if (timeBar != req1.timeBar) {
+      req1 = req1.copyWith(timeBar: timeBar);
       setState(() {});
       initKlineData1(req1);
     }
   }
 
-  void onTapTimeBar2(TimeBar bar) {
-    if (bar.bar != req2.bar) {
-      req2 = req2.copyWith(bar: bar.bar);
+  void onTapTimeBar2(TimeBarConfig timeBar) {
+    if (timeBar != req2.timeBar) {
+      req2 = req2.copyWith(timeBar: timeBar);
       setState(() {});
       initKlineData2(req2);
     }

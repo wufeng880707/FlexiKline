@@ -57,15 +57,18 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
     final p2 = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId2,
         );
+
+    final m15TimeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'm15');
+
     req1 = CandleReq(
       instId: widget.instId1,
-      bar: TimeBar.m15.bar,
+      timeBar: m15TimeBar,
       precision: p1 ?? 2,
       limit: 300,
     );
     req2 = CandleReq(
       instId: widget.instId2,
-      bar: TimeBar.m15.bar,
+      timeBar: m15TimeBar,
       precision: p2 ?? 2,
       limit: 300,
     );

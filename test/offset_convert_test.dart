@@ -31,9 +31,11 @@ void main() {
   setUpAll(() async {
     debugPrint('setUpAll');
     final list = getETHUSDT1DLimit50List();
+    final timeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'D1');
+
     req = CandleReq(
       instId: 'ETH-USDT',
-      bar: TimeBar.D1.bar,
+      timeBar: timeBar,
       precision: 4,
     );
     controller = FlexiKlineController(configuration: configuration);

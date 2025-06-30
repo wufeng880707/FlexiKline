@@ -102,6 +102,11 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
 
   @override
   Color tooltipTextColor = const Color(0xFF949494);
+
+  @override
+  Color get indraTodayAvgColor => const Color(0xffff9933);
+  @override
+  Color get indraTodayCloseColor => const Color(0xff4d78ff);
 }
 
 class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
@@ -131,8 +136,7 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   void saveOverlayListConfig(String instId, Iterable<Overlay> list) {}
 
   @override
-  Map<IDrawType, DrawObjectBuilder<Overlay, DrawObject<Overlay>>>
-      drawObjectBuilders() {
+  Map<IDrawType, DrawObjectBuilder<Overlay, DrawObject<Overlay>>> drawObjectBuilders() {
     return {};
   }
 }

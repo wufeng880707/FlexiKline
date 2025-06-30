@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:math' as math;
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:decimal/decimal.dart';
 import 'package:flexi_kline/flexi_kline.dart';
@@ -22,7 +22,7 @@ import 'package:flutter/foundation.dart';
 /// 生成自定义的蜡烛数据.
 Future<List<CandleModel>> genCustomCandleList({
   int count = 7,
-  TimeBar bar = TimeBar.D1,
+  required TimeBarConfig timeBar,
 }) async {
   DateTime dateTime = DateTime.now();
   return <CandleModel>[
@@ -108,7 +108,7 @@ Future<List<CandleModel>> genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-  TimeBar bar = TimeBar.D1,
+  required TimeBarConfig timeBar,
   DateTime? dateTime,
   bool isHistory = true,
 }) async {
@@ -121,7 +121,7 @@ Future<List<CandleModel>> genRandomCandleList({
         range: list[2],
         initalVol: list[3],
         rangeVol: list[4],
-        bar: list[5],
+        timeBar: list[5],
         dateTime: list[6],
         isHistory: list[7],
       );
@@ -133,7 +133,7 @@ Future<List<CandleModel>> genRandomCandleList({
       range,
       initalVol,
       rangeVol,
-      bar,
+      timeBar,
       dateTime,
       isHistory,
     ]);
@@ -144,7 +144,7 @@ Future<List<CandleModel>> genRandomCandleList({
     range: range,
     initalVol: initalVol,
     rangeVol: rangeVol,
-    bar: bar,
+    timeBar: timeBar,
     dateTime: dateTime,
     isHistory: isHistory,
   );
@@ -156,7 +156,7 @@ Future<List<CandleModel>> _genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-  TimeBar bar = TimeBar.D1,
+  required TimeBarConfig timeBar,
   DateTime? dateTime,
   bool isHistory = true,
 }) async {
@@ -192,7 +192,7 @@ Future<List<CandleModel>> _genRandomCandleList({
     v = genVal(v, rangeVol);
     m = CandleModel(
       ts: dateTime
-          .add(Duration(milliseconds: flag * i * bar.milliseconds))
+          .add(Duration(milliseconds: flag * i * timeBar.milliseconds))
           .millisecondsSinceEpoch,
       h: h.d,
       o: o.d,

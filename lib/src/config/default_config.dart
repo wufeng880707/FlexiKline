@@ -76,6 +76,8 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
     required this.lastPriceTextColor,
     required this.crossTextColor,
     required this.tooltipTextColor,
+    required this.indraTodayAvgColor,
+    required this.indraTodayCloseColor,
   });
 
   BaseFlexiKlineTheme.simple({
@@ -143,6 +145,11 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
   late Color crossTextColor;
   @override
   late Color tooltipTextColor;
+
+  @override
+  late Color indraTodayCloseColor;
+  @override
+  late Color indraTodayAvgColor;
 }
 
 /// 通过[IFlexiKlineTheme]来配置FlexiKline基类.
@@ -175,17 +182,25 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
     return (setting) => genTimeIndicator(setting);
   }
 
+  /// 主k线支持的指标 （MA、BOLL、AVL 等）
   @override
   Map<IIndicatorKey, IndicatorBuilder> mainIndicatorBuilders() => {};
 
+  /// 副k线支持的指标 （RSI、KDJ、MACD 等）
   @override
   Map<IIndicatorKey, IndicatorBuilder> subIndicatorBuilders() => {};
 
+  /// 交易相关的指标（历史买卖，当前委托 等）
   @override
   Map<IIndicatorKey, IndicatorBuilder> tradeIndicatorBuilders() => {};
 
+  /// 绘画配置
   @override
   Map<IDrawType, DrawObjectBuilder> drawObjectBuilders() => {};
+
+  /// 时间选择配置 （1M、1H、2H、1D 等）
+  @override
+  List<TimeBarConfig> timeBarBuilders() => [];
 
   /// Grid配置
   GridConfig genGridConfig() {
@@ -224,6 +239,8 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
   SettingConfig genSettingConfig() {
     return SettingConfig(
+      indraTodayAvgColor: theme.indraTodayAvgColor,
+      indraTodayCloseColor: theme.indraTodayCloseColor,
       pixel: theme.pixel,
       textColor: theme.textColor,
       longColor: theme.long,

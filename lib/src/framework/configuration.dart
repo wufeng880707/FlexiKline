@@ -14,8 +14,8 @@
 
 import 'package:flutter/painting.dart';
 
-import '../constant.dart';
 import '../config/export.dart';
+import '../constant.dart';
 import 'chart/indicator.dart';
 import 'draw/overlay.dart';
 
@@ -43,6 +43,9 @@ abstract interface class IFlexiKlineTheme {
   /// 涨跌颜色
   Color get long;
   Color get short;
+
+  Color get indraTodayAvgColor;
+  Color get indraTodayCloseColor;
 
   // 背景色
   Color get chartBg;
@@ -168,6 +171,9 @@ abstract interface class IConfiguration {
 
   /// 绘制工具定制
   Map<IDrawType, DrawObjectBuilder> drawObjectBuilders();
+
+  /// 时间粒度配置（如 1m、5m、15m、1H、1D 等）
+  List<TimeBarConfig> timeBarBuilders();
 
   /// 从本地获取[instId]指定的[Overlay]缓存列表.
   Iterable<Overlay> getOverlayListConfig(String instId);

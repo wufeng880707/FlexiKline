@@ -14,15 +14,11 @@
 
 import 'package:decimal/decimal.dart';
 import 'package:flexi_kline/flexi_kline.dart';
-import 'package:flexi_kline/src/indicators/rsi/rsi_param.dart';
-import 'package:flexi_kline/src/data/kline_data.dart';
-import 'package:flexi_kline/src/indicators/rsi/rsi.dart';
-import 'package:flexi_kline/src/model/candle_model/candle_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const tipsConfig = TipsConfig();
-const candleReq = CandleReq(instId: 'BTC-USDT');
+// const candleReq = CandleReq(instId: 'BTC-USDT');
 
 /// RSI相对强弱指数：股票、公式、计算和策略
 /// https://bigquant.com/wiki/doc/rsi-eUeAulPIqH
@@ -72,6 +68,18 @@ void main() {
       list.add(CandleModel(ts: i, o: val, h: val, l: val, c: val, v: val));
     }
 
+    const timeBar = TimeBarConfig(
+      key: 'm15',
+      bar: '15m',
+      milliseconds: Duration.millisecondsPerMinute * 15,
+      multiplier: 15,
+      timespan: Timespan.minute,
+      showName: '15m',
+      sortOrder: 4,
+    );
+
+    const candleReq = CandleReq(instId: 'BTC-USDT', timeBar: timeBar);
+
     klineData = KlineData(candleReq, list: list);
     rsiParams = [const RsiParam(count: 14, tips: tipsConfig)];
     rsiIndicator = RSIIndicator(
@@ -86,7 +94,7 @@ void main() {
     stopwatch.reset();
     stopwatch.start();
   });
-  
+
   tearDown(() {
     stopwatch.stop();
     debugPrint('tearDown spent:${stopwatch.elapsedMicroseconds}');
@@ -105,7 +113,7 @@ void main() {
     final param = rsiParams.first;
     expect(param.count, 14);
     expect(param.tips, tipsConfig);
-    
+
     // 测试参数序列化
     final json = param.toJson();
     final fromJson = RsiParam.fromJson(json);
@@ -116,7 +124,7 @@ void main() {
   test('RSI指标序列化测试', () {
     final json = rsiIndicator.toJson();
     final fromJson = RSIIndicator.fromJson(json);
-    
+
     expect(fromJson.calcParams.length, rsiIndicator.calcParams.length);
     expect(fromJson.calcParams.first.count, rsiIndicator.calcParams.first.count);
     expect(fromJson.key.id, rsiIndicator.key.id);
@@ -130,10 +138,10 @@ void main() {
       const RsiParam(count: 12, tips: tipsConfig),
       const RsiParam(count: 24, tips: tipsConfig),
     ];
-    
+
     final minCount = RsiParam.getMinCountByList(params);
     final maxCount = RsiParam.getMaxCountByList(params);
-    
+
     expect(minCount, 6);
     expect(maxCount, 24);
   });

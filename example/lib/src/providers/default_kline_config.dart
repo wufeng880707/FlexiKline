@@ -48,6 +48,8 @@ class DefaultFlexiKlineTheme extends BaseFlexiKlineTheme with FlexiKlineThemeTex
   DefaultFlexiKlineTheme({
     required this.theme,
   }) : super(
+          indraTodayAvgColor: theme.indraTodayAvgColor,
+          indraTodayCloseColor: theme.indraTodayCloseColor,
           long: theme.long,
           short: theme.short,
           chartBg: theme.pageBg,
@@ -122,7 +124,95 @@ final defaultKlineThemeProvider = StateProvider<DefaultFlexiKlineTheme>((ref) {
 class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   final WidgetRef ref;
 
-  DefaultFlexiKlineConfiguration({required this.ref});
+  DefaultFlexiKlineConfiguration({required this.ref}) {
+    // // 初始化时间粒度配置
+    // _initializeTimeBarConfigs();
+  }
+
+  // /// 初始化时间粒度配置
+  // void _initializeTimeBarConfigs() {
+  //   // 初始化默认配置
+  //   timeBarConfigManager.initializeDefaultConfigs();
+  //
+  //   // 可以在这里添加自定义的时间粒度配置
+  //   // 例如：添加特定交易所的配置
+  //   timeBarConfigManager.registerTimeBar(
+  //     TimeBarConfig(
+  //       key: 'custom_5s',
+  //       bar: '5s',
+  //       milliseconds: 5 * Duration.millisecondsPerSecond,
+  //       multiplier: 5,
+  //       timespan: Timespan.second,
+  //       showName: '5秒',
+  //       exchange: 'custom',
+  //       locale: 'zh',
+  //       sortOrder: -1,
+  //     ),
+  //   );
+  //
+  //   // 添加更多交易所映射
+  //   timeBarConfigManager.registerExchangeMapping('huobi', {
+  //     '1min': '1m',
+  //     '5min': '5m',
+  //     '15min': '15m',
+  //     '30min': '30m',
+  //     '60min': '1H',
+  //     '4hour': '4H',
+  //     '1day': '1D',
+  //     '1mon': '1M',
+  //     '1week': '1W',
+  //   });
+  //
+  //   // 添加更多语言映射
+  //   timeBarConfigManager.registerLocaleMapping('ko', {
+  //     'intraDay': '분시',
+  //     'm1': '1분',
+  //     'm3': '3분',
+  //     'm5': '5분',
+  //     'm15': '15분',
+  //     'm30': '30분',
+  //     'H1': '1시간',
+  //     'H2': '2시간',
+  //     'H4': '4시간',
+  //     'H6': '6시간',
+  //     'H12': '12시간',
+  //     'D1': '1일',
+  //     'D2': '2일',
+  //     'D3': '3일',
+  //     'W1': '1주',
+  //     'M1': '1개월',
+  //     'M3': '3개월',
+  //   });
+  // }
+
+  // /// 获取当前交易所的时间粒度列表
+  // List<TimeBarConfig> getTimeBarsForExchange(String exchange) {
+  //   return timeBarConfigManager.getTimeBarsByExchange(exchange);
+  // }
+  //
+  // /// 获取当前语言的时间粒度列表
+  // List<TimeBarConfig> getTimeBarsForLocale(String locale) {
+  //   return timeBarConfigManager.getTimeBarsByLocale(locale);
+  // }
+  //
+  // /// 转换bar参数（支持多交易所）
+  // String convertBarForExchange(String bar, String fromExchange, String toExchange) {
+  //   return timeBarConfigManager.convertBar(
+  //     bar,
+  //     fromExchange: fromExchange,
+  //     toExchange: toExchange,
+  //   );
+  // }
+  //
+  // /// 获取显示名称（支持多语言）
+  // String getTimeBarShowName(TimeBarConfig config, {String? locale}) {
+  //   return timeBarConfigManager.getShowName(config, locale: locale);
+  // }
+  //
+  // /// 根据bar参数获取TimeBarConfig
+  // TimeBarConfig? getTimeBarConfig(String bar, {String? exchange}) {
+  //   return timeBarConfigManager.getTimeBarByBar(bar, exchange: exchange);
+  // }
 
   @override
   Size get initialMainSize {
@@ -542,6 +632,247 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
             ),
           ),
     };
+  }
+
+  @override
+  List<TimeBarConfig> timeBarBuilders() {
+    return [
+      const TimeBarConfig(
+        key: 'intraDay',
+        bar: '15m',
+        milliseconds: Duration.millisecondsPerMinute * 15,
+        multiplier: 15,
+        timespan: Timespan.minute,
+        showName: 'Time',
+        sortOrder: 0,
+        intraDay: true,
+      ),
+      const TimeBarConfig(
+        key: 'm1',
+        bar: '1m',
+        milliseconds: Duration.millisecondsPerMinute,
+        multiplier: 1,
+        timespan: Timespan.minute,
+        showName: '1m',
+        sortOrder: 1,
+      ),
+      const TimeBarConfig(
+        key: 'm3',
+        bar: '3m',
+        milliseconds: Duration.millisecondsPerMinute * 3,
+        multiplier: 3,
+        timespan: Timespan.minute,
+        showName: '3m',
+        sortOrder: 2,
+      ),
+      const TimeBarConfig(
+        key: 'm5',
+        bar: '5m',
+        milliseconds: Duration.millisecondsPerMinute * 5,
+        multiplier: 5,
+        timespan: Timespan.minute,
+        showName: '5m',
+        sortOrder: 3,
+      ),
+      const TimeBarConfig(
+        key: 'm15',
+        bar: '15m',
+        milliseconds: Duration.millisecondsPerMinute * 15,
+        multiplier: 15,
+        timespan: Timespan.minute,
+        showName: '15m',
+        sortOrder: 4,
+      ),
+      const TimeBarConfig(
+        key: 'm30',
+        bar: '30m',
+        milliseconds: Duration.millisecondsPerMinute * 30,
+        multiplier: 30,
+        timespan: Timespan.minute,
+        showName: '30m',
+        sortOrder: 5,
+      ),
+      const TimeBarConfig(
+        key: 'H1',
+        bar: '1H',
+        milliseconds: Duration.millisecondsPerHour,
+        multiplier: 1,
+        timespan: Timespan.hour,
+        showName: '1H',
+        sortOrder: 6,
+      ),
+      const TimeBarConfig(
+        key: 'H2',
+        bar: '2H',
+        milliseconds: Duration.millisecondsPerHour * 2,
+        multiplier: 2,
+        timespan: Timespan.hour,
+        showName: '2H',
+        sortOrder: 7,
+      ),
+      const TimeBarConfig(
+        key: 'H4',
+        bar: '4H',
+        milliseconds: Duration.millisecondsPerHour * 4,
+        multiplier: 4,
+        timespan: Timespan.hour,
+        showName: '4H',
+        sortOrder: 8,
+      ),
+      const TimeBarConfig(
+        key: 'H6',
+        bar: '6H',
+        milliseconds: Duration.millisecondsPerHour * 6,
+        multiplier: 6,
+        timespan: Timespan.hour,
+        showName: '6H',
+        sortOrder: 9,
+      ),
+      const TimeBarConfig(
+        key: 'H12',
+        bar: '12H',
+        milliseconds: Duration.millisecondsPerHour * 12,
+        multiplier: 12,
+        timespan: Timespan.hour,
+        showName: '12H',
+        sortOrder: 10,
+      ),
+      const TimeBarConfig(
+        key: 'D1',
+        bar: '1D',
+        milliseconds: Duration.millisecondsPerDay,
+        multiplier: 1,
+        timespan: Timespan.day,
+        showName: '1D',
+        sortOrder: 11,
+      ),
+      const TimeBarConfig(
+        key: 'D2',
+        bar: '2D',
+        milliseconds: Duration.millisecondsPerDay * 2,
+        multiplier: 2,
+        timespan: Timespan.day,
+        showName: '2D',
+        sortOrder: 12,
+      ),
+      const TimeBarConfig(
+        key: 'D3',
+        bar: '3D',
+        milliseconds: Duration.millisecondsPerDay * 3,
+        multiplier: 3,
+        timespan: Timespan.day,
+        showName: '3D',
+        sortOrder: 13,
+      ),
+      const TimeBarConfig(
+        key: 'W1',
+        bar: '1W',
+        milliseconds: Duration.millisecondsPerDay * 7,
+        multiplier: 7,
+        timespan: Timespan.week,
+        showName: '1W',
+        sortOrder: 14,
+      ),
+      const TimeBarConfig(
+        key: 'M1',
+        bar: '1M',
+        milliseconds: Duration.millisecondsPerDay * 30,
+        multiplier: 1,
+        timespan: Timespan.month,
+        showName: '1M',
+        sortOrder: 15,
+      ),
+      const TimeBarConfig(
+        key: 'M3',
+        bar: '3M',
+        milliseconds: Duration.millisecondsPerDay * 90,
+        multiplier: 3,
+        timespan: Timespan.month,
+        showName: '3M',
+        sortOrder: 16,
+      ),
+      // UTC时间配置
+      const TimeBarConfig(
+        key: 'utc6H',
+        bar: '6Hutc',
+        milliseconds: Duration.millisecondsPerHour * 6,
+        multiplier: 6,
+        timespan: Timespan.hour,
+        showName: '6Hutc',
+        isUtc: true,
+        sortOrder: 17,
+      ),
+      const TimeBarConfig(
+        key: 'utc12H',
+        bar: '12Hutc',
+        milliseconds: Duration.millisecondsPerHour * 12,
+        multiplier: 12,
+        timespan: Timespan.hour,
+        showName: '12Hutc',
+        isUtc: true,
+        sortOrder: 18,
+      ),
+      const TimeBarConfig(
+        key: 'utc1D',
+        bar: '1Dutc',
+        milliseconds: Duration.millisecondsPerDay,
+        multiplier: 1,
+        timespan: Timespan.day,
+        showName: '1Dutc',
+        isUtc: true,
+        sortOrder: 19,
+      ),
+      const TimeBarConfig(
+        key: 'utc2D',
+        bar: '2Dutc',
+        milliseconds: Duration.millisecondsPerDay * 2,
+        multiplier: 2,
+        timespan: Timespan.day,
+        showName: '2Dutc',
+        isUtc: true,
+        sortOrder: 20,
+      ),
+      const TimeBarConfig(
+        key: 'utc3D',
+        bar: '3Dutc',
+        milliseconds: Duration.millisecondsPerDay * 3,
+        multiplier: 3,
+        timespan: Timespan.day,
+        showName: '3Dutc',
+        isUtc: true,
+        sortOrder: 21,
+      ),
+      const TimeBarConfig(
+        key: 'utc1W',
+        bar: '1Wutc',
+        milliseconds: Duration.millisecondsPerDay * 7,
+        multiplier: 7,
+        timespan: Timespan.week,
+        showName: '1Wutc',
+        isUtc: true,
+        sortOrder: 22,
+      ),
+      const TimeBarConfig(
+        key: 'utc1M',
+        bar: '1Mutc',
+        milliseconds: Duration.millisecondsPerDay * 30,
+        multiplier: 1,
+        timespan: Timespan.month,
+        showName: '1Mutc',
+        isUtc: true,
+        sortOrder: 23,
+      ),
+      const TimeBarConfig(
+        key: 'utc3M',
+        bar: '3Mutc',
+        milliseconds: Duration.millisecondsPerDay * 90,
+        multiplier: 3,
+        timespan: Timespan.month,
+        showName: '3Mutc',
+        isUtc: true,
+        sortOrder: 24,
+      ),
+    ];
   }
 
   @override

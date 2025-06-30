@@ -14,14 +14,8 @@
 
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:decimal/decimal.dart';
+import 'package:flexi_kline/flexi_kline.dart';
 import 'package:json_annotation/json_annotation.dart';
-
-import '../../constant.dart';
-import '../../extension/export.dart';
-import '../../framework/serializers.dart';
-import '../../utils/export.dart';
-import '../bag_num.dart';
-import '../minmax.dart';
 
 part 'candle_helper.dart';
 part 'candle_model.g.dart';
@@ -115,8 +109,7 @@ class CandleModel implements Comparable<CandleModel> {
     );
   }
 
-  factory CandleModel.fromJson(Map<String, dynamic> json) =>
-      _$CandleModelFromJson(json);
+  factory CandleModel.fromJson(Map<String, dynamic> json) => _$CandleModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$CandleModelToJson(this);
 
@@ -147,12 +140,7 @@ class CandleModel implements Comparable<CandleModel> {
     int indicatorCount, {
     bool reset = false,
   }) {
-    if (reset ||
-        _open == null ||
-        _high == null ||
-        _low == null ||
-        _close == null ||
-        _vol == null) {
+    if (reset || _open == null || _high == null || _low == null || _close == null || _vol == null) {
       if (mode == ComputeMode.fast) {
         _open = BagNum.fromNum(o.toDouble());
         _high = BagNum.fromNum(h.toDouble());

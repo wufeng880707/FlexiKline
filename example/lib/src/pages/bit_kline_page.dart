@@ -28,13 +28,13 @@ import '../providers/bit_kline_config.dart';
 import '../providers/instruments_provider.dart';
 import '../theme/flexi_theme.dart';
 import '../utils/device_util.dart';
+import 'common/kline_page_data_update_mixin.dart';
 import 'components/flexi_kline_draw_toolbar.dart';
 import 'components/flexi_kline_indicator_bar.dart';
 import 'components/flexi_kline_mark_view.dart';
-import 'components/market_ticker_view.dart';
 import 'components/flexi_kline_setting_bar.dart';
+import 'components/market_ticker_view.dart';
 import 'components/trading_pair_select_title.dart';
-import 'common/kline_page_data_update_mixin.dart';
 import 'index_page.dart';
 
 class BitKlinePage extends ConsumerStatefulWidget {
@@ -63,9 +63,12 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId,
         );
+
+    final timeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'm15');
+
     req = CandleReq(
       instId: widget.instId,
-      bar: TimeBar.m15.bar,
+      timeBar: timeBar,
       precision: p ?? 2,
       limit: 300,
     );
@@ -240,8 +243,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
                     dimension: controller.settingConfig.loading.size,
                     child: CircularProgressIndicator(
                       strokeWidth: controller.settingConfig.loading.strokeWidth,
-                      backgroundColor:
-                          controller.settingConfig.loading.background,
+                      backgroundColor: controller.settingConfig.loading.background,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         controller.settingConfig.loading.valueColor,
                       ),

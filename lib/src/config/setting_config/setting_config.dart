@@ -27,6 +27,8 @@ part 'setting_config.g.dart';
 class SettingConfig {
   SettingConfig({
     required this.pixel,
+    required this.indraTodayAvgColor,
+    required this.indraTodayCloseColor,
 
     /// Long/Short颜色配置
     required this.textColor,
@@ -70,6 +72,12 @@ class SettingConfig {
 
   /// 单个像素值
   final double pixel;
+
+  ///分时图均价线颜色
+  final Color indraTodayAvgColor;
+
+  ///分时图折线颜色
+  final Color indraTodayCloseColor;
 
   /// Long/Short颜色配置
   final Color textColor;
@@ -159,8 +167,7 @@ class SettingConfig {
     candleWidth = config.candleWidth;
   }
 
-  factory SettingConfig.fromJson(Map<String, dynamic> json) =>
-      _$SettingConfigFromJson(json);
+  factory SettingConfig.fromJson(Map<String, dynamic> json) => _$SettingConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$SettingConfigToJson(this);
 }
@@ -203,6 +210,15 @@ extension SettingDataExt on SettingConfig {
     ..strokeWidth = candleLineWidth;
   Paint get defShortLinePaint => Paint()
     ..color = shortColor
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = candleLineWidth;
+  Paint get indraTodayLinePaint => Paint()
+    ..color = indraTodayCloseColor
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = candleLineWidth;
+
+  Paint get indraTodayAvgLinePaint => Paint()
+    ..color = indraTodayAvgColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleLineWidth;
 }

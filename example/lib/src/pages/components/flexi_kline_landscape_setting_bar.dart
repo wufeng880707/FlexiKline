@@ -27,7 +27,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
   });
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBar> onTapTimeBar;
+  final ValueChanged<TimeBarConfig> onTapTimeBar;
   final VoidCallback? onTapDraw;
 
   @override
@@ -69,12 +69,12 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
       builder: (context, value, child) {
         final theme = ref.watch(themeProvider);
         return Row(
-          children: TimeBar.values.map((bar) {
-            final selected = value == bar;
+          children: controller.configuration.timeBarBuilders().map((timeBar) {
+            final selected = value == timeBar;
             return GestureDetector(
-              onTap: () => onTapTimeBar(bar),
+              onTap: () => onTapTimeBar(timeBar),
               child: Container(
-                key: ValueKey(bar),
+                key: ValueKey(timeBar),
                 constraints: BoxConstraints(minWidth: 28.r),
                 alignment: AlignmentDirectional.center,
                 decoration: BoxDecoration(
@@ -87,7 +87,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
                 ),
                 margin: EdgeInsetsDirectional.symmetric(horizontal: 6.r),
                 child: Text(
-                  bar.bar,
+                  timeBar.showName,
                   style: selected ? theme.t1s14w700 : theme.t1s14w400,
                 ),
               ),

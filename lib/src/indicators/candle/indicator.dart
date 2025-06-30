@@ -70,18 +70,21 @@ class CandleIndicator extends SinglePaintObjectIndicator {
     return CandlePaintObject(context: context, indicator: this);
   }
 
-  factory CandleIndicator.fromJson(Map<String, dynamic> json) =>
-      _$CandleIndicatorFromJson(json);
+  factory CandleIndicator.fromJson(Map<String, dynamic> json) => _$CandleIndicatorFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$CandleIndicatorToJson(this);
 }
 
-class CandlePaintObject<T extends CandleIndicator>
-    extends SinglePaintObjectBox<T> with PaintYAxisTicksOnCrossMixin {
+class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<T>
+    with PaintYAxisTicksOnCrossMixin {
   CandlePaintObject({
     required super.context,
     required super.indicator,
+    this.onLastPriceTap,
   });
+
+  /// 最后价标记点击回调
+  final VoidCallback? onLastPriceTap;
 
   BagNum? _maxHigh, _minLow;
 
@@ -97,8 +100,14 @@ class CandlePaintObject<T extends CandleIndicator>
 
   @override
   void paintChart(Canvas canvas, Size size) {
-    /// 绘制蜡烛图
-    paintCandleChart(canvas, size);
+    final timeBar = klineData.req.timeBar;
+    if (timeBar.intraDay) {
+      ///分时图
+      paintIntraDayChart(canvas, size);
+    } else {
+      /// 绘制蜡烛图
+      paintCandleChart(canvas, size);
+    }
 
     /// 绘制价钱刻度数据
     if (settingConfig.showYAxisTick) {
@@ -163,9 +172,7 @@ class CandlePaintObject<T extends CandleIndicator>
       canvas.drawLine(
         highOff,
         lowOff,
-        isLong
-            ? settingConfig.defLongLinePaint
-            : settingConfig.defShortLinePaint,
+        isLong ? settingConfig.defLongLinePaint : settingConfig.defShortLinePaint,
       );
 
       final openOff = Offset(dx, valueToDy(m.open));
@@ -390,9 +397,7 @@ class CandlePaintObject<T extends CandleIndicator>
 
       Color? background = textConfig.background;
       if (indicator.useCandleColorAsLatestBg) {
-        background = model.close >= model.open
-            ? settingConfig.longColor
-            : settingConfig.shortColor;
+        background = model.close >= model.open ? settingConfig.longColor : settingConfig.shortColor;
       }
 
       BorderRadius? borderRadius = textConfig.borderRadius;
@@ -400,7 +405,7 @@ class CandlePaintObject<T extends CandleIndicator>
       /// 倒计时Text
       String? countDownText;
       if (indicator.showCountDown) {
-        final nextUpdateDateTime = model.nextUpdateDateTime(klineData.req.bar);
+        final nextUpdateDateTime = model.nextUpdateDateTime(klineData.req.timeBar);
         if (nextUpdateDateTime != null) {
           countDownText = formatTimeDiff(nextUpdateDateTime);
         }
@@ -500,7 +505,122 @@ class CandlePaintObject<T extends CandleIndicator>
         text: '$text ▸', // ➤➤▹►▸▶︎≻
         textConfig: last.text,
       );
+      // 新增：为最后价标记添加点击区域（示例，需配合外部事件系统）
+      if (onLastPriceTap != null) {
+        // 这里仅示意，实际应在外部用 GestureDetector 包裹 chart 区域并判断点击位置
+        onLastPriceTap!();
+      }
     }
+  }
+
+  /// 绘制分时图图
+  void paintIntraDayChart(Canvas canvas, Size size) {
+    if (!klineData.canPaintChart) {
+      logw('paintIntraDayChart Data.list is empty or Index is out of bounds');
+      return;
+    }
+
+    final list = klineData.list;
+    int start = klineData.start;
+    int end = klineData.end;
+
+    final offset = startCandleDx - candleWidthHalf;
+    // final bar = klineData.timeBar;
+    Offset? maxHihgOffset, minLowOffset;
+    bool hasEnough = paintDxOffset > 0;
+    BagNum maxHigh = list[start].high;
+    BagNum minLow = list[start].low;
+    CandleModel m;
+    Path path = Path();
+    bool isShowAvgLine = false;
+    double startDx = 0;
+    double endDx = 0;
+    Offset? lastPoint;
+    for (var i = start; i < end; i++) {
+      m = list[i];
+      final dx = offset - (i - start) * candleActualWidth;
+
+      final highOff = Offset(dx, valueToDy(m.high));
+      final lowOff = Offset(dx, valueToDy(m.low));
+
+      // 优化：类型安全处理
+      final Decimal vc = m.vc ?? Decimal.zero;
+      final Decimal vcq = m.vcq ?? Decimal.zero;
+      final Decimal v = m.v == Decimal.zero ? Decimal.one : m.v;
+      final bool hasAvg = (vc > Decimal.zero) || (vcq > Decimal.zero);
+      if (!isShowAvgLine) isShowAvgLine = hasAvg;
+
+      final avgRational = (vc > Decimal.zero ? vc : vcq) / v;
+      final double avg = avgRational.toDouble();
+      final bagNumAvg = BagNum.fromDecimal(Decimal.parse(avg.toString()));
+      double avgDy = valueToDy(bagNumAvg);
+
+      if (i == start) {
+        startDx = dx;
+        path.moveTo(dx, valueToDy(m.close));
+      } else {
+        if (i == end - 1) {
+          endDx = dx;
+        }
+        path.lineTo(dx, valueToDy(m.close));
+      }
+
+      if (isShowAvgLine && lastPoint != null) {
+        // 优化：成交均价线
+        canvas.drawLine(lastPoint, Offset(dx, avgDy), settingConfig.indraTodayAvgLinePaint);
+      }
+
+      if (indicator.high.show || indicator.low.show) {
+        if (hasEnough) {
+          if (m.high == _maxHigh) {
+            maxHihgOffset = highOff;
+            maxHigh = _maxHigh!;
+          }
+          if (m.low == _minLow) {
+            minLowOffset = lowOff;
+            minLow = _minLow!;
+          }
+        } else if (dx > 0) {
+          if (m.high >= maxHigh) {
+            maxHihgOffset = highOff;
+            maxHigh = m.high;
+          }
+          if (m.low <= minLow) {
+            minLowOffset = lowOff;
+            minLow = m.low;
+          }
+        }
+      }
+      if (isShowAvgLine) {
+        lastPoint = Offset(dx, avgDy);
+      }
+    }
+
+    // 绘制价格波动线
+    canvas.drawLineType(LineType.solid, path, settingConfig.indraTodayLinePaint);
+
+    // 绘制渐变色块
+    Path gradientPath = Path.from(path);
+    gradientPath.lineTo(endDx, size.height);
+    gradientPath.lineTo(startDx, size.height);
+    gradientPath.close();
+    final gradientPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          settingConfig.indraTodayCloseColor.withOpacity(0.4),
+          settingConfig.indraTodayCloseColor.withOpacity(0),
+        ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTRB(0, 0, size.width, size.height));
+    canvas.drawPath(gradientPath, gradientPaint);
+
+    // if ((indicator.high.show || indicator.low.show) &&
+    //     (maxHihgOffset != null && maxHigh > BagNum.zero) &&
+    //     (minLowOffset != null && minLow > BagNum.zero)) {
+    //   paintPriceMark(canvas, maxHihgOffset, maxHigh, indicator.high);
+    //   paintPriceMark(canvas, minLowOffset, minLow, indicator.low);
+    // }
   }
 
   /// 绘制OnCross 时间刻度

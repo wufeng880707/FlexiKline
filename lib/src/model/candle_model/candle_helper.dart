@@ -38,12 +38,11 @@ extension CandleModelExt on CandleModel {
     return DateTime.fromMillisecondsSinceEpoch(ts);
   }
 
-  String formatDateTime(TimeBar? bar) {
-    return formatDateTimeByTimeBar(ts, bar: bar);
+  String formatDateTime(TimeBarConfig? timeBar) {
+    return formatDateTimeByTimeBar(ts, timeBar: timeBar);
   }
 
-  DateTime? nextUpdateDateTime(String bar) {
-    final timeBar = TimeBar.convert(bar);
+  DateTime? nextUpdateDateTime(TimeBarConfig timeBar) {
     if (timeBar != null) {
       return DateTime.fromMillisecondsSinceEpoch(
         ts + timeBar.milliseconds,

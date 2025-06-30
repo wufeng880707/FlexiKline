@@ -22,9 +22,7 @@ import 'theme.dart';
 import 'theme_manager.dart';
 
 final themeProvider = StateProvider<FKTheme>((ref) {
-  return ref.watch(themeModeProvider) != ThemeMode.dark
-      ? fkLightTheme
-      : fkDarkTheme;
+  return ref.watch(themeModeProvider) != ThemeMode.dark ? fkLightTheme : fkDarkTheme;
 });
 
 final fkLightTheme = LightFKTheme();
@@ -40,6 +38,9 @@ abstract class FKTheme {
   Color get short => const Color(0xFFE84E74);
   Color get white => Colors.white;
   Color get error => short;
+
+  Color get indraTodayAvgColor => const Color(0xffff9933);
+  Color get indraTodayCloseColor => const Color(0xff4d78ff);
 
   late Color pageBg;
   late Color lightBg;
@@ -146,80 +147,47 @@ class DarkFKTheme extends FKTheme {
 
 extension TextStyleFKTheme on FKTheme {
   /// Text long
-  TextStyle get tls10w400 =>
-      TextStyle(color: long, fontSize: 10.sp, fontWeight: FontWeight.w400);
-  TextStyle get tls12w400 =>
-      TextStyle(color: long, fontSize: 12.sp, fontWeight: FontWeight.w400);
+  TextStyle get tls10w400 => TextStyle(color: long, fontSize: 10.sp, fontWeight: FontWeight.w400);
+  TextStyle get tls12w400 => TextStyle(color: long, fontSize: 12.sp, fontWeight: FontWeight.w400);
 
   /// Text short
-  TextStyle get tss10w400 =>
-      TextStyle(color: short, fontSize: 10.sp, fontWeight: FontWeight.w400);
-  TextStyle get tss12w400 =>
-      TextStyle(color: short, fontSize: 12.sp, fontWeight: FontWeight.w400);
+  TextStyle get tss10w400 => TextStyle(color: short, fontSize: 10.sp, fontWeight: FontWeight.w400);
+  TextStyle get tss12w400 => TextStyle(color: short, fontSize: 12.sp, fontWeight: FontWeight.w400);
 
   /// T1
-  TextStyle get t1s10w400 =>
-      TextStyle(color: t1, fontSize: 10.sp, fontWeight: FontWeight.w400);
-  TextStyle get t1s12w400 =>
-      TextStyle(color: t1, fontSize: 12.sp, fontWeight: FontWeight.w400);
-  TextStyle get t1s12w500 =>
-      TextStyle(color: t1, fontSize: 12.sp, fontWeight: FontWeight.w500);
-  TextStyle get t1s14w400 =>
-      TextStyle(color: t1, fontSize: 14.sp, fontWeight: FontWeight.w400);
-  TextStyle get t1s14w500 =>
-      TextStyle(color: t1, fontSize: 14.sp, fontWeight: FontWeight.w500);
-  TextStyle get t1s14w700 =>
-      TextStyle(color: t1, fontSize: 14.sp, fontWeight: FontWeight.w700);
-  TextStyle get t1s16w400 =>
-      TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w400);
-  TextStyle get t1s16w500 =>
-      TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w500);
-  TextStyle get t1s16w700 =>
-      TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w700);
-  TextStyle get t1s18w500 =>
-      TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w500);
-  TextStyle get t1s18w600 =>
-      TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w600);
-  TextStyle get t1s18w700 =>
-      TextStyle(color: t1, fontSize: 18.sp, fontWeight: FontWeight.w700);
-  TextStyle get t1s20w700 =>
-      TextStyle(color: t1, fontSize: 20.sp, fontWeight: FontWeight.w700);
+  TextStyle get t1s10w400 => TextStyle(color: t1, fontSize: 10.sp, fontWeight: FontWeight.w400);
+  TextStyle get t1s12w400 => TextStyle(color: t1, fontSize: 12.sp, fontWeight: FontWeight.w400);
+  TextStyle get t1s12w500 => TextStyle(color: t1, fontSize: 12.sp, fontWeight: FontWeight.w500);
+  TextStyle get t1s14w400 => TextStyle(color: t1, fontSize: 14.sp, fontWeight: FontWeight.w400);
+  TextStyle get t1s14w500 => TextStyle(color: t1, fontSize: 14.sp, fontWeight: FontWeight.w500);
+  TextStyle get t1s14w700 => TextStyle(color: t1, fontSize: 14.sp, fontWeight: FontWeight.w700);
+  TextStyle get t1s16w400 => TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w400);
+  TextStyle get t1s16w500 => TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w500);
+  TextStyle get t1s16w700 => TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w700);
+  TextStyle get t1s18w500 => TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w500);
+  TextStyle get t1s18w600 => TextStyle(color: t1, fontSize: 16.sp, fontWeight: FontWeight.w600);
+  TextStyle get t1s18w700 => TextStyle(color: t1, fontSize: 18.sp, fontWeight: FontWeight.w700);
+  TextStyle get t1s20w700 => TextStyle(color: t1, fontSize: 20.sp, fontWeight: FontWeight.w700);
 
   /// T2
-  TextStyle get t2s10w400 =>
-      TextStyle(color: t2, fontSize: 10.sp, fontWeight: FontWeight.w400);
-  TextStyle get t2s12w400 =>
-      TextStyle(color: t2, fontSize: 12.sp, fontWeight: FontWeight.w400);
-  TextStyle get t2s14w400 =>
-      TextStyle(color: t2, fontSize: 14.sp, fontWeight: FontWeight.w400);
-  TextStyle get t2s14w500 =>
-      TextStyle(color: t2, fontSize: 14.sp, fontWeight: FontWeight.w500);
-  TextStyle get t2s16w400 =>
-      TextStyle(color: t2, fontSize: 16.sp, fontWeight: FontWeight.w400);
-  TextStyle get t2s16w500 =>
-      TextStyle(color: t2, fontSize: 16.sp, fontWeight: FontWeight.w500);
-  TextStyle get t2s18w500 =>
-      TextStyle(color: t2, fontSize: 16.sp, fontWeight: FontWeight.w500);
-  TextStyle get t2s18w600 =>
-      TextStyle(color: t2, fontSize: 16.sp, fontWeight: FontWeight.w600);
+  TextStyle get t2s10w400 => TextStyle(color: t2, fontSize: 10.sp, fontWeight: FontWeight.w400);
+  TextStyle get t2s12w400 => TextStyle(color: t2, fontSize: 12.sp, fontWeight: FontWeight.w400);
+  TextStyle get t2s14w400 => TextStyle(color: t2, fontSize: 14.sp, fontWeight: FontWeight.w400);
+  TextStyle get t2s14w500 => TextStyle(color: t2, fontSize: 14.sp, fontWeight: FontWeight.w500);
+  TextStyle get t2s16w400 => TextStyle(color: t2, fontSize: 16.sp, fontWeight: FontWeight.w400);
+  TextStyle get t2s16w500 => TextStyle(color: t2, fontSize: 16.sp, fontWeight: FontWeight.w500);
+  TextStyle get t2s18w500 => TextStyle(color: t2, fontSize: 16.sp, fontWeight: FontWeight.w500);
+  TextStyle get t2s18w600 => TextStyle(color: t2, fontSize: 16.sp, fontWeight: FontWeight.w600);
 
   /// T3
-  TextStyle get t3s10w400 =>
-      TextStyle(color: t3, fontSize: 10.sp, fontWeight: FontWeight.w400);
-  TextStyle get t3s12w400 =>
-      TextStyle(color: t3, fontSize: 12.sp, fontWeight: FontWeight.w400);
-  TextStyle get t3s14w400 =>
-      TextStyle(color: t3, fontSize: 14.sp, fontWeight: FontWeight.w400);
-  TextStyle get t3s14w500 =>
-      TextStyle(color: t3, fontSize: 14.sp, fontWeight: FontWeight.w500);
-  TextStyle get t3s16w400 =>
-      TextStyle(color: t3, fontSize: 16.sp, fontWeight: FontWeight.w400);
-  TextStyle get t3s16w500 =>
-      TextStyle(color: t3, fontSize: 16.sp, fontWeight: FontWeight.w500);
-  TextStyle get t3s18w500 =>
-      TextStyle(color: t3, fontSize: 16.sp, fontWeight: FontWeight.w500);
-  TextStyle get t3s18w600 =>
-      TextStyle(color: t3, fontSize: 16.sp, fontWeight: FontWeight.w600);
+  TextStyle get t3s10w400 => TextStyle(color: t3, fontSize: 10.sp, fontWeight: FontWeight.w400);
+  TextStyle get t3s12w400 => TextStyle(color: t3, fontSize: 12.sp, fontWeight: FontWeight.w400);
+  TextStyle get t3s14w400 => TextStyle(color: t3, fontSize: 14.sp, fontWeight: FontWeight.w400);
+  TextStyle get t3s14w500 => TextStyle(color: t3, fontSize: 14.sp, fontWeight: FontWeight.w500);
+  TextStyle get t3s16w400 => TextStyle(color: t3, fontSize: 16.sp, fontWeight: FontWeight.w400);
+  TextStyle get t3s16w500 => TextStyle(color: t3, fontSize: 16.sp, fontWeight: FontWeight.w500);
+  TextStyle get t3s18w500 => TextStyle(color: t3, fontSize: 16.sp, fontWeight: FontWeight.w500);
+  TextStyle get t3s18w600 => TextStyle(color: t3, fontSize: 16.sp, fontWeight: FontWeight.w600);
 }
 
 extension ButtonStyleFKTheme on FKTheme {

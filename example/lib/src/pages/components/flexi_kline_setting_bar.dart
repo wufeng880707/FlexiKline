@@ -41,18 +41,16 @@ class FlexiKlineSettingBar extends ConsumerStatefulWidget {
   });
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBar> onTapTimeBar;
+  final ValueChanged<TimeBarConfig> onTapTimeBar;
 
   final AlignmentGeometry? alignment;
   final Decoration? decoration;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _FlexiKlineSettingBarState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _FlexiKlineSettingBarState();
 }
 
-class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar>
-    with WideScreenMixin {
+class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> with WideScreenMixin {
   bool _showDarwTool = true;
 
   @override
@@ -67,19 +65,20 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar>
     super.dispose();
   }
 
-  List<TimeBar> preferTimeBarList = [
-    TimeBar.m15,
-    TimeBar.H1,
-    TimeBar.H4,
-    TimeBar.D1,
-    TimeBar.W1,
-  ];
+  List<TimeBarConfig> get preferTimeBarList => [
+        ...widget.controller.configuration.timeBarBuilders().where((e) =>
+            e.bar == 'intraDay' ||
+            e.bar == '15m' ||
+            e.bar == '1H' ||
+            e.bar == '4H' ||
+            e.bar == '1D' ||
+            e.bar == '1W'),
+      ];
 
-  bool isPreferTimeBar(TimeBar bar) => preferTimeBarList.contains(bar);
+  bool isPreferTimeBar(TimeBarConfig timeBar) => preferTimeBarList.contains(timeBar);
 
-  List<TimeBar> get showTimeBarList {
-    return wideScreen ? TimeBar.values : preferTimeBarList;
-  }
+  List<TimeBarConfig> get showTimeBarList =>
+      wideScreen ? widget.controller.configuration.timeBarBuilders() : preferTimeBarList;
 
   final timeBarSettingBtnStatus = ValueNotifier(false);
   Future<void> onTapTimeBarSetting() async {
@@ -188,7 +187,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar>
                 final showMore = value == null || isPreferTimeBar(value);
                 return TextArrowButton(
                   onPressed: onTapTimeBarSetting,
-                  text: showMore ? s.more : value.bar,
+                  text: showMore ? s.more : value.showName,
                   iconStatus: timeBarSettingBtnStatus,
                   background: showMore ? null : theme.markBg,
                 );
@@ -225,7 +224,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar>
 
   Widget _buildTimeBarList(
     BuildContext context, {
-    required List<TimeBar> timerBarList,
+    required List<TimeBarConfig> timerBarList,
   }) {
     return ValueListenableBuilder(
       valueListenable: widget.controller.timeBarListener,
@@ -250,7 +249,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar>
                 ),
                 margin: EdgeInsetsDirectional.symmetric(horizontal: 2.r),
                 child: Text(
-                  bar.bar,
+                  bar.showName,
                   style: selected ? theme.t1s14w700 : theme.t1s14w400,
                 ),
               ),
@@ -270,9 +269,9 @@ class TimeBarTabBar extends ConsumerStatefulWidget {
     this.onTapTimeBar,
   });
 
-  final List<TimeBar> timerBarList;
-  final ValueChanged<TimeBar>? onTapTimeBar;
-  final ValueListenable<TimeBar?> timeBarListener;
+  final List<TimeBarConfig> timerBarList;
+  final ValueChanged<TimeBarConfig>? onTapTimeBar;
+  final ValueListenable<TimeBarConfig?> timeBarListener;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _TimeTabBarViewState();
@@ -282,7 +281,7 @@ class _TimeTabBarViewState extends ConsumerState<TimeBarTabBar>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  List<TimeBar> get timerBarList => widget.timerBarList;
+  List<TimeBarConfig> get timerBarList => widget.timerBarList;
 
   @override
   void initState() {
@@ -356,7 +355,7 @@ class _TimeTabBarViewState extends ConsumerState<TimeBarTabBar>
                 alignment: AlignmentDirectional.center,
                 width: 40.r,
                 child: FittedBox(
-                  child: Text(bar.bar),
+                  child: Text(bar.showName),
                 ),
               ),
             );
