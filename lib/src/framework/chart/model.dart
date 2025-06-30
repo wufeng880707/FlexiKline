@@ -14,6 +14,21 @@
 
 part of 'indicator.dart';
 
+/// 添加事件注册表
+typedef KlineEventCallback = void Function(dynamic args);
+
+class KlineEventBus {
+  final Map<String, KlineEventCallback> _handlers = {};
+
+  void on(String event, KlineEventCallback callback) {
+    _handlers[event] = callback;
+  }
+
+  void emit(String event, [dynamic args]) {
+    _handlers[event]?.call(args);
+  }
+}
+
 /// 指标基础配置
 ///
 /// [key] 唯一指定Indicator
@@ -44,7 +59,10 @@ abstract class Indicator implements IPrecomputable {
   final int zIndex; // TODO: 考虑下放到子类中
 
   @factory
-  PaintObject createPaintObject(IPaintContext context);
+  PaintObject createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  });
 
   Map<String, dynamic> toJson() => const {};
 
@@ -74,14 +92,16 @@ abstract class SinglePaintObjectIndicator extends Indicator {
   });
 
   @override
-  SinglePaintObjectBox createPaintObject(covariant IPaintContext context);
+  SinglePaintObjectBox createPaintObject(
+    covariant IPaintContext context, {
+    KlineEventBus? eventBus,
+  });
 }
 
 /// 多个绘制Indicator的配置.
 @CopyWith()
 @FlexiIndicatorSerializable
-class MultiPaintObjectIndicator<T extends SinglePaintObjectIndicator>
-    extends Indicator {
+class MultiPaintObjectIndicator<T extends SinglePaintObjectIndicator> extends Indicator {
   MultiPaintObjectIndicator({
     required super.key,
     required super.height,
@@ -92,7 +112,10 @@ class MultiPaintObjectIndicator<T extends SinglePaintObjectIndicator>
   final bool drawBelowTipsArea;
 
   @override
-  MultiPaintObjectBox createPaintObject(IPaintContext context) {
+  MultiPaintObjectBox createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return MultiPaintObjectBox(context: context, indicator: this);
   }
 

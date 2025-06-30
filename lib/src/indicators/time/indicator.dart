@@ -32,12 +32,14 @@ class TimeIndicator extends SinglePaintObjectIndicator {
   final DrawPosition position;
 
   @override
-  TimePaintObject createPaintObject(covariant IPaintContext context) {
+  TimePaintObject createPaintObject(
+    covariant IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return TimePaintObject(context: context, indicator: this);
   }
 
-  factory TimeIndicator.fromJson(Map<String, dynamic> json) =>
-      _$TimeIndicatorFromJson(json);
+  factory TimeIndicator.fromJson(Map<String, dynamic> json) => _$TimeIndicatorFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$TimeIndicatorToJson(this);
 }
@@ -54,9 +56,7 @@ class TimePaintObject<T extends TimeIndicator> extends SinglePaintObjectBox<T>
 
   /// 两个时间刻度间隔的蜡烛数
   int get timeTickIntervalCount {
-    return ((math.max(60, indicator.timeTick.textWidth ?? 0)) /
-            candleActualWidth)
-        .round();
+    return ((math.max(60, indicator.timeTick.textWidth ?? 0)) / candleActualWidth).round();
   }
 
   @override

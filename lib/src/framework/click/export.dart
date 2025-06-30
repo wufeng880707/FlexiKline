@@ -12,21 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library candle;
-
-import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:decimal/decimal.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-
-import '../../config/export.dart';
-import '../../constant.dart';
-import '../../core/core.dart';
-import '../../extension/export.dart';
-import '../../framework/click/click_object.dart';
-import '../../framework/export.dart';
-import '../../model/export.dart';
-import '../../utils/export.dart';
-
-part 'candle.g.dart';
-part 'indicator.dart';
+export 'click_object.dart';

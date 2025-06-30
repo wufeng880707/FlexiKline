@@ -32,7 +32,10 @@ class EMAIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   final double lineWidth;
 
   @override
-  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+  SinglePaintObjectBox createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return EMAPaintObject(context: context, indicator: this);
   }
 
@@ -139,4 +142,4 @@ class EMAPaintObject<T extends EMAIndicator> extends SinglePaintObjectBox<T> wit
   void onCross(Canvas canvas, Offset offset) {
     // EMA不需要特殊十字线处理，可留空
   }
-} 
+}

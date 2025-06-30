@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:flexi_kline/src/core/click.dart';
+
 import 'core/core.dart';
 
 class FlexiKlineController extends KlineBindingBase
@@ -22,7 +24,8 @@ class FlexiKlineController extends KlineBindingBase
         GridBinding,
         ChartBinding,
         CrossBinding,
-        DrawBinding {
+        DrawBinding,
+        ClickBinding {
   FlexiKlineController({
     required super.configuration,
     super.autoSave,

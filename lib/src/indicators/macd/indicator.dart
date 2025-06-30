@@ -45,7 +45,10 @@ class MACDIndicator extends SinglePaintObjectIndicator implements IPrecomputable
   final int precision;
 
   @override
-  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+  SinglePaintObjectBox createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return MACDPaintObject(context: context, indicator: this);
   }
 
@@ -229,4 +232,4 @@ class MACDPaintObject<T extends MACDIndicator> extends SinglePaintObjectBox<T>
       maxLines: 1,
     );
   }
-} 
+}

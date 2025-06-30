@@ -57,12 +57,14 @@ class SARIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   final int tickCount;
 
   @override
-  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+  SinglePaintObjectBox createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return SARPaintObject(context: context, indicator: this);
   }
 
-  factory SARIndicator.fromJson(Map<String, dynamic> json) =>
-      _$SARIndicatorFromJson(json);
+  factory SARIndicator.fromJson(Map<String, dynamic> json) => _$SARIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$SARIndicatorToJson(this);
@@ -215,4 +217,4 @@ class SARPaintObject<T extends SARIndicator> extends SinglePaintObjectBox<T>
       maxLines: 1,
     );
   }
-} 
+}

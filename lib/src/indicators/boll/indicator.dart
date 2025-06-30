@@ -53,7 +53,10 @@ class BOLLIndicator extends SinglePaintObjectIndicator implements IPrecomputable
   final int tickCount;
 
   @override
-  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+  SinglePaintObjectBox createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return BOLLPaintObject(context: context, indicator: this);
   }
 

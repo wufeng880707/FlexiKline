@@ -223,6 +223,12 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
       }
     }
 
+    // 处理最后价点击事件
+    if (controller.handleClick(details.localPosition)) {
+      // 如果最后价被点击，不需要继续处理十字线
+      return;
+    }
+
     logd("onTapUp cross start details:$details");
     _tapData = GestureData.tap(details.localPosition);
     final ret = controller.onCrossStart(_tapData!);
@@ -254,8 +260,7 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
         _panScaleData = null;
       }
     } else if (_panScaleData?.isScale == true || details.pointerCount > 1) {
-      ScalePosition position =
-          _panScaleData?.initPosition ?? gestureConfig.scalePosition;
+      ScalePosition position = _panScaleData?.initPosition ?? gestureConfig.scalePosition;
       if (position == ScalePosition.auto) {
         final third = controller.canvasRect.width / 3;
         final dx = details.localFocalPoint.dx;

@@ -15,7 +15,10 @@ class TradeMarkIndicator extends SinglePaintObjectIndicator {
   final TradeMarkParam calcParam;
 
   @override
-  TradeMarkPaintObject createPaintObject(IPaintContext context) {
+  TradeMarkPaintObject createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return TradeMarkPaintObject(context: context, indicator: this);
   }
 

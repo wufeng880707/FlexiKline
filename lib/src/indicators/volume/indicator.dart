@@ -41,19 +41,21 @@ class VolumeIndicator extends SinglePaintObjectIndicator {
   // final bool useTint;
 
   @override
-  VolumePaintObject createPaintObject(IPaintContext context) {
+  VolumePaintObject createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return VolumePaintObject(context: context, indicator: this);
   }
 
-  factory VolumeIndicator.fromJson(Map<String, dynamic> json) =>
-      _$VolumeIndicatorFromJson(json);
+  factory VolumeIndicator.fromJson(Map<String, dynamic> json) => _$VolumeIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$VolumeIndicatorToJson(this);
 }
 
-class VolumePaintObject<T extends VolumeIndicator>
-    extends SinglePaintObjectBox<T> with VolumeDataMixin<T>, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
+class VolumePaintObject<T extends VolumeIndicator> extends SinglePaintObjectBox<T>
+    with VolumeDataMixin<T>, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   VolumePaintObject({required super.context, required super.indicator});
 
   @override

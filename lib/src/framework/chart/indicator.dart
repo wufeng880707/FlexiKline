@@ -18,21 +18,11 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-import '../../config/export.dart';
-import '../../core/core.dart';
-import '../../data/kline_data.dart';
-import '../../extension/export.dart';
-import '../../model/export.dart';
-import '../../utils/decimal_format_util.dart';
-import '../collection/fixed_hash_queue.dart';
-import '../collection/sortable_hash_set.dart';
-import '../configuration.dart';
-import '../logger.dart';
-import '../serializers.dart';
+import '../../../flexi_kline.dart';
 
 part 'common.dart';
-part 'model.dart';
 part 'indicator.g.dart';
 part 'manager.dart';
+part 'model.dart';
 part 'object.dart';
 part 'object_helper.dart';

@@ -33,19 +33,20 @@ class MAIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
   final double lineWidth;
 
   @override
-  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+  SinglePaintObjectBox createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return MAPaintObject(context: context, indicator: this);
   }
 
-  factory MAIndicator.fromJson(Map<String, dynamic> json) =>
-      _$MAIndicatorFromJson(json);
+  factory MAIndicator.fromJson(Map<String, dynamic> json) => _$MAIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$MAIndicatorToJson(this);
 }
 
-class MAPaintObject<T extends MAIndicator> extends SinglePaintObjectBox<T>
-    with MaDataMixin {
+class MAPaintObject<T extends MAIndicator> extends SinglePaintObjectBox<T> with MaDataMixin {
   MAPaintObject({
     required super.context,
     required super.indicator,

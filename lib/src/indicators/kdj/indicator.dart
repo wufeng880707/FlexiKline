@@ -56,12 +56,14 @@ class KDJIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   final int precision;
 
   @override
-  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+  SinglePaintObjectBox createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return KDJPaintObject(context: context, indicator: this);
   }
 
-  factory KDJIndicator.fromJson(Map<String, dynamic> json) =>
-      _$KDJIndicatorFromJson(json);
+  factory KDJIndicator.fromJson(Map<String, dynamic> json) => _$KDJIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$KDJIndicatorToJson(this);
@@ -238,4 +240,4 @@ class KDJPaintObject<T extends KDJIndicator> extends SinglePaintObjectBox<T>
       maxLines: 1,
     );
   }
-} 
+}

@@ -44,7 +44,10 @@ class AVLIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   final int tickCount;
 
   @override
-  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+  SinglePaintObjectBox createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return AVLPaintObject(context: context, indicator: this);
   }
 
@@ -188,4 +191,4 @@ class AVLPaintObject<T extends AVLIndicator> extends SinglePaintObjectBox<T>
       maxLines: 1,
     );
   }
-} 
+}

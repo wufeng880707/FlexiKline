@@ -40,12 +40,14 @@ class RSIIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   dynamic getCalcParam() => calcParams;
 
   @override
-  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+  SinglePaintObjectBox createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return RSIPaintObject(context: context, indicator: this);
   }
 
-  factory RSIIndicator.fromJson(Map<String, dynamic> json) =>
-      _$RSIIndicatorFromJson(json);
+  factory RSIIndicator.fromJson(Map<String, dynamic> json) => _$RSIIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$RSIIndicatorToJson(this);
@@ -193,4 +195,4 @@ class RSIPaintObject<T extends RSIIndicator> extends SinglePaintObjectBox<T>
     }
     return null;
   }
-} 
+}

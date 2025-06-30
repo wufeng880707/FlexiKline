@@ -329,6 +329,21 @@ class _NonTouchGestureDetectorState extends State<NonTouchGestureDetector>
           break;
       }
     }
+    
+    // 处理最后价点击事件
+    if (controller.handleClick(details.localPosition)) {
+      // 如果最后价被点击，不需要继续处理其他事件
+      return;
+    }
+    
+    // 处理十字线点击
+    logd("onTapUp cross start details:$details");
+    _hoverData = GestureData.tap(details.localPosition);
+    final ret = controller.onCrossStart(_hoverData!);
+    if (!ret) {
+      _hoverData?.end();
+      _hoverData = null;
+    }
   }
 
   /// 平移开始.

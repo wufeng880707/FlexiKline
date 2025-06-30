@@ -199,7 +199,11 @@ final class IndicatorPaintObjectManager with KlineLog {
     try {
       final setting = context.settingConfig;
       final candle = configuration.candleIndicatorBuilder.call(setting);
-      final candleObject = candle.createPaintObject(context);
+      final eventBus = KlineEventBus();
+      eventBus.on('lastPriceTap', (args) {
+        (context as FlexiKlineController).moveToInitialPosition();
+      });
+      final candleObject = candle.createPaintObject(context, eventBus: eventBus);
       _mainPaintObject.appendPaintObject(candleObject);
 
       final time = configuration.timeIndicatorBuilder.call(setting);

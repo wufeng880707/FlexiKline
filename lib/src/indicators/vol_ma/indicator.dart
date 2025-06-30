@@ -17,8 +17,7 @@ part of 'vol_ma.dart';
 /// VolMa 移动平均指标线
 @CopyWith()
 @FlexiIndicatorSerializable
-class VolMaIndicator extends SinglePaintObjectIndicator
-    implements IPrecomputable {
+class VolMaIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
   VolMaIndicator({
     super.zIndex = 0,
     super.height = defaultSubIndicatorHeight,
@@ -43,12 +42,14 @@ class VolMaIndicator extends SinglePaintObjectIndicator
   final int precision;
 
   @override
-  VolMaPaintObject createPaintObject(IPaintContext context) {
+  VolMaPaintObject createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  }) {
     return VolMaPaintObject(context: context, indicator: this);
   }
 
-  factory VolMaIndicator.fromJson(Map<String, dynamic> json) =>
-      _$VolMaIndicatorFromJson(json);
+  factory VolMaIndicator.fromJson(Map<String, dynamic> json) => _$VolMaIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$VolMaIndicatorToJson(this);
