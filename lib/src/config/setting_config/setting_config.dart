@@ -57,6 +57,9 @@ class SettingConfig {
     required this.candleLineWidth,
     required this.firstCandleInitOffset,
 
+    /// 最小蜡烛高度，当开盘价和收盘价非常接近时，确保蜡烛有最小可见高度
+    this.minCandleHeight = 1.0,
+
     /// 是否展示Y轴刻度.
     this.showYAxisTick = true,
 
@@ -119,6 +122,9 @@ class SettingConfig {
   final double candleLineWidth;
   // Candle 第一根Candle相对于mainRect右边的偏移
   final double firstCandleInitOffset;
+
+  /// 最小蜡烛高度，当开盘价和收盘价非常接近时，确保蜡烛有最小可见高度
+  final double minCandleHeight;
 
   /// 是否展示Y轴刻度.
   final bool showYAxisTick;

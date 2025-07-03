@@ -265,6 +265,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       candleFixedSpacing: 1 * theme.scale,
       candleLineWidth: 1 * theme.scale,
       firstCandleInitOffset: 80 * theme.scale,
+      minCandleHeight: 1 * theme.scale,
 
       /// 全局默认的刻度值配置.
       ticksText: TextAreaConfig(

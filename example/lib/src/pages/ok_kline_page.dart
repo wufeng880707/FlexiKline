@@ -75,7 +75,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId,
         );
-    final m15TimeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'm15');
+    final m15TimeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == '15m');
 
     req = CandleReq(
       instId: widget.instId,

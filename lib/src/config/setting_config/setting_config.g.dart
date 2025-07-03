@@ -48,6 +48,8 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig firstCandleInitOffset(double firstCandleInitOffset);
 
+  SettingConfig minCandleHeight(double minCandleHeight);
+
   SettingConfig showYAxisTick(bool showYAxisTick);
 
   SettingConfig ticksText(TextAreaConfig ticksText);
@@ -83,6 +85,7 @@ abstract class _$SettingConfigCWProxy {
     int? candleSpacingParts,
     double? candleLineWidth,
     double? firstCandleInitOffset,
+    double? minCandleHeight,
     bool? showYAxisTick,
     TextAreaConfig? ticksText,
     int? subChartMaxCount,
@@ -173,6 +176,10 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
       this(firstCandleInitOffset: firstCandleInitOffset);
 
   @override
+  SettingConfig minCandleHeight(double minCandleHeight) =>
+      this(minCandleHeight: minCandleHeight);
+
+  @override
   SettingConfig showYAxisTick(bool showYAxisTick) =>
       this(showYAxisTick: showYAxisTick);
 
@@ -218,6 +225,7 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
     Object? candleSpacingParts = const $CopyWithPlaceholder(),
     Object? candleLineWidth = const $CopyWithPlaceholder(),
     Object? firstCandleInitOffset = const $CopyWithPlaceholder(),
+    Object? minCandleHeight = const $CopyWithPlaceholder(),
     Object? showYAxisTick = const $CopyWithPlaceholder(),
     Object? ticksText = const $CopyWithPlaceholder(),
     Object? subChartMaxCount = const $CopyWithPlaceholder(),
@@ -321,6 +329,11 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
               ? _value.firstCandleInitOffset
               // ignore: cast_nullable_to_non_nullable
               : firstCandleInitOffset as double,
+      minCandleHeight: minCandleHeight == const $CopyWithPlaceholder() ||
+              minCandleHeight == null
+          ? _value.minCandleHeight
+          // ignore: cast_nullable_to_non_nullable
+          : minCandleHeight as double,
       showYAxisTick:
           showYAxisTick == const $CopyWithPlaceholder() || showYAxisTick == null
               ? _value.showYAxisTick
@@ -384,6 +397,7 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
       candleSpacingParts: (json['candleSpacingParts'] as num?)?.toInt() ?? 7,
       candleLineWidth: (json['candleLineWidth'] as num).toDouble(),
       firstCandleInitOffset: (json['firstCandleInitOffset'] as num).toDouble(),
+      minCandleHeight: (json['minCandleHeight'] as num?)?.toDouble() ?? 1.0,
       showYAxisTick: json['showYAxisTick'] as bool? ?? true,
       ticksText:
           TextAreaConfig.fromJson(json['ticksText'] as Map<String, dynamic>),
@@ -419,6 +433,7 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
       'candleSpacingParts': instance.candleSpacingParts,
       'candleLineWidth': instance.candleLineWidth,
       'firstCandleInitOffset': instance.firstCandleInitOffset,
+      'minCandleHeight': instance.minCandleHeight,
       'showYAxisTick': instance.showYAxisTick,
       'ticksText': instance.ticksText.toJson(),
       'subChartMaxCount': instance.subChartMaxCount,

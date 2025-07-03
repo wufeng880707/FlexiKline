@@ -648,7 +648,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         intraDay: true,
       ),
       const TimeBarConfig(
-        key: 'm1',
+        key: '1m',
         bar: '1m',
         milliseconds: Duration.millisecondsPerMinute,
         multiplier: 1,
@@ -657,7 +657,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 1,
       ),
       const TimeBarConfig(
-        key: 'm3',
+        key: '3m',
         bar: '3m',
         milliseconds: Duration.millisecondsPerMinute * 3,
         multiplier: 3,
@@ -666,7 +666,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 2,
       ),
       const TimeBarConfig(
-        key: 'm5',
+        key: '5m',
         bar: '5m',
         milliseconds: Duration.millisecondsPerMinute * 5,
         multiplier: 5,
@@ -675,7 +675,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 3,
       ),
       const TimeBarConfig(
-        key: 'm15',
+        key: '15m',
         bar: '15m',
         milliseconds: Duration.millisecondsPerMinute * 15,
         multiplier: 15,
@@ -684,7 +684,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 4,
       ),
       const TimeBarConfig(
-        key: 'm30',
+        key: '30m',
         bar: '30m',
         milliseconds: Duration.millisecondsPerMinute * 30,
         multiplier: 30,
@@ -693,7 +693,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 5,
       ),
       const TimeBarConfig(
-        key: 'H1',
+        key: '1H',
         bar: '1H',
         milliseconds: Duration.millisecondsPerHour,
         multiplier: 1,
@@ -702,7 +702,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 6,
       ),
       const TimeBarConfig(
-        key: 'H2',
+        key: '2H',
         bar: '2H',
         milliseconds: Duration.millisecondsPerHour * 2,
         multiplier: 2,
@@ -711,7 +711,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 7,
       ),
       const TimeBarConfig(
-        key: 'H4',
+        key: '4H',
         bar: '4H',
         milliseconds: Duration.millisecondsPerHour * 4,
         multiplier: 4,
@@ -720,7 +720,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 8,
       ),
       const TimeBarConfig(
-        key: 'H6',
+        key: '6H',
         bar: '6H',
         milliseconds: Duration.millisecondsPerHour * 6,
         multiplier: 6,
@@ -729,7 +729,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 9,
       ),
       const TimeBarConfig(
-        key: 'H12',
+        key: '12H',
         bar: '12H',
         milliseconds: Duration.millisecondsPerHour * 12,
         multiplier: 12,
@@ -738,7 +738,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 10,
       ),
       const TimeBarConfig(
-        key: 'D1',
+        key: '1D',
         bar: '1D',
         milliseconds: Duration.millisecondsPerDay,
         multiplier: 1,
@@ -747,7 +747,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 11,
       ),
       const TimeBarConfig(
-        key: 'D2',
+        key: '2D',
         bar: '2D',
         milliseconds: Duration.millisecondsPerDay * 2,
         multiplier: 2,
@@ -756,7 +756,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 12,
       ),
       const TimeBarConfig(
-        key: 'D3',
+        key: '3D',
         bar: '3D',
         milliseconds: Duration.millisecondsPerDay * 3,
         multiplier: 3,
@@ -765,7 +765,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 13,
       ),
       const TimeBarConfig(
-        key: 'W1',
+        key: '1W',
         bar: '1W',
         milliseconds: Duration.millisecondsPerDay * 7,
         multiplier: 7,
@@ -774,7 +774,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 14,
       ),
       const TimeBarConfig(
-        key: 'M1',
+        key: '1M',
         bar: '1M',
         milliseconds: Duration.millisecondsPerDay * 30,
         multiplier: 1,
@@ -783,7 +783,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 15,
       ),
       const TimeBarConfig(
-        key: 'M3',
+        key: '3M',
         bar: '3M',
         milliseconds: Duration.millisecondsPerDay * 90,
         multiplier: 3,
@@ -793,7 +793,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       ),
       // UTC时间配置
       const TimeBarConfig(
-        key: 'utc6H',
+        key: '6Hutc',
         bar: '6Hutc',
         milliseconds: Duration.millisecondsPerHour * 6,
         multiplier: 6,
@@ -803,7 +803,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 17,
       ),
       const TimeBarConfig(
-        key: 'utc12H',
+        key: '12Hutc',
         bar: '12Hutc',
         milliseconds: Duration.millisecondsPerHour * 12,
         multiplier: 12,

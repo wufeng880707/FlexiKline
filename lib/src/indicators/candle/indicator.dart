@@ -167,11 +167,29 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
 
       final openOff = Offset(dx, valueToDy(m.open));
       final closeOff = Offset(dx, valueToDy(m.close));
-      canvas.drawLine(
-        openOff,
-        closeOff,
-        isLong ? settingConfig.defLongBarPaint : settingConfig.defShortBarPaint,
-      );
+      
+      // 应用最小蜡烛高度
+      final minHeight = settingConfig.minCandleHeight;
+      final actualHeight = (closeOff.dy - openOff.dy).abs();
+      
+      if (actualHeight < minHeight) {
+        // 如果实际高度小于最小高度，调整收盘价位置
+        final adjustedCloseOff = isLong 
+          ? Offset(dx, openOff.dy - minHeight)  // 阳线向下延伸
+          : Offset(dx, openOff.dy + minHeight); // 阴线向上延伸
+        
+        canvas.drawLine(
+          openOff,
+          adjustedCloseOff,
+          isLong ? settingConfig.defLongBarPaint : settingConfig.defShortBarPaint,
+        );
+      } else {
+        canvas.drawLine(
+          openOff,
+          closeOff,
+          isLong ? settingConfig.defLongBarPaint : settingConfig.defShortBarPaint,
+        );
+      }
 
       if (indicator.high.show) {
         if (hasEnough) {

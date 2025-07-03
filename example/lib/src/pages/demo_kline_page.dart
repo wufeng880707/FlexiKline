@@ -65,7 +65,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
       logger: logger,
     );
 
-    final timeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'm15');
+    final timeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == '15m');
     final now = DateTime.now().millisecondsSinceEpoch;
     final before = now - (now % timeBar.milliseconds);
     final after = before - count * timeBar.milliseconds;
