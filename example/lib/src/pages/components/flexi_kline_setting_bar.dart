@@ -67,12 +67,12 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
 
   List<TimeBarConfig> get preferTimeBarList => [
         ...widget.controller.configuration.timeBarBuilders().where((e) =>
-            e.bar == 'intraDay' ||
-            e.bar == '15m' ||
-            e.bar == '1H' ||
-            e.bar == '4H' ||
-            e.bar == '1D' ||
-            e.bar == '1W'),
+            e.key == 'intraDay' ||
+            e.key == '15m' ||
+            e.key == '1H' ||
+            e.key == '4H' ||
+            e.key == '1D' ||
+            e.key == '1W'),
       ];
 
   bool isPreferTimeBar(TimeBarConfig timeBar) => preferTimeBarList.contains(timeBar);
