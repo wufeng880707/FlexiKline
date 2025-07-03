@@ -18,27 +18,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final klineStateProvider = ChangeNotifierProvider.autoDispose
     .family<KlineStateNotifier, FlexiKlineController>(
-  (ref, controller) => KlineStateNotifier(ref, controller),
-  name: 'klineState',
-);
+      (ref, controller) => KlineStateNotifier(ref, controller),
+      name: 'klineState',
+    );
 
 class KlineStateNotifier extends ChangeNotifier {
-  KlineStateNotifier(
-    this.ref,
-    this.controller,
-  );
+  KlineStateNotifier(this.ref, this.controller);
 
   final Ref ref;
   final FlexiKlineController controller;
 
-  Set<ValueKey> get supportMainIndicatorKeys =>
-      controller.supportMainIndicatorKeys;
-  Set<ValueKey> get supportSubIndicatorKeys =>
-      controller.supportSubIndicatorKeys;
-  Set<ValueKey> get mainIndicatorKeys => controller.mainIndicatorKeys;
-  Set<ValueKey> get subIndicatorKeys => controller.subIndicatorKeys;
+  Set<IIndicatorKey> get supportMainIndicatorKeys => controller.supportMainIndicatorKeys.toSet();
+  Set<IIndicatorKey> get supportSubIndicatorKeys => controller.supportSubIndicatorKeys.toSet();
+  Set<IIndicatorKey> get mainIndicatorKeys => controller.mainIndicatorKeys.toSet();
+  Set<IIndicatorKey> get subIndicatorKeys => controller.subIndicatorKeys.toSet();
 
-  void onTapMainIndicator(ValueKey key) {
+  void onTapMainIndicator(IIndicatorKey key) {
     if (controller.mainIndicatorKeys.contains(key)) {
       controller.delIndicatorInMain(key);
     } else {
@@ -47,7 +42,7 @@ class KlineStateNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void onTapSubIndicator(ValueKey key) {
+  void onTapSubIndicator(IIndicatorKey key) {
     if (controller.subIndicatorKeys.contains(key)) {
       controller.delIndicatorInSub(key);
     } else {
@@ -56,72 +51,103 @@ class KlineStateNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 获取蜡烛图指标
+  CandleIndicator? get _candleIndicator {
+    try {
+      final candlePaintObject = controller.mainPaintObject.children
+          .firstWhere((obj) => obj.key == candleIndicatorKey);
+      return candlePaintObject.indicator as CandleIndicator;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// 蜡烛图中是否展示最新价
   bool get isShowLatestPrice {
-    return controller.indicatorsConfig.candle.latest.show;
+    final candleIndicator = _candleIndicator;
+    return candleIndicator?.latest.show ?? false;
   }
 
   /// 设置蜡烛图中是否展示最新价
   void setShowLatestPrice(bool isShow) {
     if (isShow == isShowLatestPrice) return;
-    controller.indicatorsConfig = controller.indicatorsConfig.copyWith(
-      candle: controller.indicatorsConfig.candle.copyWith(
-        latest: controller.indicatorsConfig.candle.latest.copyWith(
-          show: isShow,
-        ),
-      ),
-    );
-    notifyListeners();
+    
+    final candleIndicator = _candleIndicator;
+    if (candleIndicator != null) {
+      // 通过配置重新生成蜡烛图指标
+      final newCandleIndicator = candleIndicator.copyWith(
+        latest: candleIndicator.latest.copyWith(show: isShow),
+      );
+      
+      // 更新主图指标
+      _updateCandleIndicator(newCandleIndicator);
+      notifyListeners();
+    }
   }
 
   /// 蜡烛图中是否展示倒计时
   bool get isShowCountDown {
-    return controller.indicatorsConfig.candle.showCountDown;
+    final candleIndicator = _candleIndicator;
+    return candleIndicator?.showCountDown ?? false;
   }
 
   /// 设置蜡烛图中是否展示倒计时
   void setShowCountDown(bool isShow) {
     if (isShow == isShowCountDown) return;
-    controller.indicatorsConfig = controller.indicatorsConfig.copyWith(
-      candle: controller.indicatorsConfig.candle.copyWith(
-        showCountDown: isShow,
-      ),
-    );
-    notifyListeners();
+    
+    final candleIndicator = _candleIndicator;
+    if (candleIndicator != null) {
+      // 通过配置重新生成蜡烛图指标
+      final newCandleIndicator = candleIndicator.copyWith(showCountDown: isShow);
+      
+      // 更新主图指标
+      _updateCandleIndicator(newCandleIndicator);
+      notifyListeners();
+    }
   }
 
   /// 是否展示蜡烛图最高价
   bool get isShowCandleHighPrice {
-    return controller.indicatorsConfig.candle.high.show;
+    final candleIndicator = _candleIndicator;
+    return candleIndicator?.high.show ?? false;
   }
 
   void setShowCandleHighPrice(bool isShow) {
     if (isShow == isShowCandleHighPrice) return;
-    controller.indicatorsConfig = controller.indicatorsConfig.copyWith(
-      candle: controller.indicatorsConfig.candle.copyWith(
-        high: controller.indicatorsConfig.candle.high.copyWith(
-          show: isShow,
-        ),
-      ),
-    );
-    notifyListeners();
+    
+    final candleIndicator = _candleIndicator;
+    if (candleIndicator != null) {
+      // 通过配置重新生成蜡烛图指标
+      final newCandleIndicator = candleIndicator.copyWith(
+        high: candleIndicator.high.copyWith(show: isShow),
+      );
+      
+      // 更新主图指标
+      _updateCandleIndicator(newCandleIndicator);
+      notifyListeners();
+    }
   }
 
   /// 是否展示蜡烛图最低价
   bool get isShowCandleLowPrice {
-    return controller.indicatorsConfig.candle.low.show;
+    final candleIndicator = _candleIndicator;
+    return candleIndicator?.low.show ?? false;
   }
 
   void setShowCandleLowPrice(bool isShow) {
     if (isShow == isShowCandleLowPrice) return;
-    controller.indicatorsConfig = controller.indicatorsConfig.copyWith(
-      candle: controller.indicatorsConfig.candle.copyWith(
-        low: controller.indicatorsConfig.candle.low.copyWith(
-          show: isShow,
-        ),
-      ),
-    );
-    notifyListeners();
+    
+    final candleIndicator = _candleIndicator;
+    if (candleIndicator != null) {
+      // 通过配置重新生成蜡烛图指标
+      final newCandleIndicator = candleIndicator.copyWith(
+        low: candleIndicator.low.copyWith(show: isShow),
+      );
+      
+      // 更新主图指标
+      _updateCandleIndicator(newCandleIndicator);
+      notifyListeners();
+    }
   }
 
   /// 是否展示Y轴刻度
@@ -132,9 +158,7 @@ class KlineStateNotifier extends ChangeNotifier {
   /// 设置是否展示Y轴坐标刻度
   void setShowYAxisTick(bool isShow) {
     if (isShow == isShowYAxisTick) return;
-    controller.settingConfig = controller.settingConfig.copyWith(
-      showYAxisTick: isShow,
-    );
+    controller.settingConfig = controller.settingConfig.copyWith(showYAxisTick: isShow);
     notifyListeners();
   }
 
@@ -145,9 +169,7 @@ class KlineStateNotifier extends ChangeNotifier {
 
   void setScalePosition(ScalePosition position) {
     if (position == scalePosition) return;
-    controller.gestureConfig = controller.gestureConfig.copyWith(
-      scalePosition: position,
-    );
+    controller.gestureConfig = controller.gestureConfig.copyWith(scalePosition: position);
     notifyListeners();
   }
 
@@ -158,9 +180,7 @@ class KlineStateNotifier extends ChangeNotifier {
 
   void setSupportLongPress(bool isSupport) {
     if (isSupport == supportLongPress) return;
-    controller.gestureConfig = controller.gestureConfig.copyWith(
-      supportLongPress: isSupport,
-    );
+    controller.gestureConfig = controller.gestureConfig.copyWith(supportLongPress: isSupport);
     notifyListeners();
   }
 
@@ -183,11 +203,7 @@ class KlineStateNotifier extends ChangeNotifier {
     return controller.gestureConfig.isInertialPan;
   }
 
-  void setInertialPan(
-    bool isEnable, {
-    int? maxDuration,
-    double? distanceFactor,
-  }) {
+  void setInertialPan(bool isEnable, {int? maxDuration, double? distanceFactor}) {
     if (isEnable) {
       if (isEnable != isInertialPan ||
           maxDuration != controller.gestureConfig.tolerance.maxDuration ||
@@ -202,10 +218,29 @@ class KlineStateNotifier extends ChangeNotifier {
         notifyListeners();
       }
     } else if (isEnable != isInertialPan) {
-      controller.gestureConfig = controller.gestureConfig.copyWith(
-        isInertialPan: isEnable,
-      );
+      controller.gestureConfig = controller.gestureConfig.copyWith(isInertialPan: isEnable);
       notifyListeners();
+    }
+  }
+
+  /// 更新蜡烛图指标
+  void _updateCandleIndicator(CandleIndicator newCandleIndicator) {
+    try {
+      // 找到蜡烛图绘制对象
+      final candlePaintObject = controller.mainPaintObject.children
+          .firstWhere((obj) => obj.key == candleIndicatorKey);
+      
+      // 创建新的绘制对象
+      final newPaintObject = newCandleIndicator.createPaintObject(controller);
+      
+      // 删除旧的绘制对象并添加新的
+      controller.mainPaintObject.deletePaintObject(candleIndicatorKey);
+      controller.mainPaintObject.appendPaintObject(newPaintObject);
+      
+      // 触发重绘
+      controller.markRepaintChart(reset: true);
+    } catch (e) {
+      // 如果找不到蜡烛图对象，忽略错误
     }
   }
 }

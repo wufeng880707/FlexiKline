@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:example/core/network/ws/ws_export.dart';
 import 'package:example/features/klines/data/data_sources/kline_data_source_impl.dart';
 import 'package:flexi_kline/flexi_kline.dart';
@@ -31,7 +32,20 @@ class _KlineHomeScreenState extends ConsumerState<KlineHomeScreen> {
   void initState() {
     super.initState();
 
-    req = CandleReq(instId: 'e_btcusdt', bar: TimeBar.H4.bar, precision: 2, limit: 100);
+    req = CandleReq(
+      instId: 'e_btcusdt',
+      timeBar: const TimeBarConfig(
+        key: '4H',
+        bar: '4h',
+        milliseconds: Duration.millisecondsPerHour * 4,
+        multiplier: 4,
+        timespan: Timespan.hour,
+        showName: '4H',
+        sortOrder: 8,
+      ),
+      precision: 2,
+      limit: 100,
+    );
 
     // 初始化WebSocket服务
     _initWebSocket();
@@ -135,20 +149,6 @@ extension _UI on _KlineHomeScreenState {
               KLineWidget(
                 ///是否允许全屏，允许的话，会显示一个按钮和双击图表变成全屏
                 isCanFullScreen: true,
-                supportTimBars: [
-                  ///配置分时，
-                  TimeBar.IntraDay,
-                  TimeBar.m1,
-                  TimeBar.s1,
-                  TimeBar.m3,
-                  TimeBar.m5,
-                  TimeBar.m15,
-                  TimeBar.m30,
-                  TimeBar.H1,
-                  TimeBar.H4,
-                  TimeBar.D1,
-                  TimeBar.M1,
-                ],
                 updateController: updateController,
                 // onTimeBarChange: (TimeBar newT) {
                 //   // req.bar = newT.bar;
@@ -182,7 +182,7 @@ extension _UI on _KlineHomeScreenState {
                 settingChangeCallBack: (SettingConfig setting) {
                   ///这里可以读到红涨绿跌，绿涨红跌配置，方便在自己的app中统一其他颜色
                   if (kDebugMode) {
-                    print("样式改变了:${setting.longRed}");
+                    print("样式改变了:${setting.longColor}");
                   }
                 },
               ),
@@ -220,7 +220,7 @@ extension _Action on _KlineHomeScreenState {
 
     try {
       final symbol = req.instId;
-      final interval = req.bar;
+      final interval = req.timeBar.bar;
 
       _wsService!.subscribeKline(symbol, interval);
       _isSubscribed = true;
@@ -241,7 +241,7 @@ extension _Action on _KlineHomeScreenState {
 
     try {
       final symbol = req.instId;
-      final interval = req.bar;
+      final interval = req.timeBar.bar;
 
       _wsService!.unsubscribeKline(symbol, interval);
       _isSubscribed = false;
@@ -261,16 +261,21 @@ extension _Action on _KlineHomeScreenState {
     debugPrint('收到K线数据222: $data');
     try {
       if (data['tick'] != null) {
-        final klineData = data['tick'] as Map<String, dynamic>;
-        final candleModel = CandleModel.fromMarketData(klineData);
+        final tickData = data['tick'];
 
-        if (candleModel != null) {
-          // 更新K线图表 - 使用controller的updateKlineData方法
-          if (updateController != null) {
-            updateController.updateData([candleModel]);
+        if (tickData is List<dynamic>) {
+          // 如果是数组，取最后一个元素（最新的K线数据）
+          if (tickData.isNotEmpty) {
+            final candleModel = _convertToCandleModel(tickData.last as Map<String, dynamic>);
+            if (candleModel != null) {
+              _updateKlineChart(candleModel);
+            }
           }
-          if (kDebugMode) {
-            print('收到实时K线数据: ${candleModel.toJson()}');
+        } else if (tickData is Map<String, dynamic>) {
+          // 如果是单个对象
+          final candleModel = _convertToCandleModel(tickData);
+          if (candleModel != null) {
+            _updateKlineChart(candleModel);
           }
         }
       }
@@ -281,6 +286,16 @@ extension _Action on _KlineHomeScreenState {
     }
   }
 
+  /// 更新K线图表
+  void _updateKlineChart(CandleModel candleModel) {
+    if (updateController != null) {
+      updateController.updateData([candleModel]);
+    }
+    if (kDebugMode) {
+      print('收到实时K线数据: ${candleModel.toJson()}');
+    }
+  }
+
   /// 处理WebSocket错误
   void _handleWsError(dynamic error) {
     if (kDebugMode) {
@@ -288,10 +303,90 @@ extension _Action on _KlineHomeScreenState {
     }
   }
 
+  /// 转换市场数据为CandleModel
+  CandleModel? _convertToCandleModel(Map<String, dynamic> data) {
+    try {
+      // 安全地获取并转换数值
+      final t = (_safeGetInt(data, 'id') ?? 0) * 1000;
+      // 处理价格数据 - 支持多种字段名，安全转换
+      final o = _safeGetNum(data, 'o') ?? _safeGetNum(data, 'open');
+      final h = _safeGetNum(data, 'h') ?? _safeGetNum(data, 'high');
+      final l = _safeGetNum(data, 'l') ?? _safeGetNum(data, 'low');
+      final c = _safeGetNum(data, 'c') ?? _safeGetNum(data, 'close');
+
+      // 处理成交量数据 - 支持多种字段名
+      final v = _safeGetNum(data, 'v') ?? _safeGetNum(data, 'volume') ?? _safeGetNum(data, 'vol');
+
+      // 处理成交额数据 - 支持多种字段名
+      final amount = _safeGetNum(data, 'amount') ?? _safeGetNum(data, 'vc');
+
+      // 处理成交笔数数据
+      final piece = _safeGetNum(data, 'piece') ?? _safeGetNum(data, 'vcq');
+
+      if (t == null || o == null || h == null || l == null || c == null || v == null) {
+        debugPrint('转换CandleModel失败: 缺少必要字段 t=$t, o=$o, h=$h, l=$l, c=$c, v=$v');
+        debugPrint('原始数据: $data');
+        return null;
+      }
+
+      return CandleModel(
+        ts: t,
+        o: Decimal.parse(o.toString()),
+        h: Decimal.parse(h.toString()),
+        l: Decimal.parse(l.toString()),
+        c: Decimal.parse(c.toString()),
+        v: Decimal.parse(v.toString()),
+        vc: amount != null ? Decimal.parse(amount.toString()) : null,
+        vcq: piece != null ? Decimal.parse(piece.toString()) : null,
+        confirm: data['confirm']?.toString() ?? '1',
+      );
+    } catch (e) {
+      debugPrint('转换CandleModel失败: $e');
+      debugPrint('原始数据: $data');
+      return null;
+    }
+  }
+
+  /// 安全地获取数值，支持字符串和数字类型
+  num? _safeGetNum(Map<String, dynamic> data, String key) {
+    final value = data[key];
+    if (value == null) return null;
+
+    if (value is num) {
+      return value;
+    } else if (value is String) {
+      try {
+        return num.parse(value);
+      } catch (e) {
+        debugPrint('无法解析数值 $key: $value');
+        return null;
+      }
+    }
+    return null;
+  }
+
+  /// 安全地获取整数
+  int? _safeGetInt(Map<String, dynamic> data, String key) {
+    final value = data[key];
+    if (value == null) return null;
+
+    if (value is int) {
+      return value;
+    } else if (value is String) {
+      try {
+        return int.parse(value);
+      } catch (e) {
+        debugPrint('无法解析整数 $key: $value');
+        return null;
+      }
+    }
+    return null;
+  }
+
   Future<List<CandleModel>> loadKlineDataList(CandleReq req) async {
     final result = await ref.read(klineDataSourceProvider).publicMarketKlineRequest({
       'symbol': req.instId,
-      'scaleType': req.bar,
+      'scaleType': req.timeBar.bar,
       'limit': req.limit,
     });
 
@@ -299,7 +394,7 @@ extension _Action on _KlineHomeScreenState {
       final List<dynamic> klineDataList = result.data['data'] as List<dynamic>;
 
       return klineDataList
-          .map((item) => CandleModel.fromMarketData(item as Map<String, dynamic>))
+          .map((item) => _convertToCandleModel(item as Map<String, dynamic>))
           .where((model) => model != null)
           .cast<CandleModel>()
           .toList()
@@ -312,7 +407,7 @@ extension _Action on _KlineHomeScreenState {
   Future<List<CandleModel>> loadMoreKlineDataList(CandleReq req) async {
     final result = await ref.read(klineDataSourceProvider).publicMarketKlineRequest({
       'symbol': req.instId,
-      'scaleType': req.bar,
+      'scaleType': req.timeBar.bar,
       'limit': req.limit,
       'endIdx': lastTs / 1000,
     });
@@ -321,7 +416,7 @@ extension _Action on _KlineHomeScreenState {
       final List<dynamic> klineDataList = result.data['data'] as List<dynamic>;
 
       return klineDataList
-          .map((item) => CandleModel.fromMarketData(item as Map<String, dynamic>))
+          .map((item) => _convertToCandleModel(item as Map<String, dynamic>))
           .where((model) => model != null)
           .cast<CandleModel>()
           .toList()

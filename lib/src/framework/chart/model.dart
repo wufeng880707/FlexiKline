@@ -14,83 +14,60 @@
 
 part of 'indicator.dart';
 
+/// 添加事件注册表
+typedef KlineEventCallback = void Function(dynamic args);
+
+class KlineEventBus {
+  final Map<String, KlineEventCallback> _handlers = {};
+
+  void on(String event, KlineEventCallback callback) {
+    _handlers[event] = callback;
+  }
+
+  void emit(String event, [dynamic args]) {
+    _handlers[event]?.call(args);
+  }
+}
+
 /// 指标基础配置
 ///
 /// [key] 唯一指定Indicator
-/// [name] 用于展示
 /// [height] 指标图高度
 /// [padding] 限制指标图绘制区域
 /// [paintMode] 控制多指标图一起的绘制方式.
 ///   [PaintMode.combine] 多指标时, 统一使用父Indicator的高度和padding.
 ///   [PaintMode.alone] 多指标时, 使用自己的height进行绘制.
-abstract class Indicator {
+/// [zIndex] 确定指标在绘制时的顺序, 按升序排序; 数值大的将会绘制数值小的上面;
+///   主要在[MultiPaintObjectIndicator]中会有用, 确定多个指标在同一区域的绘制顺序.
+abstract class Indicator implements IPrecomputable {
   Indicator({
     required this.key,
-    required this.name,
     required this.height,
     required this.padding,
     this.paintMode = PaintMode.combine,
+    this.zIndex = 0,
   });
 
-  final ValueKey key;
-  final String name;
+  final IIndicatorKey key;
+
   double height;
+
   EdgeInsets padding;
 
   final PaintMode paintMode;
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other is Indicator) {
-      return other.runtimeType == runtimeType && other.key == key;
-    }
-    return false;
-  }
-
-  @override
-  int get hashCode {
-    return key.hashCode;
-  }
-
-  PaintObject? _paintObject;
-  PaintObject? get paintObject => _paintObject;
-
-  void ensurePaintObject(KlineBindingBase controller) {
-    _paintObject ??= createPaintObject(controller);
-  }
-
-  bool updateLayout({
-    double? height,
-    EdgeInsets? padding,
-    bool reset = false,
-  }) {
-    bool hasChange = false;
-    if (height != null && height > 0 && height != this.height) {
-      this.height = height;
-      hasChange = true;
-    }
-
-    if (padding != null && padding != this.padding) {
-      this.padding = padding;
-      hasChange = true;
-    }
-    if (reset || hasChange) {
-      paintObject?.resetPaintBounding();
-    }
-    return reset || hasChange;
-  }
+  final int zIndex; // TODO: 考虑下放到子类中
 
   @factory
-  PaintObject createPaintObject(KlineBindingBase controller);
-
-  @mustCallSuper
-  void dispose() {
-    _paintObject?.dispose();
-    _paintObject = null;
-  }
+  PaintObject createPaintObject(
+    IPaintContext context, {
+    KlineEventBus? eventBus,
+  });
 
   Map<String, dynamic> toJson() => const {};
+
+  @override
+  dynamic get calcParam => null;
 
   static bool canUpdate(Indicator oldIndicator, Indicator newIndicator) {
     return oldIndicator.runtimeType == newIndicator.runtimeType &&
@@ -105,147 +82,41 @@ abstract class Indicator {
 /// 绘制对象的配置
 /// 通过Indicator去创建PaintObject接口
 /// 缓存Indicator对应创建的paintObject.
-/// [zIndex] 确定指标在绘制时的顺序, 按升序排序; 数值大的将会绘制数值小的上面;
-///   主要在[MultiPaintObjectIndicator]中会有用, 确定多个指标在同一区域的绘制顺序.
-abstract class SinglePaintObjectIndicator extends Indicator
-    implements Comparable<SinglePaintObjectIndicator> {
+abstract class SinglePaintObjectIndicator extends Indicator {
   SinglePaintObjectIndicator({
     required super.key,
-    required super.name,
     required super.height,
     required super.padding,
     super.paintMode,
-    this.zIndex = 0,
+    super.zIndex,
   });
-
-  final int zIndex;
 
   @override
   SinglePaintObjectBox createPaintObject(
-    covariant KlineBindingBase controller,
-  );
-
-  @override
-  int compareTo(SinglePaintObjectIndicator other) {
-    return zIndex.compareTo(other.zIndex);
-  }
+    covariant IPaintContext context, {
+    KlineEventBus? eventBus,
+  });
 }
 
 /// 多个绘制Indicator的配置.
-///
-/// [children] 维护具体的Indicator配置.
 @CopyWith()
 @FlexiIndicatorSerializable
-class MultiPaintObjectIndicator<T extends SinglePaintObjectIndicator>
-    extends Indicator {
+class MultiPaintObjectIndicator<T extends SinglePaintObjectIndicator> extends Indicator {
   MultiPaintObjectIndicator({
     required super.key,
-    required super.name,
     required super.height,
     required super.padding,
     this.drawBelowTipsArea = false,
-    Iterable<T> children = const [],
-  })  : children = SortableHashSet<T>.from(children),
-        _initialPadding = padding;
+  });
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  final SortableHashSet<T> children;
-
-  bool drawBelowTipsArea;
-
-  final EdgeInsets _initialPadding;
-
-  /// 当前[tipsHeight]是否需要更新布局参数
-  bool needUpdateLayout(double tipsHeight) {
-    return _initialPadding.top + tipsHeight != padding.top;
-  }
+  final bool drawBelowTipsArea;
 
   @override
   MultiPaintObjectBox createPaintObject(
-    KlineBindingBase controller,
-  ) {
-    return MultiPaintObjectBox(controller: controller, indicator: this);
-  }
-
-  @override
-  void ensurePaintObject(KlineBindingBase controller) {
-    _paintObject ??= createPaintObject(controller);
-    for (var child in children) {
-      if (child.paintObject?._parent != paintObject) {
-        child.paintObject?.dispose();
-        _initChildPaintObject(controller, child);
-      }
-    }
-  }
-
-  void _initChildPaintObject(
-    KlineBindingBase controller,
-    Indicator indicator,
-  ) {
-    indicator.updateLayout(
-      height: indicator.paintMode.isCombine ? height : null,
-      padding: indicator.paintMode.isCombine ? padding : null,
-    );
-    indicator._paintObject = indicator.createPaintObject(controller);
-    indicator._paintObject!._parent = paintObject;
-  }
-
-  @override
-  bool updateLayout({
-    double? height,
-    EdgeInsets? padding,
-    bool reset = false,
-    double? tipsHeight,
+    IPaintContext context, {
+    KlineEventBus? eventBus,
   }) {
-    if (tipsHeight != null) {
-      // 如果tipsHeight不为空, 说明是绘制过程中动态调整, 只需要在MultiPaintObjectIndicator原padding基础上增加即可.
-      padding = _initialPadding.copyWith(
-        top: _initialPadding.top + tipsHeight,
-      );
-    }
-    bool hasChange = super.updateLayout(
-      height: height,
-      padding: padding,
-      reset: reset,
-    );
-    for (var child in children) {
-      final childChange = child.updateLayout(
-        height: child.paintMode.isCombine ? this.height : null,
-        padding: child.paintMode.isCombine ? this.padding : null,
-        reset: reset,
-      );
-      hasChange = hasChange || childChange;
-    }
-    return hasChange;
-  }
-
-  void appendIndicators(Iterable<T> indicators, KlineBindingBase controller) {
-    for (var indicator in indicators) {
-      appendIndicator(indicator, controller);
-    }
-  }
-
-  void appendIndicator(
-    T newIndicator,
-    KlineBindingBase controller,
-  ) {
-    // 使用前先解绑
-    newIndicator.dispose();
-    children.append(newIndicator)?.dispose();
-    if (paintObject != null) {
-      // 说明当前父PaintObject已经创建, 需要及时创建新加入的newIndicator,
-      _initChildPaintObject(controller, newIndicator);
-    }
-  }
-
-  void deleteIndicator(Key key) {
-    children.removeWhere((element) {
-      if (element.key == key) {
-        element.dispose();
-        return true;
-      }
-      return false;
-    });
+    return MultiPaintObjectBox(context: context, indicator: this);
   }
 
   // 从JSON映射转换为Response对象的工厂方法
@@ -255,34 +126,4 @@ class MultiPaintObjectIndicator<T extends SinglePaintObjectIndicator>
   // 将Response对象转换为JSON映射的方法
   @override
   Map<String, dynamic> toJson() => _$MultiPaintObjectIndicatorToJson(this);
-}
-
-extension IndicatorExt on Indicator {
-  Map<ValueKey, dynamic> getCalcParams() {
-    if (this is SinglePaintObjectIndicator) {
-      return (this as SinglePaintObjectIndicator).getCalcParams();
-    } else if (this is MultiPaintObjectIndicator) {
-      return (this as MultiPaintObjectIndicator).getCalcParams();
-    }
-    return const <ValueKey, dynamic>{};
-  }
-}
-
-extension SinglePaintObjectIndicatorExt on SinglePaintObjectIndicator {
-  Map<ValueKey, dynamic> getCalcParams() {
-    if (this is IPrecomputable) {
-      return {key: (this as IPrecomputable).getCalcParam()};
-    }
-    return const <ValueKey, dynamic>{};
-  }
-}
-
-extension MultiPaintObjectIndicatorExt on MultiPaintObjectIndicator {
-  Map<ValueKey, dynamic> getCalcParams() {
-    final results = <ValueKey, dynamic>{};
-    for (var child in children) {
-      results.addAll(child.getCalcParams());
-    }
-    return results;
-  }
 }

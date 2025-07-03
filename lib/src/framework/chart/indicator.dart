@@ -17,20 +17,12 @@ library indicator;
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:json_annotation/json_annotation.dart';
 
-import '../../extension/export.dart';
-import '../../config/export.dart';
-import '../../core/export.dart';
-import '../../data/kline_data.dart';
-import '../../model/export.dart';
-import '../../utils/decimal_format_util.dart';
-import '../collection/sortable_hash_set.dart';
-import '../logger.dart';
-import '../serializers.dart';
+import '../../../flexi_kline.dart';
 
 part 'common.dart';
-part 'model.dart';
 part 'indicator.g.dart';
+part 'manager.dart';
+part 'model.dart';
 part 'object.dart';
 part 'object_helper.dart';

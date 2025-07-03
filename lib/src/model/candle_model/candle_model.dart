@@ -14,22 +14,15 @@
 
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:decimal/decimal.dart';
+import 'package:flexi_kline/flexi_kline.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../constant.dart';
-import '../../extension/collections_ext.dart';
-import '../../framework/serializers.dart';
-import '../../utils/export.dart';
-import '../bag_num.dart';
-import 'candle_mixin.dart';
-
+part 'candle_helper.dart';
 part 'candle_model.g.dart';
 
 @CopyWith()
 @FlexiModelSerializable
-class CandleModel
-    with MaMixin, VolMaMixin, EmaMixin, BollMixin, SarMixin, MacdMixin, KdjMixin, RsiMixin
-    implements Comparable<CandleModel> {
+class CandleModel implements Comparable<CandleModel> {
   CandleModel({
     required this.ts,
     required this.o,
@@ -80,6 +73,10 @@ class CandleModel
   @JsonKey()
   String confirm;
 
+  CalculateData? _calcuData;
+
+  CalculateData get calcuData => _calcuData!;
+
   @override
   int compareTo(CandleModel other) {
     return other.ts - ts;
@@ -112,23 +109,6 @@ class CandleModel
     );
   }
 
-  /// 从Map创建CandleModel，用于解析市场数据
-  static CandleModel? fromMarketData(Map<String, dynamic> map) {
-    try {
-      return CandleModel(
-        ts: (map['id'] as int) * 1000, // 转换为毫秒时间戳
-        o: Decimal.parse(map['open'].toString()),
-        h: Decimal.parse(map['high'].toString()),
-        l: Decimal.parse(map['low'].toString()),
-        c: Decimal.parse(map['close'].toString()),
-        // v: Decimal.parse(map['volume'].toString()),
-        v: Decimal.parse((map['volume'] ?? map['vol'] ?? '0').toString()),
-      );
-    } catch (e) {
-      return null;
-    }
-  }
-
   factory CandleModel.fromJson(Map<String, dynamic> json) => _$CandleModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$CandleModelToJson(this);
@@ -155,7 +135,11 @@ class CandleModel
     return null;
   }
 
-  void initBasicData(ComputeMode mode, {bool reset = false}) {
+  void initBasicData(
+    ComputeMode mode,
+    int indicatorCount, {
+    bool reset = false,
+  }) {
     if (reset || _open == null || _high == null || _low == null || _close == null || _vol == null) {
       if (mode == ComputeMode.fast) {
         _open = BagNum.fromNum(o.toDouble());
@@ -175,46 +159,6 @@ class CandleModel
         _volCcyQuote = vcq != null ? BagNum.fromDecimal(vcq!) : null;
       }
     }
-  }
-}
-
-extension CandleModelExt on CandleModel {
-  DateTime get dateTime {
-    return DateTime.fromMillisecondsSinceEpoch(ts);
-  }
-
-  String formatDateTime(TimeBar? bar) {
-    return formatDateTimeByTimeBar(ts, bar: bar);
-  }
-
-  DateTime? nextUpdateDateTime(String bar) {
-    final timeBar = TimeBar.convert(bar);
-    if (timeBar != null) {
-      return DateTime.fromMillisecondsSinceEpoch(
-        ts + timeBar.milliseconds,
-        isUtc: timeBar.isUtc,
-      );
-    }
-    return null;
-  }
-
-  bool get isLong => close >= open;
-
-  Decimal get change => c - o;
-
-  double get changeRate {
-    if (change == Decimal.zero) return 0;
-    return (change / o).toDouble();
-  }
-
-  Decimal get range => h - l;
-
-  double rangeRate(CandleModel pre) {
-    if (range == Decimal.zero) return 0;
-    return (range / pre.c).toDouble();
-  }
-
-  CandleModel clone() {
-    return CandleModel.fromJson(toJson());
+    _calcuData = CalculateData.init(indicatorCount);
   }
 }

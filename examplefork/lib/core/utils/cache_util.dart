@@ -19,7 +19,8 @@ class CacheUtil {
 
   static String? getString<T>(String key) => getMMKv().decodeString(key);
 
-  static String getSafeString<T>(String key, {String? defaultValue}) => getString(key) ?? defaultValue ?? "";
+  static String getSafeString<T>(String key, {String? defaultValue}) =>
+      getString(key) ?? defaultValue ?? "";
 
   static bool putListString(String key, List<String> data) {
     return getMMKv().encodeString(key, data.join(','));
@@ -33,15 +34,18 @@ class CacheUtil {
 
   static bool putBool(String key, bool data) => getMMKv().encodeBool(key, data);
 
-  static bool getBool(String key, {bool defaultValue = false}) => getMMKv().decodeBool(key, defaultValue: defaultValue);
+  static bool getBool(String key, {bool defaultValue = false}) =>
+      getMMKv().decodeBool(key, defaultValue: defaultValue);
 
   static bool putInt(String key, int data) => getMMKv().encodeInt(key, data);
 
-  static int getInt(String key, {int defaultValue = 0}) => getMMKv().decodeInt(key, defaultValue: defaultValue);
+  static int getInt(String key, {int defaultValue = 0}) =>
+      getMMKv().decodeInt(key, defaultValue: defaultValue);
 
   static putDouble(String s, double chartHeight) => getMMKv().encodeDouble(s, chartHeight);
 
-  static double getDouble(String s, {double def = 0}) => getMMKv().decodeDouble(s, defaultValue: def);
+  static double getDouble(String s, {double def = 0}) =>
+      getMMKv().decodeDouble(s, defaultValue: def);
 
   static remove(String key) => getMMKv().removeValue(key);
 }

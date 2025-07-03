@@ -14,15 +14,18 @@
 
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'base/test_flexi_kline_configuration.dart';
 
 void main() {
   group('test-configs', () {
-    test('test-indicators', () {
-      final json = <String, dynamic>{};
-      final indicators = IndicatorsConfig.fromJson(json);
-
-      // indicators.volume = VolumeIndicator(paintMode: PaintMode.combine);
-      expect(indicators.mavol.children.length, 2);
+    test('test-flexi-kline-config-serialize', () {
+      final config = TestFlexiKlineConfiguration().genFlexiKlineConfig();
+      final json = config.toJson();
+      final config2 = FlexiKlineConfig.fromJson(json);
+      expect(config2.main, config.main);
+      expect(config2.sub, config.sub);
+      expect(config2.trade, config.trade);
+      expect(config2.key, config.key);
     });
   });
 }

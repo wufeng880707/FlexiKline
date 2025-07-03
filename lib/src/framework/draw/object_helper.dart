@@ -318,7 +318,7 @@ mixin DrawObjectMixin on DrawStateObject {
     if (ts == null) return Size.zero;
 
     final klineData = context.curKlineData;
-    final timeTxt = formatTimeTicksText(ts, bar: klineData.timeBar);
+    final timeTxt = formatTimeTicksText(ts, timeBar: klineData.timeBar);
 
     drawableRect ??= context.timeRect;
     return canvas.drawTextArea(
@@ -369,8 +369,8 @@ mixin DrawObjectMixin on DrawStateObject {
 
   /// 格式化时间刻度文本
   @protected
-  String formatTimeTicksText(int ts, {TimeBar? bar}) {
-    return formatDateTimeByTimeBar(ts, bar: bar);
+  String formatTimeTicksText(int ts, {TimeBarConfig? timeBar}) {
+    return formatDateTimeByTimeBar(ts, timeBar: timeBar);
   }
 
   /// 格式化价值刻度文本

@@ -26,7 +26,7 @@ class IndicatorBarItemView extends ConsumerWidget {
     this.padding,
   });
 
-  final ValueKey indicatorKey;
+  final String indicatorKey;
   final bool selected;
   final EdgeInsetsGeometry? padding;
 
@@ -34,10 +34,10 @@ class IndicatorBarItemView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeFKProvider);
     return Container(
-      key: indicatorKey,
+      key: ValueKey<String>(indicatorKey),
       padding: padding ?? EdgeInsets.all(8.r),
       child: Text(
-        indicatorKey.value.toString().toUpperCase(),
+        indicatorKey.toUpperCase(),
         style: theme.t2s12w400.copyWith(
           color: selected ? theme.t1 : null,
           fontWeight: selected ? FontWeight.bold : null,

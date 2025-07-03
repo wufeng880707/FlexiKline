@@ -157,7 +157,7 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
       if (!canvasRect.include(newOffset)) {
         newOffset = newOffset.clamp(canvasRect);
       }
-      controller.updateCross(_tapData!..update(newOffset));
+      controller.onCrossUpdate(_tapData!..update(newOffset));
     }
   }
 
@@ -223,9 +223,15 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
       }
     }
 
+    // 处理最后价点击事件
+    if (controller.handleClick(details.localPosition)) {
+      // 如果最后价被点击，不需要继续处理十字线
+      return;
+    }
+
     logd("onTapUp cross start details:$details");
     _tapData = GestureData.tap(details.localPosition);
-    final ret = controller.startCross(_tapData!);
+    final ret = controller.onCrossStart(_tapData!);
     if (!ret) {
       _tapData?.end();
       _tapData = null;
@@ -254,8 +260,7 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
         _panScaleData = null;
       }
     } else if (_panScaleData?.isScale == true || details.pointerCount > 1) {
-      ScalePosition position =
-          _panScaleData?.initPosition ?? gestureConfig.scalePosition;
+      ScalePosition position = _panScaleData?.initPosition ?? gestureConfig.scalePosition;
       if (position == ScalePosition.auto) {
         final third = controller.canvasRect.width / 3;
         final dx = details.localFocalPoint.dx;
@@ -298,7 +303,7 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
         details.localFocalPoint.clamp(controller.canvasRect),
         newScale: details.scale,
       );
-      controller.moveChart(_panScaleData!);
+      controller.onChartMove(_panScaleData!);
     } else if (_panScaleData!.isScale) {
       final newScale = scaledDecelerate(details.scale);
       final change = details.scale - _panScaleData!.scale;
@@ -311,7 +316,7 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
           details.localFocalPoint,
           newScale: newScale,
         );
-        controller.scaleChart(_panScaleData!);
+        controller.onChartScale(_panScaleData!);
       }
     }
   }
@@ -418,7 +423,7 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
           initDx + animation.value,
           _panScaleData!.offset.dy,
         ));
-        controller.moveChart(_panScaleData!);
+        controller.onChartMove(_panScaleData!);
       }
     });
 
@@ -457,7 +462,7 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
     } else {
       logd("onLongPressStart cross > details:$details");
       _longData = GestureData.long(details.localPosition);
-      final result = controller.startCross(_longData!);
+      final result = controller.onCrossStart(_longData!);
       if (!result) {
         _longData?.end();
         _longData = null;
@@ -478,7 +483,7 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
       controller.onDrawMoveUpdate(_longData!);
     } else {
       _longData!.update(details.localPosition);
-      controller.updateCross(_longData!);
+      controller.onCrossUpdate(_longData!);
     }
   }
 

@@ -16,6 +16,7 @@ import 'dart:math' as math;
 
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flexi_kline/src/model/bag_num.dart';
+import 'package:flexi_kline/src/indicators/ma/ma.dart' as ma;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -56,6 +57,10 @@ void main() {
         ),
       ),
     ];
+    // 初始化所有CandleModel的calcuData
+    for (var candle in list) {
+      candle.initBasicData(ComputeMode.fast, calcParams.length);
+    }
   });
 
   setUp(() {
@@ -95,14 +100,15 @@ void calcuAndCacheMa(
   CandleModel m;
   final paramLen = calcParams.length;
   final closeSum = List.filled(paramLen, BagNum.zero, growable: false);
+  const dataIndex = 0; // MA指标的dataIndex为0
   for (int i = end - 1; i >= start; i--) {
     m = list[i];
-    m.maList = List.filled(calcParams.length, null, growable: false);
+    m.getMaList(dataIndex, paramLen); // 初始化maList
     for (int j = 0; j < calcParams.length; j++) {
       closeSum[j] += m.close;
       final count = calcParams[j].count;
       if (i <= end - count) {
-        m.maList![j] = closeSum[j].divNum(count);
+        m.getMaList(dataIndex)![j] = closeSum[j].divNum(count);
         closeSum[j] -= list[i + (count - 1)].close;
       }
     }
@@ -119,8 +125,9 @@ MinMax? calcuMaMaxmin(
   int len = list.length;
   if (start < 0 || end > len) return null;
 
-  if (list[start].isValidMaList != true ||
-      list[end - 1].isValidMaList != true) {
+  const dataIndex = 0; // MA指标的dataIndex为0
+  if (list[start].isValidMaList(dataIndex) != true ||
+      list[end - 1].isValidMaList(dataIndex) != true) {
     calcuAndCacheMa(list, calcParams, start, end);
   }
 
@@ -128,8 +135,8 @@ MinMax? calcuMaMaxmin(
   CandleModel m;
   for (int i = end - 1; i >= start; i--) {
     m = list[i];
-    maxmin ??= m.maListMinmax;
-    maxmin?.updateMinMax(m.maListMinmax);
+    maxmin ??= m.getMaListMinmax(dataIndex);
+    maxmin?.updateMinMax(m.getMaListMinmax(dataIndex));
   }
   return maxmin;
 }

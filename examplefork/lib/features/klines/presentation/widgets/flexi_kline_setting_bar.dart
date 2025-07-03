@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'package:example/core/extensions/ex_context.dart';
+import 'package:example/features/theme/export.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import '../../../../core/utils/dialog_manager.dart';
-import '../../../theme/flexi_theme.dart';
 import '../mixin/wide_screen_mixin.dart';
 import 'common/no_thumb_scroll_behavior.dart';
 import 'common/shrink_icon_button.dart';
@@ -30,35 +30,28 @@ import 'dialogs/indicators_select_dialog.dart';
 import 'dialogs/kline_settting_dialog.dart';
 import 'dialogs/timebar_select_dialog.dart';
 import 'flexi_kline_draw_menubar.dart';
-import 'kline_widget.dart';
 
 class FlexiKlineSettingBar extends ConsumerStatefulWidget {
   const FlexiKlineSettingBar({
     super.key,
     required this.controller,
     required this.onTapTimeBar,
-    required this.supportTimeBarList,
-    required this.settingChangeCallBack,
     this.alignment,
     this.decoration,
-    this.canUseDrawTool = false,
   });
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBar> onTapTimeBar;
+  final ValueChanged<TimeBarConfig> onTapTimeBar;
 
   final AlignmentGeometry? alignment;
   final Decoration? decoration;
-  final List<TimeBar> supportTimeBarList;
-  final SettingChangeCallBack? settingChangeCallBack;
-  final bool? canUseDrawTool;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _FlexiKlineSettingBarState();
 }
 
 class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> with WideScreenMixin {
-  bool _showDarwTool = false;
+  bool _showDarwTool = true;
 
   @override
   void initState() {
@@ -72,19 +65,24 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
     super.dispose();
   }
 
-  List<TimeBar> preferTimeBarList = [TimeBar.m15, TimeBar.H1, TimeBar.H4, TimeBar.D1, TimeBar.W1];
+  List<TimeBarConfig> get preferTimeBarList => [
+    ...widget.controller.configuration.timeBarBuilders().where(
+      (e) =>
+          e.key == 'Time' ||
+          e.key == '15m' ||
+          e.key == '1H' ||
+          e.key == '4H' ||
+          e.key == '1D' ||
+          e.key == '1W',
+    ),
+  ];
 
-  bool isPreferTimeBar(TimeBar bar) => preferTimeBarList.contains(bar);
+  bool isPreferTimeBar(TimeBarConfig timeBar) => preferTimeBarList.contains(timeBar);
 
-  List<TimeBar> get showTimeBarList {
-    if (widget.supportTimeBarList.isEmpty) {
-      return wideScreen ? TimeBar.values : preferTimeBarList;
-    }
-    return widget.supportTimeBarList;
-  }
+  List<TimeBarConfig> get showTimeBarList =>
+      wideScreen ? widget.controller.configuration.timeBarBuilders() : preferTimeBarList;
 
   final timeBarSettingBtnStatus = ValueNotifier(false);
-
   Future<void> onTapTimeBarSetting() async {
     timeBarSettingBtnStatus.value = true;
     await DialogManager().showBottomDialog(
@@ -94,7 +92,6 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
             controller: widget.controller,
             onTapTimeBar: widget.onTapTimeBar,
             preferTimeBarList: preferTimeBarList,
-            supportTimBarList: widget.supportTimeBarList,
           ),
     );
     timeBarSettingBtnStatus.value = false;
@@ -145,7 +142,6 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
 
   Widget buildSettingBar(BuildContext context) {
     final theme = ref.watch(themeFKProvider);
-    final s = context.trans;
 
     return Container(
       alignment: widget.alignment ?? AlignmentDirectional.centerStart,
@@ -184,7 +180,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
                 final showMore = value == null || isPreferTimeBar(value);
                 return TextArrowButton(
                   onPressed: onTapTimeBarSetting,
-                  text: showMore ? s.more : value.bar,
+                  text: showMore ? context.trans.more : value.showName,
                   iconStatus: timeBarSettingBtnStatus,
                   background: showMore ? null : theme.markBg,
                 );
@@ -193,7 +189,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
           ),
           TextArrowButton(
             onPressed: onTapIndicatorSetting,
-            text: s.indicators,
+            text: context.trans.indicators,
             iconStatus: indicatorSettingBtnStatus,
           ),
           Container(
@@ -202,16 +198,12 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
             height: 18.r,
             margin: EdgeInsets.symmetric(horizontal: 4.r),
           ),
-          Visibility(
-            visible: widget.canUseDrawTool ?? false,
-            child: ShrinkIconButton(
-              onPressed: onTapDrawTool,
-              content: Icons.edit_rounded,
-              padding: 6.r,
-              color: theme.t1,
-            ),
+          ShrinkIconButton(
+            onPressed: onTapDrawTool,
+            content: Icons.edit_rounded,
+            padding: 6.r,
+            color: theme.t1,
           ),
-
           ShrinkIconButton(
             onPressed: onTapKlineSetting,
             content: Icons.settings_rounded,
@@ -223,7 +215,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
     );
   }
 
-  Widget _buildTimeBarList(BuildContext context, {required List<TimeBar> timerBarList}) {
+  Widget _buildTimeBarList(BuildContext context, {required List<TimeBarConfig> timerBarList}) {
     return ValueListenableBuilder(
       valueListenable: widget.controller.timeBarListener,
       builder: (context, value, child) {
@@ -244,7 +236,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
                     ),
                     padding: EdgeInsetsDirectional.symmetric(horizontal: 6.r, vertical: 4.r),
                     margin: EdgeInsetsDirectional.symmetric(horizontal: 2.r),
-                    child: Text(bar.bar, style: selected ? theme.t1s14w700 : theme.t1s14w400),
+                    child: Text(bar.showName, style: selected ? theme.t1s14w700 : theme.t1s14w400),
                   ),
                 );
               }).toList(),
@@ -262,9 +254,9 @@ class TimeBarTabBar extends ConsumerStatefulWidget {
     this.onTapTimeBar,
   });
 
-  final List<TimeBar> timerBarList;
-  final ValueChanged<TimeBar>? onTapTimeBar;
-  final ValueListenable<TimeBar?> timeBarListener;
+  final List<TimeBarConfig> timerBarList;
+  final ValueChanged<TimeBarConfig>? onTapTimeBar;
+  final ValueListenable<TimeBarConfig?> timeBarListener;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _TimeTabBarViewState();
@@ -274,7 +266,7 @@ class _TimeTabBarViewState extends ConsumerState<TimeBarTabBar>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  List<TimeBar> get timerBarList => widget.timerBarList;
+  List<TimeBarConfig> get timerBarList => widget.timerBarList;
 
   @override
   void initState() {
@@ -344,7 +336,7 @@ class _TimeTabBarViewState extends ConsumerState<TimeBarTabBar>
                   child: Container(
                     alignment: AlignmentDirectional.center,
                     width: 40.r,
-                    child: FittedBox(child: Text(bar.bar)),
+                    child: FittedBox(child: Text(bar.showName)),
                   ),
                 );
               }).toList(),

@@ -39,7 +39,7 @@ enum DrawPosition {
 
 /// 缩放位置
 ///
-/// [auto] 会根据当前绽放开始时, 所有焦点位置, 将绘制区域宽度三等分, 从而自动决定缩放位置.
+/// 将绘制区域宽度三等分, [auto] 会根据当前缩放开始时的焦点位置, 自行决定缩放位置.
 enum ScalePosition {
   auto,
   left,
@@ -47,63 +47,133 @@ enum ScalePosition {
   right,
 }
 
-enum IndicatorType {
-  /// 主区
-  main('MAIN'),
-  candle('CANDLE'),
-  ma('MA'),
-  ema('EMA'),
-  boll('BOLL'),
-  sar('SAR'),
-  volume('VOL'),
+abstract interface class IIndicatorKey {
+  String get id;
+  String get label;
+}
 
-  /// 副区
-  time('Time'),
-  volMa('VOLMA'),
-  subVol('VOL'),
-  maVol('MAVOL'),
-  macd('MACD'),
-  kdj('KDJ'),
-  subBoll('BOLL'),
-  subSar('SAR'),
-  rsi('RSI'),
-  stochRsi('StochRSI');
+final class FlexiIndicatorKey implements IIndicatorKey {
+  const FlexiIndicatorKey(
+    this.id, {
+    String? label,
+  }) : label = label ?? id;
 
-  const IndicatorType(this.label);
+  @override
+  final String id;
 
+  @override
   final String label;
 
   @override
-  String toString() {
-    return label;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is FlexiIndicatorKey &&
+        runtimeType == other.runtimeType &&
+        id == other.id;
+  }
+
+  @override
+  int get hashCode {
+    return runtimeType.hashCode ^ id.hashCode;
   }
 }
 
-/// 指标
-/// 主区
-const mainChartKey = ValueKey<dynamic>(IndicatorType.main);
-const candleKey = ValueKey<dynamic>(IndicatorType.candle);
-const maKey = ValueKey<dynamic>(IndicatorType.ma);
-const emaKey = ValueKey<dynamic>(IndicatorType.ema);
-const bollKey = ValueKey<dynamic>(IndicatorType.boll);
-const sarKey = ValueKey<dynamic>(IndicatorType.sar);
-const volumeKey = ValueKey<dynamic>(IndicatorType.volume);
+const unknownIndicatorKey = FlexiIndicatorKey('unknown');
 
-/// 副区
-const volMaKey = ValueKey<dynamic>(IndicatorType.volMa);
-const subVolKey = ValueKey<dynamic>(IndicatorType.subVol);
-const maVolKey = ValueKey<dynamic>(IndicatorType.maVol);
-const macdKey = ValueKey<dynamic>(IndicatorType.macd);
-const kdjKey = ValueKey<dynamic>(IndicatorType.kdj);
-const subBollKey = ValueKey<dynamic>(IndicatorType.subBoll);
-const subSarKey = ValueKey<dynamic>(IndicatorType.subSar);
-const rsiKey = ValueKey<dynamic>(IndicatorType.rsi);
-const stochRsiKey = ValueKey<dynamic>(IndicatorType.stochRsi);
-const timeKey = ValueKey<dynamic>(IndicatorType.time);
+typedef IndicatorBuilder<T extends Indicator> = T Function(
+  SettingConfig setting,
+);
+
+abstract interface class ITimeRectConfig {
+  double get height;
+  DrawPosition get position;
+}
+
+const mainIndicatorKey = FlexiIndicatorKey('main', label: 'Main');
+const candleIndicatorKey = FlexiIndicatorKey('candle', label: 'Candle');
+const timeIndicatorKey = FlexiIndicatorKey('time', label: 'Time');
+const tradeIndicatorKey = FlexiIndicatorKey('trade', label: 'Trade');
 
 /// 可预计算接口
 /// 实现 [IPrecomputable] 接口, 即代表当前对象是可以进行预计算.
-/// [getCalcParam] 返回预计算的参数. 可以为空
 abstract interface class IPrecomputable {
-  dynamic getCalcParam();
+  dynamic get calcParam;
+}
+
+const mainIndicatorSlot = -1;
+
+/// 指标图的绘制边界接口
+abstract interface class IPaintBoundingBox {
+  bool updateLayout({
+    double? height,
+    EdgeInsets? padding,
+    bool reset = false,
+  });
+
+  void resetPaintBounding({int? slot});
+
+  /// 当前指标图画笔可以绘制的范围
+  Rect get drawableRect;
+
+  /// 当前指标图绘制区域
+  Rect get chartRect;
+
+  /// 当前指标图顶部绘制区域
+  Rect get topRect;
+
+  /// 当前指标图底部绘制区域
+  Rect get bottomRect;
+
+  /// 设置下一个Tips的绘制区域.
+  Rect shiftNextTipsRect(double height);
+}
+
+/// 指标图的绘制数据初始化接口
+abstract interface class IPaintDataInit {
+  /// 最大值/最小值
+  MinMax get minMax;
+
+  /// 数据预计算
+  /// 1. 仅在数据源[KlineData]发生变化时回调.
+  void precompute(Range range, {bool reset = false});
+
+  void setMinMax(MinMax val);
+}
+
+/// 指标图的绘制接口/指标图的Cross事件绘制接口
+abstract interface class IPaintObject {
+  /// 计算指标需要的数据, 并返回 [start] ~ [end] 之间MinMax.
+  MinMax? initState({required int start, required int end});
+
+  /// 绘制指标图
+  void paintChart(Canvas canvas, Size size);
+
+  /// 在所有指标图绘制结束后额外的绘制
+  void paintExtraAboveChart(Canvas canvas, Size size);
+
+  /// 绘制Cross上的刻度值
+  void onCross(Canvas canvas, Offset offset);
+
+  /// 绘制顶部tips信息
+  Size? paintTips(
+    Canvas canvas, {
+    CandleModel? model,
+    Offset? offset,
+    Rect? tipsRect,
+  });
+}
+
+abstract interface class IPaintDelegate {
+  void doPrecompute(Range range, {bool reset = false});
+
+  MinMax? doInitState(
+    int newSlot, {
+    required int start,
+    required int end,
+    bool reset = false,
+  });
+
+  void doPaintChart(Canvas canvas, Size size);
+
+  void doOnCross(Canvas canvas, Offset offset, {CandleModel? model});
 }

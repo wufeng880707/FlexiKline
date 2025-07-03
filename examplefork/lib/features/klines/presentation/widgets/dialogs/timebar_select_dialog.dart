@@ -26,17 +26,14 @@ class TimerBarSelectDialog extends ConsumerWidget {
     required this.controller,
     required this.onTapTimeBar,
     required this.preferTimeBarList,
-    required this.supportTimBarList,
   });
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBar> onTapTimeBar;
-  final List<TimeBar> preferTimeBarList;
-  final List<TimeBar> supportTimBarList;
+  final ValueChanged<TimeBarConfig> onTapTimeBar;
+  final List<TimeBarConfig> preferTimeBarList;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = context.trans;
     final theme = ref.watch(themeFKProvider);
     final screenWidth = ScreenUtil().screenWidth;
     final timeBarWidth = (screenWidth - 2 * 16.r - 4 * 12.r) / 5;
@@ -48,11 +45,11 @@ class TimerBarSelectDialog extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 10.r),
-            Text(s.preferredIntervals, style: theme.t1s20w700),
+            Text(context.trans.preferredIntervals, style: theme.t1s20w700),
             SizedBox(height: 10.r),
             _buildPreferTimeBarList(context, ref, barWidth: timeBarWidth),
             SizedBox(height: 20.r),
-            Text(s.intervals, style: theme.t1s20w700),
+            Text(context.trans.intervals, style: theme.t1s20w700),
             SizedBox(height: 10.r),
             _buildAllTimeBarList(context, ref, barWidth: timeBarWidth),
             SizedBox(height: 10.r),
@@ -72,7 +69,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
           spacing: 12.r,
           runSpacing: 8.r,
           children:
-              (supportTimBarList.isEmpty ? TimeBar.values : supportTimBarList).map((bar) {
+              preferTimeBarList.map((bar) {
                 final selected = value == bar;
                 return SizedBox(
                   width: barWidth,
@@ -82,7 +79,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
                     onPressed: () => onTapTimeBar(bar),
                     child: FittedBox(
                       child: Text(
-                        bar.bar,
+                        bar.showName,
                         style: theme.t2s12w400.copyWith(
                           color: theme.t1,
                           fontWeight: selected ? FontWeight.bold : null,
@@ -107,17 +104,17 @@ class TimerBarSelectDialog extends ConsumerWidget {
           spacing: 12.r,
           runSpacing: 8.r,
           children:
-              TimeBar.values.map((bar) {
-                final selected = value == bar;
+              controller.configuration.timeBarBuilders().map((timeBar) {
+                final selected = value == timeBar;
                 return SizedBox(
                   width: barWidth,
                   child: TextButton(
-                    key: ValueKey(bar),
+                    key: ValueKey(timeBar),
                     style: theme.outlinedBtnStyle(showOutlined: selected),
-                    onPressed: () => onTapTimeBar(bar),
+                    onPressed: () => onTapTimeBar(timeBar),
                     child: FittedBox(
                       child: Text(
-                        bar.bar,
+                        timeBar.showName,
                         style: theme.t2s12w400.copyWith(
                           color: theme.t1,
                           fontWeight: selected ? FontWeight.bold : null,

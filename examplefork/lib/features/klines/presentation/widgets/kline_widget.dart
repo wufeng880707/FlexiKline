@@ -21,11 +21,11 @@ typedef GetMoreCandleListCallBack = Future<List<CandleModel>> Function(CandleReq
 
 typedef OnInitCallBack = Function(FlexiKlineController controller);
 typedef SettingChangeCallBack = Function(SettingConfig setting);
-typedef OnTimeBarChange = Function(TimeBar newTimeBar);
+typedef OnTimeBarChange = Function(TimeBarConfig newTimeBar);
 
 class KLineWidget extends StatefulWidget {
   ///支持的时间周期
-  List<TimeBar> supportTimBars;
+  // List<TimeBarConfig> supportTimBars;
   OnInitCallBack? onInitCallBack;
   SettingChangeCallBack? settingChangeCallBack;
 
@@ -69,7 +69,7 @@ class KLineWidget extends StatefulWidget {
 
   KLineWidget({
     super.key,
-    required this.supportTimBars,
+    // required this.supportTimBars,
     required this.getCandleList,
     this.getMoreCandleList,
     // required this.labelConfig,
@@ -118,7 +118,7 @@ class _KLineWidgetState extends State<KLineWidget> {
           child: KlineWidgetPrivate(
             onInitCallBack: widget.onInitCallBack,
             // labelConfig: widget.labelConfig,
-            supportTimBars: widget.supportTimBars,
+            // supportTimBars: widget.supportTimBars,
             showBottomIndicator: widget.showBottomIndicator,
             getCandleModelHistory: widget.getCandleList,
             getMoreCandleModelHistory: widget.getMoreCandleList,
@@ -141,7 +141,7 @@ class _KLineWidgetState extends State<KLineWidget> {
 class KlineWidgetPrivate extends ConsumerStatefulWidget {
   KlineWidgetPrivate({
     super.key,
-    required this.supportTimBars,
+    // required this.supportTimBars,
     required this.initReq,
     // required this.marketTicker,
     this.updateController,
@@ -174,7 +174,7 @@ class KlineWidgetPrivate extends ConsumerStatefulWidget {
   bool showBottomIndicator;
   bool autoCacheConfig = false;
   bool isShowMarketTooltipCustomView = false;
-  List<TimeBar> supportTimBars;
+  // List<TimeBarConfig> supportTimBars;
   GetCandleListCallBack getCandleModelHistory;
 
   GetMoreCandleListCallBack? getMoreCandleModelHistory;
@@ -205,7 +205,7 @@ class _KlineWidgetPrivateState extends ConsumerState<KlineWidgetPrivate> {
   @override
   void initState() {
     req = widget.initReq;
-    configuration = DefaultFlexiKlineConfiguration(ref: ref, initSize: widget.initSize);
+    configuration = DefaultFlexiKlineConfiguration(ref: ref);
 
     controller = FlexiKlineController(
       configuration: configuration,
@@ -294,12 +294,7 @@ class _KlineWidgetPrivateState extends ConsumerState<KlineWidgetPrivate> {
         //   tooltipAmount: widget.labelConfig.tooltipAmount ?? "",
         // ),
         ///k线周期，设置等等
-        FlexiKlineSettingBar(
-          controller: controller,
-          onTapTimeBar: onTapTimeBar,
-          settingChangeCallBack: widget.settingChangeCallBack,
-          supportTimeBarList: widget.supportTimBars,
-        ),
+        FlexiKlineSettingBar(controller: controller, onTapTimeBar: onTapTimeBar),
 
         ///具体k线图容器
         FlexiKlineWidget(
@@ -353,9 +348,9 @@ class _KlineWidgetPrivateState extends ConsumerState<KlineWidgetPrivate> {
     return content;
   }
 
-  void onTapTimeBar(TimeBar bar) {
-    if (bar.bar != req.bar) {
-      req = req.copyWith(bar: bar.bar);
+  void onTapTimeBar(TimeBarConfig bar) {
+    if (bar.key != req.timeBar.key) {
+      req = req.copyWith(timeBar: bar);
       if (widget.onTimeBarChange != null) {
         widget.onTimeBarChange!(bar);
       }

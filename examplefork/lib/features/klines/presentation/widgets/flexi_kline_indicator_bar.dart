@@ -70,13 +70,13 @@ class _FlexiKliineIndicatorBarState extends ConsumerState<FlexiKlineIndicatorBar
           children: [
             ...klineState.supportMainIndicatorKeys.map((key) {
               return GestureDetector(
-                key: key,
+                key: ValueKey<String>(key.id),
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
                   ref.read(klineStateProvider(widget.controller).notifier).onTapMainIndicator(key);
                 },
                 child: IndicatorBarItemView(
-                  indicatorKey: key,
+                  indicatorKey: key.id,
                   selected: klineState.mainIndicatorKeys.contains(key),
                 ),
               );
@@ -89,13 +89,13 @@ class _FlexiKliineIndicatorBarState extends ConsumerState<FlexiKlineIndicatorBar
             ),
             ...klineState.supportSubIndicatorKeys.map((key) {
               return GestureDetector(
-                key: key,
+                key: ValueKey<String>(key.id),
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
                   ref.read(klineStateProvider(widget.controller).notifier).onTapSubIndicator(key);
                 },
                 child: IndicatorBarItemView(
-                  indicatorKey: key,
+                  indicatorKey: key.id,
                   selected: klineState.subIndicatorKeys.contains(key),
                 ),
               );

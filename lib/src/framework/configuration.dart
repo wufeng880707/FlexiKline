@@ -26,12 +26,6 @@ abstract interface class IFlexiKlineTheme {
   /// 缓存Key
   String get key;
 
-  ///是否是涨的为红色，默认配置的颜色：涨的配置为红色，跌的为绿色，所以根据这个配置，涨的就为绿色
-  bool get longRed;
-
-  /// 实际尺寸与UI设计的比例
-  int get barType;
-
   /// 实际尺寸与UI设计的比例
   double get scale;
 
@@ -146,6 +140,9 @@ mixin FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
 
 /// FlexiKline配置接口
 abstract interface class IConfiguration {
+  /// 当前配置主题
+  IFlexiKlineTheme get theme;
+
   /// FlexiKline初始化默认的主区的宽高.
   Size get initialMainSize;
 
@@ -157,13 +154,26 @@ abstract interface class IConfiguration {
   /// 保存[config]配置信息到本地.
   void saveFlexiKlineConfig(FlexiKlineConfig config);
 
-  /// 自定义主区指标列表
-  /// @Deprecated('考虑优化中...')
-  Iterable<SinglePaintObjectIndicator> customMainIndicators();
+  /// 蜡烛指标构造器(主区必须提供)
+  IndicatorBuilder get candleIndicatorBuilder;
 
-  /// 自定义副区指标列表
-  /// @Deprecated('考虑优化中...')
-  Iterable<Indicator> customSubIndicators();
+  /// 时间指标构造器(副区必须提供)
+  IndicatorBuilder get timeIndicatorBuilder;
+
+  /// 主区指标定制
+  Map<IIndicatorKey, IndicatorBuilder> mainIndicatorBuilders();
+
+  /// 副区指标定制
+  Map<IIndicatorKey, IndicatorBuilder> subIndicatorBuilders();
+
+  /// 交易指标定制
+  Map<IIndicatorKey, IndicatorBuilder> tradeIndicatorBuilders();
+
+  /// 绘制工具定制
+  Map<IDrawType, DrawObjectBuilder> drawObjectBuilders();
+
+  /// 时间粒度配置（如 1m、5m、15m、1H、1D 等）
+  List<TimeBarConfig> timeBarBuilders();
 
   /// 从本地获取[instId]指定的[Overlay]缓存列表.
   Iterable<Overlay> getOverlayListConfig(String instId);

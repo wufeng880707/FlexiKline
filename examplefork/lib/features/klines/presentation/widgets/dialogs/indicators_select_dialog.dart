@@ -74,13 +74,13 @@ class IndicatorSelectDialog extends ConsumerWidget {
           klineState.supportMainIndicatorKeys.map((key) {
             final selected = klineState.mainIndicatorKeys.contains(key);
             return TextButton(
-              key: key,
+              key: ValueKey(key.id),
               style: theme.outlinedBtnStyle(showOutlined: selected),
               onPressed: () {
                 ref.read(klineStateProvider(controller).notifier).onTapMainIndicator(key);
               },
               child: Text(
-                key.value.toString().toUpperCase(),
+                key.id.toUpperCase(),
                 style: theme.t2s12w400.copyWith(
                   color: theme.t1,
                   fontWeight: selected ? FontWeight.bold : null,
@@ -102,13 +102,13 @@ class IndicatorSelectDialog extends ConsumerWidget {
           klineState.supportSubIndicatorKeys.map((key) {
             final selected = klineState.subIndicatorKeys.contains(key);
             return TextButton(
-              key: key,
+              key: ValueKey(key.id),
               style: theme.outlinedBtnStyle(showOutlined: selected),
               onPressed: () {
                 ref.read(klineStateProvider(controller).notifier).onTapSubIndicator(key);
               },
               child: Text(
-                key.value.toString().toUpperCase(),
+                key.id.toUpperCase(),
                 style: theme.t2s12w400.copyWith(
                   color: theme.t1,
                   fontWeight: selected ? FontWeight.bold : null,

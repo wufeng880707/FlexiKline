@@ -14,13 +14,15 @@
 
 library flexi_kline;
 
-export 'src/core/binding_base.dart';
-export 'src/constant.dart';
 export 'src/config/export.dart';
+export 'src/constant.dart';
+export 'src/core/core.dart';
+export 'src/data/kline_data.dart';
 export 'src/extension/export.dart';
 export 'src/framework/export.dart';
 export 'src/indicators/export.dart';
-export 'src/model/export.dart' hide GestureData, Range;
+export 'src/kline_controller.dart';
+export 'src/model/export.dart' hide GestureData;
+export 'src/trades/export.dart';
 export 'src/utils/export.dart';
 export 'src/view/flexi_kline_widget.dart';
-export 'src/kline_controller.dart';

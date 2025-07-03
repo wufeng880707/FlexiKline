@@ -13,9 +13,8 @@
 // limitations under the License.
 
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart';
 
-import '../constant.dart';
+import 'package:flexi_kline/flexi_kline.dart';
 
 /// 计算时间差, 并格式化展示
 ///
@@ -23,14 +22,11 @@ import '../constant.dart';
 /// 2. 小于一天展示 "hh:MM:ss"
 /// 3. 小天一小时展示 "MM:ss"
 String? formatTimeDiff(DateTime nextUpdateDateTime) {
-  final now = DateTime.now();
-  final timeLag = nextUpdateDateTime.difference(now);
-  
-  // 添加调试信息
-  debugPrint('formatTimeDiff > next:$nextUpdateDateTime - now:$now = $timeLag');
-  
+  final timeLag = nextUpdateDateTime.difference(DateTime.now());
   if (timeLag.isNegative) {
-    debugPrint('formatTimeDiff > 时间差为负数，返回null');
+    // debugPrint(
+    //   'calculateTimeDiff > next:$nextUpdateDateTime - now:${DateTime.now()} = $timeLag',
+    // );
     return null;
   }
 
@@ -91,15 +87,15 @@ String formatyyMMddHHMMss(
 
 String formatDateTimeByTimeBar(
   int ts, {
-  TimeBar? bar,
+  TimeBarConfig? timeBar,
 }) {
   final dt = DateTime.fromMillisecondsSinceEpoch(ts);
-  if (bar == null) {
+  if (timeBar == null) {
     return '${dt.year}/${twoDigits(dt.month)}/${twoDigits(dt.day)} ${twoDigits(dt.hour)}:${twoDigits(dt.minute)}:${twoDigits(dt.second)}';
-  } else if (bar.milliseconds >= Duration.millisecondsPerDay) {
+  } else if (timeBar.milliseconds >= Duration.millisecondsPerDay) {
     // 展示: 年/月/日
     return '${dt.year}/${twoDigits(dt.month)}/${twoDigits(dt.day)}';
-  } else if (bar.milliseconds >= Duration.millisecondsPerMinute) {
+  } else if (timeBar.milliseconds >= Duration.millisecondsPerMinute) {
     // 展示: 月/日 时:分
     return '${twoDigits(dt.month)}/${twoDigits(dt.day)} ${twoDigits(dt.hour)}:${twoDigits(dt.minute)}';
   } else {

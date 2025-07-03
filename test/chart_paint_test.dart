@@ -14,10 +14,7 @@
 
 import 'dart:ui';
 
-import 'package:flexi_kline/src/constant.dart';
-import 'package:flexi_kline/src/framework/export.dart';
-import 'package:flexi_kline/src/kline_controller.dart';
-import 'package:flexi_kline/src/model/export.dart';
+import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -40,7 +37,7 @@ void main() {
     controller.updateKlineData(
       CandleReq(
         instId: 'BTC-USDT',
-        bar: TimeBar.m15.bar,
+        timeBar: const TimeBarConfig(key: 'm15', bar: '15m', milliseconds: 900000, multiplier: 15, timespan: Timespan.minute, showName: '15m', sortOrder: 4),
         precision: 4,
       ),
       list,
@@ -48,18 +45,23 @@ void main() {
 
     controller.setMainSize(mainSize);
 
-    controller.addIndicatorInMain(maKey);
-    controller.addIndicatorInMain(emaKey);
-    controller.addIndicatorInMain(bollKey);
-    controller.addIndicatorInMain(volumeKey);
+    controller.addIndicatorInMain(const FlexiIndicatorKey('ma'));
+    controller.addIndicatorInMain(const FlexiIndicatorKey('ema'));
+    controller.addIndicatorInMain(const FlexiIndicatorKey('boll'));
+    controller.addIndicatorInMain(const FlexiIndicatorKey('volume'));
 
     controller.curKlineData.ensureStartAndEndIndex(start, end);
 
-    controller.mainIndicator.ensurePaintObject(controller);
+    // Debug: print available indicators
+    debugPrint('Available indicator keys: '
+        '${controller.mainPaintObject.children.map((e) => e.key.id).toList()}');
 
-    maIndicator = controller.mainIndicator.children.firstWhere(
-      (child) => child.key == maKey,
+    // Get the MA indicator from the main paint object
+    final maPaintObject = controller.mainPaintObject.children.firstWhere(
+      (child) => child.key == const FlexiIndicatorKey('ma'),
+      orElse: () => throw Exception('MA indicator not found'),
     );
+    maIndicator = maPaintObject.indicator as SinglePaintObjectIndicator;
   });
 
   setUp(() {
@@ -78,18 +80,21 @@ void main() {
       debugPrint('test-MA-preprocess');
       controller.curKlineData.precompute(
         maIndicator.key,
-        calcParam: maIndicator.getCalcParams(),
+        calcParam: maIndicator.calcParam,
         range: Range(start, end),
       );
     });
     test('test-MA-Paint', () async {
       debugPrint('test-MA-Paint');
-      maIndicator.paintObject?.doInitState(
+      final maPaintObject = controller.mainPaintObject.children.firstWhere(
+        (child) => child.key == const FlexiIndicatorKey('ma'),
+      );
+      maPaintObject.doInitState(
         mainIndicatorSlot,
         start: 0,
         end: 100,
       );
-      maIndicator.paintObject?.doPaintChart(canvas, mainSize);
+      maPaintObject.doPaintChart(canvas, mainSize);
     });
   });
 }

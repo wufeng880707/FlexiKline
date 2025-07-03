@@ -14,11 +14,208 @@
 
 part of 'indicator.dart';
 
-mixin PaintYAxisScaleMixin<T extends SinglePaintObjectIndicator>
+/// FlexiKlineController 状态/配置/接口代理
+mixin ConfigStateMixin<T extends Indicator> on IndicatorObject<T> {
+  /// Config
+  SettingConfig get settingConfig => context.settingConfig;
+  GridConfig get gridConfig => context.gridConfig;
+  CrossConfig get crossConfig => context.crossConfig;
+
+  double get candleActualWidth => context.candleActualWidth;
+
+  double get candleWidthHalf => context.candleWidthHalf;
+
+  KlineData get klineData => context.curKlineData;
+
+  double get paintDxOffset => context.paintDxOffset;
+
+  double get startCandleDx => context.startCandleDx;
+
+  bool get isCrossing => context.isCrossing;
+
+  int? _dataIndex;
+  // // 注: 如果PaintObject被创建了, 其DataIndex必然有值.
+  int get dataIndex => _dataIndex ??= context.getDataIndex(indicator.key)!;
+}
+
+/// 绘制对象混入边界计算的通用扩展
+mixin PaintObjectBoundingMixin on PaintObject implements IPaintBoundingBox {
+  bool get drawInMain => slot == mainIndicatorSlot;
+  bool get drawInSub => slot > mainIndicatorSlot;
+
+  int _slot = mainIndicatorSlot;
+
+  /// 当前指标所在位置索引
+  /// <0 代表在主图绘制
+  /// >=0 代表在副图绘制
+  int get slot => _slot;
+
+  Rect? _drawableRect;
+  Rect? _chartRect;
+  Rect? _topRect;
+  Rect? _bottomRect;
+
+  /// 更新布布局参数
+  @override
+  bool updateLayout({
+    double? height,
+    EdgeInsets? padding,
+    bool reset = false,
+  }) {
+    bool hasChange = false;
+    if (height != null && height > 0 && height != indicator.height) {
+      _indicator.height = height;
+      hasChange = true;
+    }
+
+    if (padding != null && padding != indicator.padding) {
+      _indicator.padding = padding;
+      hasChange = true;
+    }
+    if (reset || hasChange) {
+      resetPaintBounding();
+    }
+    return reset || hasChange;
+  }
+
+  @nonVirtual
+  @override
+  void resetPaintBounding({int? slot}) {
+    if (slot != null) _slot = slot;
+    _drawableRect = null;
+    _chartRect = null;
+    _topRect = null;
+    _bottomRect = null;
+  }
+
+  @override
+  Rect get drawableRect {
+    if (_drawableRect != null) return _drawableRect!;
+    if (drawInMain) {
+      _drawableRect = context.mainRect;
+    } else {
+      final top = context.calculateIndicatorTop(slot);
+      _drawableRect = Rect.fromLTRB(
+        context.subRect.left,
+        context.subRect.top + top,
+        context.subRect.right,
+        context.subRect.top + top + indicator.height,
+      );
+    }
+    return _drawableRect!;
+  }
+
+  @override
+  Rect get topRect {
+    return _topRect ??= Rect.fromLTRB(
+      drawableRect.left,
+      drawableRect.top,
+      drawableRect.right,
+      drawableRect.top + padding.top,
+    );
+  }
+
+  @override
+  Rect get bottomRect {
+    return _bottomRect ??= Rect.fromLTRB(
+      drawableRect.left,
+      drawableRect.bottom - padding.bottom,
+      drawableRect.right,
+      drawableRect.bottom,
+    );
+  }
+
+  @override
+  Rect get chartRect {
+    if (_chartRect != null) return _chartRect!;
+    final chartBottom = drawableRect.bottom - padding.bottom;
+    double chartTop;
+    if (indicator.paintMode == PaintMode.alone) {
+      chartTop = chartBottom - indicator.height;
+    } else {
+      chartTop = drawableRect.top + padding.top;
+    }
+    return _chartRect = Rect.fromLTRB(
+      drawableRect.left + padding.left,
+      chartTop,
+      drawableRect.right - padding.right,
+      chartBottom,
+    );
+  }
+
+  double get chartRectWidthHalf => chartRect.width / 2;
+
+  double clampDxInChart(double dx) => dx.clamp(chartRect.left, chartRect.right);
+  double clampDyInChart(double dy) => dy.clamp(chartRect.top, chartRect.bottom);
+
+  // Tips区域向下移动height.
+  @override
+  Rect shiftNextTipsRect(double height) {
+    return drawableRect.shiftYAxis(height);
+  }
+}
+
+/// 绘制对象混入数据初始化的通用扩展
+mixin PaintObjectDataInitMixin on PaintObject implements IPaintDataInit {
+  int? _start;
+  int? _end;
+
+  MinMax? _minMax;
+
+  @override
+  MinMax get minMax => _minMax ?? MinMax.zero;
+
+  @override
+  void setMinMax(MinMax val) {
+    _minMax = val;
+  }
+
+  double? _dyFactor;
+  double get dyFactor {
+    if (_dyFactor != null) return _dyFactor!;
+    if (chartRect.height == 0) return _dyFactor = 1;
+    return _dyFactor = chartRect.height / (minMax.diffDivisor).toDouble();
+  }
+
+  double valueToDy(BagNum value, {bool correct = true}) {
+    if (correct) value = value.clamp(minMax.min, minMax.max);
+    return chartRect.bottom - (value - minMax.min).toDouble() * dyFactor;
+  }
+
+  BagNum? dyToValue(double dy, {bool check = true}) {
+    if (check && !drawableRect.includeDy(dy)) return null;
+    return minMax.max - ((dy - chartRect.top) / dyFactor).toBagNum();
+  }
+
+  double? indexToDx(num index, {bool check = true}) {
+    final indexDx = index * candleActualWidth;
+    double dx = chartRect.right + paintDxOffset - indexDx;
+    if (!check) return dx;
+    return chartRect.includeDx(dx) ? dx : null;
+  }
+
+  double dxToIndex(double dx) {
+    final dxPaintOffset = chartRect.right + paintDxOffset - dx;
+    return dxPaintOffset / candleActualWidth;
+  }
+
+  CandleModel? dxToCandle(double dx) {
+    final index = dxToIndex(dx).toInt();
+    return klineData.getCandle(index);
+  }
+
+  CandleModel? offsetToCandle(Offset? offset) {
+    if (offset != null) return dxToCandle(offset.dx);
+    return null;
+  }
+}
+
+/// 绘制当前图表在Y轴上的刻度值
+mixin PaintYAxisTicksMixin<T extends SinglePaintObjectIndicator>
     on SinglePaintObjectBox<T> {
   /// 为副区的指标图绘制Y轴上的刻度信息
   @protected
-  void paintYAxisScale(
+  void paintYAxisTicks(
     Canvas canvas,
     Size size, {
     required int tickCount, // 刻度数量.
@@ -43,7 +240,7 @@ mixin PaintYAxisScaleMixin<T extends SinglePaintObjectIndicator>
       final value = dyToValue(dy);
       if (value == null) continue;
 
-      final text = fromatTickValue(value, precision: precision);
+      final text = fromatTicksValue(value, precision: precision);
 
       final ticksText = settingConfig.ticksText;
 
@@ -62,7 +259,7 @@ mixin PaintYAxisScaleMixin<T extends SinglePaintObjectIndicator>
 
   /// 如果要定制格式化刻度值. 在PaintObject中覆写此方法.
   @protected
-  String fromatTickValue(BagNum value, {required int precision}) {
+  String fromatTicksValue(BagNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -72,11 +269,12 @@ mixin PaintYAxisScaleMixin<T extends SinglePaintObjectIndicator>
   }
 }
 
-mixin PaintYAxisMarkOnCrossMixin<T extends SinglePaintObjectIndicator>
+/// 当Cross事件发生时, 在Y轴上的绘制crossing相应的刻度值
+mixin PaintYAxisTicksOnCrossMixin<T extends SinglePaintObjectIndicator>
     on SinglePaintObjectBox<T> {
   /// onCross时, 绘制Y轴上的刻度值
   @protected
-  void paintYAxisMarkOnCross(
+  void paintYAxisTicksOnCross(
     Canvas canvas,
     Offset offset, {
     required int precision,
@@ -84,7 +282,7 @@ mixin PaintYAxisMarkOnCrossMixin<T extends SinglePaintObjectIndicator>
     final value = dyToValue(offset.dy);
     if (value == null) return;
 
-    final text = formatMarkValueOnCross(value, precision: precision);
+    final text = formatTicksValueOnCross(value, precision: precision);
 
     final ticksText = crossConfig.ticksText;
 
@@ -101,7 +299,7 @@ mixin PaintYAxisMarkOnCrossMixin<T extends SinglePaintObjectIndicator>
   }
 
   @protected
-  String formatMarkValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(BagNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -162,5 +360,54 @@ mixin PaintSimpleCandleMixin<T extends SinglePaintObjectIndicator>
         linePaint,
       );
     }
+  }
+}
+
+extension PaintObjectExt on PaintObject {
+  /// 获取当前指标计算参数
+  Map<IIndicatorKey, dynamic> getCalcParams() {
+    if (calcParams != null) {
+      return {key: calcParams};
+    }
+    return const <IIndicatorKey, dynamic>{};
+  }
+}
+
+extension MultiPaintObjectBoxExt on MultiPaintObjectBox {
+  /// 收集[MultiPaintObjectBox]中子指标的计算参数
+  Map<IIndicatorKey, dynamic> getCalcParams() {
+    final params = <IIndicatorKey, dynamic>{};
+    for (var object in children) {
+      if (object.calcParams != null) {
+        params[object.key] = object.calcParams;
+      }
+    }
+    return params;
+  }
+}
+
+/// 向后兼容：PaintYAxisMarkOnCrossMixin 的别名
+/// @deprecated 请使用 PaintYAxisTicksOnCrossMixin
+@Deprecated('请使用 PaintYAxisTicksOnCrossMixin')
+mixin PaintYAxisMarkOnCrossMixin<T extends SinglePaintObjectIndicator>
+    on SinglePaintObjectBox<T> implements PaintYAxisTicksOnCrossMixin<T> {
+  @override
+  void paintYAxisTicksOnCross(
+    Canvas canvas,
+    Offset offset, {
+    required int precision,
+  }) {
+    // 委托给新的实现
+  }
+
+  @override
+  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+    // 委托给新的实现
+    return formatNumber(
+      value.toDecimal(),
+      precision: precision,
+      defIfZero: '0.00',
+      showCompact: true,
+    );
   }
 }

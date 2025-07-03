@@ -27,6 +27,11 @@ final class OverlayDrawObjectManager with KlineLog {
     ILogger? logger,
   }) {
     loggerDelegate = logger;
+    final drawObjectbuilders = configuration.drawObjectBuilders();
+    for (final MapEntry(key: type, value: builder)
+        in drawObjectbuilders.entries) {
+      registerDrawOverlayObjectBuilder(type, builder);
+    }
   }
 
   final IConfiguration configuration;
@@ -114,7 +119,7 @@ final class OverlayDrawObjectManager with KlineLog {
     _instId = request.instId;
     final list = configuration.getOverlayListConfig(_instId);
     for (var overlay in list) {
-      final object = createDrawObject(overlay: overlay, config: config);
+      final object = generateDrawObject(overlay, config);
       if (object != null) {
         addDrawObject(object);
       }
@@ -147,15 +152,21 @@ final class OverlayDrawObjectManager with KlineLog {
   }
 
   /// 通过[type]创建Overlay.
-  /// 在Overlay未完成绘制时, 其line的配置使用crosshair.
-  DrawObject? createDrawObject({
-    IDrawType? type,
-    Overlay? overlay,
-    required DrawConfig config,
+  DrawObject? createDrawObject(
+    IDrawType type, {
+    required DrawConfig drawConfig,
   }) {
-    if (overlay == null && type == null) return null;
-    overlay ??= Overlay(key: _instId, type: type!, line: config.drawLine);
+    return generateDrawObject(
+      Overlay(
+        key: _instId,
+        type: type,
+        line: drawConfig.drawLine,
+      ),
+      drawConfig,
+    );
+  }
 
+  DrawObject? generateDrawObject(Overlay overlay, DrawConfig config) {
     final builder = _overlayBuilders[overlay.type];
     if (builder == null) return null;
     return builder.call(overlay, config);

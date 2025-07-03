@@ -45,6 +45,10 @@ class OverlayObject implements Comparable<OverlayObject> {
   /// 当前绘制已完成, 修正中.
   bool get isEditing => points.fold(true, (ret, item) => ret && item != null);
 
+  Overlay clone() {
+    return Overlay(key: key, type: type, line: line);
+  }
+
   @override
   int compareTo(OverlayObject other) {
     return _overlay.compareTo(other._overlay);
@@ -52,8 +56,7 @@ class OverlayObject implements Comparable<OverlayObject> {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is OverlayObject && _overlay == other._overlay);
+    return identical(this, other) || (other is OverlayObject && _overlay == other._overlay);
   }
 
   @override

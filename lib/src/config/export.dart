@@ -12,34 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'flexi_kline_config/flexi_kline_config.dart';
-export 'setting_config/setting_config.dart';
-export 'gesture_config/gesture_config.dart';
-export 'grid_config/grid_config.dart';
 export 'cross_config/cross_config.dart';
-export 'draw_config/draw_config.dart';
-export 'magnifier_config/magnifier_config.dart';
-export 'tips_config/tips_config.dart';
-export 'line_config/line_config.dart';
-export 'point_config/point_config.dart';
-export 'text_area_config/text_area_config.dart';
-export 'mark_config/mark_config.dart';
-export 'tooltip_config/tooltip_config.dart';
-export 'loading_config/loading_config.dart';
-export 'indicators_config/indicators_config.dart';
-export 'tolerance_config/tolerance_config.dart';
-export 'paint_config/paint_config.dart';
-
-/// Indicator 参数
-export 'ma_param/ma_param.dart';
-export 'boll_param/boll_param.dart';
-export 'sar_param/sar_param.dart';
-export 'kdj_param/kdj_param.dart';
-export 'macd_param/macd_param.dart';
-export 'rsi_param/rsi_param.dart';
-
-/// DrawOverlay 参数
-export 'draw_params/draw_params.dart';
 
 /// 内置默认配置
 export 'default_config.dart';
+export 'draw_config/draw_config.dart';
+export 'flexi_kline_config/flexi_kline_config.dart';
+export 'gesture_config/gesture_config.dart';
+export 'grid_config/grid_config.dart';
+export 'line_config/line_config.dart';
+export 'loading_config/loading_config.dart';
+export 'magnifier_config/magnifier_config.dart';
+export 'mark_config/mark_config.dart';
+export 'paint_config/paint_config.dart';
+export 'point_config/point_config.dart';
+export 'setting_config/setting_config.dart';
+export 'text_area_config/text_area_config.dart';
+export 'time_bar_config/time_bar_config.dart';
+export 'tips_config/tips_config.dart';
+export 'tolerance_config/tolerance_config.dart';
+export 'tooltip_config/tooltip_config.dart';

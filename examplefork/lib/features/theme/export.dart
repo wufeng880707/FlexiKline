@@ -12,5 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export '../../core/providers/theme_provider.dart';
+export 'theme_manager.dart';
 export 'flexi_theme.dart';

@@ -26,7 +26,7 @@ class WsAnnotationHelper {
 class WsConfigs {
   // K线数据WebSocket配置
   static const klineConfig = WsConfig(
-    url: 'wss://futuresws.aivora.com/kline-api/ws',
+    url: 'wss://ws.aivora.com/futures/ws?compress=0',
     connectTimeout: Duration(seconds: 10),
     pingInterval: Duration(seconds: 30),
     pongTimeout: Duration(seconds: 10),
@@ -36,7 +36,7 @@ class WsConfigs {
 
   // 交易数据WebSocket配置
   static const tradeConfig = WsConfig(
-    url: 'wss://futuresws.aivora.com/trade-api/ws',
+    url: 'wss://ws.aivora.com/futures/ws?compress=0',
     connectTimeout: Duration(seconds: 10),
     pingInterval: Duration(seconds: 30),
     pongTimeout: Duration(seconds: 10),
@@ -53,4 +53,4 @@ class WsConfigs {
     maxReconnectAttempts: 5,
     reconnectDelay: Duration(seconds: 3),
   );
-} 
+}

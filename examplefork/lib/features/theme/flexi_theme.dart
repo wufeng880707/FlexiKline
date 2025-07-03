@@ -18,11 +18,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../core/providers/theme_provider.dart';
 import 'theme.dart';
+import 'theme_manager.dart';
 
 final themeFKProvider = StateProvider<FKTheme>((ref) {
-  return ref.watch(themeProvider) != ThemeMode.dark ? fkLightTheme : fkDarkTheme;
+  return ref.watch(themeModeProvider) != ThemeMode.dark ? fkLightTheme : fkDarkTheme;
 });
 
 final fkLightTheme = LightFKTheme();
@@ -36,16 +36,11 @@ abstract class FKTheme {
   Color get brand => Colors.black;
   Color get long => const Color(0xFF33BD65);
   Color get short => const Color(0xFFE84E74);
-
-  Color get indraTodayAvgColor => Color(0xffff9933);
-  Color get indraTodayCloseColor => Color(0xff4d78ff);
-  int get barType => 0;
-
-  ///是否是红涨绿跌，
-  bool get longRed => false;
-
   Color get white => Colors.white;
   Color get error => short;
+
+  Color get indraTodayAvgColor => const Color(0xffff9933);
+  Color get indraTodayCloseColor => const Color(0xff4d78ff);
 
   late Color pageBg;
   late Color lightBg;

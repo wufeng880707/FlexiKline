@@ -15,14 +15,15 @@ FlexiKlineConfig _$FlexiKlineConfigFromJson(Map<String, dynamic> json) =>
       cross: CrossConfig.fromJson(json['cross'] as Map<String, dynamic>),
       draw: DrawConfig.fromJson(json['draw'] as Map<String, dynamic>),
       tooltip: TooltipConfig.fromJson(json['tooltip'] as Map<String, dynamic>),
-      indicators:
-          IndicatorsConfig.fromJson(json['indicators'] as Map<String, dynamic>),
       main: json['main'] == null
-          ? const <ValueKey>{}
-          : const SetValueKeyConverter().fromJson(json['main'] as List),
+          ? const <IIndicatorKey>{}
+          : const SetIndicatorKeyConverter().fromJson(json['main'] as List),
       sub: json['sub'] == null
-          ? const <ValueKey>{}
-          : const SetValueKeyConverter().fromJson(json['sub'] as List),
+          ? const <IIndicatorKey>{}
+          : const SetIndicatorKeyConverter().fromJson(json['sub'] as List),
+      trade: json['trade'] == null
+          ? const <IIndicatorKey>{}
+          : const SetIndicatorKeyConverter().fromJson(json['trade'] as List),
     );
 
 Map<String, dynamic> _$FlexiKlineConfigToJson(FlexiKlineConfig instance) =>
@@ -34,7 +35,7 @@ Map<String, dynamic> _$FlexiKlineConfigToJson(FlexiKlineConfig instance) =>
       'cross': instance.cross.toJson(),
       'draw': instance.draw.toJson(),
       'tooltip': instance.tooltip.toJson(),
-      'indicators': instance.indicators.toJson(),
-      'main': const SetValueKeyConverter().toJson(instance.main),
-      'sub': const SetValueKeyConverter().toJson(instance.sub),
+      'main': const SetIndicatorKeyConverter().toJson(instance.main),
+      'sub': const SetIndicatorKeyConverter().toJson(instance.sub),
+      'trade': const SetIndicatorKeyConverter().toJson(instance.trade),
     };

@@ -31,7 +31,7 @@ Future<List<CandleModel>> genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-  TimeBar bar = TimeBar.D1,
+  TimeBarConfig bar = const TimeBarConfig(key: 'D1', bar: '1D', milliseconds: 86400000, multiplier: 1, timespan: Timespan.day, showName: '1D', sortOrder: 9),
   DateTime? dateTime,
   bool isHistory = true,
 }) async {

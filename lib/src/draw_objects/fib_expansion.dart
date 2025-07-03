@@ -15,8 +15,7 @@
 import 'dart:ui';
 
 import '../config/text_area_config/text_area_config.dart';
-import '../core/interface.dart';
-import '../data/export.dart';
+import '../core/core.dart';
 import '../extension/export.dart';
 import '../framework/draw/overlay.dart';
 
@@ -103,9 +102,7 @@ class FibExpansionDrawObject extends DrawObject {
     final fibRates = drawParams.fibRates;
     final fibText = drawParams.fibText;
     final fibTextColor =
-        fibText.style.color != null && fibText.style.color!.alpha != 0
-            ? fibText.style.color
-            : null;
+        fibText.style.color != null && fibText.style.color!.alpha != 0 ? fibText.style.color : null;
     final fibBgOpacity = drawParams.fibBgOpacity;
     final fibColors = drawParams.fibColors;
     final colors = fibColors.isNotEmpty ? fibColors : [line.paint.color];

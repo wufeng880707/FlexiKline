@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import 'package:decimal/decimal.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -23,49 +22,35 @@ import '../utils/convert_util.dart';
 import 'chart/indicator.dart';
 import 'draw/overlay.dart';
 
-ValueKey parseValueKey(String key) {
-  if (key.trim().isEmpty) return const ValueKey('');
-  final name = key.toLowerCase();
-  final types = IndicatorType.values.where(
-    (type) => type.name.toLowerCase() == name,
-  );
-  if (types.isNotEmpty) return ValueKey(types.first);
-  return ValueKey(key);
-}
-
-String convertValueKey(ValueKey key) {
-  if (key.value is IndicatorType) {
-    return (key.value as IndicatorType).name;
-  }
-  return key.value.toString();
-}
-
-class ValueKeyConverter implements JsonConverter<ValueKey, String> {
-  const ValueKeyConverter();
+class IIndicatorKeyConvert implements JsonConverter<IIndicatorKey, String> {
+  const IIndicatorKeyConvert();
 
   @override
-  ValueKey fromJson(String json) {
-    return parseValueKey(json);
+  IIndicatorKey fromJson(String json) {
+    final splits = json.split(":");
+    final id = splits.getItem(0);
+    if (id == null || id.isEmpty) return unknownIndicatorKey;
+    final label = splits.getItem(1);
+    return FlexiIndicatorKey(id, label: label);
   }
 
   @override
-  String toJson(ValueKey key) {
-    return convertValueKey(key);
+  String toJson(IIndicatorKey key) {
+    return "${key.id}:${key.label}";
   }
 }
 
-class SetValueKeyConverter
-    implements JsonConverter<Set<ValueKey>, List<dynamic>> {
-  const SetValueKeyConverter();
+class SetIndicatorKeyConverter implements JsonConverter<Set<IIndicatorKey>, List<dynamic>> {
+  const SetIndicatorKeyConverter();
 
   @override
-  Set<ValueKey> fromJson(List<dynamic> json) {
-    return json.map((e) => const ValueKeyConverter().fromJson(e)).toSet();
+  Set<IIndicatorKey> fromJson(List<dynamic> json) {
+    return json.map((e) => const IIndicatorKeyConvert().fromJson(e)).toSet();
   }
 
   @override
-  List<dynamic> toJson(Set<ValueKey> object) {
-    return object.map((e) => const ValueKeyConverter().toJson(e)).toList();
+  List<dynamic> toJson(Set<IIndicatorKey> object) {
+    return object.map((e) => const IIndicatorKeyConvert().toJson(e)).toList();
   }
 }
 
@@ -169,8 +154,7 @@ class LineTypeConverter implements JsonConverter<LineType, String> {
   }
 }
 
-class EdgeInsetsConverter
-    implements JsonConverter<EdgeInsets, Map<String, dynamic>> {
+class EdgeInsetsConverter implements JsonConverter<EdgeInsets, Map<String, dynamic>> {
   const EdgeInsetsConverter();
 
   @override
@@ -208,8 +192,7 @@ class EdgeInsetsConverter
         edgeInsets.right == 0 &&
         edgeInsets.bottom == 0) return {};
 
-    if (edgeInsets.left == edgeInsets.right &&
-        edgeInsets.top == edgeInsets.bottom) {
+    if (edgeInsets.left == edgeInsets.right && edgeInsets.top == edgeInsets.bottom) {
       return {
         "horizontal": edgeInsets.left,
         "vertical": edgeInsets.top,
@@ -281,8 +264,7 @@ class RectConverter implements JsonConverter<Rect, Map<String, dynamic>> {
   }
 }
 
-class BorderSideConvert
-    implements JsonConverter<BorderSide, Map<String, dynamic>> {
+class BorderSideConvert implements JsonConverter<BorderSide, Map<String, dynamic>> {
   const BorderSideConvert();
 
   @override
@@ -331,8 +313,7 @@ class BorderConverter implements JsonConverter<Border, Map<String, dynamic>> {
 }
 
 // 仅支持圆角类型
-class BorderRadiusConverter
-    implements JsonConverter<BorderRadius, Map<String, dynamic>> {
+class BorderRadiusConverter implements JsonConverter<BorderRadius, Map<String, dynamic>> {
   const BorderRadiusConverter();
 
   @override
@@ -380,8 +361,7 @@ class TextAlignConvert implements JsonConverter<TextAlign, String> {
   }
 }
 
-class TextStyleConverter
-    implements JsonConverter<TextStyle, Map<String, dynamic>> {
+class TextStyleConverter implements JsonConverter<TextStyle, Map<String, dynamic>> {
   const TextStyleConverter();
 
   @override
@@ -418,8 +398,7 @@ class TextStyleConverter
   }
 }
 
-class StrutStyleConverter
-    implements JsonConverter<StrutStyle, Map<String, dynamic>> {
+class StrutStyleConverter implements JsonConverter<StrutStyle, Map<String, dynamic>> {
   const StrutStyleConverter();
 
   @override
@@ -471,8 +450,7 @@ class ClipConverter implements JsonConverter<Clip, String> {
   }
 }
 
-class BoxShadowConverter
-    implements JsonConverter<BoxShadow, Map<String, dynamic>> {
+class BoxShadowConverter implements JsonConverter<BoxShadow, Map<String, dynamic>> {
   const BoxShadowConverter();
 
   @override
@@ -583,8 +561,7 @@ class MagnetModeConverter implements JsonConverter<MagnetMode, String> {
   }
 }
 
-class IDrawTypeConverter
-    implements JsonConverter<IDrawType, Map<String, dynamic>> {
+class IDrawTypeConverter implements JsonConverter<IDrawType, Map<String, dynamic>> {
   const IDrawTypeConverter();
 
   @override
@@ -593,17 +570,14 @@ class IDrawTypeConverter
     final String? id = json.getItem('id');
     final int? steps = json.getItem('steps');
     if (id != null && steps != null) {
-      IDrawType? type = DrawType.values.firstWhereOrNull((type) {
-        return type.groupId == groupId && type.id == id && type.steps == steps;
-      });
-      return type ?? FlexiDrawType(id, steps, groupId: groupId);
+      return FlexiDrawType(id, steps, groupId: groupId);
     }
     return unknownDrawType;
   }
 
   @override
   Map<String, dynamic> toJson(IDrawType object) {
-    return {'id': object.id, 'steps': object.steps};
+    return {'id': object.id, 'steps': object.steps, 'groupId': object.groupId};
   }
 }
 
@@ -644,7 +618,7 @@ const FlexiOverlaySerializable = JsonSerializable(
 // ignore: constant_identifier_names
 const FlexiIndicatorSerializable = JsonSerializable(
   converters: [
-    ValueKeyConverter(),
+    IIndicatorKeyConvert(),
     PaintModeConverter(),
     ..._basicConverterList,
   ],
@@ -673,7 +647,7 @@ const FlexiModelSerializable = JsonSerializable(
 const FlexiConfigSerializable = JsonSerializable(
   converters: [
     ..._basicConverterList,
-    SetValueKeyConverter(),
+    SetIndicatorKeyConverter(),
   ],
   explicitToJson: true,
   includeIfNull: false,

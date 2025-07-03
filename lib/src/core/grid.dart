@@ -12,14 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:ui';
-
-import 'package:flutter/foundation.dart';
-
-import '../extension/export.dart';
-import '../framework/export.dart';
-import 'binding_base.dart';
-import 'interface.dart';
+part of 'core.dart';
 
 /// 负责Grid图层的绘制
 ///
@@ -39,7 +32,6 @@ mixin GridBinding on KlineBindingBase implements IGrid {
   }
 
   final ValueNotifier<int> _repaintGridBg = ValueNotifier(0);
-  @override
   Listenable get repaintGridBg => _repaintGridBg;
 
   @override
@@ -112,7 +104,7 @@ mixin GridBinding on KlineBindingBase implements IGrid {
         /// 副图区域
         // 绘制每一个副图的底部线
         double height = 0.0;
-        for (final indicator in subRectIndicators) {
+        for (final indicator in subPaintObjects) {
           height += indicator.height;
           dy = subTop + height;
           canvas.drawLineType(
@@ -148,11 +140,13 @@ mixin GridBinding on KlineBindingBase implements IGrid {
         // 计算排除时间指标后的top和bottom
         double top = subTop;
         double bottom = subBottom;
-        final timeIndicator = indicatorsConfig.time;
-        if (timeIndicator.position == DrawPosition.bottom) {
-          bottom -= timeIndicator.height;
-        } else {
-          top += timeIndicator.height;
+        final timeConfig = timeRectConfig;
+        if (timeConfig != null) {
+          if (timeConfig.position == DrawPosition.bottom) {
+            bottom -= timeConfig.height;
+          } else if (timeConfig.position == DrawPosition.middle) {
+            top += timeConfig.height;
+          }
         }
 
         // 绘制主区/副区的Vertical线

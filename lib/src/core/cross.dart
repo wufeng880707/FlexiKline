@@ -12,17 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/painting.dart';
-
-import '../constant.dart';
-import '../data/export.dart';
-import '../extension/export.dart';
-import '../model/export.dart';
-import '../utils/decimal_format_util.dart';
-import 'binding_base.dart';
-import 'interface.dart';
-import 'setting.dart';
+part of 'core.dart';
 
 /// 定制TooltipInfoList
 ///
@@ -46,9 +36,7 @@ typedef OnCrossI18nTooltipLables = Map<TooltipLabel, String>? Function();
 ///
 /// 处理cross事件.
 /// Tooltip的绘制.
-mixin CrossBinding
-    on KlineBindingBase, SettingBinding
-    implements ICross, IState, IChart {
+mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
   @override
   void initState() {
     super.initState();
@@ -63,9 +51,8 @@ mixin CrossBinding
   }
 
   final ValueNotifier<int> _repaintCross = ValueNotifier(0);
-  @override
   Listenable get repaintCross => _repaintCross;
-  void _markRepaint() {
+  void _markRepaintCross() {
     _repaintCross.value++;
   }
 
@@ -74,7 +61,7 @@ mixin CrossBinding
   void markRepaintCross() {
     if (isCrossing) {
       _updateOffset(_offset);
-      _markRepaint();
+      _markRepaintCross();
     }
   }
 
@@ -117,15 +104,14 @@ mixin CrossBinding
   }
 
   /// 启动Cross事件
-  @override
-  bool startCross(GestureData data, {bool force = false}) {
+  bool onCrossStart(GestureData data, {bool force = false}) {
     if (crossConfig.enable) {
       /// 如果其他手势与Cross手势事件允许共存 或者当前不在Crossing中时, 开启Cross.
       if (force || !isCrossing) {
         logd('handleTap cross > $force > ${data.offset}');
         // 更新并校正起始焦点.
         _updateOffset(data.offset);
-        _markRepaint();
+        _markRepaintCross();
         // 当Cross事件启动后, 调用markRepaintChart清理Chart图层的tips信息.
         markRepaintChart();
         return true;
@@ -139,11 +125,10 @@ mixin CrossBinding
   }
 
   /// 更新Cross事件数据.
-  @override
-  void updateCross(GestureData data) {
+  void onCrossUpdate(GestureData data) {
     if (crossConfig.enable && isCrossing) {
       _updateOffset(data.offset);
-      _markRepaint();
+      _markRepaintCross();
     }
   }
 
@@ -154,12 +139,11 @@ mixin CrossBinding
       _updateOffset(null);
       // 当Cross事件结束后, 调用markRepaintChart触发绘制Chart图层首根蜡烛的tips信息.
       markRepaintChart();
-      _markRepaint();
+      _markRepaintCross();
     }
   }
 
   /// 绘制最新价与十字线
-  @override
   void paintCross(Canvas canvas, Size size) {
     if (crossConfig.enable != true) return;
 
@@ -185,13 +169,13 @@ mixin CrossBinding
       /// 绘制Cross Line
       paintCrossLine(canvas, offset);
 
-      /// 绘制 Tooltip
+      /// 详情绘制 Tooltip
       paintTooltip(canvas, offset, model: model);
 
-      ensurePaintObjectInstance();
-
-      for (var indicator in [mainIndicator, ...subRectIndicators]) {
-        indicator.paintObject?.doOnCross(canvas, offset, model: model);
+      // ensurePaintObjectInstance();
+      /// 绘制左顶部 指标相关信息
+      for (var paintObject in [mainPaintObject, ...subPaintObjects]) {
+        paintObject.doOnCross(canvas, offset, model: model);
       }
     }
   }
@@ -232,6 +216,7 @@ mixin CrossBinding
       tooltipInfoList = onCrossCustomTooltip!(model, prev: pre);
     }
 
+    /// 单个数据详情
     if (tooltipInfoList == null) {
       Map<TooltipLabel, String>? tooltipLables;
       // 2. 使用定制多语言TooltipLables生成TooltipInfoList
@@ -275,8 +260,8 @@ mixin CrossBinding
 
     /// 开始绘制
     double top = tooltipConfig.margin.top;
-    if (mainIndicator.drawBelowTipsArea) {
-      top += mainIndicator.padding.top;
+    if (mainPaintObject.drawBelowTipsArea) {
+      top += mainPaintObject.padding.top;
     }
 
     if (offset.dx > mainChartWidthHalf) {

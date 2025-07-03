@@ -67,6 +67,10 @@ class FlexiKlineWidget extends StatefulWidget {
   /// 绘制点指针放大镜DecorationShape.
   final MagnifierDecorationShapBuilder? magnifierDecorationShapBuilder;
 
+  /// 支持的主区指标配置列表构造器
+
+  /// 支持的副区指标配置列表构造器
+
   @override
   State<FlexiKlineWidget> createState() => _FlexiKlineWidgetState();
 }
@@ -92,6 +96,18 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
         setState(() {});
       });
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant FlexiKlineWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    widget.controller.logd('View didUpdateWidget');
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    widget.controller.logd('View didChangeDependencies');
   }
 
   @override
@@ -225,14 +241,15 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
   Widget _buildDrawToolbar(BuildContext context, Size canvasSize) {
     if (widget.drawToolbar == null) return const SizedBox.shrink();
     if (_position == Offset.infinite) {
-      /// 初始位置为当前canvas区域高度的一半
+      /// 初始位置为当前canvas区域左下角.
+      /// TODO: 从缓存获取上次的位置
       _position = Offset(0, canvasSize.height - widget.drawToolbarInitHeight);
     }
     return Positioned(
       left: _position.dx,
       top: _position.dy,
       child: ValueListenableBuilder(
-        valueListenable: widget.controller.drawStateLinstener,
+        valueListenable: widget.controller.drawStateListener,
         builder: (context, state, child) {
           return Visibility(
             visible: state.isEditing,
@@ -259,7 +276,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
   /// 放大镜
   Widget _buildMagnifier(BuildContext context, Rect drawRect) {
     final config = widget.controller.drawConfig.magnifier;
-    // Web平台暂不支持放大镜
+    // Web平台暂不支持放大镜; TODO: 后续适配
     if (PlatformUtil.isWeb || !config.enable || config.size.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -345,7 +362,7 @@ class GridBackgroundPainter extends CustomPainter {
 class IndicatorChartPainter extends CustomPainter {
   IndicatorChartPainter({
     required this.controller,
-  }) : super(repaint: controller.repaintIndicatorChart);
+  }) : super(repaint: controller.repaintChart);
 
   final FlexiKlineController controller;
 

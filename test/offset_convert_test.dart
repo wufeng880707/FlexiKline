@@ -33,7 +33,7 @@ void main() {
     final list = getETHUSDT1DLimit50List();
     req = CandleReq(
       instId: 'ETH-USDT',
-      bar: TimeBar.D1.bar,
+      timeBar: const TimeBarConfig(key: 'D1', bar: '1D', milliseconds: 86400000, multiplier: 1, timespan: Timespan.day, showName: '1D', sortOrder: 9),
       precision: 4,
     );
     controller = FlexiKlineController(configuration: configuration);
@@ -41,8 +41,7 @@ void main() {
     controller.switchKlineData(req);
     await controller.updateKlineData(req, list);
     controller.calculateCandleDrawIndex();
-    controller.ensurePaintObjectInstance();
-    controller.mainIndicator.paintObject?.doInitState(
+    controller.mainPaintObject.doInitState(
       mainIndicatorSlot,
       start: controller.curKlineData.start,
       end: controller.curKlineData.end,

@@ -16,6 +16,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flexi_kline/src/framework/draw/overlay.dart' as flexi_overlay;
 import 'package:flutter/material.dart';
 
 class TestFlexiKlineTheme implements IFlexiKlineTheme {
@@ -125,12 +126,88 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  FlexiKlineConfig getFlexiKlineConfig([TestFlexiKlineTheme? theme]) {
-    return genFlexiKlineConfig(TestFlexiKlineTheme());
+  IFlexiKlineTheme get theme => TestFlexiKlineTheme();
+
+  @override
+  FlexiKlineConfig getFlexiKlineConfig() {
+    return genFlexiKlineConfig();
   }
 
   @override
   void saveFlexiKlineConfig(FlexiKlineConfig config) {
     // TODO: implement saveFlexiKlineConfig
+  }
+
+  @override
+  Iterable<flexi_overlay.Overlay> getOverlayListConfig(String instId) {
+    return [];
+  }
+
+  @override
+  void saveOverlayListConfig(String instId, Iterable<flexi_overlay.Overlay> list) {
+    // TODO: implement saveOverlayListConfig
+  }
+
+  @override
+  FlexiKlineConfig genFlexiKlineConfig() {
+    return super.genFlexiKlineConfig()
+      ..main.add(const FlexiIndicatorKey('ma'))
+      ..main.add(const FlexiIndicatorKey('ema'))
+      ..main.add(const FlexiIndicatorKey('boll'))
+      ..main.add(const FlexiIndicatorKey('volume'));
+  }
+
+  @override
+  Map<IIndicatorKey, IndicatorBuilder> mainIndicatorBuilders() {
+    return {
+      const FlexiIndicatorKey('ma'): (setting) => MAIndicator(
+            height: 100,
+            padding: EdgeInsets.zero,
+            calcParams: [
+              MaParam(count: 5, tips: TipsConfig(label: 'MA5:', style: TextStyle(color: Color(0xFF2196F3), fontSize: 12))),
+              MaParam(count: 10, tips: TipsConfig(label: 'MA10:', style: TextStyle(color: Color(0xFFE91E63), fontSize: 12))),
+              MaParam(count: 20, tips: TipsConfig(label: 'MA20:', style: TextStyle(color: Color(0xFF4CAF50), fontSize: 12))),
+            ],
+            tipsPadding: EdgeInsets.zero,
+            lineWidth: 1.0,
+          ),
+      const FlexiIndicatorKey('ema'): (setting) => EMAIndicator(
+            height: 100,
+            padding: EdgeInsets.zero,
+            calcParams: [
+              MaParam(count: 12, tips: TipsConfig(label: 'EMA12:', style: TextStyle(color: Color(0xFFFF9800), fontSize: 12))),
+              MaParam(count: 26, tips: TipsConfig(label: 'EMA26:', style: TextStyle(color: Color(0xFF9C27B0), fontSize: 12))),
+            ],
+            tipsPadding: EdgeInsets.zero,
+            lineWidth: 1.0,
+          ),
+      const FlexiIndicatorKey('boll'): (setting) => BOLLIndicator(
+            height: 100,
+            padding: EdgeInsets.zero,
+            calcParam: BOLLParam(n: 20, std: 2),
+            mbTips: TipsConfig(label: 'BOLL:', style: TextStyle(color: Color(0xFF2196F3), fontSize: 12)),
+            upTips: TipsConfig(label: 'UB:', style: TextStyle(color: Color(0xFFE91E63), fontSize: 12)),
+            dnTips: TipsConfig(label: 'LB:', style: TextStyle(color: Color(0xFF4CAF50), fontSize: 12)),
+            tipsPadding: EdgeInsets.zero,
+            lineWidth: 1.0,
+          ),
+      const FlexiIndicatorKey('volume'): (setting) => VolumeIndicator(
+            height: 100,
+            padding: EdgeInsets.zero,
+            volTips: TipsConfig(label: 'VOL:', style: TextStyle(color: Color(0xFF000000), fontSize: 12)),
+            tipsPadding: EdgeInsets.zero,
+            tickCount: 3,
+            precision: 2,
+          ),
+      candleIndicatorKey: (setting) => CandleIndicator(
+            height: 100,
+            high: MarkConfig(),
+            low: MarkConfig(),
+            last: MarkConfig(),
+            latest: MarkConfig(),
+            countDown: TextAreaConfig(),
+            padding: EdgeInsets.zero,
+          ),
+    };
   }
 }

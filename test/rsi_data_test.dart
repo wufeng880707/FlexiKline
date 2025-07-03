@@ -14,12 +14,14 @@
 
 import 'package:decimal/decimal.dart';
 import 'package:flexi_kline/flexi_kline.dart';
-import 'package:flexi_kline/src/data/export.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const tipsConfig = TipsConfig();
-const candleReq = CandleReq(instId: 'BTC-USDT');
+const candleReq = CandleReq(
+  instId: 'BTC-USDT',
+  timeBar: TimeBarConfig(key: '1D', bar: '1D', milliseconds: 86400000, multiplier: 1, timespan: Timespan.day, showName: '1D', sortOrder: 9),
+);
 
 /// RSI相对强弱指数：股票、公式、计算和策略
 /// https://bigquant.com/wiki/doc/rsi-eUeAulPIqH
@@ -67,7 +69,10 @@ void main() {
       Decimal val = close.d;
       list.add(CandleModel(ts: i, o: val, h: val, l: val, c: val, v: val));
     }
-
+    // 初始化calcuData
+    for (var candle in list) {
+      candle.initBasicData(ComputeMode.accurate, 6); // 6: rsi的dataIndex为5
+    }
     klineData = KlineData(candleReq, list: list);
     rsiParams = [const RsiParam(count: 14, tips: tipsConfig)];
   });
@@ -78,13 +83,12 @@ void main() {
   });
   tearDown(() {
     stopwatch.stop();
-    debugPrint('tearDown spent:${stopwatch.elapsedMicroseconds}');
+    debugPrint('tearDown spent:[0m[38;5;244m${stopwatch.elapsedMicroseconds}[0m');
   });
 
   test('rsi', () {
-    // klineData.calcuAndCacheRsi(rsiParams, start: 0, end: klineData.length);
-    klineData.calcuAndCacheRsi(rsiParams);
-
+    // 通过precompute方式计算RSI
+    klineData.precompute(const FlexiIndicatorKey('rsi'), calcParam: [const RsiParam(count: 14, tips: tipsConfig)], range: Range(0, klineData.length));
     for (int i = 0; i < klineData.length; i++) {
       debugPrint('rsi $i => ${klineData.list[i].rsiList}');
     }

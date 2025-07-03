@@ -49,7 +49,7 @@ class _FlexiKlineDrawMenubarState extends ConsumerState<FlexiKlineDrawMenubar> {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 child: ValueListenableBuilder(
-                  valueListenable: widget.controller.drawStateLinstener,
+                  valueListenable: widget.controller.drawStateListener,
                   builder: (context, state, child) {
                     final drawType = state.object?.type;
                     return Row(

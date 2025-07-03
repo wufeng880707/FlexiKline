@@ -16,8 +16,8 @@ part of 'overlay.dart';
 
 const drawObjectDefaultZIndex = 0;
 
-typedef DrawObjectBuilder<T extends Overlay, R extends DrawObject<T>> = R
-    Function(T overlay, DrawConfig config);
+typedef DrawObjectBuilder<T extends Overlay, R extends DrawObject<T>> = R? Function(
+    T overlay, DrawConfig config);
 
 abstract interface class IDrawType {
   int get steps;
@@ -44,16 +44,17 @@ final class FlexiDrawType implements IDrawType {
 
   @override
   bool operator ==(Object other) {
-    // if (identical(this, other)) return true;
+    if (identical(this, other)) return true;
     return other is FlexiDrawType &&
         runtimeType == other.runtimeType &&
         id == other.id &&
-        steps == other.steps;
+        steps == other.steps &&
+        groupId == other.groupId;
   }
 
   @override
   int get hashCode {
-    return runtimeType.hashCode ^ id.hashCode ^ steps.hashCode;
+    return runtimeType.hashCode ^ id.hashCode ^ steps.hashCode ^ groupId.hashCode;
   }
 }
 

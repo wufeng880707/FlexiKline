@@ -12,12 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:flutter/foundation.dart';
-
-import '../constant.dart';
-import '../extension/export.dart';
-import '../framework/logger.dart';
-import '../model/export.dart';
+part of 'kline_data.dart';
 
 /// KlineData基类
 ///
@@ -45,7 +40,6 @@ abstract class BaseData with KlineLog {
     logd("init BASE");
   }
 
-  @protected
   @mustCallSuper
   void dispose() {
     logd('dispose BASE');
@@ -63,7 +57,7 @@ abstract class BaseData with KlineLog {
   @protected
   @mustCallSuper
   void precompute(
-    ValueKey key, {
+    IIndicatorKey key, {
     dynamic calcParam,
     required Range range,
     bool reset = false,
@@ -92,10 +86,31 @@ abstract class BaseData with KlineLog {
   bool checkIndex(int index) => index >= 0 && index < length;
 
   /// 初始化基础数据
-  void initBasicData(ComputeMode mode, {bool reset = false}) {
-    for (var m in _list) {
-      m.initBasicData(mode, reset: reset);
+  void initBasicData(
+    ComputeMode mode,
+    Range range,
+    int indicatorCount, {
+    bool reset = false,
+  }) {
+    for (int i = range.start; i < range.end; i++) {
+      // for (var m in _list) {
+      _list[i].initBasicData(mode, indicatorCount, reset: reset);
     }
+  }
+
+  /// 根据[start, end]下标计算最大最小值
+  MinMax? calculateMinmax(int start, int end) {
+    if (!checkStartAndEnd(start, end)) return null;
+
+    CandleModel m = list[end - 1];
+    BagNum maxHigh = m.high;
+    BagNum minLow = m.low;
+    for (int i = end - 2; i >= start; i--) {
+      m = list[i];
+      maxHigh = m.high > maxHigh ? m.high : maxHigh;
+      minLow = m.low < minLow ? m.low : minLow;
+    }
+    return MinMax(max: maxHigh, min: minLow);
   }
 
   /// 获取index位置的蜡烛数据.

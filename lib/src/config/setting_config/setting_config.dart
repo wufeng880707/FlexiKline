@@ -27,8 +27,6 @@ part 'setting_config.g.dart';
 class SettingConfig {
   SettingConfig({
     required this.pixel,
-    required this.barType,
-    required this.longRed,
     required this.indraTodayAvgColor,
     required this.indraTodayCloseColor,
 
@@ -68,22 +66,18 @@ class SettingConfig {
     /// 副图配置
     // 副区的指标图最大数量
     this.subChartMaxCount = defaultSubChartMaxCount,
+    // 交易区的指标图最大数量
+    this.tradeChartMaxCount = defaultTradeChartMaxCount,
   }) : mainMinSize = mainMinSize ?? Size(20 / pixel, 20 / pixel);
 
-  ///蜡烛图的样式，0全实心，1全空心，2涨空心，3跌空心
-  final int barType;
+  /// 单个像素值
+  final double pixel;
 
   ///分时图均价线颜色
   final Color indraTodayAvgColor;
 
   ///分时图折线颜色
   final Color indraTodayCloseColor;
-
-  ////上涨的是否是红色
-  final bool longRed;
-
-  /// 单个像素值
-  final double pixel;
 
   /// Long/Short颜色配置
   final Color textColor;
@@ -134,6 +128,8 @@ class SettingConfig {
 
   // 副区的指标图最大数量
   final int subChartMaxCount;
+  // 交易区的指标图最大数量
+  final int tradeChartMaxCount;
 
   /// 蜡烛间距 [candleFixedSpacing] 优先于 [candleSpacingParts]
   double? _candleSpacing;
@@ -214,6 +210,15 @@ extension SettingDataExt on SettingConfig {
     ..strokeWidth = candleLineWidth;
   Paint get defShortLinePaint => Paint()
     ..color = shortColor
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = candleLineWidth;
+  Paint get indraTodayLinePaint => Paint()
+    ..color = indraTodayCloseColor
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = candleLineWidth;
+
+  Paint get indraTodayAvgLinePaint => Paint()
+    ..color = indraTodayAvgColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleLineWidth;
 }

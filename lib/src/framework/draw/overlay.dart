@@ -16,16 +16,18 @@ library overlay;
 
 import 'dart:collection';
 import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../../config/draw_params/draw_params.dart';
 import '../../config/export.dart';
 import '../../constant.dart';
-import '../../core/interface.dart';
-import '../../data/export.dart';
+import '../../core/core.dart';
+import '../../data/kline_data.dart';
+import '../../draw_objects/export.dart';
 import '../../extension/export.dart';
 import '../../model/export.dart';
-import '../../draw_objects/export.dart';
 import '../../utils/date_time.dart';
 import '../../utils/decimal_format_util.dart';
 import '../../utils/vector_util.dart';
@@ -36,8 +38,8 @@ import '../serializers.dart';
 
 part 'common.dart';
 part 'draw_state.dart';
-part 'model.dart';
 part 'manager.dart';
+part 'model.dart';
 part 'object.dart';
 part 'object_helper.dart';
 part 'overlay.g.dart';
