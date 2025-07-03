@@ -15,7 +15,7 @@
 part of 'ma.dart';
 
 @visibleForTesting
-extension CandleMaExt on CandleModel {
+extension CandleModelEx on CandleModel {
   List<BagNum?>? getMaList(int dataIndex, [int? paramLen]) {
     List<BagNum?>? list = calcuData.getData(dataIndex);
     if (list == null && paramLen != null && paramLen > 0) {

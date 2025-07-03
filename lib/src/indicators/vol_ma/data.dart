@@ -15,7 +15,7 @@
 part of 'vol_ma.dart';
 
 @visibleForTesting
-extension CandleVolMaExt on CandleModel {
+extension on CandleModel {
   List<BagNum?>? getVolMaList(int dataIndex, [int? paramLen]) {
     List<BagNum?>? list = calcuData.getData(dataIndex);
     if (list == null && paramLen != null && paramLen > 0) {
