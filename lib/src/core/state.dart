@@ -283,7 +283,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     final computeMode = _computeMode;
 
     // 待计算的指标对象集合
-    final paintObjects = [mainPaintObject, ...tradePaintObjects, ...subPaintObjects];
+    final paintObjects = [mainPaintObject, /*...tradePaintObjects,*/ ...subPaintObjects];
 
     final watchPrecompute = Stopwatch();
 

@@ -107,7 +107,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
         painObject = [...subPaintObjects];
       }
     } else {
-      painObject = [mainPaintObject, ...tradePaintObjects, ...subPaintObjects];
+      painObject = [mainPaintObject, /*...tradePaintObjects*/ ...subPaintObjects];
     }
 
     for (var paintObject in painObject) {

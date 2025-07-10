@@ -22,13 +22,15 @@ class TradeMarkIndicator extends SinglePaintObjectIndicator {
     return TradeMarkPaintObject(context: context, indicator: this);
   }
 
-  factory TradeMarkIndicator.fromJson(Map<String, dynamic> json) => _$TradeMarkIndicatorFromJson(json);
+  factory TradeMarkIndicator.fromJson(Map<String, dynamic> json) =>
+      _$TradeMarkIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$TradeMarkIndicatorToJson(this);
 }
 
-class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObjectBox<T> with TradeMarkDataMixin<T> {
+class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObjectBox<T>
+    with TradeMarkDataMixin<T> {
   TradeMarkPaintObject({
     required super.context,
     required super.indicator,
@@ -157,7 +159,9 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
     );
     textPainter.layout();
 
-    final double textY = up ? (y + arrowH + size / 2 - textPainter.height / 2) : (y - arrowH - size / 2 - textPainter.height / 2);
+    final double textY = up
+        ? (y + arrowH + size / 2 - textPainter.height / 2)
+        : (y - arrowH - size / 2 - textPainter.height / 2);
 
     textPainter.paint(
       canvas,
