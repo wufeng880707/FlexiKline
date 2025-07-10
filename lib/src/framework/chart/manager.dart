@@ -325,10 +325,8 @@ final class IndicatorPaintObjectManager with KlineLog {
 
     final object = indicator.createPaintObject(context);
     _mainPaintObject.appendPaintObject(object);
-
-    // final object = indicator.createPaintObject(context);
-    // final oldObj = _tradePaintObjectQueue.append(object);
-    // oldObj?.dispose();
+    final oldObj = _tradePaintObjectQueue.append(object);
+    oldObj?.dispose();
     return object;
   }
 
@@ -343,6 +341,7 @@ final class IndicatorPaintObjectManager with KlineLog {
       }
       return false;
     });
+    _mainPaintObject.deletePaintObject(key);
     return hasRemove;
   }
 

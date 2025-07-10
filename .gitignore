@@ -21,7 +21,6 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
-example/
 flexi_kline_indicators/
 flexi_kline_draw_tools/
 flexi_ws/

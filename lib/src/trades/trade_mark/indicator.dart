@@ -22,15 +22,13 @@ class TradeMarkIndicator extends SinglePaintObjectIndicator {
     return TradeMarkPaintObject(context: context, indicator: this);
   }
 
-  factory TradeMarkIndicator.fromJson(Map<String, dynamic> json) =>
-      _$TradeMarkIndicatorFromJson(json);
+  factory TradeMarkIndicator.fromJson(Map<String, dynamic> json) => _$TradeMarkIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$TradeMarkIndicatorToJson(this);
 }
 
-class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObjectBox<T>
-    with TradeMarkDataMixin<T> {
+class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObjectBox<T> with TradeMarkDataMixin<T> {
   TradeMarkPaintObject({
     required super.context,
     required super.indicator,
@@ -45,9 +43,7 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
   @override
   void paintChart(Canvas canvas, Size size) {
     final param = indicator.calcParam;
-    if (!param.show) return;
-
-    if (!klineData.canPaintChart) return;
+    if (!param.show || !klineData.canPaintChart) return;
 
     final candleWidth = candleActualWidth;
     final halfCandleWidth = candleWidthHalf;
@@ -55,7 +51,7 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
     final end = klineData.end;
 
     int signalCount = 0;
-    const double signalPadding = 2; // 你可以根据实际需求调整
+    const double signalPadding = 2;
 
     for (int i = start; i < end; i++) {
       final candle = klineData.list[i];
@@ -65,37 +61,42 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
       signalCount++;
       final double x = startCandleDx - (i - start) * candleWidth - halfCandleWidth;
 
-      // 买信号在最低价（上箭头，y向下偏移）
-      if (signals.contains(TradeSignalType.buy)) {
-        final y = valueToDy(candle.low) + signalPadding;
-        _drawSignal(
-          canvas,
-          x,
-          y,
-          'B',
-          param.buyStyle,
-          param.buyBgColor,
-          param.width,
-          param.height - param.width,
-          up: true,
-        );
-      }
-      // 卖信号在最高价（下箭头，y向上偏移）
-      if (signals.contains(TradeSignalType.sell)) {
-        final y = valueToDy(candle.high) - signalPadding;
-        _drawSignal(
-          canvas,
-          x,
-          y,
-          'S',
-          param.sellStyle,
-          param.sellBgColor,
-          param.width,
-          param.height - param.width,
-          up: false,
-        );
+      for (final signal in signals) {
+        switch (signal.type) {
+          case TradeSignalType.buy:
+            final y = valueToDy(candle.low) + signalPadding;
+            _drawSignal(
+              canvas,
+              x,
+              y,
+              'B',
+              param.buyStyle,
+              param.buyBgColor,
+              param.width,
+              param.height - param.width,
+              up: true,
+            );
+            break;
+          case TradeSignalType.sell:
+            final y = valueToDy(candle.high) - signalPadding;
+            _drawSignal(
+              canvas,
+              x,
+              y,
+              'S',
+              param.sellStyle,
+              param.sellBgColor,
+              param.width,
+              param.height - param.width,
+              up: false,
+            );
+            break;
+          // 可扩展更多信号类型
+        }
       }
     }
+    // 可选：调试输出信号数量
+    // if (kDebugMode) print('本区间信号数量: $signalCount');
   }
 
   void _drawSignal(
@@ -156,9 +157,7 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
     );
     textPainter.layout();
 
-    final double textY = up
-        ? (y + arrowH + size / 2 - textPainter.height / 2)
-        : (y - arrowH - size / 2 - textPainter.height / 2);
+    final double textY = up ? (y + arrowH + size / 2 - textPainter.height / 2) : (y - arrowH - size / 2 - textPainter.height / 2);
 
     textPainter.paint(
       canvas,

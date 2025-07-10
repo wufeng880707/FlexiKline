@@ -16,6 +16,8 @@ import 'dart:math' as math;
 
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flexi_kline/flexi_kline.dart';
+// 导入正确的 TradeSignalType 和 TradeSignalModel
+import 'package:flexi_kline/src/trades/trade_mark/trade_mark.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,7 +55,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
   bool isFullScreen = false;
 
   // 交易信号数据
-  final Map<int, Set<TradeSignalType>> _tradeSignals = {};
+  final Map<int, Set<TradeSignalModel>> _tradeSignals = {};
 
   @override
   FlexiKlineController get flexiKlineController => controller;
@@ -113,20 +115,44 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     // 为部分K线添加交易信号
     for (int i = 0; i < candles.length; i++) {
       final candle = candles[i];
-      final signals = <TradeSignalType>{};
+      final signals = <TradeSignalModel>{};
 
       // 随机生成买卖信号，概率为10%
       if (random.nextDouble() < 0.1) {
-        if (random.nextBool()) {
-          signals.add(TradeSignalType.buy);
-        } else {
-          signals.add(TradeSignalType.sell);
-        }
+        final isBuy = random.nextBool();
+        final quantity = 0.5 + random.nextDouble() * 3.0; // 0.5 到 3.5 之间
+        final price = candle.close.toDouble();
+
+        signals.add(TradeSignalModel(
+          orderTs: candle.ts,
+          type: isBuy ? TradeSignalType.buy : TradeSignalType.sell,
+          quantity: quantity,
+          price: price,
+          orderId: '${isBuy ? 'buy' : 'sell'}_${i.toString().padLeft(3, '0')}',
+        ));
       }
 
       // 偶尔同时出现买卖信号（比如做T）
       if (random.nextDouble() < 0.02) {
-        signals.addAll([TradeSignalType.buy, TradeSignalType.sell]);
+        final buyQuantity = 0.5 + random.nextDouble() * 2.0;
+        final sellQuantity = 0.5 + random.nextDouble() * 2.0;
+        final price = candle.close.toDouble();
+
+        signals.add(TradeSignalModel(
+          orderTs: candle.ts,
+          type: TradeSignalType.buy,
+          quantity: buyQuantity,
+          price: price,
+          orderId: 'buy_t_${i.toString().padLeft(3, '0')}',
+        ));
+
+        signals.add(TradeSignalModel(
+          orderTs: candle.ts,
+          type: TradeSignalType.sell,
+          quantity: sellQuantity,
+          price: price,
+          orderId: 'sell_t_${i.toString().padLeft(3, '0')}',
+        ));
       }
 
       if (signals.isNotEmpty) {
@@ -274,14 +300,19 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
               // 添加新的交易信号
               final latest = controller.curKlineData.latest;
               if (latest != null) {
-                final signals = <TradeSignalType>{};
+                final signals = <TradeSignalModel>{};
                 final random = math.Random();
+                final isBuy = random.nextBool();
+                final quantity = 0.5 + random.nextDouble() * 3.0;
+                final price = latest.close.toDouble();
 
-                if (random.nextBool()) {
-                  signals.add(TradeSignalType.buy);
-                } else {
-                  signals.add(TradeSignalType.sell);
-                }
+                signals.add(TradeSignalModel(
+                  orderTs: latest.ts,
+                  type: isBuy ? TradeSignalType.buy : TradeSignalType.sell,
+                  quantity: quantity,
+                  price: price,
+                  orderId: '${isBuy ? 'buy' : 'sell'}_${DateTime.now().millisecondsSinceEpoch}',
+                ));
 
                 _tradeSignals[latest.ts] = signals;
                 _updateTradeMarkData();

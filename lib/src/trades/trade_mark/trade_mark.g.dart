@@ -6,6 +6,90 @@ part of 'trade_mark.dart';
 // CopyWithGenerator
 // **************************************************************************
 
+abstract class _$TradeMarkIndicatorCWProxy {
+  TradeMarkIndicator zIndex(int zIndex);
+
+  TradeMarkIndicator height(double height);
+
+  TradeMarkIndicator padding(EdgeInsets padding);
+
+  TradeMarkIndicator calcParam(TradeMarkParam calcParam);
+
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TradeMarkIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  ///
+  /// Usage
+  /// ```dart
+  /// TradeMarkIndicator(...).copyWith(id: 12, name: "My name")
+  /// ````
+  TradeMarkIndicator call({
+    int? zIndex,
+    double? height,
+    EdgeInsets? padding,
+    TradeMarkParam? calcParam,
+  });
+}
+
+/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfTradeMarkIndicator.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfTradeMarkIndicator.copyWith.fieldName(...)`
+class _$TradeMarkIndicatorCWProxyImpl implements _$TradeMarkIndicatorCWProxy {
+  const _$TradeMarkIndicatorCWProxyImpl(this._value);
+
+  final TradeMarkIndicator _value;
+
+  @override
+  TradeMarkIndicator zIndex(int zIndex) => this(zIndex: zIndex);
+
+  @override
+  TradeMarkIndicator height(double height) => this(height: height);
+
+  @override
+  TradeMarkIndicator padding(EdgeInsets padding) => this(padding: padding);
+
+  @override
+  TradeMarkIndicator calcParam(TradeMarkParam calcParam) =>
+      this(calcParam: calcParam);
+
+  @override
+
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TradeMarkIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  ///
+  /// Usage
+  /// ```dart
+  /// TradeMarkIndicator(...).copyWith(id: 12, name: "My name")
+  /// ````
+  TradeMarkIndicator call({
+    Object? zIndex = const $CopyWithPlaceholder(),
+    Object? height = const $CopyWithPlaceholder(),
+    Object? padding = const $CopyWithPlaceholder(),
+    Object? calcParam = const $CopyWithPlaceholder(),
+  }) {
+    return TradeMarkIndicator(
+      zIndex: zIndex == const $CopyWithPlaceholder() || zIndex == null
+          ? _value.zIndex
+          // ignore: cast_nullable_to_non_nullable
+          : zIndex as int,
+      height: height == const $CopyWithPlaceholder() || height == null
+          ? _value.height
+          // ignore: cast_nullable_to_non_nullable
+          : height as double,
+      padding: padding == const $CopyWithPlaceholder() || padding == null
+          ? _value.padding
+          // ignore: cast_nullable_to_non_nullable
+          : padding as EdgeInsets,
+      calcParam: calcParam == const $CopyWithPlaceholder() || calcParam == null
+          ? _value.calcParam
+          // ignore: cast_nullable_to_non_nullable
+          : calcParam as TradeMarkParam,
+    );
+  }
+}
+
+extension $TradeMarkIndicatorCopyWith on TradeMarkIndicator {
+  /// Returns a callable class that can be used as follows: `instanceOfTradeMarkIndicator.copyWith(...)` or like so:`instanceOfTradeMarkIndicator.copyWith.fieldName(...)`.
+  // ignore: library_private_types_in_public_api
+  _$TradeMarkIndicatorCWProxy get copyWith =>
+      _$TradeMarkIndicatorCWProxyImpl(this);
+}
+
 abstract class _$TradeMarkParamCWProxy {
   TradeMarkParam show(bool show);
 
@@ -148,93 +232,30 @@ extension $TradeMarkParamCopyWith on TradeMarkParam {
   _$TradeMarkParamCWProxy get copyWith => _$TradeMarkParamCWProxyImpl(this);
 }
 
-abstract class _$TradeMarkIndicatorCWProxy {
-  TradeMarkIndicator zIndex(int zIndex);
-
-  TradeMarkIndicator height(double height);
-
-  TradeMarkIndicator padding(EdgeInsets padding);
-
-  TradeMarkIndicator calcParam(TradeMarkParam calcParam);
-
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TradeMarkIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
-  ///
-  /// Usage
-  /// ```dart
-  /// TradeMarkIndicator(...).copyWith(id: 12, name: "My name")
-  /// ````
-  TradeMarkIndicator call({
-    int? zIndex,
-    double? height,
-    EdgeInsets? padding,
-    TradeMarkParam? calcParam,
-  });
-}
-
-/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfTradeMarkIndicator.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfTradeMarkIndicator.copyWith.fieldName(...)`
-class _$TradeMarkIndicatorCWProxyImpl implements _$TradeMarkIndicatorCWProxy {
-  const _$TradeMarkIndicatorCWProxyImpl(this._value);
-
-  final TradeMarkIndicator _value;
-
-  @override
-  TradeMarkIndicator zIndex(int zIndex) => this(zIndex: zIndex);
-
-  @override
-  TradeMarkIndicator height(double height) => this(height: height);
-
-  @override
-  TradeMarkIndicator padding(EdgeInsets padding) => this(padding: padding);
-
-  @override
-  TradeMarkIndicator calcParam(TradeMarkParam calcParam) =>
-      this(calcParam: calcParam);
-
-  @override
-
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TradeMarkIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
-  ///
-  /// Usage
-  /// ```dart
-  /// TradeMarkIndicator(...).copyWith(id: 12, name: "My name")
-  /// ````
-  TradeMarkIndicator call({
-    Object? zIndex = const $CopyWithPlaceholder(),
-    Object? height = const $CopyWithPlaceholder(),
-    Object? padding = const $CopyWithPlaceholder(),
-    Object? calcParam = const $CopyWithPlaceholder(),
-  }) {
-    return TradeMarkIndicator(
-      zIndex: zIndex == const $CopyWithPlaceholder() || zIndex == null
-          ? _value.zIndex
-          // ignore: cast_nullable_to_non_nullable
-          : zIndex as int,
-      height: height == const $CopyWithPlaceholder() || height == null
-          ? _value.height
-          // ignore: cast_nullable_to_non_nullable
-          : height as double,
-      padding: padding == const $CopyWithPlaceholder() || padding == null
-          ? _value.padding
-          // ignore: cast_nullable_to_non_nullable
-          : padding as EdgeInsets,
-      calcParam: calcParam == const $CopyWithPlaceholder() || calcParam == null
-          ? _value.calcParam
-          // ignore: cast_nullable_to_non_nullable
-          : calcParam as TradeMarkParam,
-    );
-  }
-}
-
-extension $TradeMarkIndicatorCopyWith on TradeMarkIndicator {
-  /// Returns a callable class that can be used as follows: `instanceOfTradeMarkIndicator.copyWith(...)` or like so:`instanceOfTradeMarkIndicator.copyWith.fieldName(...)`.
-  // ignore: library_private_types_in_public_api
-  _$TradeMarkIndicatorCWProxy get copyWith =>
-      _$TradeMarkIndicatorCWProxyImpl(this);
-}
-
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
+
+TradeMarkIndicator _$TradeMarkIndicatorFromJson(Map<String, dynamic> json) =>
+    TradeMarkIndicator(
+      zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
+      height: (json['height'] as num).toDouble(),
+      padding: json['padding'] == null
+          ? defaultMainIndicatorPadding
+          : const EdgeInsetsConverter()
+              .fromJson(json['padding'] as Map<String, dynamic>),
+      calcParam: json['calcParam'] == null
+          ? const TradeMarkParam()
+          : TradeMarkParam.fromJson(json['calcParam'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$TradeMarkIndicatorToJson(TradeMarkIndicator instance) =>
+    <String, dynamic>{
+      'height': instance.height,
+      'padding': const EdgeInsetsConverter().toJson(instance.padding),
+      'zIndex': instance.zIndex,
+      'calcParam': instance.calcParam.toJson(),
+    };
 
 TradeMarkParam _$TradeMarkParamFromJson(Map<String, dynamic> json) =>
     TradeMarkParam(
@@ -260,25 +281,4 @@ Map<String, dynamic> _$TradeMarkParamToJson(TradeMarkParam instance) =>
       'sellBgColor': const ColorConverter().toJson(instance.sellBgColor),
       'width': instance.width,
       'height': instance.height,
-    };
-
-TradeMarkIndicator _$TradeMarkIndicatorFromJson(Map<String, dynamic> json) =>
-    TradeMarkIndicator(
-      zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
-      height: (json['height'] as num).toDouble(),
-      padding: json['padding'] == null
-          ? defaultMainIndicatorPadding
-          : const EdgeInsetsConverter()
-              .fromJson(json['padding'] as Map<String, dynamic>),
-      calcParam: json['calcParam'] == null
-          ? const TradeMarkParam()
-          : TradeMarkParam.fromJson(json['calcParam'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$TradeMarkIndicatorToJson(TradeMarkIndicator instance) =>
-    <String, dynamic>{
-      'height': instance.height,
-      'padding': const EdgeInsetsConverter().toJson(instance.padding),
-      'zIndex': instance.zIndex,
-      'calcParam': instance.calcParam.toJson(),
     };
