@@ -86,6 +86,17 @@ extension on KlineBindingBase {
   }
 }
 
+/// KlineController内部扩展
+extension on KlineBindingBase {
+  MainPaintObject get mainPaintObject {
+    return _paintObjectManager.mainPaintObject;
+  }
+
+  Iterable<PaintObject> get subPaintObjects {
+    return _paintObjectManager.subPaintObjects;
+  }
+}
+
 /// Kline状态通知
 class KlineStateNotifier<T> extends ValueNotifier<T> {
   KlineStateNotifier(super.value);
