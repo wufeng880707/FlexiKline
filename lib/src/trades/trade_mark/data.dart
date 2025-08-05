@@ -24,27 +24,31 @@ class TradeSignalModel {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TradeSignalModel && runtimeType == other.runtimeType && orderTs == other.orderTs && type == other.type && orderId == other.orderId;
+      other is TradeSignalModel &&
+          runtimeType == other.runtimeType &&
+          orderTs == other.orderTs &&
+          type == other.type &&
+          orderId == other.orderId;
 
   @override
   int get hashCode => orderTs.hashCode ^ type.hashCode ^ orderId.hashCode;
 }
 
 /// 交易标记数据计算
-mixin TradeMarkDataMixin<T extends TradeMarkIndicator> on SinglePaintObjectBox<T> {
+mixin TradeMarkDataMixin<T extends TradeMarkIndicator> on PaintObjectBox<T> {
   /// 全局交易信号数据存储
   static final Map<int, Set<TradeSignalModel>> _globalTradeSignals = {};
-  
+
   /// 获取交易信号数据
   Map<int, Set<TradeSignalModel>> get tradeSignalMap => _globalTradeSignals;
-  
+
   /// 设置交易信号数据
   static void setGlobalTradeSignals(Map<int, Set<TradeSignalModel>> signals) {
     _globalTradeSignals
       ..clear()
       ..addAll(signals);
   }
-  
+
   /// 获取指定时间戳的交易信号
   Set<TradeSignalModel> getTradeSignalsForTimestamp(int timestamp) {
     return tradeSignalMap[timestamp] ?? <TradeSignalModel>{};

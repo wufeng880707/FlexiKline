@@ -174,12 +174,12 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   }
 
   @override
-  IndicatorBuilder get candleIndicatorBuilder {
+  IndicatorBuilder<CandleIndicator> get candleIndicatorBuilder {
     return (setting) => genCandleIndicator(setting);
   }
 
   @override
-  IndicatorBuilder get timeIndicatorBuilder {
+  IndicatorBuilder<TimeIndicator> get timeIndicatorBuilder {
     return (setting) => genTimeIndicator(setting);
   }
 
@@ -254,15 +254,6 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       loadMoreWhenNoEnoughCandles: 60,
       scalePosition: ScalePosition.auto,
       scaleSpeed: 10,
-    );
-  }
-
-  MultiPaintObjectIndicator genMainIndicator() {
-    return MultiPaintObjectIndicator(
-      key: mainIndicatorKey,
-      height: initialMainSize.height,
-      padding: theme.mainIndicatorPadding,
-      drawBelowTipsArea: true,
     );
   }
 
@@ -464,6 +455,8 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       ),
     );
   }
+
+  MainPaintObjectIndicator genMainIndicator();
 
   CandleIndicator genCandleIndicator(SettingConfig setting) {
     return CandleIndicator(

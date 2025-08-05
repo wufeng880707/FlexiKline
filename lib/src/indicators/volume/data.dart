@@ -14,7 +14,7 @@
 
 part of 'volume.dart';
 
-mixin VolumeDataMixin<T extends VolumeIndicator> on SinglePaintObjectBox<T> {
+mixin VolumeDataMixin<T extends VolumeIndicator> on PaintObjectBox<T> {
   @override
   void precompute(Range range, {bool reset = false}) {}
 

@@ -6,75 +6,63 @@ part of 'indicator.dart';
 // CopyWithGenerator
 // **************************************************************************
 
-abstract class _$MultiPaintObjectIndicatorCWProxy<
-    T extends SinglePaintObjectIndicator> {
-  MultiPaintObjectIndicator<T> key(IIndicatorKey key);
+abstract class _$MainPaintObjectIndicatorCWProxy<
+    T extends PaintObjectIndicator> {
+  MainPaintObjectIndicator<T> size(Size size);
 
-  MultiPaintObjectIndicator<T> height(double height);
+  MainPaintObjectIndicator<T> padding(EdgeInsets padding);
 
-  MultiPaintObjectIndicator<T> padding(EdgeInsets padding);
+  MainPaintObjectIndicator<T> drawBelowTipsArea(bool drawBelowTipsArea);
 
-  MultiPaintObjectIndicator<T> drawBelowTipsArea(bool drawBelowTipsArea);
-
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `MultiPaintObjectIndicator<T>(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `MainPaintObjectIndicator<T>(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
   /// ```dart
-  /// MultiPaintObjectIndicator<T>(...).copyWith(id: 12, name: "My name")
+  /// MainPaintObjectIndicator<T>(...).copyWith(id: 12, name: "My name")
   /// ````
-  MultiPaintObjectIndicator<T> call({
-    IIndicatorKey? key,
-    double? height,
+  MainPaintObjectIndicator<T> call({
+    Size? size,
     EdgeInsets? padding,
     bool? drawBelowTipsArea,
   });
 }
 
-/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfMultiPaintObjectIndicator.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfMultiPaintObjectIndicator.copyWith.fieldName(...)`
-class _$MultiPaintObjectIndicatorCWProxyImpl<
-        T extends SinglePaintObjectIndicator>
-    implements _$MultiPaintObjectIndicatorCWProxy<T> {
-  const _$MultiPaintObjectIndicatorCWProxyImpl(this._value);
+/// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfMainPaintObjectIndicator.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfMainPaintObjectIndicator.copyWith.fieldName(...)`
+class _$MainPaintObjectIndicatorCWProxyImpl<T extends PaintObjectIndicator>
+    implements _$MainPaintObjectIndicatorCWProxy<T> {
+  const _$MainPaintObjectIndicatorCWProxyImpl(this._value);
 
-  final MultiPaintObjectIndicator<T> _value;
-
-  @override
-  MultiPaintObjectIndicator<T> key(IIndicatorKey key) => this(key: key);
+  final MainPaintObjectIndicator<T> _value;
 
   @override
-  MultiPaintObjectIndicator<T> height(double height) => this(height: height);
+  MainPaintObjectIndicator<T> size(Size size) => this(size: size);
 
   @override
-  MultiPaintObjectIndicator<T> padding(EdgeInsets padding) =>
+  MainPaintObjectIndicator<T> padding(EdgeInsets padding) =>
       this(padding: padding);
 
   @override
-  MultiPaintObjectIndicator<T> drawBelowTipsArea(bool drawBelowTipsArea) =>
+  MainPaintObjectIndicator<T> drawBelowTipsArea(bool drawBelowTipsArea) =>
       this(drawBelowTipsArea: drawBelowTipsArea);
 
   @override
 
-  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `MultiPaintObjectIndicator<T>(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
+  /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `MainPaintObjectIndicator<T>(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
   /// ```dart
-  /// MultiPaintObjectIndicator<T>(...).copyWith(id: 12, name: "My name")
+  /// MainPaintObjectIndicator<T>(...).copyWith(id: 12, name: "My name")
   /// ````
-  MultiPaintObjectIndicator<T> call({
-    Object? key = const $CopyWithPlaceholder(),
-    Object? height = const $CopyWithPlaceholder(),
+  MainPaintObjectIndicator<T> call({
+    Object? size = const $CopyWithPlaceholder(),
     Object? padding = const $CopyWithPlaceholder(),
     Object? drawBelowTipsArea = const $CopyWithPlaceholder(),
   }) {
-    return MultiPaintObjectIndicator<T>(
-      key: key == const $CopyWithPlaceholder() || key == null
-          ? _value.key
+    return MainPaintObjectIndicator<T>(
+      size: size == const $CopyWithPlaceholder() || size == null
+          ? _value.size
           // ignore: cast_nullable_to_non_nullable
-          : key as IIndicatorKey,
-      height: height == const $CopyWithPlaceholder() || height == null
-          ? _value.height
-          // ignore: cast_nullable_to_non_nullable
-          : height as double,
+          : size as Size,
       padding: padding == const $CopyWithPlaceholder() || padding == null
           ? _value.padding
           // ignore: cast_nullable_to_non_nullable
@@ -88,35 +76,35 @@ class _$MultiPaintObjectIndicatorCWProxyImpl<
   }
 }
 
-extension $MultiPaintObjectIndicatorCopyWith<
-    T extends SinglePaintObjectIndicator> on MultiPaintObjectIndicator<T> {
-  /// Returns a callable class that can be used as follows: `instanceOfMultiPaintObjectIndicator.copyWith(...)` or like so:`instanceOfMultiPaintObjectIndicator.copyWith.fieldName(...)`.
+extension $MainPaintObjectIndicatorCopyWith<T extends PaintObjectIndicator>
+    on MainPaintObjectIndicator<T> {
+  /// Returns a callable class that can be used as follows: `instanceOfMainPaintObjectIndicator.copyWith(...)` or like so:`instanceOfMainPaintObjectIndicator.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$MultiPaintObjectIndicatorCWProxy<T> get copyWith =>
-      _$MultiPaintObjectIndicatorCWProxyImpl<T>(this);
+  _$MainPaintObjectIndicatorCWProxy<T> get copyWith =>
+      _$MainPaintObjectIndicatorCWProxyImpl<T>(this);
 }
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-MultiPaintObjectIndicator<T>
-    _$MultiPaintObjectIndicatorFromJson<T extends SinglePaintObjectIndicator>(
+MainPaintObjectIndicator<T>
+    _$MainPaintObjectIndicatorFromJson<T extends PaintObjectIndicator>(
             Map<String, dynamic> json) =>
-        MultiPaintObjectIndicator<T>(
-          key: const IIndicatorKeyConvert().fromJson(json['key'] as String),
-          height: (json['height'] as num).toDouble(),
+        MainPaintObjectIndicator<T>(
+          size: const SizeConverter()
+              .fromJson(json['size'] as Map<String, dynamic>),
           padding: const EdgeInsetsConverter()
               .fromJson(json['padding'] as Map<String, dynamic>),
           drawBelowTipsArea: json['drawBelowTipsArea'] as bool? ?? false,
-        );
+        )..height = (json['height'] as num).toDouble();
 
 Map<String, dynamic>
-    _$MultiPaintObjectIndicatorToJson<T extends SinglePaintObjectIndicator>(
-            MultiPaintObjectIndicator<T> instance) =>
+    _$MainPaintObjectIndicatorToJson<T extends PaintObjectIndicator>(
+            MainPaintObjectIndicator<T> instance) =>
         <String, dynamic>{
-          'key': const IIndicatorKeyConvert().toJson(instance.key),
           'height': instance.height,
           'padding': const EdgeInsetsConverter().toJson(instance.padding),
+          'size': const SizeConverter().toJson(instance.size),
           'drawBelowTipsArea': instance.drawBelowTipsArea,
         };

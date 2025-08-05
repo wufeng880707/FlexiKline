@@ -17,10 +17,12 @@ library indicator;
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import '../../indicators/time/time.dart';
 
 import '../../../flexi_kline.dart';
 
 part 'common.dart';
+part 'delegate.dart';
 part 'indicator.g.dart';
 part 'manager.dart';
 part 'model.dart';

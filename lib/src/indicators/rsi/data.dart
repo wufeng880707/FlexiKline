@@ -14,7 +14,7 @@
 
 part of 'rsi.dart';
 
-mixin RsiDataMixin<T extends RSIIndicator> on SinglePaintObjectBox<T> {
+mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
   @override
   List<RsiParam> get calcParams => indicator.calcParams;
 

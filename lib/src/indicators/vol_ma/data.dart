@@ -40,7 +40,7 @@ extension on CandleModel {
   }
 }
 
-mixin VolmaDataMixin<T extends VolMaIndicator> on SinglePaintObjectBox<T> {
+mixin VolmaDataMixin<T extends VolMaIndicator> on PaintObjectBox<T> {
   List<MaParam> get calcParam => indicator.calcParams;
 
   @override

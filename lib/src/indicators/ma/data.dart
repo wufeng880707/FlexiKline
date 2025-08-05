@@ -40,7 +40,7 @@ extension on CandleModel {
   }
 }
 
-mixin MaDataMixin<T extends MAIndicator> on SinglePaintObjectBox<T> {
+mixin MaDataMixin<T extends MAIndicator> on PaintObjectBox<T> {
   List<MaParam> get calcParam => indicator.calcParams;
 
   @override

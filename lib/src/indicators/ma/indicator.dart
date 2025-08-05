@@ -17,7 +17,7 @@ part of 'ma.dart';
 /// MA 移动平均指标线
 @CopyWith()
 @FlexiIndicatorSerializable
-class MAIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
+class MAIndicator extends PaintObjectIndicator implements IPrecomputable {
   MAIndicator({
     super.zIndex = 0,
     required super.height,
@@ -33,7 +33,7 @@ class MAIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
   final double lineWidth;
 
   @override
-  SinglePaintObjectBox createPaintObject(
+  PaintObjectBox createPaintObject(
     IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
@@ -46,7 +46,7 @@ class MAIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
   Map<String, dynamic> toJson() => _$MAIndicatorToJson(this);
 }
 
-class MAPaintObject<T extends MAIndicator> extends SinglePaintObjectBox<T> with MaDataMixin {
+class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> with MaDataMixin {
   MAPaintObject({
     required super.context,
     required super.indicator,

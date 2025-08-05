@@ -26,7 +26,7 @@ extension CandleMacdExt on CandleModel {
   void cleanMacd() => macdList = null;
 }
 
-mixin MacdDataMixin<T extends MACDIndicator> on SinglePaintObjectBox<T> {
+mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
   MACDParam get calcParam => indicator.calcParam;
 
   @override

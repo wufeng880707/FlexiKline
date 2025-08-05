@@ -16,7 +16,7 @@ part of 'candle.dart';
 
 @CopyWith()
 @FlexiIndicatorSerializable
-class CandleIndicator extends SinglePaintObjectIndicator {
+class CandleIndicator extends PaintObjectIndicator {
   CandleIndicator({
     super.zIndex = -1,
     required super.height,
@@ -67,7 +67,7 @@ class CandleIndicator extends SinglePaintObjectIndicator {
   Map<String, dynamic> toJson() => _$CandleIndicatorToJson(this);
 }
 
-class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<T>
+class CandlePaintObject<T extends CandleIndicator> extends PaintObjectBox<T>
     with PaintYAxisTicksOnCrossMixin, ClickableMixin {
   final KlineEventBus? eventBus;
 

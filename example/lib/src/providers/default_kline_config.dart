@@ -214,7 +214,6 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   //   return timeBarConfigManager.getTimeBarByBar(bar, exchange: exchange);
   // }
 
-  @override
   Size get initialMainSize {
     return Size(ScreenUtil().screenWidth, 300.r);
   }
@@ -877,11 +876,40 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   @override
   Iterable<flexi_overlay.Overlay> getDrawOverlayList(String instId) {
+    try {
+      final String? jsonStr = CacheUtil().get('draw_overlay_$instId');
+      if (jsonStr != null && jsonStr.isNotEmpty) {
+        final json = jsonDecode(jsonStr);
+        if (json is List) {
+          return json
+              .map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+      }
+    } catch (err, stack) {
+      defLogger.e('getDrawOverlayList error:$err', stackTrace: stack);
+    }
     return [];
   }
 
   @override
   void saveDrawOverlayList(String instId, Iterable<flexi_overlay.Overlay> list) {
-    // TODO: implement saveDrawOverlayList
+    try {
+      final jsonList = list.map((overlay) => overlay.toJson()).toList();
+      final jsonSrc = jsonEncode(jsonList);
+      CacheUtil().setString('draw_overlay_$instId', jsonSrc);
+    } catch (err, stack) {
+      defLogger.e('saveDrawOverlayList error:$err', stackTrace: stack);
+    }
+  }
+
+  @override
+  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
+    final theme = ref.read(defaultKlineThemeProvider);
+    return MainPaintObjectIndicator<PaintObjectIndicator>(
+      size: Size(ScreenUtil().screenWidth, 300.r),
+      padding: theme.mainIndicatorPadding,
+      drawBelowTipsArea: true,
+    );
   }
 }

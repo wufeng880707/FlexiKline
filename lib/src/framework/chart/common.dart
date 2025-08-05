@@ -84,11 +84,6 @@ typedef IndicatorBuilder<T extends Indicator> = T Function(
   SettingConfig setting,
 );
 
-abstract interface class ITimeRectConfig {
-  double get height;
-  DrawPosition get position;
-}
-
 const mainIndicatorKey = FlexiIndicatorKey('main', label: 'Main');
 const candleIndicatorKey = FlexiIndicatorKey('candle', label: 'Candle');
 const timeIndicatorKey = FlexiIndicatorKey('time', label: 'Time');
@@ -104,11 +99,11 @@ const mainIndicatorSlot = -1;
 
 /// 指标图的绘制边界接口
 abstract interface class IPaintBoundingBox {
-  bool updateLayout({
-    double? height,
-    EdgeInsets? padding,
-    bool reset = false,
-  });
+  // bool updateLayout({
+  //   double? height,
+  //   EdgeInsets? padding,
+  //   bool reset = false,
+  // });
 
   void resetPaintBounding({int? slot});
 
@@ -163,17 +158,23 @@ abstract interface class IPaintObject {
   });
 }
 
-abstract interface class IPaintDelegate {
-  void doPrecompute(Range range, {bool reset = false});
+// abstract interface class IPaintDelegate {
 
-  MinMax? doInitState(
-    int newSlot, {
-    required int start,
-    required int end,
-    bool reset = false,
-  });
+//   bool doUpdateLayout({
+//     Size? size,
+//     EdgeInsets? padding,
+//     bool reset = false,
+//     double? tipsHeight,
+//   });
 
-  void doPaintChart(Canvas canvas, Size size);
+//   MinMax? doInitState(
+//     int newSlot, {
+//     required int start,
+//     required int end,
+//     bool reset = false,
+//   });
 
-  void doOnCross(Canvas canvas, Offset offset, {CandleModel? model});
-}
+//   void doPaintChart(Canvas canvas, Size size);
+
+//   void doOnCross(Canvas canvas, Offset offset, {CandleModel? model});
+// }

@@ -139,4 +139,10 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   Map<IDrawType, DrawObjectBuilder<Overlay, DrawObject<Overlay>>> drawObjectBuilders() {
     return {};
   }
+
+  @override
+  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
+    // TODO: implement genMainIndicator
+    throw UnimplementedError();
+  }
 }

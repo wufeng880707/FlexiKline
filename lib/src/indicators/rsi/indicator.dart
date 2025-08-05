@@ -17,7 +17,7 @@ part of 'rsi.dart';
 /// RSI 相对强弱指标
 @CopyWith()
 @FlexiIndicatorSerializable
-class RSIIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
+class RSIIndicator extends PaintObjectIndicator implements IPrecomputable {
   RSIIndicator({
     super.zIndex = 0,
     required super.height,
@@ -40,7 +40,7 @@ class RSIIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   dynamic getCalcParam() => calcParams;
 
   @override
-  SinglePaintObjectBox createPaintObject(
+  PaintObjectBox createPaintObject(
     IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
@@ -53,7 +53,7 @@ class RSIIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   Map<String, dynamic> toJson() => _$RSIIndicatorToJson(this);
 }
 
-class RSIPaintObject<T extends RSIIndicator> extends SinglePaintObjectBox<T>
+class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
     with RsiDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   RSIPaintObject({
     required super.context,

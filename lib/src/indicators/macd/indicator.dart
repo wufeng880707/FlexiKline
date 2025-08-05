@@ -16,7 +16,7 @@ part of 'macd.dart';
 
 @CopyWith()
 @FlexiIndicatorSerializable
-class MACDIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
+class MACDIndicator extends PaintObjectIndicator implements IPrecomputable {
   MACDIndicator({
     super.zIndex = 0,
     required super.height,
@@ -45,7 +45,7 @@ class MACDIndicator extends SinglePaintObjectIndicator implements IPrecomputable
   final int precision;
 
   @override
-  SinglePaintObjectBox createPaintObject(
+  PaintObjectBox createPaintObject(
     IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
@@ -57,7 +57,7 @@ class MACDIndicator extends SinglePaintObjectIndicator implements IPrecomputable
   Map<String, dynamic> toJson() => _$MACDIndicatorToJson(this);
 }
 
-class MACDPaintObject<T extends MACDIndicator> extends SinglePaintObjectBox<T>
+class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
     with MacdDataMixin<T>, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   MACDPaintObject({required super.context, required super.indicator});
 

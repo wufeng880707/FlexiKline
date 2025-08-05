@@ -55,7 +55,7 @@ extension CandleSarExt on CandleModel {
   }
 }
 
-mixin SarDataMixin<T extends SARIndicator> on SinglePaintObjectBox<T> {
+mixin SarDataMixin<T extends SARIndicator> on PaintObjectBox<T> {
   SARParam get calcParam => indicator.calcParam;
 
   @override

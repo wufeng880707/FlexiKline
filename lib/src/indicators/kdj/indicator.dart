@@ -22,7 +22,7 @@ part of 'kdj.dart';
 /// J值=3*当日K值-2*当日D值
 @CopyWith()
 @FlexiIndicatorSerializable
-class KDJIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
+class KDJIndicator extends PaintObjectIndicator implements IPrecomputable {
   KDJIndicator({
     super.zIndex = 0,
     required super.height,
@@ -56,7 +56,7 @@ class KDJIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   final int precision;
 
   @override
-  SinglePaintObjectBox createPaintObject(
+  PaintObjectBox createPaintObject(
     IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
@@ -69,7 +69,7 @@ class KDJIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   Map<String, dynamic> toJson() => _$KDJIndicatorToJson(this);
 }
 
-class KDJPaintObject<T extends KDJIndicator> extends SinglePaintObjectBox<T>
+class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
     with KdjDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   KDJPaintObject({
     required super.context,

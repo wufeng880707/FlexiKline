@@ -42,7 +42,7 @@ extension CandleAvlExt on CandleModel {
   }
 }
 
-mixin AvlDataMixin<T extends AVLIndicator> on SinglePaintObjectBox<T> {
+mixin AvlDataMixin<T extends AVLIndicator> on PaintObjectBox<T> {
   AVLParam get calcParam => indicator.calcParam;
 
   @override

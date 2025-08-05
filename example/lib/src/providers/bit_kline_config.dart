@@ -190,7 +190,6 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   BitFlexiKlineConfiguration({required this.ref});
 
-  @override
   Size get initialMainSize {
     return Size(ScreenUtil().screenWidth, 300.r);
   }
@@ -257,7 +256,6 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         );
   }
 
-  @override
   Iterable<flexi_overlay.Overlay> getOverlayListConfig(String instId) {
     try {
       final String? jsonStr = CacheUtil().get('overlay_$instId');
@@ -532,12 +530,256 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   @override
   Iterable<flexi_overlay.Overlay> getDrawOverlayList(String instId) {
-    // TODO: implement getDrawOverlayList
-    throw UnimplementedError();
+    try {
+      final String? jsonStr = CacheUtil().get('draw_overlay_$instId');
+      if (jsonStr != null && jsonStr.isNotEmpty) {
+        final json = jsonDecode(jsonStr);
+        if (json is List) {
+          return json
+              .map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+      }
+    } catch (err, stack) {
+      defLogger.e('getDrawOverlayList error:$err', stackTrace: stack);
+    }
+    return [];
   }
 
   @override
   void saveDrawOverlayList(String instId, Iterable<flexi_overlay.Overlay> list) {
-    // TODO: implement saveDrawOverlayList
+    try {
+      final jsonList = list.map((overlay) => overlay.toJson()).toList();
+      final jsonSrc = jsonEncode(jsonList);
+      CacheUtil().setString('draw_overlay_$instId', jsonSrc);
+    } catch (err, stack) {
+      defLogger.e('saveDrawOverlayList error:$err', stackTrace: stack);
+    }
+  }
+
+  @override
+  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
+    final theme = ref.read(bitFlexiKlineThemeProvider);
+    return MainPaintObjectIndicator<PaintObjectIndicator>(
+      size: Size(ScreenUtil().screenWidth, 300.r),
+      padding: theme.mainIndicatorPadding,
+      drawBelowTipsArea: true,
+    );
+  }
+
+  @override
+  Map<IIndicatorKey, IndicatorBuilder> mainIndicatorBuilders() {
+    final theme = ref.read(bitFlexiKlineThemeProvider);
+    return {
+      // MA 移动平均线
+      const FlexiIndicatorKey('ma'): (setting) => MAIndicator(
+            height: theme.mainIndicatorHeight,
+            padding: theme.mainIndicatorPadding,
+            calcParams: [
+              MaParam(
+                count: 5,
+                tips: TipsConfig(
+                  label: 'MA5: ',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
+              ),
+              MaParam(
+                count: 10,
+                tips: TipsConfig(
+                  label: 'MA10: ',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
+              ),
+              MaParam(
+                count: 20,
+                tips: TipsConfig(
+                  label: 'MA20: ',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
+              ),
+            ],
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+          ),
+
+      // BOLL 布林带
+      const FlexiIndicatorKey('boll'): (setting) => BOLLIndicator(
+            height: theme.mainIndicatorHeight,
+            padding: theme.mainIndicatorPadding,
+            calcParam: const BOLLParam(
+              n: 20,
+              std: 2,
+            ),
+            mbTips: const TipsConfig(
+              label: 'BOLL: ',
+              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+            ),
+            upTips: const TipsConfig(
+              label: 'UB: ',
+              style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+            ),
+            dnTips: const TipsConfig(
+              label: 'LB: ',
+              style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+            ),
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+          ),
+
+      // EMA 指数移动平均线
+      const FlexiIndicatorKey('ema'): (setting) => EMAIndicator(
+            height: theme.mainIndicatorHeight,
+            padding: theme.mainIndicatorPadding,
+            calcParams: [
+              MaParam(
+                count: 12,
+                tips: TipsConfig(
+                  label: 'EMA12: ',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
+              ),
+              MaParam(
+                count: 26,
+                tips: TipsConfig(
+                  label: 'EMA26: ',
+                  style: TextStyle(
+                    color: Colors.purple,
+                    fontSize: theme.normalTextSize,
+                    height: defaultTextHeight,
+                  ),
+                ),
+              ),
+            ],
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+          ),
+    };
+  }
+
+  @override
+  Map<IIndicatorKey, IndicatorBuilder> subIndicatorBuilders() {
+    final theme = ref.read(bitFlexiKlineThemeProvider);
+    return {
+      // RSI 相对强弱指标
+      const FlexiIndicatorKey('rsi'): (setting) => RSIIndicator(
+            height: 100.r,
+            calcParams: [
+              const RsiParam(
+                count: 6,
+                tips: TipsConfig(
+                  label: 'RSI6: ',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              const RsiParam(
+                count: 12,
+                tips: TipsConfig(
+                  label: 'RSI12: ',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              const RsiParam(
+                count: 24,
+                tips: TipsConfig(
+                  label: 'RSI24: ',
+                  style: TextStyle(
+                    color: Colors.purple,
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                ),
+              ),
+            ],
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+            precision: 2,
+          ),
+
+      // KDJ 随机指标
+      const FlexiIndicatorKey('kdj'): (setting) => KDJIndicator(
+            height: 100.r,
+            calcParam: const KDJParam(
+              n: 9,
+              m1: 3,
+              m2: 3,
+            ),
+            ktips: const TipsConfig(
+              label: 'K: ',
+              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+            ),
+            dtips: const TipsConfig(
+              label: 'D: ',
+              style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+            ),
+            jtips: const TipsConfig(
+              label: 'J: ',
+              style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+            ),
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+            precision: 2,
+          ),
+
+      // MACD 指数平滑异同移动平均线
+      const FlexiIndicatorKey('macd'): (setting) => MACDIndicator(
+            height: 120.r,
+            calcParam: const MACDParam(
+              s: 12,
+              l: 26,
+              m: 9,
+            ),
+            difTips: const TipsConfig(
+              label: 'DIF: ',
+              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+            ),
+            deaTips: const TipsConfig(
+              label: 'DEA: ',
+              style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+            ),
+            macdTips: const TipsConfig(
+              label: 'MACD: ',
+              style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+            ),
+            tipsPadding: theme.tipsPadding,
+            lineWidth: 1.r,
+            precision: 2,
+          ),
+
+      // VOLUME 成交量
+      const FlexiIndicatorKey('volume'): (setting) => VolumeIndicator(
+            height: 80.r,
+            padding: theme.subIndicatorPadding,
+            volTips: const TipsConfig(
+              label: 'VOL: ',
+              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+            ),
+            tipsPadding: theme.tipsPadding,
+            precision: 2,
+          ),
+    };
   }
 }

@@ -23,7 +23,7 @@ extension CandleEmaExt on CandleModel {
   void cleanEma() => emaList = null;
 }
 
-mixin EmaDataMixin<T extends EMAIndicator> on SinglePaintObjectBox<T> {
+mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
   List<ma_param.MaParam> get calcParams => indicator.calcParams;
 
   @override

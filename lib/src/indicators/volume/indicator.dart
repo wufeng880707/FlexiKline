@@ -16,7 +16,7 @@ part of 'volume.dart';
 
 @CopyWith()
 @FlexiIndicatorSerializable
-class VolumeIndicator extends SinglePaintObjectIndicator {
+class VolumeIndicator extends PaintObjectIndicator {
   VolumeIndicator({
     super.zIndex = 0,
     required super.height,
@@ -54,7 +54,7 @@ class VolumeIndicator extends SinglePaintObjectIndicator {
   Map<String, dynamic> toJson() => _$VolumeIndicatorToJson(this);
 }
 
-class VolumePaintObject<T extends VolumeIndicator> extends SinglePaintObjectBox<T>
+class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
     with VolumeDataMixin<T>, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   VolumePaintObject({required super.context, required super.indicator});
 

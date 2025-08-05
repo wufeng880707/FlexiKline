@@ -16,7 +16,7 @@ part of 'ema.dart';
 
 @CopyWith()
 @FlexiIndicatorSerializable
-class EMAIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
+class EMAIndicator extends PaintObjectIndicator implements IPrecomputable {
   EMAIndicator({
     super.zIndex = 0,
     required super.height,
@@ -32,7 +32,7 @@ class EMAIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   final double lineWidth;
 
   @override
-  SinglePaintObjectBox createPaintObject(
+  PaintObjectBox createPaintObject(
     IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
@@ -44,7 +44,7 @@ class EMAIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   Map<String, dynamic> toJson() => _$EMAIndicatorToJson(this);
 }
 
-class EMAPaintObject<T extends EMAIndicator> extends SinglePaintObjectBox<T> with EmaDataMixin<T> {
+class EMAPaintObject<T extends EMAIndicator> extends PaintObjectBox<T> with EmaDataMixin<T> {
   EMAPaintObject({
     required super.context,
     required super.indicator,

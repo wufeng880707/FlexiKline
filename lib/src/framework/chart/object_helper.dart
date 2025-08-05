@@ -15,31 +15,27 @@
 part of 'indicator.dart';
 
 /// FlexiKlineController 状态/配置/接口代理
-mixin ConfigStateMixin<T extends Indicator> on IndicatorObject<T> {
+extension IndicatorObjectExt on IndicatorObject {
   /// Config
-  SettingConfig get settingConfig => context.settingConfig;
-  GridConfig get gridConfig => context.gridConfig;
-  CrossConfig get crossConfig => context.crossConfig;
+  SettingConfig get settingConfig => _context.settingConfig;
+  GridConfig get gridConfig => _context.gridConfig;
+  CrossConfig get crossConfig => _context.crossConfig;
 
-  double get candleActualWidth => context.candleActualWidth;
+  double get candleActualWidth => _context.candleActualWidth;
 
-  double get candleWidthHalf => context.candleWidthHalf;
+  double get candleWidthHalf => _context.candleWidthHalf;
 
-  KlineData get klineData => context.curKlineData;
+  KlineData get klineData => _context.curKlineData;
 
-  double get paintDxOffset => context.paintDxOffset;
+  double get paintDxOffset => _context.paintDxOffset;
 
-  double get startCandleDx => context.startCandleDx;
+  double get startCandleDx => _context.startCandleDx;
 
-  bool get isCrossing => context.isCrossing;
-
-  int? _dataIndex;
-  // // 注: 如果PaintObject被创建了, 其DataIndex必然有值.
-  int get dataIndex => _dataIndex ??= context.getDataIndex(indicator.key)!;
+  bool get isCrossing => _context.isCrossing;
 }
 
 /// 绘制对象混入边界计算的通用扩展
-mixin PaintObjectBoundingMixin on PaintObject implements IPaintBoundingBox {
+mixin PaintObjectBoundingMixin on IndicatorObject implements IPaintBoundingBox {
   bool get drawInMain => slot == mainIndicatorSlot;
   bool get drawInSub => slot > mainIndicatorSlot;
 
@@ -55,29 +51,6 @@ mixin PaintObjectBoundingMixin on PaintObject implements IPaintBoundingBox {
   Rect? _topRect;
   Rect? _bottomRect;
 
-  /// 更新布布局参数
-  @override
-  bool updateLayout({
-    double? height,
-    EdgeInsets? padding,
-    bool reset = false,
-  }) {
-    bool hasChange = false;
-    if (height != null && height > 0 && height != indicator.height) {
-      _indicator.height = height;
-      hasChange = true;
-    }
-
-    if (padding != null && padding != indicator.padding) {
-      _indicator.padding = padding;
-      hasChange = true;
-    }
-    if (reset || hasChange) {
-      resetPaintBounding();
-    }
-    return reset || hasChange;
-  }
-
   @nonVirtual
   @override
   void resetPaintBounding({int? slot}) {
@@ -92,10 +65,10 @@ mixin PaintObjectBoundingMixin on PaintObject implements IPaintBoundingBox {
   Rect get drawableRect {
     if (_drawableRect != null) return _drawableRect!;
     if (drawInMain) {
-      _drawableRect = context.mainRect;
+      _drawableRect = _context.mainRect;
     } else {
-      final top = context.calculateIndicatorTop(slot);
-      final subRect = context.subRect;
+      final top = _context.calculateIndicatorTop(slot);
+      final subRect = _context.subRect;
       _drawableRect = Rect.fromLTRB(
         subRect.left,
         subRect.top + top,
@@ -157,7 +130,7 @@ mixin PaintObjectBoundingMixin on PaintObject implements IPaintBoundingBox {
 }
 
 /// 绘制对象混入数据初始化的通用扩展
-mixin PaintObjectDataInitMixin on PaintObject implements IPaintDataInit {
+mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
   int? _start;
   int? _end;
 
@@ -212,8 +185,7 @@ mixin PaintObjectDataInitMixin on PaintObject implements IPaintDataInit {
 }
 
 /// 绘制当前图表在Y轴上的刻度值
-mixin PaintYAxisTicksMixin<T extends SinglePaintObjectIndicator>
-    on SinglePaintObjectBox<T> {
+mixin PaintYAxisTicksMixin<T extends PaintObjectIndicator> on PaintObjectBox<T> {
   /// 为副区的指标图绘制Y轴上的刻度信息
   @protected
   void paintYAxisTicks(
@@ -271,8 +243,7 @@ mixin PaintYAxisTicksMixin<T extends SinglePaintObjectIndicator>
 }
 
 /// 当Cross事件发生时, 在Y轴上的绘制crossing相应的刻度值
-mixin PaintYAxisTicksOnCrossMixin<T extends SinglePaintObjectIndicator>
-    on SinglePaintObjectBox<T> {
+mixin PaintYAxisTicksOnCrossMixin<T extends PaintObjectIndicator> on PaintObjectBox<T> {
   /// onCross时, 绘制Y轴上的刻度值
   @protected
   void paintYAxisTicksOnCross(
@@ -312,8 +283,7 @@ mixin PaintYAxisTicksOnCrossMixin<T extends SinglePaintObjectIndicator>
 
 /// 绘制简易蜡烛图
 /// 主要用于SubBoll图和SubSar图中
-mixin PaintSimpleCandleMixin<T extends SinglePaintObjectIndicator>
-    on SinglePaintObjectBox<T> {
+mixin PaintSimpleCandleMixin<T extends PaintObjectIndicator> on PaintObjectBox<T> {
   void paintSimpleCandleChart(
     Canvas canvas,
     Size size, {
@@ -332,9 +302,7 @@ mixin PaintSimpleCandleMixin<T extends SinglePaintObjectIndicator>
       final dx = offset - (i - start) * candleActualWidth;
       final isLong = m.close >= m.open;
 
-      final linePaint = isLong
-          ? settingConfig.defLongLinePaint
-          : settingConfig.defShortLinePaint;
+      final linePaint = isLong ? settingConfig.defLongLinePaint : settingConfig.defShortLinePaint;
 
       if (lineWidth != null) linePaint.strokeWidth = lineWidth;
 
@@ -374,8 +342,8 @@ extension PaintObjectExt on PaintObject {
   }
 }
 
-extension MultiPaintObjectBoxExt on MultiPaintObjectBox {
-  /// 收集[MultiPaintObjectBox]中子指标的计算参数
+extension MultiPaintObjectBoxExt on MainPaintObject {
+  /// 收集[MainPaintObject]中子指标的计算参数
   Map<IIndicatorKey, dynamic> getCalcParams() {
     final params = <IIndicatorKey, dynamic>{};
     for (var object in children) {
@@ -390,8 +358,8 @@ extension MultiPaintObjectBoxExt on MultiPaintObjectBox {
 /// 向后兼容：PaintYAxisMarkOnCrossMixin 的别名
 /// @deprecated 请使用 PaintYAxisTicksOnCrossMixin
 @Deprecated('请使用 PaintYAxisTicksOnCrossMixin')
-mixin PaintYAxisMarkOnCrossMixin<T extends SinglePaintObjectIndicator>
-    on SinglePaintObjectBox<T> implements PaintYAxisTicksOnCrossMixin<T> {
+mixin PaintYAxisMarkOnCrossMixin<T extends PaintObjectIndicator> on PaintObjectBox<T>
+    implements PaintYAxisTicksOnCrossMixin<T> {
   @override
   void paintYAxisTicksOnCross(
     Canvas canvas,

@@ -19,7 +19,7 @@ part of 'sar.dart';
 /// SAR(今日)：SAR (昨日) + AF (动能趋势指标) x [ (区间极值(波段内最极值) – SAR(昨日)]
 @CopyWith()
 @FlexiIndicatorSerializable
-class SARIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
+class SARIndicator extends PaintObjectIndicator implements IPrecomputable {
   SARIndicator({
     super.zIndex = 0,
     required super.height,
@@ -57,7 +57,7 @@ class SARIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   final int tickCount;
 
   @override
-  SinglePaintObjectBox createPaintObject(
+  PaintObjectBox createPaintObject(
     IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
@@ -70,7 +70,7 @@ class SARIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   Map<String, dynamic> toJson() => _$SARIndicatorToJson(this);
 }
 
-class SARPaintObject<T extends SARIndicator> extends SinglePaintObjectBox<T>
+class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
     with SarDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin, PaintSimpleCandleMixin {
   SARPaintObject({
     required super.context,
@@ -162,7 +162,7 @@ class SARPaintObject<T extends SARIndicator> extends SinglePaintObjectBox<T>
     }
 
     Paint paint = indicator.paint.paint;
-    final radius = indicator.radius ?? context.candleWidth / 3;
+    final radius = indicator.radius ?? candleActualWidth / 3;
 
     final offset = startCandleDx - candleWidthHalf;
     CandleModel m;

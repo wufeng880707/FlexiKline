@@ -70,7 +70,7 @@ extension CandleKdjExt on CandleModel {
   }
 }
 
-mixin KdjDataMixin<T extends KDJIndicator> on SinglePaintObjectBox<T> {
+mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
   KDJParam get calcParam => indicator.calcParam;
 
   @override

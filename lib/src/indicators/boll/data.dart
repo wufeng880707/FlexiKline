@@ -27,6 +27,7 @@ extension CandleBollExt on CandleModel {
     if (list != null && list.length == 3) return list[0];
     return null;
   }
+
   set mb(BagNum? value) {
     var list = _bollList;
     if (list == null || list.length != 3) list = List.filled(3, null);
@@ -39,6 +40,7 @@ extension CandleBollExt on CandleModel {
     if (list != null && list.length == 3) return list[1];
     return null;
   }
+
   set up(BagNum? value) {
     var list = _bollList;
     if (list == null || list.length != 3) list = List.filled(3, null);
@@ -51,6 +53,7 @@ extension CandleBollExt on CandleModel {
     if (list != null && list.length == 3) return list[2];
     return null;
   }
+
   set dn(BagNum? value) {
     var list = _bollList;
     if (list == null || list.length != 3) list = List.filled(3, null);
@@ -61,11 +64,13 @@ extension CandleBollExt on CandleModel {
   bool get isValidBollData => mb != null && up != null && dn != null;
   MinMax? get bollMinmax {
     if (!isValidBollData) return null;
-    return MinMax(max: mb!, min: mb!)..updateMinMaxBy(up!)..updateMinMaxBy(dn!);
+    return MinMax(max: mb!, min: mb!)
+      ..updateMinMaxBy(up!)
+      ..updateMinMaxBy(dn!);
   }
 }
 
-mixin BollDataMixin<T extends BOLLIndicator> on SinglePaintObjectBox<T> {
+mixin BollDataMixin<T extends BOLLIndicator> on PaintObjectBox<T> {
   BOLLParam get calcParam => indicator.calcParam;
 
   @override
@@ -104,7 +109,8 @@ mixin BollDataMixin<T extends BOLLIndicator> on SinglePaintObjectBox<T> {
       // 计算标准差
       double variance = (m.close.toDouble() - ma.toDouble()) * (m.close.toDouble() - ma.toDouble());
       for (int j = i + 1; j < i + param.n; j++) {
-        variance += (klineData.list[j].close.toDouble() - ma.toDouble()) * (klineData.list[j].close.toDouble() - ma.toDouble());
+        variance += (klineData.list[j].close.toDouble() - ma.toDouble()) *
+            (klineData.list[j].close.toDouble() - ma.toDouble());
       }
       final std = BagNum.fromNum(math.sqrt(variance / param.n));
 
@@ -161,4 +167,4 @@ mixin BollDataMixin<T extends BOLLIndicator> on SinglePaintObjectBox<T> {
     }
     return minmax;
   }
-} 
+}

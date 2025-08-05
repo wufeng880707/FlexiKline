@@ -17,7 +17,7 @@ part of 'boll.dart';
 /// BOLL 布林带指标
 @CopyWith()
 @FlexiIndicatorSerializable
-class BOLLIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
+class BOLLIndicator extends PaintObjectIndicator implements IPrecomputable {
   BOLLIndicator({
     super.zIndex = 0,
     required super.height,
@@ -53,7 +53,7 @@ class BOLLIndicator extends SinglePaintObjectIndicator implements IPrecomputable
   final int tickCount;
 
   @override
-  SinglePaintObjectBox createPaintObject(
+  PaintObjectBox createPaintObject(
     IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
@@ -66,7 +66,7 @@ class BOLLIndicator extends SinglePaintObjectIndicator implements IPrecomputable
   Map<String, dynamic> toJson() => _$BOLLIndicatorToJson(this);
 }
 
-class BOLLPaintObject<T extends BOLLIndicator> extends SinglePaintObjectBox<T>
+class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
     with BollDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin, PaintSimpleCandleMixin {
   BOLLPaintObject({
     required super.context,

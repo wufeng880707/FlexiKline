@@ -19,7 +19,7 @@ part of 'avl.dart';
 /// AVL反映当日的真实股票价格情况，避免主力庄家的骗线图形。均价线是超级短线实战的一个重要研判工具。
 @CopyWith()
 @FlexiIndicatorSerializable
-class AVLIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
+class AVLIndicator extends PaintObjectIndicator implements IPrecomputable {
   AVLIndicator({
     super.zIndex = 0,
     required super.height,
@@ -44,7 +44,7 @@ class AVLIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   final int tickCount;
 
   @override
-  SinglePaintObjectBox createPaintObject(
+  PaintObjectBox createPaintObject(
     IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
@@ -57,7 +57,7 @@ class AVLIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   Map<String, dynamic> toJson() => _$AVLIndicatorToJson(this);
 }
 
-class AVLPaintObject<T extends AVLIndicator> extends SinglePaintObjectBox<T>
+class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
     with AvlDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   AVLPaintObject({
     required super.context,

@@ -3,7 +3,7 @@ part of 'trade_mark.dart';
 /// 交易标记指标
 @CopyWith()
 @FlexiIndicatorSerializable
-class TradeMarkIndicator extends SinglePaintObjectIndicator {
+class TradeMarkIndicator extends PaintObjectIndicator {
   TradeMarkIndicator({
     super.zIndex = 0,
     required super.height,
@@ -29,7 +29,7 @@ class TradeMarkIndicator extends SinglePaintObjectIndicator {
   Map<String, dynamic> toJson() => _$TradeMarkIndicatorToJson(this);
 }
 
-class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObjectBox<T>
+class TradeMarkPaintObject<T extends TradeMarkIndicator> extends PaintObjectBox<T>
     with TradeMarkDataMixin<T> {
   TradeMarkPaintObject({
     required super.context,
