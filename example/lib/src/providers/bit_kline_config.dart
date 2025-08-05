@@ -516,17 +516,28 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     ];
   }
 
-  @override
-  void saveOverlayListConfig(String instId, Iterable<flexi_overlay.Overlay> list) {
-    try {
-      final jsonList = list.map((overlay) => overlay.toJson()).toList();
-      final jsonSrc = jsonEncode(jsonList);
-      CacheUtil().setString('overlay_$instId', jsonSrc);
-    } catch (err, stack) {
-      defLogger.e('saveOverlayListConfig error:$err', stackTrace: stack);
-    }
-  }
+  // @override
+  // void saveOverlayListConfig(String instId, Iterable<flexi_overlay.Overlay> list) {
+  //   try {
+  //     final jsonList = list.map((overlay) => overlay.toJson()).toList();
+  //     final jsonSrc = jsonEncode(jsonList);
+  //     CacheUtil().setString('overlay_$instId', jsonSrc);
+  //   } catch (err, stack) {
+  //     defLogger.e('saveOverlayListConfig error:$err', stackTrace: stack);
+  //   }
+  // }
 
   @override
   IFlexiKlineTheme get theme => ref.read(bitFlexiKlineThemeProvider);
+
+  @override
+  Iterable<flexi_overlay.Overlay> getDrawOverlayList(String instId) {
+    // TODO: implement getDrawOverlayList
+    throw UnimplementedError();
+  }
+
+  @override
+  void saveDrawOverlayList(String instId, Iterable<flexi_overlay.Overlay> list) {
+    // TODO: implement saveDrawOverlayList
+  }
 }

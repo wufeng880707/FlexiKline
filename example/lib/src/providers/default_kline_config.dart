@@ -876,12 +876,12 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  Iterable<flexi_overlay.Overlay> getOverlayListConfig(String instId) {
+  Iterable<flexi_overlay.Overlay> getDrawOverlayList(String instId) {
     return [];
   }
 
   @override
-  void saveOverlayListConfig(String instId, Iterable<flexi_overlay.Overlay> list) {
-    // 暂不实现
+  void saveDrawOverlayList(String instId, Iterable<flexi_overlay.Overlay> list) {
+    // TODO: implement saveDrawOverlayList
   }
 }

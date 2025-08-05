@@ -169,9 +169,11 @@ abstract interface class IConfiguration {
   /// 交易指标定制
   Map<IIndicatorKey, IndicatorBuilder> tradeIndicatorBuilders();
 
-
   /// 绘制工具定制
   Map<IDrawType, DrawObjectBuilder> drawObjectBuilders();
+
+  /// 时间粒度配置（如 1m、5m、15m、1H、1D 等）
+  List<TimeBarConfig> timeBarBuilders();
 
   /// 从本地获取[instId]对应的绘制实例数据列表.
   Iterable<Overlay> getDrawOverlayList(String instId);
