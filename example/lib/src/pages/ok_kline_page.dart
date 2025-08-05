@@ -16,8 +16,6 @@ import 'dart:math' as math;
 
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flexi_kline/flexi_kline.dart';
-// 导入正确的 TradeSignalType 和 TradeSignalModel
-import 'package:flexi_kline/src/trades/trade_mark/trade_mark.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -217,13 +215,13 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
         },
         child: LayoutBuilder(
           builder: (context, constraints) {
-            if (isFullScreen) {
-              controller.setFixedSize(
-                Size(constraints.maxWidth, constraints.maxHeight - 30.r),
-              );
-            } else {
-              controller.exitFixedSize();
-            }
+            // if (isFullScreen) {
+            //   controller.setFixedSize(
+            //     Size(constraints.maxWidth, constraints.maxHeight - 30.r),
+            //   );
+            // } else {
+            //   controller.exitFixedSize();
+            // }
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

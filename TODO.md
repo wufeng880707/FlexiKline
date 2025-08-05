@@ -57,12 +57,13 @@ v0.7.0
 v0.8.0
 - [x] 抽离指标管理功能, 并统一由manager管理; 优化Indicator与PaintObject依赖关系.
 - [x] KlinData中指标计算数据与CandleModel分离(保持CandleModel的独立)
-- [ ] 重新设计CandleReq的蜡烛数据标识与查询更新方式, 并考虑兼容股市Kline; 
+- [x] ~~重新设计CandleReq的蜡烛数据标识与查询更新方式, 并考虑兼容股市Kline;~~
 - [x] 实现indicators对象和DrawObjects对象与框架分离(API接口优化)
-- [ ] 更新绘制工具图标; 遗留问题修复.
+- [x] 更新绘制工具图标; 遗留问题修复.
 - [x] controller与core库接口优化(保护API不被滥用)
+- [x] 通过对grid的网络线拖拽调整指标图表的高度.
 - [ ] timestampToIndex算法优化; bugfix.
-- [ ] 文档撰写v2.
+- [x] 文档撰写v2.
 
 v0.9.0
 - [ ] 指标计算性能优化: 
@@ -80,6 +81,7 @@ v0.9.0
 
 v1.0.0
 - [ ] 完善demo; 实现所有配置功能.
-- [ ] Tooltip的绘制优化与可点击实现.
+- [ ] Tooltip的绘制优化.
+- [ ] 考虑对TextSpan绘制增加点击事件(考虑通过controller全局管理, 并通知到用户侧响应)
 - [ ] 全部文档撰写v4.
 - [ ] 全面调优.

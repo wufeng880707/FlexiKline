@@ -169,7 +169,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
       newState = RequestState.none;
     }
 
-    final request = curKlineData.updateReqRange(state: newState);
+    final request = curKlineData.updateRequest(state: newState);
     logd('checkAndLoadMoreCandlesWhenPanEnd new candle request:$request');
 
     if (newState == RequestState.loadingMore && panDuration != null) {

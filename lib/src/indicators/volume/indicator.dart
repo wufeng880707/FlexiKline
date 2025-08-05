@@ -59,7 +59,7 @@ class VolumePaintObject<T extends VolumeIndicator> extends SinglePaintObjectBox<
   VolumePaintObject({required super.context, required super.indicator});
 
   @override
-  MinMax? initState({required int start, required int end}) {
+  MinMax? initState(int start, int end) {
     if (!klineData.canPaintChart) return null;
 
     final minmax = calculateVolMinmax(

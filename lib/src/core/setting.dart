@@ -20,11 +20,14 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
   void init() {
     super.init();
     logd("init setting");
+    final initMainSize = configuration.initialMainSize;
+    _mainRect = Rect.fromLTWH(0, 0, initMainSize.width, initMainSize.height);
     _paintObjectManager = IndicatorPaintObjectManager(
       configuration: configuration,
       logger: loggerDelegate,
     )..init(
         this,
+        mainIndicator: _flexiKlineConfig.mainIndicator,
         initMainIndicatorKeys: _flexiKlineConfig.main,
         initSubIndicatorKeys: _flexiKlineConfig.sub,
         initTradeIndicatorKeys: _flexiKlineConfig.trade,
@@ -35,7 +38,7 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
   void initState() {
     super.initState();
     logd("initState setting");
-    initFlexiKlineState();
+    // initFlexiKlineState();
   }
 
   @override
@@ -55,35 +58,41 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     return _canvasSizeChangeListener;
   }
 
-  void _invokeSizeChanged() {
-    final oldCanvasRect = _canvasSizeChangeListener.value;
-
-    if (_fixedCanvasRect != null) {
-      final changed = _updateMainPaintObjectLayoutParam(
-        height: mainRect.height,
-      );
-      if (changed || oldCanvasRect != _fixedCanvasRect) {
-        markRepaintChart(reset: true);
-
-        _canvasSizeChangeListener.value = canvasRect;
-        _canvasSizeChangeListener.notifyListeners();
-      }
-    } else {
-      if (oldCanvasRect != canvasRect) {
-        final changed = _updateMainPaintObjectLayoutParam(
-          height: mainRect.height,
-        );
-        if (changed || oldCanvasRect.width != mainRect.width) {
-          markRepaintChart(reset: true);
-        }
-        _canvasSizeChangeListener.value = canvasRect;
-      }
-    }
-
+  void _invokeSizeChanged({bool force = false}) {
+    _canvasSizeChangeListener.value = canvasRect;
+    if (force) _canvasSizeChangeListener.notifyListeners();
+    markRepaintChart(reset: force);
     markRepaintCross();
+    // final oldCanvasRect = _canvasSizeChangeListener.value;
+
+    // if (_fixedCanvasRect != null) {
+    //   final changed = _updateMainPaintObjectLayoutParam(
+    //     height: mainRect.height,
+    //   );
+    //   if (changed || oldCanvasRect != _fixedCanvasRect) {
+    //     markRepaintChart(reset: true);
+
+    //     _canvasSizeChangeListener.value = canvasRect;
+    //     _canvasSizeChangeListener.notifyListeners();
+    //   }
+    // } else {
+    //   if (oldCanvasRect != canvasRect) {
+    //     final changed = _updateMainPaintObjectLayoutParam(
+    //       height: mainRect.height,
+    //     );
+    //     if (changed || oldCanvasRect.width != mainRect.width) {
+    //       markRepaintChart(reset: true);
+    //     }
+    //     _canvasSizeChangeListener.value = canvasRect;
+    //   }
+    // }
+
+    // markRepaintCross();
   }
 
+  late Rect _mainRect;
   Rect? _fixedCanvasRect;
+  bool get isFixedSizeMode => _fixedCanvasRect != null;
 
   /// 整个画布区域大小 = 由主图区域 + 副图区域
   @override
@@ -132,7 +141,7 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
         _fixedCanvasRect!.bottom - subRectHeight,
       );
     }
-    return settingConfig.mainRect;
+    return _mainRect;
   }
 
   /// TimeIndicator区域大小
@@ -164,8 +173,19 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
 
   /// 主区域大小设置
   void setMainSize(Size size) {
-    settingConfig.setMainRect(size);
-    _invokeSizeChanged();
+    if (isFixedSizeMode) return;
+    // TODO: 优化: 考虑将_mainRect移至mainPaintObject管理.
+    // settingConfig.setMainRect(size);
+    if (size.width != _mainRect.width || size.height != _mainRect.height) {
+      _mainRect = Rect.fromLTWH(
+        _mainRect.left,
+        _mainRect.top,
+        size.width,
+        size.height,
+      );
+      final changed = mainPaintObject.updateLayout(height: size.height);
+      _invokeSizeChanged(force: changed);
+    }
   }
 
   /// 适配[FlexiKlineWidget]所在布局的变化
@@ -178,38 +198,39 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     }
   }
 
-  void exitFixedSize() {
-    if (_fixedCanvasRect != null) {
-      _fixedCanvasRect = null;
-      _invokeSizeChanged();
-    }
+  void exitFixedSizeMode() {
+    if (!isFixedSizeMode) return;
+
+    _fixedCanvasRect = null;
+    final changed = mainPaintObject.updateLayout(height: _mainRect.height);
+    _invokeSizeChanged(force: changed);
   }
 
   /// 设置Kline固定大小(主要在全屏或横屏场景中使用此API)
   /// 当设置[_fixedCanvasRect]后, 主区高度=[_fixedCanvasRect]的总高度 - [subRectHeight]副区所有指标高度
   /// [size] 当前Kline主区+副区的大小.
   /// 注: 设置是临时的, 并不会更新到配置中.
-  void setFixedSize(Size size) {
-    if (size >= settingConfig.mainMinSize) {
-      _fixedCanvasRect = Rect.fromLTRB(
-        0,
-        0,
-        size.width,
-        size.height,
-      );
-      _invokeSizeChanged();
+  void entryFixedSizeMode(Size size) {
+    if ((_fixedCanvasRect != null && _fixedCanvasRect!.size == size) ||
+        size < settingConfig.mainMinSize) {
+      return;
     }
+
+    _fixedCanvasRect = Rect.fromLTRB(0, 0, size.width, size.height);
+    final changed = mainPaintObject.updateLayout(height: mainRect.height);
+    _invokeSizeChanged(force: changed);
   }
 
-  /// 主区padding
-  EdgeInsets get mainPadding => settingConfig.mainPadding;
-
-  Rect get mainChartRect => Rect.fromLTRB(
-        mainRect.left + mainPadding.left,
-        mainRect.top + mainPadding.top,
-        mainRect.right - mainPadding.right,
-        mainRect.bottom - mainPadding.bottom,
-      );
+  /// 主图区域大小
+  Rect get mainChartRect {
+    final mainPadding = mainPaintObject.padding;
+    return Rect.fromLTRB(
+      mainRect.left + mainPadding.left,
+      mainRect.top + mainPadding.top,
+      mainRect.right - mainPadding.right,
+      mainRect.bottom - mainPadding.bottom,
+    );
+  }
 
   /// 主图区域宽.
   double get mainChartWidth => mainChartRect.width;
@@ -455,19 +476,19 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     __flexiKlineConfig = config;
   }
 
-  void initFlexiKlineState({bool isInit = false}) {
-    /// 修正mainRect大小
-    if (mainRect.isEmpty) {
-      final initSize = configuration.initialMainSize;
-      if (isInit && initSize < settingConfig.mainMinSize) {
-        throw Exception('initMainRect(size:$initSize) is invalid!!!');
-      }
-      settingConfig.setMainRect(initSize);
-      _invokeSizeChanged();
-    }
+  // void initFlexiKlineState({bool isInit = false}) {
+  //   /// 修正mainRect大小
+  //   if (mainRect.isEmpty) {
+  //     final initSize = configuration.initialMainSize;
+  //     if (isInit && initSize < settingConfig.mainMinSize) {
+  //       throw Exception('initMainRect(size:$initSize) is invalid!!!');
+  //     }
+  //     settingConfig.setMainRect(initSize);
+  //     _invokeSizeChanged();
+  //   }
 
-    /// TODO: 此处考虑对其他参数的修正
-  }
+  //   /// TODO: 此处考虑对其他参数的修正
+  // }
 
   /// 保存当前FlexiKline配置到本地
   @override
@@ -492,7 +513,7 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
       _flexiKlineConfig = config;
 
       /// 初始化状态
-      initFlexiKlineState();
+      // initFlexiKlineState();
 
       /// 保存当前配置
       if (autoSave) storeFlexiKlineConfig();
@@ -500,7 +521,7 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
       _flexiKlineConfig = config;
 
       /// 初始化状态
-      initFlexiKlineState();
+      // initFlexiKlineState();
 
       /// 保存当前配置
       if (autoSave) storeFlexiKlineConfig();
@@ -517,15 +538,17 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
   @override
   SettingConfig get settingConfig => _flexiKlineConfig.setting;
   set settingConfig(SettingConfig config) {
-    final isChangeSize = config.mainRect != mainRect;
+    // final isChangeSize = config.mainRect != mainRect;
     _flexiKlineConfig.setting = config;
-    initFlexiKlineState();
-    if (isChangeSize) {
-      _invokeSizeChanged();
-    } else {
-      markRepaintChart();
-      markRepaintCross();
-    }
+    // initFlexiKlineState();
+    // if (isChangeSize) {
+    //   _invokeSizeChanged();
+    // } else {
+    //   markRepaintChart();
+    //   markRepaintCross();
+    // }
+    markRepaintChart();
+    markRepaintCross();
   }
 
   /// SettingConfig

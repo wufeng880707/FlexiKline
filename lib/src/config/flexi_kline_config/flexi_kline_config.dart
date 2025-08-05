@@ -34,7 +34,7 @@ class FlexiKlineConfig {
     required this.cross,
     required this.draw,
     required this.tooltip,
-    // required this.indicators,
+    required this.mainIndicator,
     this.main = const <IIndicatorKey>{},
     this.sub = const <IIndicatorKey>{},
     this.trade = const <IIndicatorKey>{},
@@ -47,6 +47,7 @@ class FlexiKlineConfig {
   CrossConfig cross;
   DrawConfig draw;
   TooltipConfig tooltip;
+  MultiPaintObjectIndicator mainIndicator;
   Set<IIndicatorKey> main;
   Set<IIndicatorKey> sub;
   Set<IIndicatorKey> trade;
@@ -64,7 +65,7 @@ class FlexiKlineConfig {
     main = config.main;
     sub = config.sub;
     trade = config.trade;
-    setting.update(config.setting);
+    // setting.update(config.setting);
   }
 
   factory FlexiKlineConfig.fromJson(Map<String, dynamic> json) =>

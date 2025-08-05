@@ -77,7 +77,7 @@ class BOLLPaintObject<T extends BOLLIndicator> extends SinglePaintObjectBox<T>
   bool get isInSub => _isInsub ??= indicator.key.id == 'subBoll';
 
   @override
-  MinMax? initState({required int start, required int end}) {
+  MinMax? initState(int start, int end) {
     if (!klineData.canPaintChart) return null;
 
     MinMax? bollMinmax = calcuBollMinmax(

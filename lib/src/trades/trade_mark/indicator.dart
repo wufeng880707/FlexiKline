@@ -37,7 +37,7 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
   });
 
   @override
-  MinMax? initState({required int start, required int end}) {
+  MinMax? initState(int start, int end) {
     // 交易标记不需要计算MinMax，直接返回null
     return null;
   }

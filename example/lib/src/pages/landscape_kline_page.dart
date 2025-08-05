@@ -22,11 +22,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../config.dart';
 import '../providers/default_kline_config.dart';
 import '../utils/screen_util.dart';
+import 'common/kline_page_data_update_mixin.dart';
 import 'components/flexi_kline_landscape_indicator_bar.dart';
 import 'components/flexi_kline_landscape_setting_bar.dart';
 import 'components/flexi_kline_mark_view.dart';
 import 'components/market_ticker_landscape_view.dart';
-import 'common/kline_page_data_update_mixin.dart';
 
 class LandscapeKlinePage extends ConsumerStatefulWidget {
   const LandscapeKlinePage({
@@ -39,8 +39,7 @@ class LandscapeKlinePage extends ConsumerStatefulWidget {
   final IConfiguration? configuration;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _LandscapeKlinePageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _LandscapeKlinePageState();
 }
 
 class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
@@ -167,9 +166,9 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
           child: LayoutBuilder(
             builder: (context, constraints) {
               controller.logd('zp::: LandscapeKlinePage:$constraints');
-              controller.setFixedSize(
-                Size(constraints.maxWidth, constraints.maxHeight),
-              );
+              // controller.setFixedSize(
+              //   Size(constraints.maxWidth, constraints.maxHeight),
+              // );
               return FlexiKlineWidget(
                 controller: controller,
                 mainBackgroundView: FlexiKlineMarkView(
