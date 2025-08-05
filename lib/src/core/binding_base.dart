@@ -70,6 +70,9 @@ abstract class KlineBindingBase
   T getInstance<T extends KlineBindingBase>(T instance) {
     return instance;
   }
+
+  /// 获取主图绘制对象
+  MainPaintObject get mainPaintObject => _paintObjectManager.mainPaintObject;
 }
 
 /// KlineController内部扩展
