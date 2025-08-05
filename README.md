@@ -8,8 +8,8 @@ FlexiKline是一个灵活且高度可定制化的金融Kline图表框架，旨�
 
 ## 特性
 
-+ 内置多种常用指标, 支持添加自定义指标.
-+ 内置多种绘图工具, 支持添加自定义绘制工具.
++ 自定义指标(实现指标配置与绘制对象接口).
++ 自定义绘制工具(实现绘制工具接口).
 + 支持全屏/横屏/主副区图表宽高设定与动态调整.
 + 可定制化与持久化样式, 配置, 参数(包括指标/绘制等所有功能).
 + 适配多平台手势操作, 且可定制化操作(惯性平移/缩放位置等).
@@ -24,47 +24,58 @@ FlexiKline是一个灵活且高度可定制化的金融Kline图表框架，旨�
 ```dart
 /// FlexiKline配置接口
 abstract interface class IConfiguration {
+  /// 当前配置主题
+  IFlexiKlineTheme get theme;
+
   /// FlexiKline初始化默认的主区的宽高.
   Size get initialMainSize;
 
   /// 获取FlexiKline配置
   /// 1. 如果本地有缓存, 则从缓存中获取.
   /// 2. 如果本地没有缓存, 根据当前主题生成一套FlexiKline配置.
-  FlexiKlineConfig getFlexiKlineConfig([covariant IFlexiKlineTheme? theme]);
+  FlexiKlineConfig getFlexiKlineConfig();
 
   /// 保存[config]配置信息到本地.
   void saveFlexiKlineConfig(FlexiKlineConfig config);
 
-  /// 从本地获取[instId]指定的[Overlay]缓存列表.
-  Iterable<Overlay> getOverlayListConfig(String instId);
+  /// 蜡烛指标配置构造器(主区)
+  IndicatorBuilder get candleIndicatorBuilder;
 
-  /// 以[instId]为key, 保存[list]持久化到本地中.
-  void saveOverlayListConfig(String instId, Iterable<Overlay> list);
+  /// 时间指标配置构造器(副区)
+  IndicatorBuilder get timeIndicatorBuilder;
+
+  /// 主区指标配置定制
+  Map<IIndicatorKey, IndicatorBuilder> mainIndicatorBuilders();
+
+  /// 副区指标配置定制
+  Map<IIndicatorKey, IndicatorBuilder> subIndicatorBuilders();
+
+  /// 绘制工具定制
+  Map<IDrawType, DrawObjectBuilder> drawObjectBuilders();
+
+  /// 从本地获取[instId]对应的绘制实例数据列表.
+  Iterable<Overlay> getDrawOverlayList(String instId);
+
+  /// 以[instId]为key, 持久化绘制实例列表[list]到本地中.
+  void saveDrawOverlayList(String instId, Iterable<Overlay> list);
 }
 ```
 主题配置[IFlexiKlineTheme](https://github.com/FlexiKline/FlexiKline/blob/main/lib/src/framework/configuration.dart#L24)
 
-参考Demo实现:
-[DefaultFlexiKlineConfiguration](https://github.com/FlexiKline/FlexiKline/blob/main/example/lib/src/providers/default_kline_config.dart#L120) 
-[BitFlexiKlineConfiguration](https://github.com/FlexiKline/FlexiKline/blob/main/example/lib/src/providers/bit_kline_config.dart#L163)
+推荐混入[FlexiKlineThemeConfigurationMixin](https://github.com/FlexiKline/FlexiKline/blob/main/lib/src/config/default_config.dart#L168)实现
 
+[BitFlexiKlineConfiguration](https://github.com/FlexiKline/FlexiKline/blob/main/example/lib/src/providers/bit_kline_config.dart#L163)
 
 ### 2. New FlexiKlineController
 
 ```dart
-  controller = FlexiKlineController(
+controller = FlexiKlineController(
     configuration: configuration,
     logger: LoggerImpl(
       tag: "FlexiKline",
       debug: kDebugMode,
     ),
-  );
-
-  // 添加自定义指标
-  controller.addCustomMainIndicatorConfig(XxxIndicator);
-
-  // 注册自定义绘制工具
-  controller.registerDrawOverlayObjectBuilder(IDrawType, DrawObjectBuilder);
+);
 ```
 
 ### 3. FlexiKlineWidget
@@ -87,6 +98,86 @@ flexiKlineController.switchKlineData(request, useCacheFirst: true);
 
 /// 更新[request]指定的数据
 flexiKlineController.updateKlineData(request, resp.data);
+```
+
+## 自定义指标
+```dart
+/// MA 移动平均指标线指标配置
+class MAIndicator extends SinglePaintObjectIndicator {
+  MAIndicator({
+    super.zIndex = 0,
+    required super.height,
+    super.padding = defaultMainIndicatorPadding,
+    required this.calcParam,
+    required this.tipsPadding,
+    required this.lineWidth,
+  }) : super(key: maIndicatorKey);
+
+  final List<MaParam> calcParam;
+  final EdgeInsets tipsPadding;
+  final double lineWidth;
+
+  @override
+  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+    return MAPaintObject(context: context, indicator: this);
+  }
+}
+
+/// MA指标绘制对象
+class MAPaintObject<T extends MAIndicator> extends SinglePaintObjectBox<T> {
+
+  @override
+  void precompute(Range range, {bool reset = false}) {
+    // TODO: 针对[range]范围内的数据进行预计算(仅在数据更新时回调)
+  }
+
+  @override
+  MinMax? initState({required int start, required int end}) {
+    // TODO: 返回[start ~ end)之间的数据范围, 即最大最小的MA指标值.
+  }
+
+  @override
+  void paintChart(Canvas canvas, Size size) {
+    // TODO: 绘制MA移动平均指标线
+    ...
+    paintTips(canvas, model: klineData.latest);
+  }
+
+  @override
+  void onCross(Canvas canvas, Offset offset) {
+    // TODO: 当十字线移动时回调
+    ...
+    paintTips(canvas, offset: offset);
+  }
+
+  @override
+  Size? paintTips(
+    Canvas canvas, {
+    CandleModel? model,
+    Offset? offset,
+    Rect? tipsRect, // Tips限定的绘制区域
+  }) {
+    // TODO: 绘制顶部MA Tips信息
+  }
+}
+```
+
+## 自定义绘制工具
+```dart
+/// 射线
+class RayLineDrawObject extends DrawObject {
+  RayLineDrawObject(super.overlay, super.config);
+
+  @override
+  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+    // TODO: 判断[position]是否命中当前射线
+  }
+
+  @override
+  void draw(IDrawContext context, Canvas canvas, Size size) {
+    // TODO: 绘制射线
+  }
+}
 ```
 
 ## 如何配置
