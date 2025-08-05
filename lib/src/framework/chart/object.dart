@@ -16,8 +16,7 @@ part of 'indicator.dart';
 
 /// IndicatorObject: 保存Indicator配置
 /// 提供[Indicator]的所有属性
-class IndicatorObject<T extends Indicator>
-    implements Comparable<IndicatorObject<T>> {
+class IndicatorObject<T extends Indicator> implements Comparable<IndicatorObject<T>> {
   IndicatorObject(this._indicator, this.context);
 
   // ignore: prefer_final_fields
@@ -40,8 +39,7 @@ class IndicatorObject<T extends Indicator>
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is IndicatorObject && key == other.key);
+    return identical(this, other) || (other is IndicatorObject && key == other.key);
   }
 
   @override
@@ -89,8 +87,7 @@ abstract class PaintObject<T extends Indicator> extends IndicatorObject<T>
 
 /// PaintObjectBox
 /// 通过混入边界计算与数据初始化计算, 简化PaintObject接口.
-abstract class SinglePaintObjectBox<T extends SinglePaintObjectIndicator>
-    extends PaintObject
+abstract class SinglePaintObjectBox<T extends SinglePaintObjectIndicator> extends PaintObject
     with PaintObjectBoundingMixin, PaintObjectDataInitMixin {
   SinglePaintObjectBox({
     required super.context,
@@ -171,9 +168,7 @@ abstract class SinglePaintObjectBox<T extends SinglePaintObjectIndicator>
 
 /// 多个[PaintObject]组合绘制
 /// 主要实现接口遍历转发.
-class MultiPaintObjectBox<T extends MultiPaintObjectIndicator>
-    extends PaintObject
-    with PaintObjectBoundingMixin, PaintObjectDataInitMixin {
+class MultiPaintObjectBox<T extends MultiPaintObjectIndicator> extends PaintObject with PaintObjectBoundingMixin, PaintObjectDataInitMixin {
   MultiPaintObjectBox({
     required super.context,
     required T super.indicator,

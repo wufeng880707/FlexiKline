@@ -51,6 +51,7 @@ abstract interface class IFlexiKlineTheme {
   Color get chartBg;
   Color get tooltipBg;
   Color get countDownTextBg;
+  Color get countDownTextColor;
   Color get crossTextBg;
   Color get drawTextBg;
   Color get transparent;

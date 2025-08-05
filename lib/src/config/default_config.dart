@@ -41,10 +41,10 @@ extension IFlexiKlineThemeExt on IFlexiKlineTheme {
   EdgeInsets get subIndicatorPadding => EdgeInsets.only(top: 12 * scale);
 
   /// 默认Tips文本区域的Padding: 左边缩进8个单位
-  EdgeInsets get tipsPadding => EdgeInsets.only(left: 8 * scale);
+  EdgeInsets get tipsPadding => EdgeInsets.only(left: 28 * scale);
 
   /// 默认文本区域Padding
-  EdgeInsets get textPading => EdgeInsets.all(2 * scale);
+  EdgeInsets get textPading => EdgeInsets.all(10 * scale);
 
   /// 默认指标线图的宽度
   double get indicatorLineWidth {
@@ -62,6 +62,7 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
     required this.chartBg,
     required this.tooltipBg,
     required this.countDownTextBg,
+    required this.countDownTextColor,
     required this.crossTextBg,
     required this.drawTextBg,
     this.transparent = Colors.transparent,
@@ -112,6 +113,8 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
   late Color tooltipBg;
   @override
   late Color countDownTextBg;
+  @override
+  late Color countDownTextColor;
   @override
   late Color crossTextBg;
   @override
@@ -264,7 +267,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       candleSpacingParts: 7,
       candleFixedSpacing: 1 * theme.scale,
       candleLineWidth: 1 * theme.scale,
-      firstCandleInitOffset: 80 * theme.scale,
+      firstCandleInitOffset: 180 * theme.scale,
       minCandleHeight: 1 * theme.scale,
 
       /// 全局默认的刻度值配置.
@@ -276,14 +279,14 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           height: defaultTextHeight,
         ),
         textAlign: TextAlign.end,
-        padding: EdgeInsets.symmetric(horizontal: 2 * theme.scale),
+        padding: EdgeInsets.symmetric(horizontal: 20 * theme.scale),
       ),
 
-      /// 副区的指标图最大数量
-      subChartMaxCount: defaultSubChartMaxCount,
+      /// 主区的指标图最大数量
+      mainChartIndicatorMaxCount: defaultMainChartIndicatorMaxCount,
 
-      /// 交易区的指标图最大数量
-      tradeChartMaxCount: defaultTradeChartMaxCount,
+      /// 副区的指标图最大数量
+      subChartIndicatorMaxCount: defaultSubChartIndicatorMaxCount,
     );
   }
 
@@ -410,21 +413,22 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   }
 
   TooltipConfig genTooltipConfig() {
+    final normalTextSize = theme.normalTextSize;
     return TooltipConfig(
       show: true,
 
       /// tooltip 区域设置
       background: theme.tooltipBg,
       margin: EdgeInsets.only(
-        left: 15 * theme.scale,
+        left: 30 * theme.scale,
         right: 65 * theme.scale,
         top: 10 * theme.scale,
       ),
       padding: EdgeInsets.symmetric(
-        horizontal: 4 * theme.scale,
-        vertical: 4 * theme.scale,
+        horizontal: 10 * theme.scale,
+        vertical: 10 * theme.scale,
       ),
-      radius: BorderRadius.all(Radius.circular(4 * theme.scale)),
+      radius: BorderRadius.all(Radius.circular(10 * theme.scale)),
 
       /// tooltip 文本设置
       style: TextStyle(
@@ -562,7 +566,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           overflow: TextOverflow.ellipsis,
           height: defaultTextHeight,
         ),
-        textWidth: 80 * theme.scale,
+        textWidth: 140 * theme.scale,
         textAlign: TextAlign.center,
       ),
     );

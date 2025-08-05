@@ -88,14 +88,18 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
 
     widget.controller.initState();
 
-    widget.controller.canvasSizeChangeListener.addListener(() {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        if (widget.controller.drawState.isEditing) {
-          _updateDrawToolbarPosition(_position);
-        }
-        setState(() {});
+    try {
+      widget.controller.canvasSizeChangeListener.addListener(() {
+        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          if (widget.controller.drawState.isEditing) {
+            _updateDrawToolbarPosition(_position);
+          }
+          setState(() {});
+        });
       });
-    });
+    } catch (e) {
+      widget.controller.logd('Failed to add listener to canvasSizeChangeListener: $e');
+    }
   }
 
   @override
@@ -112,7 +116,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
 
   @override
   void dispose() {
-    widget.controller.dispose();
+    // widget.controller.dispose();
     super.dispose();
   }
 

@@ -116,6 +116,10 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   // TODO: implement longRed
   bool longRed = false;
+
+  @override
+  // TODO: implement countDownTextColor
+  Color get countDownTextColor => throw UnimplementedError();
 }
 
 class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
@@ -164,9 +168,18 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
             height: 100,
             padding: EdgeInsets.zero,
             calcParams: [
-              MaParam(count: 5, tips: TipsConfig(label: 'MA5:', style: TextStyle(color: Color(0xFF2196F3), fontSize: 12))),
-              MaParam(count: 10, tips: TipsConfig(label: 'MA10:', style: TextStyle(color: Color(0xFFE91E63), fontSize: 12))),
-              MaParam(count: 20, tips: TipsConfig(label: 'MA20:', style: TextStyle(color: Color(0xFF4CAF50), fontSize: 12))),
+              MaParam(
+                  count: 5,
+                  tips: TipsConfig(
+                      label: 'MA5:', style: TextStyle(color: Color(0xFF2196F3), fontSize: 12))),
+              MaParam(
+                  count: 10,
+                  tips: TipsConfig(
+                      label: 'MA10:', style: TextStyle(color: Color(0xFFE91E63), fontSize: 12))),
+              MaParam(
+                  count: 20,
+                  tips: TipsConfig(
+                      label: 'MA20:', style: TextStyle(color: Color(0xFF4CAF50), fontSize: 12))),
             ],
             tipsPadding: EdgeInsets.zero,
             lineWidth: 1.0,
@@ -175,8 +188,14 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
             height: 100,
             padding: EdgeInsets.zero,
             calcParams: [
-              MaParam(count: 12, tips: TipsConfig(label: 'EMA12:', style: TextStyle(color: Color(0xFFFF9800), fontSize: 12))),
-              MaParam(count: 26, tips: TipsConfig(label: 'EMA26:', style: TextStyle(color: Color(0xFF9C27B0), fontSize: 12))),
+              MaParam(
+                  count: 12,
+                  tips: TipsConfig(
+                      label: 'EMA12:', style: TextStyle(color: Color(0xFFFF9800), fontSize: 12))),
+              MaParam(
+                  count: 26,
+                  tips: TipsConfig(
+                      label: 'EMA26:', style: TextStyle(color: Color(0xFF9C27B0), fontSize: 12))),
             ],
             tipsPadding: EdgeInsets.zero,
             lineWidth: 1.0,
@@ -185,16 +204,20 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
             height: 100,
             padding: EdgeInsets.zero,
             calcParam: BOLLParam(n: 20, std: 2),
-            mbTips: TipsConfig(label: 'BOLL:', style: TextStyle(color: Color(0xFF2196F3), fontSize: 12)),
-            upTips: TipsConfig(label: 'UB:', style: TextStyle(color: Color(0xFFE91E63), fontSize: 12)),
-            dnTips: TipsConfig(label: 'LB:', style: TextStyle(color: Color(0xFF4CAF50), fontSize: 12)),
+            mbTips: TipsConfig(
+                label: 'BOLL:', style: TextStyle(color: Color(0xFF2196F3), fontSize: 12)),
+            upTips:
+                TipsConfig(label: 'UB:', style: TextStyle(color: Color(0xFFE91E63), fontSize: 12)),
+            dnTips:
+                TipsConfig(label: 'LB:', style: TextStyle(color: Color(0xFF4CAF50), fontSize: 12)),
             tipsPadding: EdgeInsets.zero,
             lineWidth: 1.0,
           ),
       const FlexiIndicatorKey('volume'): (setting) => VolumeIndicator(
             height: 100,
             padding: EdgeInsets.zero,
-            volTips: TipsConfig(label: 'VOL:', style: TextStyle(color: Color(0xFF000000), fontSize: 12)),
+            volTips:
+                TipsConfig(label: 'VOL:', style: TextStyle(color: Color(0xFF000000), fontSize: 12)),
             tipsPadding: EdgeInsets.zero,
             tickCount: 3,
             precision: 2,

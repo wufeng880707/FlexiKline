@@ -51,8 +51,9 @@ class DefaultFlexiKlineTheme extends BaseFlexiKlineTheme with FlexiKlineThemeTex
         long: theme.long,
         short: theme.short,
         chartBg: theme.pageBg,
-        tooltipBg: theme.markBg,
-        countDownTextBg: theme.markBg,
+        tooltipBg: theme.tooltipBg,
+        countDownTextBg: theme.countDownBg,
+        countDownTextColor: theme.countDownTextColor,
         crossTextBg: theme.lightBg,
         drawTextBg: Colors.blue,
         transparent: theme.transparent,
@@ -145,7 +146,16 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   @override
   FlexiKlineConfig genFlexiKlineConfig() {
-    return super.genFlexiKlineConfig()
+    var flexiKlineConfig = super.genFlexiKlineConfig();
+    flexiKlineConfig.gesture = GestureConfig(
+      isInertialPan: true,
+      tolerance: ToleranceConfig(maxDuration: 500, distanceFactor: 0.2),
+      loadMoreWhenNoEnoughDistance: null,
+      loadMoreWhenNoEnoughCandles: 40,
+      scalePosition: ScalePosition.auto,
+      scaleSpeed: 8,
+    );
+    return flexiKlineConfig
       ..main.add(const FlexiIndicatorKey('ma'))
       ..sub.add(const FlexiIndicatorKey('rsi'))
       ..trade.add(const FlexiIndicatorKey('trade_mark'));

@@ -69,10 +69,8 @@ class KLineWidget extends StatefulWidget {
 
   KLineWidget({
     super.key,
-    // required this.supportTimBars,
     required this.getCandleList,
     this.getMoreCandleList,
-    // required this.labelConfig,
     this.isShowMarketTooltipCustomView,
     this.updateController,
     this.settingChangeCallBack,
@@ -83,7 +81,6 @@ class KLineWidget extends StatefulWidget {
     this.isCanFullScreen = false,
     this.autoCacheConfig = false,
     this.showBottomIndicator = true,
-    // required this.marketTicker,
     required this.initReq,
   });
 
@@ -117,12 +114,9 @@ class _KLineWidgetState extends State<KLineWidget> {
         ? ProviderScope(
           child: KlineWidgetPrivate(
             onInitCallBack: widget.onInitCallBack,
-            // labelConfig: widget.labelConfig,
-            // supportTimBars: widget.supportTimBars,
             showBottomIndicator: widget.showBottomIndicator,
             getCandleModelHistory: widget.getCandleList,
             getMoreCandleModelHistory: widget.getMoreCandleList,
-            // marketTicker: widget.marketTicker,
             bottomIndicatorMargin: widget.bottomIndicatorMargin,
             initSize: widget.initSize,
             onTimeBarChange: widget.onTimeBarChange,
@@ -141,12 +135,9 @@ class _KLineWidgetState extends State<KLineWidget> {
 class KlineWidgetPrivate extends ConsumerStatefulWidget {
   KlineWidgetPrivate({
     super.key,
-    // required this.supportTimBars,
     required this.initReq,
-    // required this.marketTicker,
     this.updateController,
     this.initSize,
-    // required this.labelConfig,
     this.onTimeBarChange,
     this.onInitCallBack,
     this.settingChangeCallBack,
@@ -167,14 +158,11 @@ class KlineWidgetPrivate extends ConsumerStatefulWidget {
   bool isCanFullScreen;
   Size? initSize;
 
-  ////显示的文本配置项
-  // StringLabelConfig labelConfig;
   OnTimeBarChange? onTimeBarChange;
   UpdateController? updateController;
   bool showBottomIndicator;
   bool autoCacheConfig = false;
   bool isShowMarketTooltipCustomView = false;
-  // List<TimeBarConfig> supportTimBars;
   GetCandleListCallBack getCandleModelHistory;
 
   GetMoreCandleListCallBack? getMoreCandleModelHistory;
@@ -219,8 +207,6 @@ class _KlineWidgetPrivateState extends ConsumerState<KlineWidgetPrivate> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _init();
-      // 使用 ref.listen 在 initState 中监听 provider 的数据变化
-
       ref.read(klineStateProvider(controller)).addListener(() {
         if (widget.settingChangeCallBack != null) {
           widget.settingChangeCallBack!(controller.settingConfig);
@@ -328,20 +314,7 @@ class _KlineWidgetPrivateState extends ConsumerState<KlineWidgetPrivate> {
 
         if (widget.showBottomIndicator)
           ///底部主副图切换
-          FlexiKlineIndicatorBar(
-            controller: controller,
-            margin: widget.bottomIndicatorMargin,
-            // margin: EdgeInsets.symmetric(horizontal: 20.w),
-          ),
-        // InkWell(
-        //   child: Container(
-        //     child: Text("测试添加"),
-        //     padding: EdgeInsets.all(14.w),
-        //   ),
-        //   onTap: () async {
-        //
-        //   },
-        // )
+          FlexiKlineIndicatorBar(controller: controller, margin: widget.bottomIndicatorMargin),
       ],
     );
 

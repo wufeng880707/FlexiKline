@@ -67,9 +67,7 @@ final class FlexiIndicatorKey implements IIndicatorKey {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is FlexiIndicatorKey &&
-        runtimeType == other.runtimeType &&
-        id == other.id;
+    return other is FlexiIndicatorKey && runtimeType == other.runtimeType && id == other.id;
   }
 
   @override
@@ -92,7 +90,7 @@ abstract interface class ITimeRectConfig {
 const mainIndicatorKey = FlexiIndicatorKey('main', label: 'Main');
 const candleIndicatorKey = FlexiIndicatorKey('candle', label: 'Candle');
 const timeIndicatorKey = FlexiIndicatorKey('time', label: 'Time');
-const tradeIndicatorKey = FlexiIndicatorKey('trade', label: 'Trade');
+// const tradeIndicatorKey = FlexiIndicatorKey('trade', label: 'Trade');
 
 /// 可预计算接口
 /// 实现 [IPrecomputable] 接口, 即代表当前对象是可以进行预计算.

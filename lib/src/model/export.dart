@@ -20,4 +20,3 @@ export 'gesture_data.dart';
 export 'minmax.dart';
 export 'range.dart';
 export 'tooltip_info/tooltip_info.dart';
-export 'trade_signal.dart';

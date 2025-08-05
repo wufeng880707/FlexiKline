@@ -248,8 +248,10 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
   double get candleWidth => settingConfig.candleWidth;
   @protected
   set candleWidth(double width) {
+    // 设置最小 K 线宽度，确保 K 线始终可见
+    final minCandleWidth = math.max(settingConfig.pixel, 3.0);
     settingConfig.candleWidth = width.clamp(
-      settingConfig.pixel,
+      minCandleWidth,
       candleMaxWidth,
     );
   }
@@ -321,10 +323,10 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     return _paintObjectManager.subPaintObjects;
   }
 
-  @override
-  Iterable<PaintObject> get tradePaintObjects {
-    return _paintObjectManager.tradePaintObjects;
-  }
+  // @override
+  // Iterable<PaintObject> get tradePaintObjects {
+  //   return _paintObjectManager.tradePaintObjects;
+  // }
 
   @override
   int? getDataIndex(IIndicatorKey key) {
@@ -381,14 +383,14 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
   // }
 
   void addIndicatorInMain(IIndicatorKey key) {
-  final newObj = _paintObjectManager.addIndicatorInMain(key, this);
-  if (newObj != null) {
-    newObj.doPrecompute(Range(0, curKlineData.length), reset: true);
-    _flexiKlineConfig.main.add(key); // 确保这里真的加进去了
-    markRepaintChart(reset: true);
-    markRepaintCross();
+    final newObj = _paintObjectManager.addIndicatorInMain(key, this);
+    if (newObj != null) {
+      newObj.doPrecompute(Range(0, curKlineData.length), reset: true);
+      _flexiKlineConfig.main.add(key); // 确保这里真的加进去了
+      markRepaintChart(reset: true);
+      markRepaintCross();
+    }
   }
-}
 
   /// 删除主图中[key]指定的指标
   void delIndicatorInMain(IIndicatorKey key) {
@@ -491,6 +493,9 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
       /// 更新当前配置为[config]
       _flexiKlineConfig = config;
 
+      /// 同步指标状态到PaintObjectManager
+      _syncIndicatorState();
+
       /// 初始化状态
       initFlexiKlineState();
 
@@ -499,11 +504,97 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     } else {
       _flexiKlineConfig = config;
 
+      /// 同步指标状态到PaintObjectManager
+      _syncIndicatorState();
+
       /// 初始化状态
       initFlexiKlineState();
 
       /// 保存当前配置
       if (autoSave) storeFlexiKlineConfig();
+    }
+  }
+
+  /// 同步指标状态到PaintObjectManager
+  void _syncIndicatorState() {
+    bool hasChanged = false;
+    
+    // 同步主图指标
+    final currentMainKeys = _paintObjectManager.mainIndciatorKeys.toSet();
+    final targetMainKeys = _flexiKlineConfig.main;
+    
+    logd('_syncIndicatorState: currentMainKeys=$currentMainKeys, targetMainKeys=$targetMainKeys');
+    
+    // 添加缺失的主图指标
+    for (final key in targetMainKeys) {
+      if (!currentMainKeys.contains(key)) {
+        logd('_syncIndicatorState: adding main indicator $key');
+        addIndicatorInMain(key);
+        hasChanged = true;
+      }
+    }
+    
+    // 删除多余的主图指标
+    for (final key in currentMainKeys) {
+      if (!targetMainKeys.contains(key)) {
+        logd('_syncIndicatorState: removing main indicator $key');
+        delIndicatorInMain(key);
+        hasChanged = true;
+      }
+    }
+    
+    // 同步副图指标
+    final currentSubKeys = _paintObjectManager.subIndicatorKeys.toSet();
+    final targetSubKeys = _flexiKlineConfig.sub;
+    
+    logd('_syncIndicatorState: currentSubKeys=$currentSubKeys, targetSubKeys=$targetSubKeys');
+    
+    // 添加缺失的副图指标
+    for (final key in targetSubKeys) {
+      if (!currentSubKeys.contains(key)) {
+        logd('_syncIndicatorState: adding sub indicator $key');
+        addIndicatorInSub(key);
+        hasChanged = true;
+      }
+    }
+    
+    // 删除多余的副图指标
+    for (final key in currentSubKeys) {
+      if (!targetSubKeys.contains(key)) {
+        logd('_syncIndicatorState: removing sub indicator $key');
+        delIndicatorInSub(key);
+        hasChanged = true;
+      }
+    }
+    
+    // 同步交易指标
+    final currentTradeKeys = _paintObjectManager.tradeIndicatorKeys.toSet();
+    final targetTradeKeys = _flexiKlineConfig.trade;
+    
+    // 添加缺失的交易指标
+    for (final key in targetTradeKeys) {
+      if (!currentTradeKeys.contains(key)) {
+        logd('_syncIndicatorState: adding trade indicator $key');
+        addTradeIndicator(key);
+        hasChanged = true;
+      }
+    }
+    
+    // 删除多余的交易指标
+    for (final key in currentTradeKeys) {
+      if (!targetTradeKeys.contains(key)) {
+        logd('_syncIndicatorState: removing trade indicator $key');
+        delTradeIndicator(key);
+        hasChanged = true;
+      }
+    }
+    
+    // 如果有变化，触发重绘以更新UI
+    if (hasChanged) {
+      logd('_syncIndicatorState: hasChanged=true, triggering repaint');
+      markRepaintChart();
+    } else {
+      logd('_syncIndicatorState: no changes detected');
     }
   }
 

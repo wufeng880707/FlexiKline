@@ -27,6 +27,9 @@ abstract class _$TimeBarConfigCWProxy {
 
   TimeBarConfig intraDay(bool intraDay);
 
+  TimeBarConfig nextUpdateCalculator(
+      DateTime Function(DateTime, bool)? nextUpdateCalculator);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TimeBarConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -44,6 +47,7 @@ abstract class _$TimeBarConfigCWProxy {
     String? locale,
     int? sortOrder,
     bool? intraDay,
+    DateTime Function(DateTime, bool)? nextUpdateCalculator,
   });
 }
 
@@ -85,6 +89,11 @@ class _$TimeBarConfigCWProxyImpl implements _$TimeBarConfigCWProxy {
   TimeBarConfig intraDay(bool intraDay) => this(intraDay: intraDay);
 
   @override
+  TimeBarConfig nextUpdateCalculator(
+          DateTime Function(DateTime, bool)? nextUpdateCalculator) =>
+      this(nextUpdateCalculator: nextUpdateCalculator);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TimeBarConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -103,6 +112,7 @@ class _$TimeBarConfigCWProxyImpl implements _$TimeBarConfigCWProxy {
     Object? locale = const $CopyWithPlaceholder(),
     Object? sortOrder = const $CopyWithPlaceholder(),
     Object? intraDay = const $CopyWithPlaceholder(),
+    Object? nextUpdateCalculator = const $CopyWithPlaceholder(),
   }) {
     return TimeBarConfig(
       key: key == const $CopyWithPlaceholder() || key == null
@@ -147,6 +157,10 @@ class _$TimeBarConfigCWProxyImpl implements _$TimeBarConfigCWProxy {
           ? _value.intraDay
           // ignore: cast_nullable_to_non_nullable
           : intraDay as bool,
+      nextUpdateCalculator: nextUpdateCalculator == const $CopyWithPlaceholder()
+          ? _value.nextUpdateCalculator
+          // ignore: cast_nullable_to_non_nullable
+          : nextUpdateCalculator as DateTime Function(DateTime, bool)?,
     );
   }
 }

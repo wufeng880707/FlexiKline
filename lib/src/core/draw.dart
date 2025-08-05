@@ -30,12 +30,16 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   void initState() {
     super.initState();
     logd('initState draw');
-    candleRequestListener.addListener(() {
-      _drawObjectManager.onChangeCandleRequest(
-        candleRequestListener.value,
-        drawConfig,
-      );
-    });
+    try {
+      candleRequestListener.addListener(() {
+        _drawObjectManager.onChangeCandleRequest(
+          candleRequestListener.value,
+          drawConfig,
+        );
+      });
+    } catch (e) {
+      logd('Failed to add listener to candleRequestListener: $e');
+    }
   }
 
   @override

@@ -24,20 +24,17 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   @override
   void init() {
     super.init();
-    logd("init state");
     _klineDataCache = FIFOHashMap(capacity: klineDataCacheCapacity);
   }
 
   @override
   void initState() {
     super.initState();
-    logd('initState state');
   }
 
   @override
   void dispose() {
     super.dispose();
-    logd('dispose state');
     _candleRequestListener.dispose();
     _isFirstCandleMoveOffScreenListener.dispose();
     _timeBarListener.dispose();
@@ -75,7 +72,6 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   // }
 
   void _updateCandleRequestListener(CandleReq request) {
-    logd('updateCandleRequestListener $curDataKey, request:$request');
     if (request.key == curDataKey) {
       _candleRequestListener.value = request;
       _timeBarListener.value = request.timeBar;
@@ -283,12 +279,11 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     final computeMode = _computeMode;
 
     // 待计算的指标对象集合
-    final paintObjects = [mainPaintObject, ...tradePaintObjects, ...subPaintObjects];
+    final paintObjects = [mainPaintObject, /*...tradePaintObjects,*/ ...subPaintObjects];
 
     final watchPrecompute = Stopwatch();
 
     try {
-      logd('PrecomputeKlineData Begin:${DateTime.now()}');
       watchPrecompute.start();
 
       /// 使用scheduleTask + compute方式运行预计算
@@ -324,8 +319,6 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
       return data;
     } finally {
       watchPrecompute.stop();
-      logd('PrecomputeKlineData End:${DateTime.now()}');
-      logi('PrecomputeKlineData spent:${watchPrecompute.elapsedMicroseconds}');
     }
   }
 
@@ -337,7 +330,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   ///   2. false: 代表未使用缓存; 且[curKlineData]数据会被清空(如果有).
   bool switchKlineData(
     CandleReq req, {
-    bool useCacheFirst = true,
+    bool useCacheFirst = false,
   }) {
     KlineData? data = _klineDataCache[req.key];
 

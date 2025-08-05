@@ -67,8 +67,7 @@ class CandleIndicator extends SinglePaintObjectIndicator {
   Map<String, dynamic> toJson() => _$CandleIndicatorToJson(this);
 }
 
-class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<T>
-    with PaintYAxisTicksOnCrossMixin, ClickableMixin {
+class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<T> with PaintYAxisTicksOnCrossMixin, ClickableMixin {
   final KlineEventBus? eventBus;
 
   CandlePaintObject({
@@ -167,17 +166,17 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
 
       final openOff = Offset(dx, valueToDy(m.open));
       final closeOff = Offset(dx, valueToDy(m.close));
-      
+
       // 应用最小蜡烛高度
       final minHeight = settingConfig.minCandleHeight;
       final actualHeight = (closeOff.dy - openOff.dy).abs();
-      
+
       if (actualHeight < minHeight) {
         // 如果实际高度小于最小高度，调整收盘价位置
-        final adjustedCloseOff = isLong 
-          ? Offset(dx, openOff.dy - minHeight)  // 阳线向下延伸
-          : Offset(dx, openOff.dy + minHeight); // 阴线向上延伸
-        
+        final adjustedCloseOff = isLong
+            ? Offset(dx, openOff.dy - minHeight) // 阳线向下延伸
+            : Offset(dx, openOff.dy + minHeight); // 阴线向上延伸
+
         canvas.drawLine(
           openOff,
           adjustedCloseOff,
@@ -251,7 +250,7 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
       endOffset.dy - (markText.areaHeight) / 2,
     );
 
-    final text = formatPrice(val.toDecimal(), precision: klineData.precision);
+    final text = formatPrice(val.toDecimal(), precision: klineData.precision, showThousands: true);
 
     canvas.drawTextArea(
       offset: endOffset,
@@ -263,27 +262,50 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
 
   /// 绘制蜡烛图右侧价钱刻度
   void paintYAxisPriceTick(Canvas canvas, Size size) {
-    final dyStep = drawableRect.height / gridConfig.horizontal.count;
+    final tickCount = gridConfig.horizontal.count;
+    final dyStep = drawableRect.height / tickCount;
     final dx = chartRect.right;
-    double dy = 0;
-    for (int i = 1; i <= gridConfig.horizontal.count; i++) {
-      dy = i * dyStep;
+
+    // 绘制中间刻度（不包含最底部）
+    for (int i = 0; i < tickCount; i++) {
+      double dy = drawableRect.top + i * dyStep;
       final price = dyToValue(dy);
       if (price == null) continue;
-
       final text = formatPrice(
         price.toDecimal(),
         precision: klineData.precision,
         cutInvalidZero: false,
         showThousands: true,
       );
-
       final ticksText = settingConfig.ticksText;
 
       canvas.drawTextArea(
         offset: Offset(
           dx,
           dy - ticksText.areaHeight,
+        ),
+        drawDirection: DrawDirection.rtl,
+        drawableRect: drawableRect,
+        text: text,
+        textConfig: ticksText,
+      );
+    }
+
+    // 单独绘制最底部价格刻度
+    final priceBottom = dyToValue(drawableRect.bottom, check: false);
+    if (priceBottom != null) {
+      final text = formatPrice(
+        priceBottom.toDecimal(),
+        precision: klineData.precision,
+        cutInvalidZero: false,
+        showThousands: true,
+      );
+      final ticksText = settingConfig.ticksText;
+
+      canvas.drawTextArea(
+        offset: Offset(
+          dx,
+          drawableRect.bottom - ticksText.areaHeight,
         ),
         drawDirection: DrawDirection.rtl,
         drawableRect: drawableRect,
@@ -343,6 +365,7 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
         model.close.toDecimal(),
         precision: klineData.req.precision,
         cutInvalidZero: false,
+        showThousands: true,
       );
 
       Color? background = textConfig.background;
@@ -360,6 +383,43 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
           countDownText = formatTimeDiff(nextUpdateDateTime);
         }
       }
+
+      // 计算最大长度的内容来确保最小宽度
+      // 使用当前数据的最大最小值范围来计算最大可能的价格文本
+      final maxPrice = minMax.max;
+      final minPrice = minMax.min;
+
+      // 计算最大和最小价格的文本长度
+      final maxPriceText = formatPrice(
+        maxPrice.toDecimal(),
+        precision: klineData.req.precision,
+        cutInvalidZero: false,
+        showThousands: true,
+      );
+      final minPriceText = formatPrice(
+        minPrice.toDecimal(),
+        precision: klineData.req.precision,
+        cutInvalidZero: false,
+        showThousands: true,
+      );
+
+      // 使用较长的文本作为最小宽度基准
+      final maxPriceSize = _calculateTextSize(maxPriceText, textConfig);
+      final minPriceSize = _calculateTextSize(minPriceText, textConfig);
+      final currentPriceSize = _calculateTextSize(text, textConfig);
+
+      // 计算价格文本的最大宽度（包含内边距）
+      final pricePadding = textConfig.padding?.horizontal ?? 0;
+      final maxPriceWidth = [maxPriceSize.width, minPriceSize.width, currentPriceSize.width].reduce((a, b) => a > b ? a : b) + pricePadding;
+
+      // 倒计时使用常见的最大格式
+      final maxCountDownText = '99:59:59';
+      final maxCountDownSize = countDownText != null ? _calculateTextSize(maxCountDownText, indicator.countDown) : Size.zero;
+      final countDownPadding = indicator.countDown.padding?.horizontal ?? 0;
+      final minCountDownWidth = maxCountDownSize.width + countDownPadding;
+
+      // 使用较大的宽度作为统一的最小宽度
+      final unifiedMinWidth = maxPriceWidth > minCountDownWidth ? maxPriceWidth : minCountDownWidth;
       if (countDownText != null) {
         borderRadius = borderRadius?.copyWith(
           topLeft: borderRadius.topLeft,
@@ -375,17 +435,28 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
       );
 
       /// 绘制最新价标记
-      final size = canvas.drawTextArea(
+      // 先计算实际文本尺寸
+      final actualSize = _calculateTextSize(text, textConfig);
+      // 使用统一的宽度作为最小宽度
+      final finalWidth = actualSize.width < unifiedMinWidth ? unifiedMinWidth : actualSize.width;
+
+      // 使用 drawText 而不是 drawTextArea 来确保宽度一致
+      final size = canvas.drawText(
         offset: offset,
         drawDirection: DrawDirection.rtl,
         drawableRect: drawableRect,
         text: text,
-        textConfig: textConfig,
+        style: textConfig.style,
+        strutStyle: textConfig.strutStyle,
+        textAlign: textConfig.textAlign,
+        maxLines: textConfig.maxLines ?? 1,
+        textWidth: finalWidth,
         backgroundColor: background,
         borderRadius: borderRadius,
+        borderSide: textConfig.border,
+        padding: textConfig.padding?.copyWith(left: 0, right: 0),
       );
-      _latestTextOffset = -size.width;
-
+      _latestTextOffset = -finalWidth;
       if (countDownText != null) {
         final countDown = indicator.countDown;
 
@@ -397,6 +468,8 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
         );
 
         /// 绘制倒计时标记
+        // 使用统一的宽度作为倒计时的最小宽度
+        final countDownWidth = finalWidth;
         canvas.drawText(
           offset: Offset(
             offset.dx,
@@ -405,11 +478,10 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
           drawDirection: DrawDirection.rtl,
           drawableRect: drawableRect,
           text: countDownText,
-          style: countDown.style.copyWith(
-            height: (countDown.areaHeight - 1) / countDown.textHeight,
-          ),
+          style: countDown.style,
+          padding: countDown.padding?.copyWith(left: 0, right: 0),
           textAlign: countDown.textAlign,
-          textWidth: size.width,
+          textWidth: countDownWidth,
           backgroundColor: countDown.background,
           borderRadius: borderRadius,
           borderSide: countDown.border,
@@ -492,7 +564,7 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
     BagNum minLow = list[start].low;
     CandleModel m;
     Path path = Path();
-    bool isShowAvgLine = false;
+    // bool isShowAvgLine = false;
     double startDx = 0;
     double endDx = 0;
     Offset? lastPoint;
@@ -508,7 +580,7 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
       final bagNumAvg = avgPrice;
       double avgDy = valueToDy(bagNumAvg);
 
-      if (!isShowAvgLine) isShowAvgLine = true;
+      // if (!isShowAvgLine) isShowAvgLine = true;
 
       if (i == start) {
         startDx = dx;
@@ -520,9 +592,9 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
         path.lineTo(dx, valueToDy(m.close));
       }
 
-      if (isShowAvgLine && lastPoint != null) {
-        canvas.drawLine(lastPoint, Offset(dx, avgDy), settingConfig.indraTodayAvgLinePaint);
-      }
+      // if (isShowAvgLine && lastPoint != null) {
+      //   canvas.drawLine(lastPoint, Offset(dx, avgDy), settingConfig.indraTodayAvgLinePaint);
+      // }
 
       if (indicator.high.show || indicator.low.show) {
         if (hasEnough) {
@@ -545,9 +617,9 @@ class CandlePaintObject<T extends CandleIndicator> extends SinglePaintObjectBox<
           }
         }
       }
-      if (isShowAvgLine) {
-        lastPoint = Offset(dx, avgDy);
-      }
+      // if (isShowAvgLine) {
+      //   lastPoint = Offset(dx, avgDy);
+      // }
     }
 
     // 绘制价格波动线

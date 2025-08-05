@@ -45,17 +45,13 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
   @override
   void paintChart(Canvas canvas, Size size) {
     final param = indicator.calcParam;
-    if (!param.show) return;
+    if (!param.show || !klineData.canPaintChart) return;
 
-    if (!klineData.canPaintChart) return;
-
-    final candleWidth = candleActualWidth;
-    final halfCandleWidth = candleWidthHalf;
     final start = klineData.start;
     final end = klineData.end;
 
     int signalCount = 0;
-    const double signalPadding = 2; // 你可以根据实际需求调整
+    const double minPadding = 6; // 最小安全间距
 
     for (int i = start; i < end; i++) {
       final candle = klineData.list[i];
@@ -63,11 +59,16 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
       if (signals == null || signals.isEmpty) continue;
 
       signalCount++;
-      final double x = startCandleDx - (i - start) * candleWidth - halfCandleWidth;
+      final double x = startCandleDx - (i - start) * candleActualWidth - candleWidthHalf;
 
-      // 买信号在最低价（上箭头，y向下偏移）
-      if (signals.contains(TradeSignalType.buy)) {
-        final y = valueToDy(candle.low) + signalPadding;
+      for (final signal in signals) {
+        switch (signal.type) {
+          case TradeSignalType.buy:
+            // 计算B标记y坐标，避免贴底
+            final double rawY = valueToDy(candle.low) + minPadding;
+            final double signalHeight = param.height; // 箭头+正方形
+            final double maxY = drawableRect.bottom - signalHeight - minPadding;
+            final double y = rawY > maxY ? maxY : rawY;
         _drawSignal(
           canvas,
           x,
@@ -79,10 +80,9 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
           param.height - param.width,
           up: true,
         );
-      }
-      // 卖信号在最高价（下箭头，y向上偏移）
-      if (signals.contains(TradeSignalType.sell)) {
-        final y = valueToDy(candle.high) - signalPadding;
+            break;
+          case TradeSignalType.sell:
+            final y = valueToDy(candle.high) - minPadding;
         _drawSignal(
           canvas,
           x,
@@ -94,8 +94,13 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator> extends SinglePaintObje
           param.height - param.width,
           up: false,
         );
+            break;
+          // 可扩展更多信号类型
+        }
       }
     }
+    // 可选：调试输出信号数量
+    // if (kDebugMode) print('本区间信号数量: $signalCount');
   }
 
   void _drawSignal(

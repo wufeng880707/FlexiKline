@@ -41,7 +41,11 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   final ValueNotifier<int> _repaintChart = ValueNotifier(0);
   Listenable get repaintChart => _repaintChart;
   void _markRepaintChart() {
-    _repaintChart.value++;
+    try {
+      _repaintChart.value++;
+    } catch (e) {
+      // 忽略错误，因为 ValueNotifier 可能已经被销毁
+    }
   }
 
   //// Latest Price ////
@@ -50,7 +54,11 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   void markRepaintLastPrice({bool latestPriceUpdated = false}) {
     // 最新价已更新, 且首根蜡烛在可视区域内.
     // _reset = latestPriceUpdated && paintDxOffset <= 0;
-    _markRepaintChart();
+    try {
+      _markRepaintChart();
+    } catch (e) {
+      // 忽略错误，因为 ValueNotifier 可能已经被销毁
+    }
   }
 
   /// 控制doInitState操作是否重置计算结果
@@ -61,7 +69,11 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   @protected
   void markRepaintChart({bool reset = false}) {
     _reset = reset;
-    _markRepaintChart();
+    try {
+      _markRepaintChart();
+    } catch (e) {
+      // 忽略错误，因为 ValueNotifier 可能已经被销毁
+    }
   }
 
   @protected
@@ -71,7 +83,12 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     _lastPriceCountDownTimer = Timer.periodic(
       const Duration(seconds: 1),
       (timer) {
-        markRepaintLastPrice();
+        try {
+          markRepaintLastPrice();
+        } catch (e) {
+          // 忽略错误，因为 ValueNotifier 可能已经被销毁
+          timer.cancel();
+        }
       },
     );
   }
@@ -99,15 +116,14 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     if (curKlineData.req.timeBar.intraDay) {
       // 当为日内时间粒度时，只保留蜡烛图指标
       try {
-        final candlePaintObject =
-            mainPaintObject.children.firstWhere((obj) => obj.key == candleIndicatorKey);
+        final candlePaintObject = mainPaintObject.children.firstWhere((obj) => obj.key == candleIndicatorKey);
         painObject = [candlePaintObject, ...subPaintObjects];
       } catch (e) {
         // 如果找不到蜡烛图指标，则只绘制副区指标
         painObject = [...subPaintObjects];
       }
     } else {
-      painObject = [mainPaintObject, ...tradePaintObjects, ...subPaintObjects];
+      painObject = [mainPaintObject, ...subPaintObjects];
     }
 
     for (var paintObject in painObject) {
@@ -146,12 +162,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
 
     panDistance ??= 0;
     // 计算提前触发LoadMore的偏移量
-    final loadMoreDistanceOffset = gestureConfig.loadMoreWhenNoEnoughDistance ??
-        gestureConfig.loadMoreWhenNoEnoughCandles * candleActualWidth;
-
-    logd(
-      'checkAndLoadMoreCandlesWhenPanEnd(panDistance:$panDistance, panDuration:$panDuration) => length:${curKlineData.length}, paintDxOffset:$paintDxOffset, maxPaintDxOffset:$maxPaintDxOffset, loadMoreDistanceOffset:$loadMoreDistanceOffset',
-    );
+    final loadMoreDistanceOffset = gestureConfig.loadMoreWhenNoEnoughDistance ?? gestureConfig.loadMoreWhenNoEnoughCandles * candleActualWidth;
 
     final destination = paintDxOffset + panDistance;
     final loadMoreMinPaintDxOffset = maxPaintDxOffset - loadMoreDistanceOffset;
@@ -170,7 +181,6 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     }
 
     final request = curKlineData.updateReqRange(state: newState);
-    logd('checkAndLoadMoreCandlesWhenPanEnd new candle request:$request');
 
     if (newState == RequestState.loadingMore && panDuration != null) {
       Future.delayed(
@@ -188,7 +198,6 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   }
 
   void onChartMove(GestureData data) {
-    // super.handleMove(data);
     if (!data.moved) return;
 
     final newDxOffset = clampPaintDxOffset(paintDxOffset + data.dxDelta);
@@ -200,24 +209,25 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   }
 
   void onChartScale(GestureData data) {
-    // super.handleScale(data);
-
     double? newWidth;
+
+    // 设置最小 K 线宽度，确保 K 线始终可见
+    final minCandleWidth = math.max(settingConfig.pixel, 3.0);
 
     if (data.scaled) {
       // 处理触摸设备的缩放逻辑.
       if (data.scale > 1 && candleWidth >= candleMaxWidth) return;
-      if (data.scale < 1 && candleWidth <= settingConfig.pixel) return;
+      if (data.scale < 1 && candleWidth <= minCandleWidth) return;
 
       final dxGrowth = data.scaleDelta * gestureConfig.scaleSpeed;
       newWidth = (candleWidth + dxGrowth).clamp(
-        settingConfig.pixel,
+        minCandleWidth,
         candleMaxWidth,
       );
     } else if (data.isSignal) {
       // 处理鼠标滚轴滚动/触控板向上向下的缩放逻辑.
       newWidth = (candleWidth + data.scale).clamp(
-        settingConfig.pixel,
+        minCandleWidth,
         candleMaxWidth,
       );
     }
@@ -256,7 +266,6 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     }
 
     if (newDxOffset != paintDxOffset) {
-      // logd('handleScale paintDxOffset:$paintDxOffset > $newDxOffset');
       paintDxOffset = newDxOffset;
     }
 

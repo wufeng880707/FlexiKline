@@ -51,15 +51,7 @@ class KlineData extends BaseData {
   }
 
   static final KlineData empty = KlineData(
-    const CandleReq(
-        instId: "",
-        timeBar: TimeBarConfig(
-            key: '',
-            bar: '',
-            milliseconds: 0,
-            multiplier: 0,
-            timespan: Timespan.minute,
-            showName: '')),
+    const CandleReq(instId: "", timeBar: TimeBarConfig(key: '', bar: '', milliseconds: 0, multiplier: 0, timespan: Timespan.minute, showName: '')),
     list: List.empty(growable: false),
   );
 

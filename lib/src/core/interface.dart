@@ -27,8 +27,8 @@ abstract interface class ISetting {
   /// 副区指标集
   Iterable<PaintObject> get subPaintObjects;
 
-  /// 交易业务视图标集
-  Iterable<PaintObject> get tradePaintObjects;
+  // /// 交易业务视图标集
+  // Iterable<PaintObject> get tradePaintObjects;
 
   /// 画板Size = [mainRect] + [subRect]
   Rect get canvasRect;

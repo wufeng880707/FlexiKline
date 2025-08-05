@@ -15,8 +15,8 @@
 part of 'avl.dart';
 
 /// AVL 均价线指标
-/// 均价线(AVL)AVL = 某日总成交金额/某日总成交股数其计算结果就是每股平均的成交价格。
-/// AVL反映当日的真实股票价格情况，避免主力庄家的骗线图形。均价线是超级短线实战的一个重要研判工具。
+/// 均价线(AVL)AVL = (open + close + high + low) / 4
+/// AVL反映当日的价格中枢，是OHLC四个价格的平均值。均价线是技术分析中的重要参考线。
 @CopyWith()
 @FlexiIndicatorSerializable
 class AVLIndicator extends SinglePaintObjectIndicator implements IPrecomputable {
@@ -57,15 +57,11 @@ class AVLIndicator extends SinglePaintObjectIndicator implements IPrecomputable 
   Map<String, dynamic> toJson() => _$AVLIndicatorToJson(this);
 }
 
-class AVLPaintObject<T extends AVLIndicator> extends SinglePaintObjectBox<T>
-    with AvlDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
+class AVLPaintObject<T extends AVLIndicator> extends SinglePaintObjectBox<T> with AvlDataMixin, PaintYAxisTicksOnCrossMixin {
   AVLPaintObject({
     required super.context,
     required super.indicator,
   });
-
-  bool? _isInsub;
-  bool get isInSub => _isInsub ??= indicator.key.id == 'subAvl';
 
   @override
   MinMax? initState({required int start, required int end}) {
@@ -76,14 +72,11 @@ class AVLPaintObject<T extends AVLIndicator> extends SinglePaintObjectBox<T>
       start: start,
       end: end,
     );
-    if (isInSub) {
-      MinMax? candleMinmax = klineData.calculateMinmax(start, end);
-      if (candleMinmax != null) return candleMinmax..updateMinMax(avlMinmax);
-      if (avlMinmax != null) return avlMinmax..updateMinMax(candleMinmax);
-      return null;
-    } else {
-      return avlMinmax;
-    }
+    MinMax? candleMinmax = klineData.calculateMinmax(start, end);
+
+    if (candleMinmax != null) return candleMinmax..updateMinMax(avlMinmax);
+    if (avlMinmax != null) return avlMinmax..updateMinMax(candleMinmax);
+    return null;
   }
 
   @override
@@ -91,37 +84,35 @@ class AVLPaintObject<T extends AVLIndicator> extends SinglePaintObjectBox<T>
     /// 绘制AVL图
     paintAvlChart(canvas, size);
 
-    if (isInSub && settingConfig.showYAxisTick) {
-      paintYAxisTicks(
-        canvas,
-        size,
-        tickCount: indicator.tickCount,
-        precision: klineData.precision,
-      );
-    }
+    // if (settingConfig.showYAxisTick) {
+    //   paintYAxisTicks(
+    //     canvas,
+    //     size,
+    //     tickCount: indicator.tickCount,
+    //     precision: klineData.precision,
+    //   );
+    // }
   }
 
-  /// 重写[paintYAxisTicks]中的格式化刻度值.
-  @override
-  String fromatTicksValue(BagNum value, {required int precision}) {
-    return formatPrice(
-      value.toDecimal(),
-      precision: precision,
-      cutInvalidZero: false,
-      showThousands: true,
-    );
-  }
+  // /// 重写[paintYAxisTicks]中的格式化刻度值.
+  // @override
+  // String fromatTicksValue(BagNum value, {required int precision}) {
+  //   return formatPrice(
+  //     value.toDecimal(),
+  //     precision: precision,
+  //     cutInvalidZero: false,
+  //     showThousands: true,
+  //   );
+  // }
 
   @override
   void onCross(Canvas canvas, Offset offset) {
     /// onCross时, 绘制Y轴上的标记值(注: 仅对indicator.key为subAvlKey时有效)
-    if (isInSub) {
-      paintYAxisTicksOnCross(
-        canvas,
-        offset,
-        precision: klineData.precision,
-      );
-    }
+    paintYAxisTicksOnCross(
+      canvas,
+      offset,
+      precision: klineData.precision,
+    );
   }
 
   /// 在onCross时, 重写[paintYAxisTicksOnCross]中的格式化刻度值
@@ -146,20 +137,26 @@ class AVLPaintObject<T extends AVLIndicator> extends SinglePaintObjectBox<T>
 
     final List<Offset> points = [];
     final offset = startCandleDx - candleWidthHalf;
-
     CandleModel m;
     for (int i = start; i < end; i++) {
       m = list[i];
-      if (!m.isValidAvlData) continue;
+      if (!m.isValidAvlData) {
+        logd('paintAvlChart: index $i has no valid AVL data');
+        continue;
+      }
       final dx = offset - (i - start) * candleActualWidth;
-      points.add(Offset(dx, valueToDy(m.avl!, correct: false)));
+      final dy = valueToDy(m.avl!, correct: false);
+      points.add(Offset(dx, dy));
     }
-
-    canvas.drawLineType(
-      indicator.line.type,
-      Path()..addPolygon(points, false),
-      indicator.line.linePaint,
-    );
+    if (points.isNotEmpty) {
+      canvas.drawLineType(
+        indicator.line.type,
+        Path()..addPolygon(points, false),
+        indicator.line.linePaint,
+      );
+    } else {
+      logd('paintAvlChart: no points to draw');
+    }
   }
 
   @override

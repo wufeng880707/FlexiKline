@@ -16,8 +16,8 @@ part of 'kdj.dart';
 
 @visibleForTesting
 extension CandleKdjExt on CandleModel {
-  // 假设KDJ的dataIndex为3（如有不同请调整）
-  static const int _kdjIndex = 3;
+  // 假设KDJ的dataIndex为7（如有不同请调整）
+  static const int _kdjIndex = 7;
 
   List<BagNum?>? get _kdjList => calcuData.getData(_kdjIndex);
   set _kdjList(List<BagNum?>? value) => calcuData.setData(_kdjIndex, value);

@@ -48,6 +48,9 @@ abstract class FKTheme {
   late Color cardBg;
   late Color markBg;
   late Color gridLine;
+  late Color tooltipBg;
+  late Color countDownBg;
+  late Color countDownTextColor;
 
   late Color dividerLine;
   late Color borderLine;
@@ -84,7 +87,13 @@ class LightFKTheme extends FKTheme {
   @override
   Color get cardBg => const Color(0xFFF2F2F2);
   @override
+  Color get tooltipBg => const Color(0xFFD9D9D9);
+  @override
   Color get markBg => const Color(0xFFECECEC);
+  @override
+  Color get countDownBg => const Color(0xFF222425);
+  @override
+  Color get countDownTextColor => const Color(0xFF666666);
   @override
   Color get gridLine => const Color(0xFFE9E9E9);
 
@@ -122,7 +131,13 @@ class DarkFKTheme extends FKTheme {
   @override
   Color get cardBg => const Color(0xFF1A1A1A);
   @override
+  Color get tooltipBg => const Color(0xFF222425);
+  @override
   Color get markBg => const Color(0xFF2F2F2F);
+  @override
+  Color get countDownBg => const Color(0xFF222425);
+  @override
+  Color get countDownTextColor => const Color(0xFF666666);
   @override
   Color get gridLine => const Color(0xFF333333);
 

@@ -49,7 +49,7 @@ class CandleReq {
     this.after,
     this.before,
     this.state = RequestState.none,
-    this.displayName,
+    // this.displayName,
   });
 
   /// 产品ID，如 BTC-USDT
@@ -83,12 +83,12 @@ class CandleReq {
   @JsonKey(includeFromJson: false, includeToJson: false)
   final RequestState state;
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  final String? displayName;
+  // @JsonKey(includeFromJson: false, includeToJson: false)
+  // final String? displayName;
 
   @override
   String toString() {
-    return 'CandleReq($instId-$displayName, $timeBar, $limit, $precision, $before, $after, $state)';
+    return 'CandleReq($instId, $timeBar, $limit, $precision, $before, $after, $state)';
   }
 
   @override

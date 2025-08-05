@@ -89,6 +89,33 @@ mixin SarDataMixin<T extends SARIndicator> on SinglePaintObjectBox<T> {
     CandleModel m;
     int flag = 0;
     
+    // 修正：正确初始化第一个SAR值和趋势判断
+    if (end < len - 1) {
+      // 从倒数第二根K线开始，判断初始趋势
+      final current = klineData.list[end];
+      final next = klineData.list[end + 1];
+      
+      // 判断初始趋势：如果当前最高价 > 下一根最高价，则为上涨趋势
+      isIncreasing = current.high > next.high;
+      
+      if (isIncreasing) {
+        // 上涨趋势：第一个SAR值为前一根K线的最低价
+        sar = next.low;
+        ep = current.high;
+        flag = 1;
+      } else {
+        // 下跌趋势：第一个SAR值为前一根K线的最高价
+        sar = next.high;
+        ep = current.low;
+        flag = -1;
+      }
+    } else {
+      // 如果只有一根K线，默认为下跌趋势
+      isIncreasing = false;
+      sar = klineData.list[end].high;
+      flag = -1;
+    }
+    
     for (int i = end; i >= start; i--) {
       m = klineData.list[i];
       if (isIncreasing) {
@@ -98,16 +125,22 @@ mixin SarDataMixin<T extends SARIndicator> on SinglePaintObjectBox<T> {
           af = math.min(af + step, maxAf);
         }
         sar = (ep - sar).mulNum(af) + sar;
-        minLow = m.low.calcuMin(klineData.list[math.min(i + 1, end)].low);
+        
+        // 修正：确保SAR不超过前一根K线的最低价
+        if (i < end) {
+          minLow = klineData.list[i + 1].low;
+          if (sar > minLow) {
+            sar = minLow;
+          }
+        }
+        
         if (sar > m.low) {
           sar = ep;
           // 重新初始化值
-          flag = 0; // 开始上涨.
+          flag = 0; // 开始下跌
           af = param.startAf;
           ep = null;
-          isIncreasing = !isIncreasing;
-        } else if (sar > minLow) {
-          sar = minLow;
+          isIncreasing = false;
         }
       } else {
         flag = -1; // 下跌
@@ -116,16 +149,22 @@ mixin SarDataMixin<T extends SARIndicator> on SinglePaintObjectBox<T> {
           af = math.min(af + step, maxAf);
         }
         sar = (ep - sar).mulNum(af) + sar;
-        maxHigh = m.high.calcuMax(klineData.list[math.min(i + 1, end)].high);
+        
+        // 修正：确保SAR不低于前一根K线的最高价
+        if (i < end) {
+          maxHigh = klineData.list[i + 1].high;
+          if (sar < maxHigh) {
+            sar = maxHigh;
+          }
+        }
+        
         if (sar < m.high) {
           sar = ep;
           // 重新初始化值
-          flag = 0; // 开始下跌.
-          af = 0;
+          flag = 0; // 开始上涨
+          af = param.startAf;
           ep = null;
-          isIncreasing = !isIncreasing;
-        } else if (sar < maxHigh) {
-          sar = maxHigh;
+          isIncreasing = true;
         }
       }
       m.sarFlag = flag;

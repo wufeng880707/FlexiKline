@@ -66,11 +66,11 @@ class SettingConfig {
     /// 全局默认的刻度值配置.
     required this.ticksText,
 
-    /// 副图配置
-    // 副区的指标图最大数量
-    this.subChartMaxCount = defaultSubChartMaxCount,
-    // 交易区的指标图最大数量
-    this.tradeChartMaxCount = defaultTradeChartMaxCount,
+    /// 主区的指标图最大数量
+    this.mainChartIndicatorMaxCount = defaultSubChartIndicatorMaxCount,
+
+    /// 副图的指标图最大数量
+    this.subChartIndicatorMaxCount = defaultSubChartIndicatorMaxCount,
   }) : mainMinSize = mainMinSize ?? Size(20 / pixel, 20 / pixel);
 
   /// 单个像素值
@@ -132,10 +132,11 @@ class SettingConfig {
   /// 全局默认的刻度值配置.
   final TextAreaConfig ticksText;
 
-  // 副区的指标图最大数量
-  final int subChartMaxCount;
-  // 交易区的指标图最大数量
-  final int tradeChartMaxCount;
+  /// 主视图的指标最大数量
+  final int mainChartIndicatorMaxCount;
+
+  /// 副区的指标图最大数量
+  final int subChartIndicatorMaxCount;
 
   /// 蜡烛间距 [candleFixedSpacing] 优先于 [candleSpacingParts]
   double? _candleSpacing;

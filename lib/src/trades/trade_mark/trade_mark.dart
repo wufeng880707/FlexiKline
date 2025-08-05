@@ -22,9 +22,8 @@ import '../../constant.dart';
 import '../../core/core.dart';
 import '../../framework/export.dart';
 import '../../model/export.dart';
-import '../../model/trade_signal.dart';
 
 part 'data.dart';
-part 'trade_mark_param.dart';
 part 'indicator.dart';
-part 'trade_mark.g.dart'; 
+part 'trade_mark.g.dart';
+part 'trade_mark_param.dart';

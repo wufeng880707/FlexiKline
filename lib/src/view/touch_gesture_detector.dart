@@ -259,8 +259,9 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
         _panScaleData?.end();
         _panScaleData = null;
       }
-    } else if (_panScaleData?.isScale == true || details.pointerCount > 1) {
-      ScalePosition position = _panScaleData?.initPosition ?? gestureConfig.scalePosition;
+    } else if (details.pointerCount > 1) {
+      // 多指触摸，一定是缩放操作
+      ScalePosition position = gestureConfig.scalePosition;
       if (position == ScalePosition.auto) {
         final third = controller.canvasRect.width / 3;
         final dx = details.localFocalPoint.dx;
@@ -272,13 +273,13 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
           position = ScalePosition.middle;
         }
       }
-      logd("onScaleStart scale $position focal:${details.localFocalPoint}");
+      logd("onScaleStart scale $position focal:${details.localFocalPoint}, pointerCount:${details.pointerCount}");
       _panScaleData = GestureData.scale(
         details.localFocalPoint,
         position: position,
       );
     } else {
-      logd("onScaleStart pan focal:${details.localFocalPoint}");
+      logd("onScaleStart pan focal:${details.localFocalPoint}, pointerCount:${details.pointerCount}");
       _panScaleData = GestureData.pan(details.localFocalPoint);
     }
   }
@@ -307,10 +308,7 @@ class _TouchGestureDetectorState extends State<TouchGestureDetector>
     } else if (_panScaleData!.isScale) {
       final newScale = scaledDecelerate(details.scale);
       final change = details.scale - _panScaleData!.scale;
-      // assert(() {
-      //   logd("onScaleUpdate scale ${details.scale}>$newScale change:$change");
-      //   return true;
-      // }());
+      logd("onScaleUpdate scale ${details.scale}>$newScale change:$change, pointerCount:${details.pointerCount}");
       if (change.abs() > 0.01) {
         _panScaleData!.update(
           details.localFocalPoint,

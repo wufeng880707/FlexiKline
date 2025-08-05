@@ -83,7 +83,6 @@ mixin VolmaDataMixin<T extends VolMaIndicator> on SinglePaintObjectBox<T> {
     start ??= klineData.start;
     end ??= klineData.end;
     if (count > len || !klineData.checkStartAndEnd(start, end)) return;
-    logd('calculateVolMa [end:$end ~ start:$start] count:$count');
 
     end = math.min(len - count, end - 1);
 

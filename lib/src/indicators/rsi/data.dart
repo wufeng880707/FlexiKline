@@ -133,7 +133,9 @@ mixin RsiDataMixin<T extends RSIIndicator> on SinglePaintObjectBox<T> {
     final len = klineData.list.length;
 
     int minCount = RsiParam.getMinCountByList(calcParams)!;
+    if (len < minCount) return null; // 数据不足，直接返回
     end = math.min(len - minCount - 1, end - 1);
+    if (end < start) return null; // 区间非法，直接返回
 
     if (!klineData.list[end].isValidRsiList) {
       calcuAndCacheRsi(calcParams, start: 0, end: len);

@@ -54,9 +54,9 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig ticksText(TextAreaConfig ticksText);
 
-  SettingConfig subChartMaxCount(int subChartMaxCount);
+  SettingConfig mainChartIndicatorMaxCount(int mainChartIndicatorMaxCount);
 
-  SettingConfig tradeChartMaxCount(int tradeChartMaxCount);
+  SettingConfig subChartIndicatorMaxCount(int subChartIndicatorMaxCount);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SettingConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -88,8 +88,8 @@ abstract class _$SettingConfigCWProxy {
     double? minCandleHeight,
     bool? showYAxisTick,
     TextAreaConfig? ticksText,
-    int? subChartMaxCount,
-    int? tradeChartMaxCount,
+    int? mainChartIndicatorMaxCount,
+    int? subChartIndicatorMaxCount,
   });
 }
 
@@ -188,12 +188,12 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
       this(ticksText: ticksText);
 
   @override
-  SettingConfig subChartMaxCount(int subChartMaxCount) =>
-      this(subChartMaxCount: subChartMaxCount);
+  SettingConfig mainChartIndicatorMaxCount(int mainChartIndicatorMaxCount) =>
+      this(mainChartIndicatorMaxCount: mainChartIndicatorMaxCount);
 
   @override
-  SettingConfig tradeChartMaxCount(int tradeChartMaxCount) =>
-      this(tradeChartMaxCount: tradeChartMaxCount);
+  SettingConfig subChartIndicatorMaxCount(int subChartIndicatorMaxCount) =>
+      this(subChartIndicatorMaxCount: subChartIndicatorMaxCount);
 
   @override
 
@@ -228,8 +228,8 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
     Object? minCandleHeight = const $CopyWithPlaceholder(),
     Object? showYAxisTick = const $CopyWithPlaceholder(),
     Object? ticksText = const $CopyWithPlaceholder(),
-    Object? subChartMaxCount = const $CopyWithPlaceholder(),
-    Object? tradeChartMaxCount = const $CopyWithPlaceholder(),
+    Object? mainChartIndicatorMaxCount = const $CopyWithPlaceholder(),
+    Object? subChartIndicatorMaxCount = const $CopyWithPlaceholder(),
   }) {
     return SettingConfig(
       pixel: pixel == const $CopyWithPlaceholder() || pixel == null
@@ -343,16 +343,18 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
           ? _value.ticksText
           // ignore: cast_nullable_to_non_nullable
           : ticksText as TextAreaConfig,
-      subChartMaxCount: subChartMaxCount == const $CopyWithPlaceholder() ||
-              subChartMaxCount == null
-          ? _value.subChartMaxCount
-          // ignore: cast_nullable_to_non_nullable
-          : subChartMaxCount as int,
-      tradeChartMaxCount: tradeChartMaxCount == const $CopyWithPlaceholder() ||
-              tradeChartMaxCount == null
-          ? _value.tradeChartMaxCount
-          // ignore: cast_nullable_to_non_nullable
-          : tradeChartMaxCount as int,
+      mainChartIndicatorMaxCount:
+          mainChartIndicatorMaxCount == const $CopyWithPlaceholder() ||
+                  mainChartIndicatorMaxCount == null
+              ? _value.mainChartIndicatorMaxCount
+              // ignore: cast_nullable_to_non_nullable
+              : mainChartIndicatorMaxCount as int,
+      subChartIndicatorMaxCount:
+          subChartIndicatorMaxCount == const $CopyWithPlaceholder() ||
+                  subChartIndicatorMaxCount == null
+              ? _value.subChartIndicatorMaxCount
+              // ignore: cast_nullable_to_non_nullable
+              : subChartIndicatorMaxCount as int,
     );
   }
 }
@@ -401,10 +403,12 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
       showYAxisTick: json['showYAxisTick'] as bool? ?? true,
       ticksText:
           TextAreaConfig.fromJson(json['ticksText'] as Map<String, dynamic>),
-      subChartMaxCount: (json['subChartMaxCount'] as num?)?.toInt() ??
-          defaultSubChartMaxCount,
-      tradeChartMaxCount: (json['tradeChartMaxCount'] as num?)?.toInt() ??
-          defaultTradeChartMaxCount,
+      mainChartIndicatorMaxCount:
+          (json['mainChartIndicatorMaxCount'] as num?)?.toInt() ??
+              defaultSubChartIndicatorMaxCount,
+      subChartIndicatorMaxCount:
+          (json['subChartIndicatorMaxCount'] as num?)?.toInt() ??
+              defaultSubChartIndicatorMaxCount,
     );
 
 Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
@@ -436,8 +440,8 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
       'minCandleHeight': instance.minCandleHeight,
       'showYAxisTick': instance.showYAxisTick,
       'ticksText': instance.ticksText.toJson(),
-      'subChartMaxCount': instance.subChartMaxCount,
-      'tradeChartMaxCount': instance.tradeChartMaxCount,
+      'mainChartIndicatorMaxCount': instance.mainChartIndicatorMaxCount,
+      'subChartIndicatorMaxCount': instance.subChartIndicatorMaxCount,
     };
 
 Value? _$JsonConverterFromJson<Json, Value>(

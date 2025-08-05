@@ -174,7 +174,14 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
 
       // ensurePaintObjectInstance();
       /// 绘制左顶部 指标相关信息
-      for (var paintObject in [mainPaintObject, ...subPaintObjects]) {
+      final timeBar = curKlineData.req.timeBar;
+      var paintObjects = [];
+      if (timeBar.intraDay) {
+        paintObjects = [...subPaintObjects];
+      } else {
+        paintObjects = [mainPaintObject, ...subPaintObjects];
+      }
+      for (var paintObject in paintObjects) {
         paintObject.doOnCross(canvas, offset, model: model);
       }
     }

@@ -44,8 +44,7 @@ class TimeIndicator extends SinglePaintObjectIndicator {
   Map<String, dynamic> toJson() => _$TimeIndicatorToJson(this);
 }
 
-class TimePaintObject<T extends TimeIndicator> extends SinglePaintObjectBox<T>
-    implements ITimeRectConfig {
+class TimePaintObject<T extends TimeIndicator> extends SinglePaintObjectBox<T> implements ITimeRectConfig {
   TimePaintObject({
     required super.context,
     required super.indicator,
@@ -82,13 +81,15 @@ class TimePaintObject<T extends TimeIndicator> extends SinglePaintObjectBox<T>
         // 绘制时间刻度.
         final timeTick = indicator.timeTick;
         final dyCenterOffset = (indicator.height - timeTick.areaHeight) / 2;
+
+        final timeStr = model.formatDateTime(bar);
         canvas.drawTextArea(
           offset: Offset(
             offset.dx,
             offset.dy + dyCenterOffset,
           ),
           drawDirection: DrawDirection.center,
-          text: model.formatDateTime(bar),
+          text: timeStr,
           textConfig: timeTick,
         );
       }

@@ -46,6 +46,7 @@ class TimeBarConfig {
     this.locale = 'en',
     this.sortOrder = 0,
     this.intraDay = false,
+    this.nextUpdateCalculator,
   });
 
   /// 唯一标识符
@@ -77,6 +78,15 @@ class TimeBarConfig {
 
   /// 是不是分时图
   final bool intraDay;
+  
+  /// 自定义下一个更新时间计算器
+  @JsonKey(
+    fromJson: _nextUpdateCalculatorFromJson,
+    toJson: _nextUpdateCalculatorToJson,
+    includeFromJson: false,
+    includeToJson: false,
+  )
+  final DateTime Function(DateTime currentTime, bool isUtc)? nextUpdateCalculator;
 
   @override
   String toString() => bar;
@@ -93,6 +103,18 @@ class TimeBarConfig {
   factory TimeBarConfig.fromJson(Map<String, dynamic> json) => _$TimeBarConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$TimeBarConfigToJson(this);
+}
+
+/// 从JSON转换nextUpdateCalculator
+DateTime Function(DateTime currentTime, bool isUtc)? _nextUpdateCalculatorFromJson(dynamic json) {
+  // 函数类型无法序列化，返回null
+  return null;
+}
+
+/// 转换nextUpdateCalculator到JSON
+dynamic _nextUpdateCalculatorToJson(DateTime Function(DateTime currentTime, bool isUtc)? calculator) {
+  // 函数类型无法序列化，返回null
+  return null;
 }
 
 // /// 时间粒度配置管理器

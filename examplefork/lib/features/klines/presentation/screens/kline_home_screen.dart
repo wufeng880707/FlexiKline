@@ -107,10 +107,10 @@ extension _UI on _KlineHomeScreenState {
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Offstage(
-              offstage: req.displayName == null,
-              child: Text(req.displayName ?? '', style: theme.t1s18w700),
-            ),
+            // Offstage(
+            //   offstage: req.displayName == null,
+            //   child: Text(req.displayName ?? '', style: theme.t1s18w700),
+            // ),
             Text(req.instId, style: theme.t1s12w400),
           ],
         ),

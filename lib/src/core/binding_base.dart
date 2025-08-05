@@ -14,9 +14,7 @@
 
 part of 'core.dart';
 
-abstract class KlineBindingBase
-    with KlineLog
-    implements ISetting, IPaintContext, IDrawContext {
+abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext, IDrawContext {
   final IConfiguration configuration;
 
   /// 对于Kline的操作是否自动保存到本地配置中.
@@ -33,7 +31,6 @@ abstract class KlineBindingBase
     ILogger? logger,
     this.klineDataCacheCapacity,
   }) {
-    logd("constrouct");
     loggerDelegate = logger;
     // initFlexiKlineConfig();
     init();
@@ -41,20 +38,15 @@ abstract class KlineBindingBase
 
   @protected
   @mustCallSuper
-  void init() {
-    logd("init base");
-  }
+  void init() {}
 
   @protected
   @mustCallSuper
-  void initState() {
-    logd("initState base");
-  }
+  void initState() {}
 
   @protected
   @mustCallSuper
   void dispose() {
-    logd("dispose base");
     if (autoSave) storeFlexiKlineConfig();
   }
 

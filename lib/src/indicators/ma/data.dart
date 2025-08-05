@@ -138,12 +138,13 @@ mixin MaDataMixin<T extends MAIndicator> on SinglePaintObjectBox<T> {
     final len = klineData.list.length;
 
     int minCount = MaParam.getMinCountByList(calcParams)!;
+    if (len < minCount) return null; // 数据不足，直接返回
     end = math.min(len - minCount, end - 1);
+    if (end < start) return null; // 区间非法，直接返回
 
     if (!klineData.list[end].isValidMaList(dataIndex)) {
       calcuAndCacheMa(calcParams, start: 0, end: len);
     }
-
     MinMax? minmax;
     CandleModel m;
     for (int i = end; i >= start; i--) {
