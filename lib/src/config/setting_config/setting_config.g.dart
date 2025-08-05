@@ -23,7 +23,7 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig loading(LoadingConfig loading);
 
-  SettingConfig mainMinSize(Size? mainMinSize);
+  SettingConfig mainMinSize(Size mainMinSize);
 
   SettingConfig minPaintBlankRate(double minPaintBlankRate);
 
@@ -117,8 +117,7 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
   SettingConfig loading(LoadingConfig loading) => this(loading: loading);
 
   @override
-  SettingConfig mainMinSize(Size? mainMinSize) =>
-      this(mainMinSize: mainMinSize);
+  SettingConfig mainMinSize(Size mainMinSize) => this(mainMinSize: mainMinSize);
 
   @override
   SettingConfig minPaintBlankRate(double minPaintBlankRate) =>
@@ -245,10 +244,11 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
           ? _value.loading
           // ignore: cast_nullable_to_non_nullable
           : loading as LoadingConfig,
-      mainMinSize: mainMinSize == const $CopyWithPlaceholder()
-          ? _value.mainMinSize
-          // ignore: cast_nullable_to_non_nullable
-          : mainMinSize as Size?,
+      mainMinSize:
+          mainMinSize == const $CopyWithPlaceholder() || mainMinSize == null
+              ? _value.mainMinSize
+              // ignore: cast_nullable_to_non_nullable
+              : mainMinSize as Size,
       minPaintBlankRate: minPaintBlankRate == const $CopyWithPlaceholder() ||
               minPaintBlankRate == null
           ? _value.minPaintBlankRate
@@ -341,8 +341,10 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
       shortColor: const ColorConverter().fromJson(json['shortColor'] as String),
       opacity: (json['opacity'] as num?)?.toDouble() ?? 0.5,
       loading: LoadingConfig.fromJson(json['loading'] as Map<String, dynamic>),
-      mainMinSize: _$JsonConverterFromJson<Map<String, dynamic>, Size>(
-          json['mainMinSize'], const SizeConverter().fromJson),
+      mainMinSize: json['mainMinSize'] == null
+          ? const Size(20, 20)
+          : const SizeConverter()
+              .fromJson(json['mainMinSize'] as Map<String, dynamic>),
       minPaintBlankRate: (json['minPaintBlankRate'] as num?)?.toDouble() ?? 0.5,
       alwaysCalculateScreenOfCandlesIfEnough:
           json['alwaysCalculateScreenOfCandlesIfEnough'] as bool? ?? false,
@@ -391,9 +393,3 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
       'subChartMaxCount': instance.subChartMaxCount,
       'tradeChartMaxCount': instance.tradeChartMaxCount,
     };
-
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);

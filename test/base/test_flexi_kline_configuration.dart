@@ -111,12 +111,6 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
 
 class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   @override
-  Size get initialMainSize {
-    final mediaQuery = MediaQueryData.fromView(window);
-    return Size(mediaQuery.size.width, 300);
-  }
-
-  @override
   FlexiKlineConfig getFlexiKlineConfig() {
     return genFlexiKlineConfig();
   }
