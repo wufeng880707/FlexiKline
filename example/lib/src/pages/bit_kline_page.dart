@@ -60,11 +60,15 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
   @override
   void initState() {
     super.initState();
+    
+    // 先初始化 configuration
+    configuration = BitFlexiKlineConfiguration(ref: ref);
+    
     final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId,
         );
 
-    final timeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'm15');
+    final timeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == '15m');
 
     req = CandleReq(
       instId: widget.instId,
@@ -72,7 +76,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
       precision: p ?? 2,
       limit: 300,
     );
-    configuration = BitFlexiKlineConfiguration(ref: ref);
+    
     controller = FlexiKlineController(
       configuration: configuration,
       logger: LoggerImpl(

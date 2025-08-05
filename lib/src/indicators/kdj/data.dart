@@ -17,7 +17,7 @@ part of 'kdj.dart';
 @visibleForTesting
 extension CandleKdjExt on CandleModel {
   // 假设KDJ的dataIndex为3（如有不同请调整）
-  static const int _kdjIndex = 3;
+  static const int _kdjIndex = 7;
 
   List<BagNum?>? get _kdjList => calcuData.getData(_kdjIndex);
   set _kdjList(List<BagNum?>? value) => calcuData.setData(_kdjIndex, value);
@@ -27,6 +27,7 @@ extension CandleKdjExt on CandleModel {
     if (list != null && list.length == 3) return list[0];
     return null;
   }
+
   set k(BagNum? value) {
     var list = _kdjList;
     if (list == null || list.length != 3) list = List.filled(3, null);
@@ -39,6 +40,7 @@ extension CandleKdjExt on CandleModel {
     if (list != null && list.length == 3) return list[1];
     return null;
   }
+
   set d(BagNum? value) {
     var list = _kdjList;
     if (list == null || list.length != 3) list = List.filled(3, null);
@@ -51,6 +53,7 @@ extension CandleKdjExt on CandleModel {
     if (list != null && list.length == 3) return list[2];
     return null;
   }
+
   set j(BagNum? value) {
     var list = _kdjList;
     if (list == null || list.length != 3) list = List.filled(3, null);
@@ -61,7 +64,9 @@ extension CandleKdjExt on CandleModel {
   bool get isValidKdjData => k != null && d != null && j != null;
   MinMax? get kdjMinmax {
     if (!isValidKdjData) return null;
-    return MinMax(max: k!, min: k!)..updateMinMaxBy(d!)..updateMinMaxBy(j!);
+    return MinMax(max: k!, min: k!)
+      ..updateMinMaxBy(d!)
+      ..updateMinMaxBy(j!);
   }
 }
 
@@ -102,9 +107,9 @@ mixin KdjDataMixin<T extends KDJIndicator> on SinglePaintObjectBox<T> {
         if (candle.high > high) high = candle.high;
         if (candle.low < low) low = candle.low;
       }
-      
-      final rsv = high == low ? BagNum.fromNum(50) : 
-          ((m.close - low) / (high - low)) * BagNum.fromNum(100);
+
+      final rsv =
+          high == low ? BagNum.fromNum(50) : ((m.close - low) / (high - low)) * BagNum.fromNum(100);
 
       // 计算K值
       BagNum k = BagNum.fromNum(50);
@@ -180,4 +185,4 @@ mixin KdjDataMixin<T extends KDJIndicator> on SinglePaintObjectBox<T> {
     }
     return minmax;
   }
-} 
+}
