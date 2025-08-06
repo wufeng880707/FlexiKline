@@ -89,9 +89,6 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
       return;
     }
 
-    /// 检查主区和副区的PaintObject是否都创建了.
-    // ensurePaintObjectInstance();
-
     int solt = mainIndicatorSlot;
 
     var painObject = [];

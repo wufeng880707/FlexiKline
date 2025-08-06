@@ -107,7 +107,7 @@ abstract class PaintObjectBox<T extends PaintObjectIndicator>
 
 /// 主区绘制对象
 final class MainPaintObject<T extends MainPaintObjectIndicator>
-    extends PaintObject {
+    extends PaintObject<T> {
   MainPaintObject({
     required super.context,
     required T super.indicator,

@@ -1,7 +1,8 @@
-import 'dart:ui';
-
-import '../../flexi_kline.dart';
-import '../framework/click/click_object.dart';
+// import 'dart:ui';
+//
+// import '../../flexi_kline.dart';
+// import '../framework/click/click_object.dart';
+part of 'core.dart';
 
 mixin ClickBinding on KlineBindingBase {
   /// 处理点击事件

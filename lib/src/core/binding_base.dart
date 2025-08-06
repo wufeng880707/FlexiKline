@@ -14,9 +14,7 @@
 
 part of 'core.dart';
 
-abstract class KlineBindingBase
-    with KlineLog
-    implements ISetting, IPaintContext, IDrawContext {
+abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext, IDrawContext {
   final IConfiguration configuration;
 
   /// 对于Kline的操作是否自动保存到本地配置中.
@@ -71,19 +69,8 @@ abstract class KlineBindingBase
     return instance;
   }
 
-  /// 获取主图绘制对象
-  MainPaintObject get mainPaintObject => _paintObjectManager.mainPaintObject;
-}
-
-/// KlineController内部扩展
-extension on KlineBindingBase {
-  MainPaintObject get mainPaintObject {
-    return _paintObjectManager.mainPaintObject;
-  }
-
-  Iterable<PaintObject> get subPaintObjects {
-    return _paintObjectManager.subPaintObjects;
-  }
+  // /// 获取主图绘制对象
+  // MainPaintObject get mainPaintObject => _paintObjectManager.mainPaintObject;
 }
 
 /// KlineController内部扩展
