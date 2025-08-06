@@ -15,8 +15,6 @@
 library candle;
 
 import 'package:copy_with_extension/copy_with_extension.dart';
-import 'package:decimal/decimal.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 
 import '../../config/export.dart';

@@ -185,7 +185,8 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
 }
 
 /// 绘制当前图表在Y轴上的刻度值
-mixin PaintYAxisTicksMixin<T extends PaintObjectIndicator> on PaintObjectBox<T> {
+mixin PaintYAxisTicksMixin<T extends PaintObjectIndicator>
+    on PaintObjectBox<T> {
   /// 为副区的指标图绘制Y轴上的刻度信息
   @protected
   void paintYAxisTicks(
@@ -243,7 +244,8 @@ mixin PaintYAxisTicksMixin<T extends PaintObjectIndicator> on PaintObjectBox<T> 
 }
 
 /// 当Cross事件发生时, 在Y轴上的绘制crossing相应的刻度值
-mixin PaintYAxisTicksOnCrossMixin<T extends PaintObjectIndicator> on PaintObjectBox<T> {
+mixin PaintYAxisTicksOnCrossMixin<T extends PaintObjectIndicator>
+    on PaintObjectBox<T> {
   /// onCross时, 绘制Y轴上的刻度值
   @protected
   void paintYAxisTicksOnCross(
@@ -283,7 +285,8 @@ mixin PaintYAxisTicksOnCrossMixin<T extends PaintObjectIndicator> on PaintObject
 
 /// 绘制简易蜡烛图
 /// 主要用于SubBoll图和SubSar图中
-mixin PaintSimpleCandleMixin<T extends PaintObjectIndicator> on PaintObjectBox<T> {
+mixin PaintSimpleCandleMixin<T extends PaintObjectIndicator>
+    on PaintObjectBox<T> {
   void paintSimpleCandleChart(
     Canvas canvas,
     Size size, {
@@ -302,7 +305,9 @@ mixin PaintSimpleCandleMixin<T extends PaintObjectIndicator> on PaintObjectBox<T
       final dx = offset - (i - start) * candleActualWidth;
       final isLong = m.close >= m.open;
 
-      final linePaint = isLong ? settingConfig.defLongLinePaint : settingConfig.defShortLinePaint;
+      final linePaint = isLong
+          ? settingConfig.defLongLinePaint
+          : settingConfig.defShortLinePaint;
 
       if (lineWidth != null) linePaint.strokeWidth = lineWidth;
 
@@ -352,31 +357,5 @@ extension MultiPaintObjectBoxExt on MainPaintObject {
       }
     }
     return params;
-  }
-}
-
-/// 向后兼容：PaintYAxisMarkOnCrossMixin 的别名
-/// @deprecated 请使用 PaintYAxisTicksOnCrossMixin
-@Deprecated('请使用 PaintYAxisTicksOnCrossMixin')
-mixin PaintYAxisMarkOnCrossMixin<T extends PaintObjectIndicator> on PaintObjectBox<T>
-    implements PaintYAxisTicksOnCrossMixin<T> {
-  @override
-  void paintYAxisTicksOnCross(
-    Canvas canvas,
-    Offset offset, {
-    required int precision,
-  }) {
-    // 委托给新的实现
-  }
-
-  @override
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
-    // 委托给新的实现
-    return formatNumber(
-      value.toDecimal(),
-      precision: precision,
-      defIfZero: '0.00',
-      showCompact: true,
-    );
   }
 }

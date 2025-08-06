@@ -95,7 +95,7 @@ abstract class PaintObject<T extends Indicator> extends IndicatorObject
 /// PaintObjectBox
 /// 通过混入边界计算与数据初始化计算, 简化PaintObject接口.
 abstract class PaintObjectBox<T extends PaintObjectIndicator>
-    extends PaintObject<T> {
+    extends PaintObject {
   PaintObjectBox({
     required super.context,
     required T super.indicator,
@@ -107,7 +107,7 @@ abstract class PaintObjectBox<T extends PaintObjectIndicator>
 
 /// 主区绘制对象
 final class MainPaintObject<T extends MainPaintObjectIndicator>
-    extends PaintObject<T> {
+    extends PaintObject {
   MainPaintObject({
     required super.context,
     required T super.indicator,

@@ -18,6 +18,8 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
+// import '../../../flexi_kline.dart';
+
 import '../../../flexi_kline.dart';
 
 part 'common.dart';

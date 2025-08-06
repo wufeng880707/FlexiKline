@@ -91,23 +91,35 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
 
     int solt = mainIndicatorSlot;
 
-    var painObject = [];
+    var paintObjects = <PaintObject>[];
 
     if (curKlineData.req.timeBar.intraDay) {
       // 当为日内时间粒度时，只保留蜡烛图指标
       try {
         final candlePaintObject =
             mainPaintObject.children.firstWhere((obj) => obj.key == candleIndicatorKey);
-        painObject = [candlePaintObject, ...subPaintObjects];
+        candlePaintObject.doInitState(
+          solt++,
+          start: curKlineData.start,
+          end: curKlineData.end,
+          reset: _reset,
+        );
+        candlePaintObject.doPaintChart(canvas, size);
       } catch (e) {
         // 如果找不到蜡烛图指标，则只绘制副区指标
-        painObject = [...subPaintObjects];
+        paintObjects = [...subPaintObjects];
       }
     } else {
-      painObject = [mainPaintObject, /*...tradePaintObjects*/ ...subPaintObjects];
+      mainPaintObject.doInitState(
+        solt++,
+        start: curKlineData.start,
+        end: curKlineData.end,
+        reset: _reset,
+      );
+      mainPaintObject.doPaintChart(canvas, size);
     }
 
-    for (var paintObject in painObject) {
+    for (var paintObject in subPaintObjects) {
       /// 初始化副区指标数据.
       paintObject.doInitState(
         solt++,
