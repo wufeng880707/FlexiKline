@@ -172,8 +172,8 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       /// 绘制 Tooltip
       paintTooltip(canvas, offset, model: model);
 
-      /// 绘制左顶部 指标相关信息
-      for (var paintObject in [mainPaintObject, ...subPaintObjects]) {
+      mainPaintObject.doOnCross(canvas, offset, model: model);
+      for (var paintObject in subPaintObjects) {
         paintObject.doOnCross(canvas, offset, model: model);
       }
     }
@@ -215,7 +215,6 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       tooltipInfoList = onCrossCustomTooltip!(model, prev: pre);
     }
 
-    /// 单个数据详情
     if (tooltipInfoList == null) {
       Map<TooltipLabel, String>? tooltipLables;
       // 2. 使用定制多语言TooltipLables生成TooltipInfoList
