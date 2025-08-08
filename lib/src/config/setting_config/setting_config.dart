@@ -25,7 +25,7 @@ part 'setting_config.g.dart';
 @CopyWith()
 @FlexiConfigSerializable
 class SettingConfig {
-  SettingConfig({
+  const SettingConfig({
     required this.pixel,
     required this.indraTodayAvgColor,
     required this.indraTodayCloseColor,
