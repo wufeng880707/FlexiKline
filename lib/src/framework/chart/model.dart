@@ -83,7 +83,7 @@ abstract class PaintObjectIndicator extends Indicator {
   });
 
   @override
-  PaintObjectBox createPaintObject(
+  PaintObject createPaintObject(
     covariant IPaintContext context, {
     KlineEventBus? eventBus,
   });

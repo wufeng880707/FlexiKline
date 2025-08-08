@@ -76,6 +76,10 @@ extension on KlineBindingBase {
     return _paintObjectManager.mainPaintObject;
   }
 
+  TimePaintObjectBox get timePaintObject {
+    return _paintObjectManager.timePaintObject;
+  }
+
   Iterable<PaintObject> get subPaintObjects {
     return _paintObjectManager.subPaintObjects;
   }

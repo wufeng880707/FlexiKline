@@ -32,7 +32,7 @@ class TimeIndicator extends PaintObjectIndicator {
   final DrawPosition position;
 
   @override
-  TimePaintObject createPaintObject(
+  TimePaintObjectBox<TimeIndicator> createPaintObject(
     covariant IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
@@ -44,8 +44,7 @@ class TimeIndicator extends PaintObjectIndicator {
   Map<String, dynamic> toJson() => _$TimeIndicatorToJson(this);
 }
 
-class TimePaintObject<T extends TimeIndicator> extends PaintObjectBox<T>
-    implements ITimePaintParam {
+class TimePaintObject<T extends TimeIndicator> extends TimePaintObjectBox<T> {
   TimePaintObject({
     required super.context,
     required super.indicator,
