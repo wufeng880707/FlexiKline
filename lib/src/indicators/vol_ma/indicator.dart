@@ -124,8 +124,15 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
     final offset = startCandleDx - candleWidthHalf;
     final dyBottom = chartRect.bottom;
 
-    final longPaint = settingConfig.defLongBarPaint;
-    final shortPaint = settingConfig.defShortBarPaint;
+    // 实心
+    final longPaint = Paint()
+      ..color = longColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = candleWidth;
+    final shortPaint = Paint()
+      ..color = shortColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = candleWidth;
 
     for (var i = start; i < end; i++) {
       final model = list[i];

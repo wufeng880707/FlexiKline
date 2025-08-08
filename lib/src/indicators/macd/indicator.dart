@@ -124,7 +124,7 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
     final List<Offset> deaPoints = [];
     double zeroDy = valueToDy(BagNum.zero);
     final offset = startCandleDx - candleWidthHalf;
-    final candleHalf = candleWidthHalf - settingConfig.candleSpacing;
+    final candleHalf = candleWidthHalf - candleSpacing; // 移除 candleSpacing 引用
 
     CandleModel m;
     CandleModel? next;
@@ -138,22 +138,38 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
       next = list.getItem(i + 1);
       if (next?.macd != null && m.macd! > next!.macd!) {
         // 空心
+        final defLongHollowBarPaint = Paint()
+          ..color = longColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1;
+        final defShortHollowBarPaint = Paint()
+          ..color = shortColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1;
+
         canvas.drawPath(
           Path()
             ..addRect(Rect.fromPoints(
               Offset(dx - candleHalf, zeroDy),
               Offset(dx + candleHalf, valueToDy(m.macd!, correct: false)),
             )),
-          m.macd! > BagNum.zero
-              ? settingConfig.defLongHollowBarPaint
-              : settingConfig.defShortHollowBarPaint,
+          m.macd! > BagNum.zero ? defLongHollowBarPaint : defShortHollowBarPaint,
         );
       } else {
         // 实心
+        final defLongBarPaint = Paint()
+          ..color = longColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = candleWidth;
+        final defShortBarPaint = Paint()
+          ..color = shortColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = candleWidth;
+
         canvas.drawLine(
           Offset(dx, zeroDy),
           Offset(dx, valueToDy(m.macd!)),
-          m.macd! > BagNum.zero ? settingConfig.defLongBarPaint : settingConfig.defShortBarPaint,
+          m.macd! > BagNum.zero ? defLongBarPaint : defShortBarPaint,
         );
       }
     }

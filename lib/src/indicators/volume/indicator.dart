@@ -128,8 +128,14 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
     final offset = startCandleDx - candleWidthHalf;
     final dyBottom = chartRect.bottom;
 
-    final longPaint = settingConfig.defLongTintBarPaint;
-    final shortPaint = settingConfig.defShortTintBarPaint;
+    final longPaint = Paint()
+      ..color = longColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = candleLineWidth;
+    final shortPaint = Paint()
+      ..color = shortColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = candleLineWidth;
 
     for (var i = start; i < end; i++) {
       final model = list[i];

@@ -25,6 +25,8 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig mainMinSize(Size mainMinSize);
 
+  SettingConfig subMinHeight(double subMinHeight);
+
   SettingConfig minPaintBlankRate(double minPaintBlankRate);
 
   SettingConfig alwaysCalculateScreenOfCandlesIfEnough(
@@ -37,6 +39,8 @@ abstract class _$SettingConfigCWProxy {
   SettingConfig candleFixedSpacing(double? candleFixedSpacing);
 
   SettingConfig candleSpacingParts(int candleSpacingParts);
+
+  SettingConfig candleHollowBarBorderWidth(double candleHollowBarBorderWidth);
 
   SettingConfig candleLineWidth(double candleLineWidth);
 
@@ -68,12 +72,14 @@ abstract class _$SettingConfigCWProxy {
     double? opacity,
     LoadingConfig? loading,
     Size? mainMinSize,
+    double? subMinHeight,
     double? minPaintBlankRate,
     bool? alwaysCalculateScreenOfCandlesIfEnough,
     double? candleMaxWidth,
     double? candleWidth,
     double? candleFixedSpacing,
     int? candleSpacingParts,
+    double? candleHollowBarBorderWidth,
     double? candleLineWidth,
     double? firstCandleInitOffset,
     double? minCandleHeight,
@@ -120,6 +126,10 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
   SettingConfig mainMinSize(Size mainMinSize) => this(mainMinSize: mainMinSize);
 
   @override
+  SettingConfig subMinHeight(double subMinHeight) =>
+      this(subMinHeight: subMinHeight);
+
+  @override
   SettingConfig minPaintBlankRate(double minPaintBlankRate) =>
       this(minPaintBlankRate: minPaintBlankRate);
 
@@ -145,6 +155,10 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
   @override
   SettingConfig candleSpacingParts(int candleSpacingParts) =>
       this(candleSpacingParts: candleSpacingParts);
+
+  @override
+  SettingConfig candleHollowBarBorderWidth(double candleHollowBarBorderWidth) =>
+      this(candleHollowBarBorderWidth: candleHollowBarBorderWidth);
 
   @override
   SettingConfig candleLineWidth(double candleLineWidth) =>
@@ -192,6 +206,7 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
     Object? opacity = const $CopyWithPlaceholder(),
     Object? loading = const $CopyWithPlaceholder(),
     Object? mainMinSize = const $CopyWithPlaceholder(),
+    Object? subMinHeight = const $CopyWithPlaceholder(),
     Object? minPaintBlankRate = const $CopyWithPlaceholder(),
     Object? alwaysCalculateScreenOfCandlesIfEnough =
         const $CopyWithPlaceholder(),
@@ -199,6 +214,7 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
     Object? candleWidth = const $CopyWithPlaceholder(),
     Object? candleFixedSpacing = const $CopyWithPlaceholder(),
     Object? candleSpacingParts = const $CopyWithPlaceholder(),
+    Object? candleHollowBarBorderWidth = const $CopyWithPlaceholder(),
     Object? candleLineWidth = const $CopyWithPlaceholder(),
     Object? firstCandleInitOffset = const $CopyWithPlaceholder(),
     Object? minCandleHeight = const $CopyWithPlaceholder(),
@@ -249,6 +265,11 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
               ? _value.mainMinSize
               // ignore: cast_nullable_to_non_nullable
               : mainMinSize as Size,
+      subMinHeight:
+          subMinHeight == const $CopyWithPlaceholder() || subMinHeight == null
+              ? _value.subMinHeight
+              // ignore: cast_nullable_to_non_nullable
+              : subMinHeight as double,
       minPaintBlankRate: minPaintBlankRate == const $CopyWithPlaceholder() ||
               minPaintBlankRate == null
           ? _value.minPaintBlankRate
@@ -280,6 +301,12 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
           ? _value.candleSpacingParts
           // ignore: cast_nullable_to_non_nullable
           : candleSpacingParts as int,
+      candleHollowBarBorderWidth:
+          candleHollowBarBorderWidth == const $CopyWithPlaceholder() ||
+                  candleHollowBarBorderWidth == null
+              ? _value.candleHollowBarBorderWidth
+              // ignore: cast_nullable_to_non_nullable
+              : candleHollowBarBorderWidth as double,
       candleLineWidth: candleLineWidth == const $CopyWithPlaceholder() ||
               candleLineWidth == null
           ? _value.candleLineWidth
@@ -342,9 +369,10 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
       opacity: (json['opacity'] as num?)?.toDouble() ?? 0.5,
       loading: LoadingConfig.fromJson(json['loading'] as Map<String, dynamic>),
       mainMinSize: json['mainMinSize'] == null
-          ? const Size(20, 20)
+          ? const Size(120, 80)
           : const SizeConverter()
               .fromJson(json['mainMinSize'] as Map<String, dynamic>),
+      subMinHeight: (json['subMinHeight'] as num?)?.toDouble() ?? 30,
       minPaintBlankRate: (json['minPaintBlankRate'] as num?)?.toDouble() ?? 0.5,
       alwaysCalculateScreenOfCandlesIfEnough:
           json['alwaysCalculateScreenOfCandlesIfEnough'] as bool? ?? false,
@@ -352,6 +380,8 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
       candleWidth: (json['candleWidth'] as num).toDouble(),
       candleFixedSpacing: (json['candleFixedSpacing'] as num?)?.toDouble(),
       candleSpacingParts: (json['candleSpacingParts'] as num?)?.toInt() ?? 7,
+      candleHollowBarBorderWidth:
+          (json['candleHollowBarBorderWidth'] as num).toDouble(),
       candleLineWidth: (json['candleLineWidth'] as num).toDouble(),
       firstCandleInitOffset: (json['firstCandleInitOffset'] as num).toDouble(),
       minCandleHeight: (json['minCandleHeight'] as num?)?.toDouble() ?? 1.0,
@@ -377,6 +407,7 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
       'opacity': instance.opacity,
       'loading': instance.loading.toJson(),
       'mainMinSize': const SizeConverter().toJson(instance.mainMinSize),
+      'subMinHeight': instance.subMinHeight,
       'minPaintBlankRate': instance.minPaintBlankRate,
       'alwaysCalculateScreenOfCandlesIfEnough':
           instance.alwaysCalculateScreenOfCandlesIfEnough,
@@ -385,6 +416,7 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
       if (instance.candleFixedSpacing case final value?)
         'candleFixedSpacing': value,
       'candleSpacingParts': instance.candleSpacingParts,
+      'candleHollowBarBorderWidth': instance.candleHollowBarBorderWidth,
       'candleLineWidth': instance.candleLineWidth,
       'firstCandleInitOffset': instance.firstCandleInitOffset,
       'minCandleHeight': instance.minCandleHeight,

@@ -162,32 +162,32 @@ class CandlePaintObject<T extends CandleIndicator> extends PaintObjectBox<T>
       canvas.drawLine(
         highOff,
         lowOff,
-        isLong ? settingConfig.defLongLinePaint : settingConfig.defShortLinePaint,
+        isLong ? defLongLinePaint : defShortLinePaint,
       );
 
       final openOff = Offset(dx, valueToDy(m.open));
       final closeOff = Offset(dx, valueToDy(m.close));
-      
+
       // 应用最小蜡烛高度
       final minHeight = settingConfig.minCandleHeight;
       final actualHeight = (closeOff.dy - openOff.dy).abs();
-      
+
       if (actualHeight < minHeight) {
         // 如果实际高度小于最小高度，调整收盘价位置
-        final adjustedCloseOff = isLong 
-          ? Offset(dx, openOff.dy - minHeight)  // 阳线向下延伸
-          : Offset(dx, openOff.dy + minHeight); // 阴线向上延伸
-        
+        final adjustedCloseOff = isLong
+            ? Offset(dx, openOff.dy - minHeight) // 阳线向下延伸
+            : Offset(dx, openOff.dy + minHeight); // 阴线向上延伸
+
         canvas.drawLine(
           openOff,
           adjustedCloseOff,
-          isLong ? settingConfig.defLongBarPaint : settingConfig.defShortBarPaint,
+          isLong ? defLongBarPaint : defShortBarPaint,
         );
       } else {
         canvas.drawLine(
           openOff,
           closeOff,
-          isLong ? settingConfig.defLongBarPaint : settingConfig.defShortBarPaint,
+          isLong ? defLongBarPaint : defShortBarPaint,
         );
       }
 
@@ -347,7 +347,7 @@ class CandlePaintObject<T extends CandleIndicator> extends PaintObjectBox<T>
 
       Color? background = textConfig.background;
       if (indicator.useCandleColorAsLatestBg) {
-        background = model.close >= model.open ? settingConfig.longColor : settingConfig.shortColor;
+        background = model.close >= model.open ? longColor : shortColor;
       }
 
       BorderRadius? borderRadius = textConfig.borderRadius;
@@ -521,7 +521,13 @@ class CandlePaintObject<T extends CandleIndicator> extends PaintObjectBox<T>
       }
 
       if (isShowAvgLine && lastPoint != null) {
-        canvas.drawLine(lastPoint, Offset(dx, avgDy), settingConfig.indraTodayAvgLinePaint);
+        canvas.drawLine(
+            lastPoint,
+            Offset(dx, avgDy),
+            Paint()
+              ..color = settingConfig.indraTodayAvgColor
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = candleLineWidth);
       }
 
       if (indicator.high.show || indicator.low.show) {
@@ -551,7 +557,13 @@ class CandlePaintObject<T extends CandleIndicator> extends PaintObjectBox<T>
     }
 
     // 绘制价格波动线
-    canvas.drawLineType(LineType.solid, path, settingConfig.indraTodayLinePaint);
+    canvas.drawLineType(
+        LineType.solid,
+        path,
+        Paint()
+          ..color = settingConfig.indraTodayCloseColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = candleLineWidth);
 
     // 绘制渐变色块
     Path gradientPath = Path.from(path);

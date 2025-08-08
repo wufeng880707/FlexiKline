@@ -110,13 +110,13 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
         paintObjects = [...subPaintObjects];
       }
     } else {
-      mainPaintObject.doInitState(
-        solt++,
-        start: curKlineData.start,
-        end: curKlineData.end,
-        reset: _reset,
-      );
-      mainPaintObject.doPaintChart(canvas, size);
+    mainPaintObject.doInitState(
+      solt++,
+      start: curKlineData.start,
+      end: curKlineData.end,
+      reset: _reset,
+    );
+    mainPaintObject.doPaintChart(canvas, size);
     }
 
     for (var paintObject in subPaintObjects) {
@@ -208,6 +208,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     }
   }
 
+  /// 蜡烛图缩放中...
   void onChartScale(GestureData data) {
     // super.handleScale(data);
 
@@ -233,11 +234,11 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
 
     if (newWidth == null || newWidth == candleWidth) return;
 
-    final scaleFactor = (newWidth + settingConfig.candleSpacing) / candleActualWidth;
+    final scaleFactor = (newWidth + candleSpacing) / candleActualWidth;
     // logd('handleScale candleWidth:$candleWidth>$newWidth; factor:$scaleFactor');
 
     /// 更新蜡烛宽度
-    candleWidth = newWidth;
+    _setCandleWidth(newWidth);
 
     double newDxOffset;
     switch (data.initPosition) {
@@ -271,5 +272,10 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
 
     markRepaintChart();
     markRepaintDraw();
+  }
+
+  // 蜡烛图缩放结束
+  void onChartScaleEnd() {
+    _setCandleWidth(candleWidth, sync: true);
   }
 }
