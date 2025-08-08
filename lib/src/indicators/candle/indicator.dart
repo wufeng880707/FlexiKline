@@ -16,7 +16,7 @@ part of 'candle.dart';
 
 @CopyWith()
 @FlexiIndicatorSerializable
-class CandleIndicator extends PaintObjectIndicator {
+class CandleIndicator extends CandleBaseIndicator {
   CandleIndicator({
     super.zIndex = -1,
     required super.height,
@@ -34,7 +34,7 @@ class CandleIndicator extends PaintObjectIndicator {
     // 倒计时, 在latest最新价之下展示
     this.showCountDown = true,
     required this.countDown,
-  }) : super(key: candleIndicatorKey);
+  });
 
   // 最高价
   final MarkConfig high;
@@ -51,15 +51,8 @@ class CandleIndicator extends PaintObjectIndicator {
   final TextAreaConfig countDown;
 
   @override
-  CandlePaintObject createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
-    return CandlePaintObject(
-      context: context,
-      indicator: this,
-      eventBus: eventBus,
-    );
+  CandlePaintObject createPaintObject(IPaintContext context) {
+    return CandlePaintObject(context: context, indicator: this);
   }
 
   factory CandleIndicator.fromJson(Map<String, dynamic> json) => _$CandleIndicatorFromJson(json);
@@ -67,14 +60,11 @@ class CandleIndicator extends PaintObjectIndicator {
   Map<String, dynamic> toJson() => _$CandleIndicatorToJson(this);
 }
 
-class CandlePaintObject<T extends CandleIndicator> extends PaintObjectBox<T>
+class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject<T>
     with PaintYAxisTicksOnCrossMixin, ClickableMixin {
-  final KlineEventBus? eventBus;
-
   CandlePaintObject({
     required super.context,
     required super.indicator,
-    this.eventBus,
   });
 
   BagNum? _maxHigh, _minLow;
@@ -444,24 +434,6 @@ class CandlePaintObject<T extends CandleIndicator> extends PaintObjectBox<T>
         rdx + _latestTextOffset - last.spacing,
         dy - last.text.areaHeight / 2,
       );
-
-      // 记录最后价点击区域
-      final left = offset.dx - textSize.width;
-      final top = offset.dy;
-      final clickArea = ClickArea(
-        rect: Rect.fromLTWH(
-          left,
-          top,
-          textSize.width,
-          textSize.height,
-        ),
-        data: {
-          'price': model.close.toDecimal(),
-          'text': text,
-        },
-        onTap: () => eventBus?.emit('lastPriceTap', {}),
-      );
-      addClickArea(clickArea);
 
       /// 绘制最后价标记
       canvas.drawTextArea(

@@ -115,7 +115,7 @@ class MAIndicator extends PaintObjectIndicator {
   final double lineWidth;
 
   @override
-  SinglePaintObjectBox createPaintObject(IPaintContext context) {
+  PaintObjectBox createPaintObject(IPaintContext context) {
     return MAPaintObject(context: context, indicator: this);
   }
 }
@@ -136,15 +136,11 @@ class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> {
   @override
   void paintChart(Canvas canvas, Size size) {
     // TODO: 绘制MA移动平均指标线
-    ...
-    paintTips(canvas, model: klineData.latest);
   }
 
   @override
   void onCross(Canvas canvas, Offset offset) {
     // TODO: 当十字线移动时回调
-    ...
-    paintTips(canvas, offset: offset);
   }
 
   @override

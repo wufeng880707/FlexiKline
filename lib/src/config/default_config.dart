@@ -175,12 +175,12 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
   @override
   IndicatorBuilder<CandleIndicator> get candleIndicatorBuilder {
-    return (setting) => genCandleIndicator(setting);
+    return genCandleIndicator;
   }
 
   @override
   IndicatorBuilder<TimeIndicator> get timeIndicatorBuilder {
-    return (setting) => genTimeIndicator(setting);
+    return genTimeIndicator;
   }
 
   /// 主k线支持的指标 （MA、BOLL、AVL 等）

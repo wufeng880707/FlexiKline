@@ -56,13 +56,10 @@ abstract class Indicator implements IPrecomputable {
 
   final PaintMode paintMode;
 
-  final int zIndex; // TODO: 考虑下放到子类中
+  final int zIndex;
 
   @factory
-  PaintObject createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  });
+  PaintObject createPaintObject(IPaintContext context);
 
   Map<String, dynamic> toJson() => const {};
 
@@ -83,17 +80,42 @@ abstract class PaintObjectIndicator extends Indicator {
   });
 
   @override
-  PaintObject createPaintObject(
-    covariant IPaintContext context, {
-    KlineEventBus? eventBus,
-  });
+  PaintObject createPaintObject(covariant IPaintContext context);
+}
+
+/// 蜡烛指标配置基类
+abstract class CandleBaseIndicator extends Indicator {
+  CandleBaseIndicator({
+    required super.height,
+    required super.padding,
+    super.paintMode,
+    super.zIndex,
+  }) : super(key: candleIndicatorKey);
+
+  @override
+  CandleBasePaintObject createPaintObject(covariant IPaintContext context);
+}
+
+/// 时间指标配置基类
+abstract class TimeBaseIndicator extends Indicator {
+  TimeBaseIndicator({
+    required super.height,
+    required super.padding,
+    super.paintMode,
+    super.zIndex,
+    required this.position,
+  }) : super(key: timeIndicatorKey);
+
+  final DrawPosition position;
+
+  @override
+  TimeBasePaintObject createPaintObject(IPaintContext context);
 }
 
 /// MainIndicator的配置.
 @CopyWith()
 @FlexiIndicatorSerializable
-class MainPaintObjectIndicator<T extends PaintObjectIndicator>
-    extends Indicator {
+class MainPaintObjectIndicator<T extends PaintObjectIndicator> extends Indicator {
   MainPaintObjectIndicator({
     required Size size,
     required super.padding,
@@ -106,7 +128,8 @@ class MainPaintObjectIndicator<T extends PaintObjectIndicator>
   final bool drawBelowTipsArea;
 
   @override
-  MainPaintObject createPaintObject(IPaintContext context, {
+  MainPaintObject createPaintObject(
+    IPaintContext context, {
     KlineEventBus? eventBus,
   }) {
     return MainPaintObject(context: context, indicator: this);
