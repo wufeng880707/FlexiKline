@@ -1,0 +1,2 @@
+/Users/tomodel/Desktop/work/flutter/FlexiKlineFork_demo/example/android/app/.cxx/Debug/641z396q/x86/CMakeFiles/rebuild_cache.dir
+/Users/tomodel/Desktop/work/flutter/FlexiKlineFork_demo/example/android/app/.cxx/Debug/641z396q/x86/CMakeFiles/edit_cache.dir

@@ -25,11 +25,20 @@ if (flutterVersionName == null) {
 def appName = 'FlexiKline'
 def keyPropertiesFile = rootProject.file("key.properties")
 def keyProperties = new Properties()
-keyProperties.load(new FileInputStream(keyPropertiesFile))
+
+if (keyPropertiesFile.exists()) {
+    keyProperties.load(new FileInputStream(keyPropertiesFile))
+} else {
+    // 使用调试配置的默认值
+    keyProperties['keyAlias'] = 'androiddebugkey'
+    keyProperties['keyPassword'] = 'android'
+    keyProperties['storeFile'] = 'debug.keystore'
+    keyProperties['storePassword'] = 'android'
+}
 
 android {
     namespace "com.github.flexikline.example"
-    compileSdk flutter.compileSdkVersion
+    compileSdk 34
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -50,8 +59,8 @@ android {
         applicationId "com.github.flexikline.example"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
