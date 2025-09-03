@@ -49,6 +49,32 @@ class OverlayObject implements Comparable<OverlayObject> {
     return Overlay(key: key, type: type, line: line);
   }
 
+  void assertCheck([bool ignore = false]) {
+    if (ignore) return;
+    assert(
+      points.length == type.steps,
+      '${type.id}(${type.groupId}) only takes ${type.steps} point, but it has ${points.length}',
+      //'${type.id}(${type.groupId}) draw points.length:${points.length} must be equals ${type.steps}',
+    );
+  }
+
+  // void setDrawParam<T>(T params) {
+  //   // ignore: avoid_dynamic_calls
+  //   dynamic _defaultToEncodable(dynamic object) => object.toJson();
+  //   _overlay._extra = _defaultToEncodable(params);
+  // }
+
+  // T? getDrawParam<T>(T? Function(Map<String, dynamic> json) fromJson) {
+  //   if (_overlay._extra != null && _overlay._extra!.isNotEmpty) {
+  //     try {
+  //       return fromJson(_overlay._extra!);
+  //     } catch (err) {
+  //       debugPrint('$type getDrawParam catch an exception > ${err.toString()}');
+  //     }
+  //   }
+  //   return null;
+  // }
+
   @override
   int compareTo(OverlayObject other) {
     return _overlay.compareTo(other._overlay);
@@ -56,7 +82,8 @@ class OverlayObject implements Comparable<OverlayObject> {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) || (other is OverlayObject && _overlay == other._overlay);
+    return identical(this, other) ||
+        (other is OverlayObject && _overlay == other._overlay);
   }
 
   @override
