@@ -325,7 +325,7 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     final newObj = _paintObjectManager.addPaintObjectInMain(key, this);
     if (newObj != null) {
       // TODO: 后续优化执行时机
-      newObj.precompute(Range(0, curKlineData.length), reset: true);
+      newObj.precompute(curKlineData.computableRange, reset: true);
       markRepaintChart(reset: true);
       markRepaintCross();
     }
@@ -344,7 +344,7 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     final newObj = _paintObjectManager.addPaintObjectInSub(key, this);
     if (newObj != null) {
       // TODO: 后续优化执行时机
-      newObj.precompute(Range(0, curKlineData.length), reset: true);
+      newObj.precompute(curKlineData.computableRange, reset: true);
       _flexiKlineConfig.sub.add(key);
       _invokeSizeChanged();
     }
