@@ -29,11 +29,7 @@ class SettingConfig {
     required this.pixel,
     required this.indraTodayAvgColor,
     required this.indraTodayCloseColor,
-
-    /// Long/Short颜色配置
-    required this.textColor,
-    required this.longColor,
-    required this.shortColor,
+    /// Long/Short 浅色不透明度 [longTintColor] 和 [shortTintColor]
     this.opacity = 0.5,
 
     /// 内置LoadingView样式配置
@@ -80,11 +76,8 @@ class SettingConfig {
 
   ///分时图折线颜色
   final Color indraTodayCloseColor;
-
-  /// Long/Short颜色配置
-  final Color textColor;
-  final Color longColor;
-  final Color shortColor;
+  
+  /// Long/Short 浅色不透明度 [longTintColor] 和 [shortTintColor]
   final double opacity;
 
   /// 内置LoadingView样式配置
@@ -125,7 +118,7 @@ class SettingConfig {
   /// 是否展示Y轴刻度.
   final bool showYAxisTick;
 
-  /// 全局默认的刻度值配置.
+  /// 全局默认的刻度值文本配置.
   final TextAreaConfig ticksText;
 
   // 副区的指标图最大数量

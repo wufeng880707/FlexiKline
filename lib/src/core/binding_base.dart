@@ -70,6 +70,9 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
   }
 
   @override
+  IFlexiKlineTheme get theme => configuration.theme;
+
+  @override
   Map<String, dynamic>? getConfig(String key) {
     return configuration.getConfig(key);
   }

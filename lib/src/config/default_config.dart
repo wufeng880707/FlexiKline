@@ -12,8 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart' hide Overlay;
+
+import '../constant.dart';
+import '../extension/render/common.dart';
+import '../framework/export.dart';
+import '../indicators/export.dart';
+import 'cross_config/cross_config.dart';
+import 'draw_config/draw_config.dart';
+import 'flexi_kline_config/flexi_kline_config.dart';
+import 'gesture_config/gesture_config.dart';
+import 'grid_config/grid_config.dart';
+import 'line_config/line_config.dart';
+import 'loading_config/loading_config.dart';
+import 'magnifier_config/magnifier_config.dart';
+import 'mark_config/mark_config.dart';
+import 'paint_config/paint_config.dart';
+import 'point_config/point_config.dart';
+import 'setting_config/setting_config.dart';
+import 'text_area_config/text_area_config.dart';
+import 'tolerance_config/tolerance_config.dart';
+import 'tooltip_config/tooltip_config.dart';
 
 extension IFlexiKlineThemeExt on IFlexiKlineTheme {
   /// 默认时间指标高度
@@ -61,11 +80,11 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
     required this.short,
     required this.chartBg,
     required this.tooltipBg,
-    required this.countDownTextBg,
     required this.crossTextBg,
     required this.drawTextBg,
     this.transparent = Colors.transparent,
-    required this.lastPriceTextBg,
+    required this.latestPriceTextBg,
+    required this.countDownTextBg,
     required this.gridLine,
     required this.crossColor,
     required this.drawColor,
@@ -73,7 +92,7 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
     required this.themeColor,
     required this.textColor,
     required this.ticksTextColor,
-    required this.lastPriceTextColor,
+    required this.latestPriceTextColor,
     required this.crossTextColor,
     required this.tooltipTextColor,
     required this.indraTodayAvgColor,
@@ -87,7 +106,8 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
     required Color markBg,
     required this.crossTextBg,
     this.transparent = Colors.transparent,
-    required this.lastPriceTextBg,
+    required this.latestPriceTextColor,
+    required this.latestPriceTextBg,
     required Color color,
     required this.gridLine,
     required this.ticksTextColor,
@@ -97,7 +117,8 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
         crossColor = color,
         markLine = color,
         textColor = color,
-        lastPriceTextColor = color,
+        latestPriceTextColor = color,
+        latestPriceTextBg = color,
         tooltipTextColor = color;
 
   @override
@@ -111,15 +132,15 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   late Color tooltipBg;
   @override
-  late Color countDownTextBg;
-  @override
   late Color crossTextBg;
   @override
   late Color drawTextBg;
   @override
   late Color transparent;
   @override
-  late Color lastPriceTextBg;
+  late Color latestPriceTextBg;
+  @override
+  late Color countDownTextBg;
 
   /// 分隔线
   @override
@@ -140,7 +161,7 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   late Color ticksTextColor;
   @override
-  late Color lastPriceTextColor;
+  late Color latestPriceTextColor;
   @override
   late Color crossTextColor;
   @override
@@ -170,7 +191,6 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       tooltip: genTooltipConfig(),
       mainIndicator: genMainIndicator(),
       sub: {},
-      // trade: {},
     );
   }
 
@@ -188,28 +208,17 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         );
   }
 
-  /// 主k线支持的指标 （MA、BOLL、AVL 等）
   @override
   @mustCallSuper
   Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders => {};
 
-  /// 副k线支持的指标 （RSI、KDJ、MACD 等）
   @override
   @mustCallSuper
   Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders => {};
 
-  // /// 交易相关的指标（历史买卖，当前委托 等）
-  // @override
-  // Map<IIndicatorKey, IndicatorBuilder> tradeIndicatorBuilders() => {};
-
-  /// 绘画配置
   @override
   @mustCallSuper
   Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders => {};
-
-  /// 时间选择配置 （1M、1H、2H、1D 等）
-  @override
-  List<TimeBarConfig> timeBarBuilders() => [];
 
   /// Grid配置
   GridConfig genGridConfig() {
@@ -269,9 +278,6 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       indraTodayAvgColor: theme.indraTodayAvgColor,
       indraTodayCloseColor: theme.indraTodayCloseColor,
       pixel: theme.pixel,
-      textColor: theme.textColor,
-      longColor: theme.long,
-      shortColor: theme.short,
       opacity: 0.5,
 
       /// 内置LoadingView样式配置
@@ -297,7 +303,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       ticksText: TextAreaConfig(
         style: TextStyle(
           fontSize: theme.normalTextSize,
-          color: theme.ticksTextColor,
+          // color: theme.ticksTextColor,
           overflow: TextOverflow.ellipsis,
           height: defaultTextHeight,
         ),
@@ -342,12 +348,12 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       ),
       ticksText: TextAreaConfig(
         style: TextStyle(
-          color: theme.crossTextColor,
+          // color: theme.crossTextColor,
           fontSize: theme.normalTextSize,
           fontWeight: FontWeight.normal,
           height: defaultTextHeight,
         ),
-        background: theme.crossTextBg,
+        // background: theme.crossTextBg,
         padding: EdgeInsets.all(2 * theme.scale),
         border: BorderSide.none,
         borderRadius: BorderRadius.all(
@@ -475,14 +481,14 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           type: LineType.solid,
           length: 20 * theme.scale,
           paint: PaintConfig(
-            color: theme.markLine,
+            // color: theme.markLine,
             strokeWidth: 0.5 * theme.scale,
           ),
         ),
         text: TextAreaConfig(
           style: TextStyle(
             fontSize: theme.normalTextSize,
-            color: theme.textColor,
+            // color: theme.textColor,
             overflow: TextOverflow.ellipsis,
             height: defaultTextHeight,
           ),
@@ -494,14 +500,14 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           type: LineType.solid,
           length: 20 * theme.scale,
           paint: PaintConfig(
-            color: theme.markLine,
+            // color: theme.markLine,
             strokeWidth: 0.5 * theme.scale,
           ),
         ),
         text: TextAreaConfig(
           style: TextStyle(
             fontSize: theme.normalTextSize,
-            color: theme.textColor,
+            // color: theme.textColor,
             overflow: TextOverflow.ellipsis,
             height: defaultTextHeight,
           ),
@@ -514,24 +520,24 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           type: LineType.dashed,
           dashes: [3, 3],
           paint: PaintConfig(
-            color: theme.markLine,
+            // color: theme.markLine,
             strokeWidth: 0.5 * theme.scale,
           ),
         ),
         text: TextAreaConfig(
           style: TextStyle(
             fontSize: theme.normalTextSize,
-            color: theme.lastPriceTextColor,
+            // color: theme.lastPriceTextColor,
             overflow: TextOverflow.ellipsis,
             height: defaultTextHeight,
             textBaseline: TextBaseline.alphabetic,
           ),
-          background: theme.lastPriceTextBg,
+          // background: theme.lastPriceTextBg,
           padding: EdgeInsets.symmetric(
             horizontal: 4 * theme.scale,
             vertical: 2 * theme.scale,
           ),
-          border: BorderSide(color: theme.transparent),
+          // border: BorderSide(color: theme.transparent),
           borderRadius: BorderRadius.all(Radius.circular(10 * theme.scale)),
         ),
       ),
@@ -542,7 +548,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           type: LineType.dashed,
           dashes: [3, 3],
           paint: PaintConfig(
-            color: theme.markLine,
+            // color: theme.markLine,
             strokeWidth: 0.5 * theme.scale,
           ),
         ),
@@ -564,15 +570,14 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       countDown: TextAreaConfig(
         style: TextStyle(
           fontSize: theme.normalTextSize,
-          color: theme.textColor,
+          // color: theme.textColor,
           overflow: TextOverflow.ellipsis,
           height: defaultTextHeight,
         ),
         textAlign: TextAlign.center,
-        padding: EdgeInsets.symmetric(
-          horizontal: 2 * theme.scale,
-          vertical: 1 * theme.scale,
-        ),
+        // background: theme.countDownTextBg,
+        padding: theme.textPading,
+        borderRadius: BorderRadius.all(Radius.circular(2 * theme.scale)),
       ),
     );
   }
@@ -586,7 +591,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       timeTick: TextAreaConfig(
         style: TextStyle(
           fontSize: theme.normalTextSize,
-          color: theme.ticksTextColor,
+          // color: theme.ticksTextColor,
           overflow: TextOverflow.ellipsis,
           height: defaultTextHeight,
         ),

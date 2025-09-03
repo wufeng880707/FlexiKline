@@ -13,12 +13,6 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig indraTodayCloseColor(Color indraTodayCloseColor);
 
-  SettingConfig textColor(Color textColor);
-
-  SettingConfig longColor(Color longColor);
-
-  SettingConfig shortColor(Color shortColor);
-
   SettingConfig opacity(double opacity);
 
   SettingConfig loading(LoadingConfig loading);
@@ -66,9 +60,6 @@ abstract class _$SettingConfigCWProxy {
     double? pixel,
     Color? indraTodayAvgColor,
     Color? indraTodayCloseColor,
-    Color? textColor,
-    Color? longColor,
-    Color? shortColor,
     double? opacity,
     LoadingConfig? loading,
     Size? mainMinSize,
@@ -106,15 +97,6 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
   @override
   SettingConfig indraTodayCloseColor(Color indraTodayCloseColor) =>
       this(indraTodayCloseColor: indraTodayCloseColor);
-
-  @override
-  SettingConfig textColor(Color textColor) => this(textColor: textColor);
-
-  @override
-  SettingConfig longColor(Color longColor) => this(longColor: longColor);
-
-  @override
-  SettingConfig shortColor(Color shortColor) => this(shortColor: shortColor);
 
   @override
   SettingConfig opacity(double opacity) => this(opacity: opacity);
@@ -200,9 +182,6 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
     Object? pixel = const $CopyWithPlaceholder(),
     Object? indraTodayAvgColor = const $CopyWithPlaceholder(),
     Object? indraTodayCloseColor = const $CopyWithPlaceholder(),
-    Object? textColor = const $CopyWithPlaceholder(),
-    Object? longColor = const $CopyWithPlaceholder(),
-    Object? shortColor = const $CopyWithPlaceholder(),
     Object? opacity = const $CopyWithPlaceholder(),
     Object? loading = const $CopyWithPlaceholder(),
     Object? mainMinSize = const $CopyWithPlaceholder(),
@@ -239,19 +218,6 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
               ? _value.indraTodayCloseColor
               // ignore: cast_nullable_to_non_nullable
               : indraTodayCloseColor as Color,
-      textColor: textColor == const $CopyWithPlaceholder() || textColor == null
-          ? _value.textColor
-          // ignore: cast_nullable_to_non_nullable
-          : textColor as Color,
-      longColor: longColor == const $CopyWithPlaceholder() || longColor == null
-          ? _value.longColor
-          // ignore: cast_nullable_to_non_nullable
-          : longColor as Color,
-      shortColor:
-          shortColor == const $CopyWithPlaceholder() || shortColor == null
-              ? _value.shortColor
-              // ignore: cast_nullable_to_non_nullable
-              : shortColor as Color,
       opacity: opacity == const $CopyWithPlaceholder() || opacity == null
           ? _value.opacity
           // ignore: cast_nullable_to_non_nullable
@@ -363,9 +329,6 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
           const ColorConverter().fromJson(json['indraTodayAvgColor'] as String),
       indraTodayCloseColor: const ColorConverter()
           .fromJson(json['indraTodayCloseColor'] as String),
-      textColor: const ColorConverter().fromJson(json['textColor'] as String),
-      longColor: const ColorConverter().fromJson(json['longColor'] as String),
-      shortColor: const ColorConverter().fromJson(json['shortColor'] as String),
       opacity: (json['opacity'] as num?)?.toDouble() ?? 0.5,
       loading: LoadingConfig.fromJson(json['loading'] as Map<String, dynamic>),
       mainMinSize: json['mainMinSize'] == null
@@ -401,9 +364,6 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
           const ColorConverter().toJson(instance.indraTodayAvgColor),
       'indraTodayCloseColor':
           const ColorConverter().toJson(instance.indraTodayCloseColor),
-      'textColor': const ColorConverter().toJson(instance.textColor),
-      'longColor': const ColorConverter().toJson(instance.longColor),
-      'shortColor': const ColorConverter().toJson(instance.shortColor),
       'opacity': instance.opacity,
       'loading': instance.loading.toJson(),
       'mainMinSize': const SizeConverter().toJson(instance.mainMinSize),
