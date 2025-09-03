@@ -241,9 +241,9 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   @override
   FlexiKlineConfig genFlexiKlineConfig() {
     return super.genFlexiKlineConfig()
-      ..main.add(const FlexiIndicatorKey('ma'))
-      ..sub.add(const FlexiIndicatorKey('rsi'))
-      ..trade.add(const FlexiIndicatorKey('trade_mark'));
+      // ..main.add(const FlexiIndicatorKey('ma'))
+      ..sub.add(const FlexiIndicatorKey('rsi'));
+      // ..trade.add(const FlexiIndicatorKey('trade_mark'));
   }
 
   @override
@@ -253,8 +253,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  CandleIndicator genCandleIndicator(SettingConfig setting) {
-    return super.genCandleIndicator(setting).copyWith(
+  CandleIndicator genCandleIndicator(CandleIndicator? instance) {
+    return super.genCandleIndicator(instance).copyWith(
           useCandleColorAsLatestBg: false, // 不使用蜡烛色做背景
           latest: MarkConfig(
             show: true,
@@ -298,8 +298,37 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         );
   }
 
+  // 主指标配置缓存
+  Map<IIndicatorKey, IndicatorBuilder>? _cachedMainIndicatorBuilders;
+
   @override
-  Map<IIndicatorKey, IndicatorBuilder> mainIndicatorBuilders() {
+  Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders {
+    if (_cachedMainIndicatorBuilders != null) {
+      return _cachedMainIndicatorBuilders!;
+    }
+    
+    // 从配置中读取主指标配置
+    final config = getConfig('mainIndicatorBuilders');
+    if (config != null) {
+      try {
+        _cachedMainIndicatorBuilders = _buildMainIndicatorsFromConfig(config);
+        return _cachedMainIndicatorBuilders!;
+      } catch (e) {
+        defLogger.e('Failed to build main indicators from config: $e');
+      }
+    }
+    
+    // 默认配置
+    _cachedMainIndicatorBuilders = _getDefaultMainIndicators();
+    
+    // 调用super以满足@mustCallSuper要求
+    final superBuilders = super.mainIndicatorBuilders;
+    _cachedMainIndicatorBuilders!.addAll(superBuilders);
+    
+    return _cachedMainIndicatorBuilders!;
+  }
+  
+  Map<IIndicatorKey, IndicatorBuilder> _getDefaultMainIndicators() {
     final theme = ref.read(defaultKlineThemeProvider);
     return {
       // MA 移动平均线
@@ -448,8 +477,37 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     };
   }
 
+  // 副指标配置缓存
+  Map<IIndicatorKey, IndicatorBuilder>? _cachedSubIndicatorBuilders;
+
   @override
-  Map<IIndicatorKey, IndicatorBuilder> subIndicatorBuilders() {
+  Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders {
+    if (_cachedSubIndicatorBuilders != null) {
+      return _cachedSubIndicatorBuilders!;
+    }
+    
+    // 从配置中读取副指标配置
+    final config = getConfig('subIndicatorBuilders');
+    if (config != null) {
+      try {
+        _cachedSubIndicatorBuilders = _buildSubIndicatorsFromConfig(config);
+        return _cachedSubIndicatorBuilders!;
+      } catch (e) {
+        defLogger.e('Failed to build sub indicators from config: $e');
+      }
+    }
+    
+    // 默认配置
+    _cachedSubIndicatorBuilders = _getDefaultSubIndicators();
+    
+    // 调用super以满足@mustCallSuper要求
+    final superBuilders = super.subIndicatorBuilders;
+    _cachedSubIndicatorBuilders!.addAll(superBuilders);
+    
+    return _cachedSubIndicatorBuilders!;
+  }
+  
+  Map<IIndicatorKey, IndicatorBuilder> _getDefaultSubIndicators() {
     final theme = ref.read(defaultKlineThemeProvider);
     return {
       // RSI 相对强弱指标
@@ -603,7 +661,6 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     };
   }
 
-  @override
   Map<IIndicatorKey, IndicatorBuilder<Indicator>> tradeIndicatorBuilders() {
     final theme = ref.read(defaultKlineThemeProvider);
 
@@ -874,7 +931,6 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     ];
   }
 
-  @override
   Iterable<flexi_overlay.Overlay> getDrawOverlayList(String instId) {
     try {
       final String? jsonStr = CacheUtil().get('draw_overlay_$instId');
@@ -892,7 +948,6 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     return [];
   }
 
-  @override
   void saveDrawOverlayList(String instId, Iterable<flexi_overlay.Overlay> list) {
     try {
       final jsonList = list.map((overlay) => overlay.toJson()).toList();
@@ -911,5 +966,391 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       padding: theme.mainIndicatorPadding,
       drawBelowTipsArea: true,
     );
+  }
+
+  @override
+  Map<String, dynamic>? getConfig(String key) {
+    try {
+      final String? jsonStr = CacheUtil().get('default_config_$key');
+      if (jsonStr != null && jsonStr.isNotEmpty) {
+        final json = jsonDecode(jsonStr);
+        if (json is Map<String, dynamic>) {
+          return json;
+        }
+      }
+    } catch (err, stack) {
+      defLogger.e('getConfig error for key $key: $err', stackTrace: stack);
+    }
+    return null;
+  }
+
+  @override
+  Future<bool> setConfig(String key, Map<String, dynamic> value) async {
+    try {
+      final jsonStr = jsonEncode(value);
+      await CacheUtil().setString('default_config_$key', jsonStr);
+      
+      // 清除缓存，强制重新加载
+      if (key == 'mainIndicatorBuilders') {
+        _cachedMainIndicatorBuilders = null;
+      } else if (key == 'subIndicatorBuilders') {
+        _cachedSubIndicatorBuilders = null;
+      }
+      
+      return true;
+    } catch (err, stack) {
+      defLogger.e('setConfig error for key $key: $err', stackTrace: stack);
+      return false;
+    }
+  }
+
+  // 从配置构建主指标
+  Map<IIndicatorKey, IndicatorBuilder> _buildMainIndicatorsFromConfig(Map<String, dynamic> config) {
+    final Map<IIndicatorKey, IndicatorBuilder> builders = {};
+    final theme = ref.read(defaultKlineThemeProvider);
+    
+    // 解析配置并创建对应的指标构建器
+    config.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        try {
+          builders[FlexiIndicatorKey(key)] = _createIndicatorBuilderFromConfig(value, theme);
+        } catch (e) {
+          defLogger.e('Failed to create indicator builder for $key: $e');
+        }
+      }
+    });
+    
+    return builders;
+  }
+  
+  // 从配置构建副指标
+  Map<IIndicatorKey, IndicatorBuilder> _buildSubIndicatorsFromConfig(Map<String, dynamic> config) {
+    final Map<IIndicatorKey, IndicatorBuilder> builders = {};
+    final theme = ref.read(defaultKlineThemeProvider);
+    
+    // 解析配置并创建对应的指标构建器
+    config.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        try {
+          builders[FlexiIndicatorKey(key)] = _createIndicatorBuilderFromConfig(value, theme);
+        } catch (e) {
+          defLogger.e('Failed to create indicator builder for $key: $e');
+        }
+      }
+    });
+    
+    return builders;
+  }
+  
+  // 根据配置创建指标构建器
+  IndicatorBuilder _createIndicatorBuilderFromConfig(Map<String, dynamic> config, DefaultFlexiKlineTheme theme) {
+    final type = config['type'] as String?;
+    
+    switch (type) {
+      case 'ma':
+        return (setting) => MAIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+          padding: theme.mainIndicatorPadding,
+          calcParams: _parseMaParams(config['calcParams']) ?? [],
+          tipsPadding: theme.tipsPadding,
+          lineWidth: 1.r,
+        );
+        
+      case 'boll':
+        return (setting) => BOLLIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+          padding: theme.mainIndicatorPadding,
+          calcParam: _parseBOLLParam(config['calcParam']) ?? const BOLLParam(n: 20, std: 2),
+          mbTips: _parseTipsConfig(config['mbTips']) ?? const TipsConfig(
+            label: 'BOLL: ',
+            style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+          ),
+          upTips: _parseTipsConfig(config['upTips']) ?? const TipsConfig(
+            label: 'UB: ',
+            style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+          ),
+          dnTips: _parseTipsConfig(config['dnTips']) ?? const TipsConfig(
+            label: 'LB: ',
+            style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+          ),
+          tipsPadding: theme.tipsPadding,
+          lineWidth: 1.r,
+        );
+        
+      case 'ema':
+        return (setting) => EMAIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+          padding: theme.mainIndicatorPadding,
+          calcParams: _parseMaParams(config['calcParams']) ?? [],
+          tipsPadding: theme.tipsPadding,
+          lineWidth: 1.r,
+        );
+        
+      case 'sar':
+        return (setting) => SARIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+          padding: theme.mainIndicatorPadding,
+          calcParam: _parseSARParam(config['calcParam']) ?? const SARParam(
+            startAf: 0.02,
+            step: 0.02,
+            maxAf: 0.2,
+          ),
+          paint: PaintConfig(
+            color: _parseColor(config['color']) ?? Colors.red,
+            strokeWidth: 1.r,
+          ),
+          tipsPadding: theme.tipsPadding,
+          tipsStyle: TextStyle(
+            color: _parseColor(config['color']) ?? Colors.red,
+            fontSize: theme.normalTextSize,
+            height: defaultTextHeight,
+          ),
+          tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
+        );
+        
+      case 'avl':
+        return (setting) => AVLIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+          padding: theme.mainIndicatorPadding,
+          calcParam: const AVLParam(),
+          line: LineConfig(
+            type: LineType.solid,
+            paint: PaintConfig(
+              color: _parseColor(config['color']) ?? Colors.deepOrange,
+              strokeWidth: 1.r,
+            ),
+          ),
+          tips: _parseTipsConfig(config['tips']) ?? TipsConfig(
+            label: 'AVL',
+            style: TextStyle(
+              color: _parseColor(config['color']) ?? Colors.deepOrange,
+              fontSize: theme.normalTextSize,
+              height: defaultTextHeight,
+            ),
+          ),
+          tipsPadding: theme.tipsPadding,
+        );
+        
+      // 副指标类型
+      case 'rsi':
+        return (setting) => RSIIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? 100.r,
+          calcParams: _parseRsiParams(config['calcParams']) ?? [],
+          tipsPadding: theme.tipsPadding,
+          lineWidth: 1.r,
+          precision: (config['precision'] as num?)?.toInt() ?? 2,
+        );
+        
+      case 'kdj':
+        return (setting) => KDJIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? 100.r,
+          calcParam: _parseKDJParam(config['calcParam']) ?? const KDJParam(n: 9, m1: 3, m2: 3),
+          ktips: _parseTipsConfig(config['ktips']) ?? const TipsConfig(
+            label: 'K: ',
+            style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+          ),
+          dtips: _parseTipsConfig(config['dtips']) ?? const TipsConfig(
+            label: 'D: ',
+            style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+          ),
+          jtips: _parseTipsConfig(config['jtips']) ?? const TipsConfig(
+            label: 'J: ',
+            style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+          ),
+          tipsPadding: theme.tipsPadding,
+          lineWidth: 1.r,
+          precision: (config['precision'] as num?)?.toInt() ?? 2,
+        );
+        
+      case 'macd':
+        return (setting) => MACDIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? 120.r,
+          calcParam: _parseMACDParam(config['calcParam']) ?? const MACDParam(s: 12, l: 26, m: 9),
+          difTips: _parseTipsConfig(config['difTips']) ?? const TipsConfig(
+            label: 'DIF: ',
+            style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+          ),
+          deaTips: _parseTipsConfig(config['deaTips']) ?? const TipsConfig(
+            label: 'DEA: ',
+            style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
+          ),
+          macdTips: _parseTipsConfig(config['macdTips']) ?? const TipsConfig(
+            label: 'MACD: ',
+            style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
+          ),
+          tipsPadding: theme.tipsPadding,
+          lineWidth: 1.r,
+          precision: (config['precision'] as num?)?.toInt() ?? 2,
+        );
+        
+      case 'volMa':
+        return (setting) => VolMaIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? 100.r,
+          volTips: _parseTipsConfig(config['volTips']) ?? TipsConfig(
+            label: 'VOL: ',
+            style: TextStyle(
+              color: theme.textColor,
+              fontSize: theme.normalTextSize,
+              height: defaultTextHeight,
+            ),
+          ),
+          calcParams: _parseMaParams(config['calcParams']) ?? [],
+          tipsPadding: theme.tipsPadding,
+          maLineWidth: 1.r,
+          precision: (config['precision'] as num?)?.toInt() ?? 2,
+        );
+        
+      case 'volume':
+        return (setting) => VolumeIndicator(
+          height: (config['height'] as num?)?.toDouble() ?? 100.r,
+          volTips: _parseTipsConfig(config['volTips']) ?? TipsConfig(
+            label: 'VOL: ',
+            style: TextStyle(
+              color: theme.textColor,
+              fontSize: theme.normalTextSize,
+              height: defaultTextHeight,
+            ),
+          ),
+          tipsPadding: theme.tipsPadding,
+          tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
+          precision: (config['precision'] as num?)?.toInt() ?? 2,
+        );
+        
+      default:
+        throw ArgumentError('Unknown indicator type: $type');
+    }
+  }
+  
+  // 解析参数的辅助方法
+  List<MaParam>? _parseMaParams(dynamic params) {
+    if (params is! List) return null;
+    return params.map((p) {
+      if (p is Map<String, dynamic>) {
+        return MaParam(
+          count: (p['count'] as num?)?.toInt() ?? 5,
+          tips: _parseTipsConfig(p['tips']) ?? const TipsConfig(
+            label: 'MA: ',
+            style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+          ),
+        );
+      }
+      return const MaParam(
+        count: 5,
+        tips: TipsConfig(
+          label: 'MA: ',
+          style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+        ),
+      );
+    }).toList();
+  }
+  
+  List<RsiParam>? _parseRsiParams(dynamic params) {
+    if (params is! List) return null;
+    return params.map((p) {
+      if (p is Map<String, dynamic>) {
+        return RsiParam(
+          count: (p['count'] as num?)?.toInt() ?? 6,
+          tips: _parseTipsConfig(p['tips']) ?? const TipsConfig(
+            label: 'RSI: ',
+            style: TextStyle(color: Colors.orange, fontSize: 12, height: 1.2),
+          ),
+        );
+      }
+      return const RsiParam(
+        count: 6,
+        tips: TipsConfig(
+          label: 'RSI: ',
+          style: TextStyle(color: Colors.orange, fontSize: 12, height: 1.2),
+        ),
+      );
+    }).toList();
+  }
+  
+  BOLLParam? _parseBOLLParam(dynamic param) {
+    if (param is Map<String, dynamic>) {
+      return BOLLParam(
+        n: (param['n'] as num?)?.toInt() ?? 20,
+        std: (param['std'] as num?)?.toInt() ?? 2,
+      );
+    }
+    return null;
+  }
+  
+  SARParam? _parseSARParam(dynamic param) {
+    if (param is Map<String, dynamic>) {
+      return SARParam(
+        startAf: (param['startAf'] as num?)?.toDouble() ?? 0.02,
+        step: (param['step'] as num?)?.toDouble() ?? 0.02,
+        maxAf: (param['maxAf'] as num?)?.toDouble() ?? 0.2,
+      );
+    }
+    return null;
+  }
+  
+  KDJParam? _parseKDJParam(dynamic param) {
+    if (param is Map<String, dynamic>) {
+      return KDJParam(
+        n: (param['n'] as num?)?.toInt() ?? 9,
+        m1: (param['m1'] as num?)?.toInt() ?? 3,
+        m2: (param['m2'] as num?)?.toInt() ?? 3,
+      );
+    }
+    return null;
+  }
+  
+  MACDParam? _parseMACDParam(dynamic param) {
+    if (param is Map<String, dynamic>) {
+      return MACDParam(
+        s: (param['s'] as num?)?.toInt() ?? 12,
+        l: (param['l'] as num?)?.toInt() ?? 26,
+        m: (param['m'] as num?)?.toInt() ?? 9,
+      );
+    }
+    return null;
+  }
+  
+  TipsConfig? _parseTipsConfig(dynamic tips) {
+    if (tips is Map<String, dynamic>) {
+      return TipsConfig(
+        label: tips['label'] as String? ?? '',
+        style: _parseTextStyle(tips['style']),
+      );
+    }
+    return null;
+  }
+  
+  TextStyle _parseTextStyle(dynamic style) {
+    if (style is Map<String, dynamic>) {
+      return TextStyle(
+        color: _parseColor(style['color']) ?? Colors.blue,
+        fontSize: (style['fontSize'] as num?)?.toDouble() ?? 12,
+        height: (style['height'] as num?)?.toDouble() ?? 1.2,
+      );
+    }
+    return const TextStyle(color: Colors.blue, fontSize: 12, height: 1.2);
+  }
+  
+  Color? _parseColor(dynamic color) {
+    if (color is int) {
+      return Color(color);
+    } else if (color is String) {
+      // 解析颜色字符串，如 "#FF0000" 或 "0xFFFF0000"
+      if (color.startsWith('#')) {
+        return Color(int.parse(color.substring(1), radix: 16) + 0xFF000000);
+      } else if (color.startsWith('0x')) {
+        return Color(int.parse(color.substring(2), radix: 16));
+      }
+    }
+    return null;
+  }
+  
+  // 便民方法：设置主指标配置
+  Future<bool> setMainIndicatorConfig(Map<String, Map<String, dynamic>> config) {
+    return setConfig('mainIndicatorBuilders', config);
+  }
+  
+  // 便民方法：设置副指标配置
+  Future<bool> setSubIndicatorConfig(Map<String, Map<String, dynamic>> config) {
+    return setConfig('subIndicatorBuilders', config);
   }
 }

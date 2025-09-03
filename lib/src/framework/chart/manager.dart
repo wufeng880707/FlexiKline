@@ -26,6 +26,16 @@ final class IndicatorPaintObjectManager with KlineLog {
     ILogger? logger,
   }) {
     loggerDelegate = logger;
+    // 注册指标构造器(仅在构建时, 使用一次)
+    _indicatorDataIndexs.clear();
+    final mainIndicators = configuration.mainIndicatorBuilders;
+    for (final MapEntry(key: key, value: builder) in mainIndicators.entries) {
+      registerMainIndicatorBuilder(key, builder);
+    }
+    final subIndicators = configuration.subIndicatorBuilders;
+    for (final MapEntry(key: key, value: builder) in subIndicators.entries) {
+      registerSubIndicatorBuilder(key, builder);
+    }
   }
 
   final IConfiguration configuration;
@@ -66,9 +76,6 @@ final class IndicatorPaintObjectManager with KlineLog {
   /// 副区指标配置构造器
   final Map<IIndicatorKey, IndicatorBuilder> _subIndicatorBuilders = {};
 
-  /// 交易指标配置构造器
-  final Map<IIndicatorKey, IndicatorBuilder> _tradeIndicatorBuilders = {};
-
   Iterable<IIndicatorKey>? _supportMainIndicatorKeys;
   Iterable<IIndicatorKey> get supportMainIndicatorKeys {
     return _supportMainIndicatorKeys ??= _mainIndicatorBuilders.keys;
@@ -79,26 +86,21 @@ final class IndicatorPaintObjectManager with KlineLog {
     return _supportSubIndicatorKeys ??= _subIndicatorBuilders.keys;
   }
 
-  Iterable<IIndicatorKey>? _supportTradeIndicatorKeys;
-  Iterable<IIndicatorKey> get supportTradeIndicatorKeys {
-    return _supportTradeIndicatorKeys ??= _tradeIndicatorBuilders.keys;
-  }
-
-  // 1. tradeIndicator 只记录 key
-  final Set<IIndicatorKey> _tradeIndicatorKeys = {};
-
   Iterable<IIndicatorKey> get mainIndciatorKeys {
-    // 只返回主图指标，不含 trade
-    return _mainPaintObject.children
-        .map((obj) => obj.key)
-        .where((key) => !_tradeIndicatorKeys.contains(key));
+    return _mainPaintObject.children.map((obj) => obj.key);
   }
 
   Iterable<IIndicatorKey> get subIndicatorKeys {
     return _subPaintObjectQueue.map((obj) => obj.key);
   }
 
-  Iterable<IIndicatorKey> get tradeIndicatorKeys => _tradeIndicatorKeys;
+  bool hasRegisterInMain(IIndicatorKey key) {
+    return _mainIndicatorBuilders.containsKey(key) || key == candleIndicatorKey;
+  }
+
+  bool hasRegisterInSub(IIndicatorKey key) {
+    return _subIndicatorBuilders.containsKey(key) || key == timeIndicatorKey;
+  }
 
   void registerMainIndicatorBuilder(
     IIndicatorKey key,
@@ -124,17 +126,6 @@ final class IndicatorPaintObjectManager with KlineLog {
     }
   }
 
-  void registerTradeIndicatorBuilder(
-    IIndicatorKey key,
-    IndicatorBuilder builder,
-  ) {
-    _tradeIndicatorBuilders[key] = builder;
-    _supportTradeIndicatorKeys = null;
-    if (!_indicatorDataIndexs.containsKey(key)) {
-      _indicatorDataIndexs[key] = _indicatorDataIndexs.length;
-    }
-  }
-
   int? getIndicatorDataIndex(IIndicatorKey key) {
     return _indicatorDataIndexs.getItem(key);
   }
@@ -148,26 +139,8 @@ final class IndicatorPaintObjectManager with KlineLog {
   void init(
     IPaintContext context, {
     required MainPaintObjectIndicator mainIndicator,
-    Set<IIndicatorKey> initMainIndicatorKeys = const {},
     Set<IIndicatorKey> initSubIndicatorKeys = const {},
-    Set<IIndicatorKey> initTradeIndicatorKeys = const {},
   }) {
-    /// 注册指标构造器
-    _indicatorDataIndexs.clear();
-    final mainIndicators = configuration.mainIndicatorBuilders();
-    for (final MapEntry(key: key, value: builder) in mainIndicators.entries) {
-      registerMainIndicatorBuilder(key, builder);
-    }
-    final subIndicators = configuration.subIndicatorBuilders();
-    for (final MapEntry(key: key, value: builder) in subIndicators.entries) {
-      registerSubIndicatorBuilder(key, builder);
-    }
-
-    final tradeIndicators = configuration.tradeIndicatorBuilders();
-    for (final MapEntry(key: key, value: builder) in tradeIndicators.entries) {
-      registerTradeIndicatorBuilder(key, builder);
-    }
-
     /// 构造主区/副区
     _mainPaintObject = MainPaintObject(
       context: context,
@@ -180,16 +153,15 @@ final class IndicatorPaintObjectManager with KlineLog {
 
     /// 配置默认指标蜡烛图指标和时间指标
     try {
-      final setting = context.settingConfig;
-      final candle = configuration.candleIndicatorBuilder.call(setting);
-      final eventBus = KlineEventBus();
-      eventBus.on('lastPriceTap', (args) {
-        (context as FlexiKlineController).moveToInitialPosition();
-      });
+      final candle = configuration.candleIndicatorBuilder.call(
+        configuration.getConfig(candleIndicatorKey.id),
+      );
       final candleObject = candle.createPaintObject(context);
       _mainPaintObject.appendPaintObject(candleObject);
 
-      final time = configuration.timeIndicatorBuilder.call(setting);
+      final time = configuration.timeIndicatorBuilder.call(
+        configuration.getConfig(timeIndicatorKey.id),
+      );
       _timePaintObject = time.createPaintObject(context);
     } catch (error, stack) {
       loge(
@@ -200,95 +172,68 @@ final class IndicatorPaintObjectManager with KlineLog {
     }
 
     /// 加载历史选中过的指标
-    for (var key in initMainIndicatorKeys) {
-      addIndicatorInMain(key, context);
+    for (var key in mainIndicator.indicatorKeys) {
+      addPaintObjectInMain(key, context);
     }
     for (var key in initSubIndicatorKeys) {
-      addIndicatorInSub(key, context);
-    }
-    for (var key in initTradeIndicatorKeys) {
-      addTradeIndicator(key, context);
+      addPaintObjectInSub(key, context);
     }
   }
 
-  Indicator? _createMainPaintIndicator(
-    IIndicatorKey key,
-    IPaintContext context,
-  ) {
-    try {
-      if (_mainIndicatorBuilders.containsKey(key)) {
-        return _mainIndicatorBuilders[key]?.call(context.settingConfig);
-      }
-    } catch (error, stack) {
-      loge(
-        '_createMainPaintIndicator($key) catch an exception!',
-        error: error,
-        stackTrace: stack,
-      );
+  ///// 主区指标操作 /////
+  /// 在主区中添加[key]指定的指标
+  PaintObject? addPaintObjectInMain(IIndicatorKey key, IPaintContext context) {
+    if (!hasRegisterInMain(key)) {
+      logw('addPaintObjectInMain $key not registered yet.');
+      return null;
     }
-    return null;
-  }
-
-  Indicator? _createSubPaintIndicator(
-    IIndicatorKey key,
-    IPaintContext context,
-  ) {
-    try {
-      if (_subIndicatorBuilders.containsKey(key)) {
-        return _subIndicatorBuilders[key]?.call(context.settingConfig);
-      }
-    } catch (error, stack) {
-      loge(
-        '_createSubPaintIndicator($key) catch an exception!',
-        error: error,
-        stackTrace: stack,
-      );
+    PaintObject? object = _mainPaintObject.getChildPaintObject(key);
+    if (object != null) {
+      logw('addPaintObjectInMain $key is loaded, cannot be added!');
+      return null;
     }
-    return null;
-  }
-
-  Indicator? _createTradePaintIndicator(
-    IIndicatorKey key,
-    IPaintContext context,
-  ) {
-    try {
-      if (_tradeIndicatorBuilders.containsKey(key)) {
-        return _tradeIndicatorBuilders[key]?.call(context.settingConfig);
-      }
-    } catch (error, stack) {
-      loge(
-        '_createTradePaintIndicator($key) catch an exception!',
-        error: error,
-        stackTrace: stack,
-      );
-    }
-    return null;
-  }
-
-  /// 在主图中添加指标
-  PaintObject? addIndicatorInMain(IIndicatorKey key, IPaintContext context) {
-    final indicator = _createMainPaintIndicator(key, context);
+    final indicator = configuration.getIndicator(
+      key,
+      builder: _mainIndicatorBuilders[key],
+    );
     if (indicator == null) return null;
-    final object = indicator.createPaintObject(context);
+    object = indicator.createPaintObject(context);
     _mainPaintObject.appendPaintObject(object);
     return object;
   }
 
-  /// 删除主图中[key]指定的指标
-  bool delIndicatorInMain(IIndicatorKey key) {
+  /// 在已载入主区绘制对象中, 删除[key]指定的绘制对象
+  bool delPaintObjectInMain(IIndicatorKey key) {
     return _mainPaintObject.deletePaintObject(key);
   }
 
-  PaintObject? addIndicatorInSub(IIndicatorKey key, IPaintContext context) {
-    final indicator = _createSubPaintIndicator(key, context);
+  ///// 副区指标操作 /////
+  /// 在副区中添加[key]指定的指标
+  PaintObject? addPaintObjectInSub(IIndicatorKey key, IPaintContext context) {
+    if (!hasRegisterInSub(key)) {
+      logw('addPaintObjectInSub $key not registered yet.');
+      return null;
+    }
+    PaintObject? object = _subPaintObjectQueue.firstWhereOrNull(
+      (obj) => obj.key == key,
+    );
+    if (object != null) {
+      logw('addPaintObjectInSub $key is loaded, cannot be added!');
+      return null;
+    }
+    final indicator = configuration.getIndicator(
+      key,
+      builder: _subIndicatorBuilders[key],
+    );
     if (indicator == null) return null;
-    final object = indicator.createPaintObject(context);
+    object = indicator.createPaintObject(context);
     final oldObj = _subPaintObjectQueue.append(object);
     oldObj?.dispose();
     return object;
   }
 
-  bool delIndicatorInSub(IIndicatorKey key) {
+  /// 在已载入副区绘制对象中, 删除[key]指定的绘制对象
+  bool delPaintObjectInSub(IIndicatorKey key) {
     bool hasRemove = false;
     _subPaintObjectQueue.removeWhere((obj) {
       if (obj.indicator.key == key) {
@@ -301,20 +246,47 @@ final class IndicatorPaintObjectManager with KlineLog {
     return hasRemove;
   }
 
-  /// 添加交易指标
-  PaintObject? addTradeIndicator(IIndicatorKey key, IPaintContext context) {
-    final indicator = _createTradePaintIndicator(key, context);
-    if (indicator == null) return null;
-    final object = indicator.createPaintObject(context);
-    _mainPaintObject.appendPaintObject(object);
-    _tradeIndicatorKeys.add(key);
-    return object;
+  /// 获取主区[key]指定的指标配置实例
+  /// 1. 先从当前载入的指标中查找
+  /// 2. 如果不存在, 则从配置缓存中加载[key]对应的指标
+  T? getIndicator<T extends Indicator>(IIndicatorKey key) {
+    if (hasRegisterInMain(key)) {
+      Indicator? indicator = mainPaintObject.getChildIndicator(key);
+      indicator ??= configuration.getIndicator(
+        key,
+        builder: _mainIndicatorBuilders[key],
+      );
+      return indicator is T ? indicator : null;
+    } else if (hasRegisterInSub(key)) {
+      final object = subPaintObjects.firstWhereOrNull((obj) => obj.key == key);
+      var indicator = object?.indicator;
+      indicator ??= configuration.getIndicator(
+        key,
+        builder: _subIndicatorBuilders[key],
+      );
+      return indicator is T ? indicator : null;
+    }
+    return null;
   }
 
-  /// 删除交易指标
-  bool delTradeIndicator(IIndicatorKey key) {
-    _tradeIndicatorKeys.remove(key);
-    return _mainPaintObject.deletePaintObject(key);
+  bool updateIndicator<T extends Indicator>(T indicator) {
+    final key = indicator.key;
+    if (hasRegisterInMain(key)) {
+      bool updated = mainPaintObject.updateChildIndicator(indicator);
+      if (!updated) {
+        updated = configuration.saveIndicator(indicator);
+      }
+      return updated;
+    } else if (hasRegisterInSub(key)) {
+      final object = subPaintObjects.firstWhereOrNull((obj) => obj.key == key);
+      if (object != null) {
+        object.doDidUpdateIndicator(indicator);
+        return true;
+      } else {
+        return configuration.saveIndicator(indicator);
+      }
+    }
+    return false;
   }
 
   /// 收集当前指标的计算参数
@@ -332,11 +304,9 @@ final class IndicatorPaintObjectManager with KlineLog {
 
   void dispose() {
     mainPaintObject.dispose();
-    // _timePaintObject.dispose();
     for (var indicator in subPaintObjects) {
       indicator.dispose();
     }
     _subPaintObjectQueue.clear();
-    _tradeIndicatorKeys.clear();
   }
 }

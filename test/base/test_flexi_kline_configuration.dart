@@ -105,6 +105,7 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
 
   @override
   Color get indraTodayAvgColor => const Color(0xffff9933);
+
   @override
   Color get indraTodayCloseColor => const Color(0xff4d78ff);
 }
@@ -122,21 +123,25 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   IFlexiKlineTheme get theme => TestFlexiKlineTheme();
 
   @override
-  Iterable<Overlay> getDrawOverlayList(String instId) {
-    throw UnimplementedError();
-  }
-
-  @override
-  void saveDrawOverlayList(String instId, Iterable<Overlay> list) {}
-
-  @override
-  Map<IDrawType, DrawObjectBuilder<Overlay, DrawObject<Overlay>>> drawObjectBuilders() {
+  Map<IDrawType, DrawObjectBuilder<Overlay, DrawObject<Overlay>>> get drawObjectBuilders {
     return {};
   }
 
   @override
   MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
     // TODO: implement genMainIndicator
+    throw UnimplementedError();
+  }
+
+  @override
+  Map<String, dynamic>? getConfig(String key) {
+    // TODO: implement getConfig
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> setConfig(String key, Map<String, dynamic> value) {
+    // TODO: implement setConfig
     throw UnimplementedError();
   }
 }

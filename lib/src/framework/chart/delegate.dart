@@ -88,6 +88,12 @@ extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
       tipsRect: drawableRect,
     );
   }
+
+  void doDidUpdateIndicator(T newIndicator) {
+    final T oldIndicator = indicator;
+    _indicator = newIndicator;
+    didUpdateIndicator(oldIndicator);
+  }
 }
 
 extension MainPaintDelegateExt<T extends MainPaintObjectIndicator>
@@ -268,6 +274,7 @@ extension MainPaintManagerExt<T extends MainPaintObjectIndicator>
       padding: object.paintMode.isCombine ? padding : null,
     );
     final old = children.append(object);
+    indicator.indicatorKeys.add(object.key);
     old?.dispose();
   }
 
@@ -276,11 +283,29 @@ extension MainPaintManagerExt<T extends MainPaintObjectIndicator>
     children.removeWhere((object) {
       if (object.key == key) {
         object.dispose();
+        indicator.indicatorKeys.remove(object.key);
         hasRemove = true;
         return true;
       }
       return false;
     });
     return hasRemove;
+  }
+
+  PaintObject? getChildPaintObject(IIndicatorKey key) {
+    return children.firstWhereOrNull((obj) => obj.key == key);
+  }
+
+  Indicator? getChildIndicator(IIndicatorKey key) {
+    return getChildPaintObject(key)?.indicator;
+  }
+
+  bool updateChildIndicator(Indicator indicator) {
+    final paintObject = getChildPaintObject(indicator.key);
+    if (paintObject != null) {
+      paintObject.doDidUpdateIndicator(indicator);
+      return true;
+    }
+    return false;
   }
 }

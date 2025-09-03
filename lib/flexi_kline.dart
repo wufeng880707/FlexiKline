@@ -20,7 +20,11 @@ export 'src/core/core.dart';
 export 'src/data/kline_data.dart';
 export 'src/extension/export.dart';
 export 'src/framework/export.dart'
-    hide PaintDelegateExt, MainPaintDelegateExt, MainPaintManagerExt;
+    hide
+        PaintDelegateExt,
+        MainPaintDelegateExt,
+        MainPaintManagerExt,
+        IConfigurationExt;
 export 'src/indicators/export.dart';
 export 'src/kline_controller.dart';
 export 'src/model/export.dart' hide GestureData;

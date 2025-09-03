@@ -13,6 +13,8 @@
 // limitations under the License.
 
 import 'package:example/generated/l10n.dart';
+import 'package:example/src/providers/bit_kline_config.dart';
+import 'package:example/src/providers/default_kline_config.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -65,8 +67,21 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
     super.dispose();
   }
 
+  /// 获取时间周期配置列表
+  List<TimeBarConfig> _getTimeBarConfigs() {
+    final config = widget.controller.configuration;
+    if (config is BitFlexiKlineConfiguration) {
+      return config.getTimeBarConfigs();
+    } else if (config is DefaultFlexiKlineConfiguration) {
+      return config.timeBarBuilders();
+    } else {
+      // 回退到空列表，避免调用不存在的方法
+      return <TimeBarConfig>[];
+    }
+  }
+
   List<TimeBarConfig> get preferTimeBarList => [
-        ...widget.controller.configuration.timeBarBuilders().where((e) =>
+        ..._getTimeBarConfigs().where((e) =>
             e.key == 'intraDay' ||
             e.key == '15m' ||
             e.key == '1H' ||
@@ -78,7 +93,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
   bool isPreferTimeBar(TimeBarConfig timeBar) => preferTimeBarList.contains(timeBar);
 
   List<TimeBarConfig> get showTimeBarList =>
-      wideScreen ? widget.controller.configuration.timeBarBuilders() : preferTimeBarList;
+      wideScreen ? _getTimeBarConfigs() : preferTimeBarList;
 
   final timeBarSettingBtnStatus = ValueNotifier(false);
   Future<void> onTapTimeBarSetting() async {

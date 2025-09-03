@@ -35,9 +35,8 @@ class FlexiKlineConfig {
     required this.draw,
     required this.tooltip,
     required this.mainIndicator,
-    this.main = const <IIndicatorKey>{},
     this.sub = const <IIndicatorKey>{},
-    this.trade = const <IIndicatorKey>{},
+    // this.trade = const <IIndicatorKey>{},
   });
 
   final String key;
@@ -48,9 +47,8 @@ class FlexiKlineConfig {
   DrawConfig draw;
   TooltipConfig tooltip;
   MainPaintObjectIndicator mainIndicator;
-  Set<IIndicatorKey> main;
   Set<IIndicatorKey> sub;
-  Set<IIndicatorKey> trade;
+  // Set<IIndicatorKey> trade;
 
   FlexiKlineConfig clone() {
     try {
@@ -63,12 +61,10 @@ class FlexiKlineConfig {
 
   // TODO: 废弃
   void update(FlexiKlineConfig config) {
-    main = config.main;
     sub = config.sub;
   }
 
-  factory FlexiKlineConfig.fromJson(Map<String, dynamic> json) =>
-      _$FlexiKlineConfigFromJson(json);
+  factory FlexiKlineConfig.fromJson(Map<String, dynamic> json) => _$FlexiKlineConfigFromJson(json);
 
   Map<String, dynamic> toJson() {
     return _$FlexiKlineConfigToJson(this);

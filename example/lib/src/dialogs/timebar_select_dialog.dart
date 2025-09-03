@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'package:example/generated/l10n.dart';
+import 'package:example/src/providers/bit_kline_config.dart';
 import 'package:example/src/theme/flexi_theme.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
@@ -117,7 +118,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
           alignment: WrapAlignment.start,
           spacing: 12.r,
           runSpacing: 8.r,
-          children: controller.configuration.timeBarBuilders().map((timeBar) {
+          children: (controller.configuration as BitFlexiKlineConfiguration).getTimeBarConfigs().map((timeBar) {
             final selected = value == timeBar;
             return SizedBox(
               width: barWidth,

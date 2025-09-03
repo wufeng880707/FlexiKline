@@ -154,6 +154,8 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
 
 /// 通过[IFlexiKlineTheme]来配置FlexiKline基类.
 mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
+  /// 扩展[key]
+  String getCacheKey(String key) => key;
   // @override
   // FlexiKlineConfig getFlexiKlineConfig();
 
@@ -167,37 +169,43 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       draw: genDrawConfig(),
       tooltip: genTooltipConfig(),
       mainIndicator: genMainIndicator(),
-      main: {},
       sub: {},
-      trade: {},
+      // trade: {},
     );
   }
 
   @override
   IndicatorBuilder<CandleIndicator> get candleIndicatorBuilder {
-    return genCandleIndicator;
+    return (json) => genCandleIndicator(
+          jsonToInstance(json, CandleIndicator.fromJson),
+        );
   }
 
   @override
   IndicatorBuilder<TimeIndicator> get timeIndicatorBuilder {
-    return genTimeIndicator;
+    return (json) => genTimeIndicator(
+          jsonToInstance(json, TimeIndicator.fromJson),
+        );
   }
 
   /// 主k线支持的指标 （MA、BOLL、AVL 等）
   @override
-  Map<IIndicatorKey, IndicatorBuilder> mainIndicatorBuilders() => {};
+  @mustCallSuper
+  Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders => {};
 
   /// 副k线支持的指标 （RSI、KDJ、MACD 等）
   @override
-  Map<IIndicatorKey, IndicatorBuilder> subIndicatorBuilders() => {};
+  @mustCallSuper
+  Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders => {};
 
-  /// 交易相关的指标（历史买卖，当前委托 等）
-  @override
-  Map<IIndicatorKey, IndicatorBuilder> tradeIndicatorBuilders() => {};
+  // /// 交易相关的指标（历史买卖，当前委托 等）
+  // @override
+  // Map<IIndicatorKey, IndicatorBuilder> tradeIndicatorBuilders() => {};
 
   /// 绘画配置
   @override
-  Map<IDrawType, DrawObjectBuilder> drawObjectBuilders() => {};
+  @mustCallSuper
+  Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders => {};
 
   /// 时间选择配置 （1M、1H、2H、1D 等）
   @override
@@ -456,7 +464,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
   MainPaintObjectIndicator genMainIndicator();
 
-  CandleIndicator genCandleIndicator(SettingConfig setting) {
+  CandleIndicator genCandleIndicator(CandleIndicator? instance) {
     return CandleIndicator(
       zIndex: -1,
       height: theme.mainIndicatorHeight,
@@ -569,11 +577,11 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
     );
   }
 
-  TimeIndicator genTimeIndicator(SettingConfig setting) {
+  TimeIndicator genTimeIndicator(TimeIndicator? instance) {
     return TimeIndicator(
       height: theme.timeIndicatorHeight,
       padding: EdgeInsets.zero,
-      position: DrawPosition.middle,
+      position: instance?.position ?? DrawPosition.middle,
       // 时间刻度.
       timeTick: TextAreaConfig(
         style: TextStyle(

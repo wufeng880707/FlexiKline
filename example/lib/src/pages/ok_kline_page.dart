@@ -89,7 +89,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
         'TradeMark: Supported main indicators: ${controller.supportMainIndicatorKeys.map((k) => k.id).toList()}');
 
     // 添加交易标记指标到交易区
-    controller.addTradeIndicator(const FlexiIndicatorKey('trade_mark'));
+    // controller.addTradeIndicator(const FlexiIndicatorKey('trade_mark'));
 
     // // 添加所有支持的副图指标
     // for (final key in controller.supportSubIndicatorKeys) {
