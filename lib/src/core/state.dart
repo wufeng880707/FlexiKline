@@ -45,10 +45,17 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     _klineDataCache.forEach((key, data) {
       data.dispose();
     });
+    _curKlineData = KlineData.empty;
     _klineDataCache.clear();
+    onLoadMoreCandles = null;
+    moveToInitialPositionCallback = null;
   }
 
+  /// 加载更多回调
   OnLoadMoreCandles? onLoadMoreCandles;
+
+  /// 返回到初始位置动画回调.
+  VoidCallback? moveToInitialPositionCallback;
 
   /// 首根蜡烛是否移出屏幕监听.
   final _isFirstCandleMoveOffScreenListener = ValueNotifier(false);
@@ -57,8 +64,8 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   }
 
   /// 当KlineData的TimeBar的监听器
-  final _timeBarListener = ValueNotifier<TimeBarConfig?>(null);
-  ValueListenable<TimeBarConfig?> get timeBarListener => _timeBarListener;
+  final _timeBarListener = ValueNotifier<TimeBar?>(null);
+  ValueListenable<TimeBar?> get timeBarListener => _timeBarListener;
 
   /// CandleReq变化监听器
   final _candleRequestListener = ValueNotifier(KlineData.empty.req);
@@ -77,20 +84,9 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   void _updateCandleRequestListener(CandleReq request) {
     logd('updateCandleRequestListener $curDataKey, request:$request');
     if (request.key == curDataKey) {
+      onRequestChanged(_candleRequestListener.value);
       _candleRequestListener.value = request;
       _timeBarListener.value = request.timeBar;
-    }
-  }
-
-  ComputeMode _computeMode = ComputeMode.fast;
-  // ComputeMode get computeMode => _computeMode;
-  set computeMode(mode) {
-    if (mode != _computeMode) {
-      _computeMode = mode;
-      _startPrecomputeKlineData(
-        curKlineData,
-        reset: true,
-      );
     }
   }
 
@@ -99,16 +95,28 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   @override
   KlineData get curKlineData => _curKlineData;
 
+  void cleanUnlessKlineData() {
+    final curKey = curDataKey;
+    _klineDataCache.removeWhere((key, data) {
+      if (key != curKey) {
+        data.dispose();
+        return true;
+      }
+      return false;
+    });
+  }
+
   /// 设置当前KlineData:
   /// 1. 通知timeBar变更
-  /// 2. 初始化首根蜡烛绘制位置于屏幕右侧[initPaintDxOffset]指定处.
+  /// 2. 初始化首根蜡烛绘制位置于屏幕右侧[getInitPaintDxOffset]指定处.
   /// 3. 重绘图表
   /// 4. 取消Cross绘制(如果有)
-  void _setCurKlineData(KlineData data) {
+  void _setCurKlineData(KlineData data, {bool resetPaintDxOffset = true}) {
     _curKlineData = data;
     _updateCandleRequestListener(data.req);
-    initPaintDxOffset();
+    if (resetPaintDxOffset) paintDxOffset = getInitPaintDxOffset();
     markRepaintChart(reset: true);
+    markRepaintDraw();
     cancelCross();
   }
 
@@ -121,7 +129,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   @override
   CandleModel? dxToCandle(double dx) {
     final index = dxToIndex(dx);
-    return curKlineData.getCandle(index);
+    return curKlineData.get(index);
   }
 
   /// 将[dx]转换为当前绘制区域对应的蜡烛的下标.
@@ -217,8 +225,8 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     return dxOffset.clamp(minPaintDxOffset, maxPaintDxOffset);
   }
 
-  void initPaintDxOffset() {
-    paintDxOffset = math.min(
+  double getInitPaintDxOffset() {
+    return math.min(
       maxPaintWidth - mainChartWidth, // 不足一屏, 首根蜡烛偏移量等于首根蜡烛右边长度.
       -settingConfig.firstCandleInitOffset, // 满足一屏时, 首根蜡烛相对于主绘制区域最小的偏移量
     );
@@ -226,13 +234,17 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
 
   /// 移动蜡烛图回到初始位置
   void moveToInitialPosition() {
-    initPaintDxOffset();
+    if (moveToInitialPositionCallback != null) {
+      moveToInitialPositionCallback?.call();
+      return;
+    }
+    paintDxOffset = getInitPaintDxOffset();
     markRepaintChart();
     markRepaintDraw();
   }
 
-  /// 计算绘制蜡烛图的起始数组索引下标
-  void calculateCandleDrawIndex() {
+  /// 计算绘制蜡烛图的范围
+  void calculatePaintChartRange() {
     if (paintDxOffset > 0) {
       final startIndex = (paintDxOffset / candleActualWidth).floor();
       final diff = paintDxOffset % candleActualWidth;
@@ -260,6 +272,119 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     // _candleDrawIndexListener.value = curKlineData.drawTimeRange;
   }
 
+  /// 切换[request]请求指定的蜡烛数据
+  /// [request] 待切换的[CandleReq]
+  /// [useCacheFirst] 是否优先使用缓存. 注: 如果有缓存数据(说明之前加载过), loading不会展示.
+  /// [useCachePaintDxOffset] 是否仍使用缓存的绘制位置(如果当前没有切换请求);
+  /// return
+  ///   1. true:  代表使用了缓存, [curKlineData]的请求状态为[RequestState.none], 不展示loading
+  ///   2. false: 代表未使用缓存; 且[curKlineData]数据会被清空(如果有).
+  bool switchKlineData(
+    CandleReq request, {
+    ComputeMode computeMode = ComputeMode.fast,
+    bool useCacheFirst = true,
+    bool useCachePaintDxOffset = false,
+  }) {
+    KlineData? data = _klineDataCache[request.key];
+
+    if (useCacheFirst && data != null && data.isNotEmpty) {
+      // 如果优先使用缓存且缓存数据不为空时, 设置缓存为当前KlineData, 同时结束loading状态.
+      _setCurKlineData(
+        data,
+        resetPaintDxOffset: request.key != curDataKey ? true : useCachePaintDxOffset,
+      );
+      return true;
+    }
+
+    // 清理历史缓存数据.
+    data?.dispose();
+
+    // 重置当前KlineData为[req]请求指定的KlineData, 并更新到缓存中.
+    data = KlineData(
+      request.copyWith(state: RequestState.initLoading),
+      indicatorCount,
+      computeMode: computeMode,
+      logger: loggerDelegate,
+    );
+    final old = _klineDataCache.append(request.key, data);
+    if (old != null) Future(() => old.dispose());
+    _curKlineData = data;
+    _updateCandleRequestListener(data.req);
+    return false;
+  }
+
+  /// 结束加载中状态
+  /// [request]和[reqKey]指定要结束加载状态的请求, 如果[request]请求的状态非[RequestState.none], 即结束加载中状态
+  void stopLoading({
+    CandleReq? request,
+    String? reqKey,
+  }) {
+    reqKey ??= request?.key;
+    if (reqKey == curDataKey) {
+      if (curKlineData.req.state != RequestState.none) {
+        _updateCandleRequestListener(
+          curKlineData.updateState(state: RequestState.none),
+        );
+      }
+    } else {
+      _klineDataCache.getItem(reqKey)?.updateState(state: RequestState.none);
+    }
+  }
+
+  /// 更新[list]到[request]请求指定的[KlineData]中
+  Future<void> updateKlineData(
+    CandleReq request,
+    List<CandleModel> list, {
+    bool reset = false,
+  }) async {
+    // 数据为空, 无需要更新.
+    if (list.isEmpty) {
+      stopLoading(request: request);
+      return;
+    }
+
+    KlineData? data = _klineDataCache[request.key];
+    if (data == null) {
+      logw('updateKlineData: cannot found klineData by $request');
+      return;
+    }
+
+    reset = reset || data.isEmpty;
+
+    /// 首先结束[stat.req]的请求状态为[RequestState.none]
+    stopLoading(request: data.req);
+
+    await _startPrecomputeKlineData(
+      data,
+      newList: list,
+      reset: reset,
+    );
+
+    if (request.key == curDataKey) {
+      if (reset) {
+        _setCurKlineData(data);
+      } else {
+        _updateCandleRequestListener(data.req);
+        // final newLen = data.length;
+        // if (paintDxOffset < 0 && newLen > oldLen) {
+        //   /// 当数据合并后
+        //   /// 1. 如果paintDxOffset > 0 说明满足一屏, 且最新蜡烛被用户移动到绘制区域外面, 无需调整偏移量paintDxOffset, 重绘时, 仍按此偏移量计算后, 当前首根蜡烛向左移动一个蜡烛.
+        //   /// 2. 如果paintDxOffset == 0 说明当前最新蜡烛在屏幕第一位(最右边)展示. 无需调整偏移量paintDxOffset, 重绘时calculateCandleIndexAndOffset, 会计算startIndex = 0;
+        //   /// 2. 如果paintDxOffset < 0 说明未满足一屏, 需要减小偏移量, 以保证新数据能够展示.
+        //   ///    注: 如果调整后 paintDxOffset > 0 则要置为0, 以保证最新蜡烛在最右边展示.
+        //   paintDxOffset = math.min(
+        //     0,
+        //     paintDxOffset + (newLen - oldLen) * candleActualWidth,
+        //   );
+        // }
+
+        markRepaintChart();
+        markRepaintCross();
+        markRepaintDraw();
+      }
+    }
+  }
+
   /// 开始预计算Kline指标数据
   /// [data] 待计算的Kline蜡烛数据
   /// [newList] 待计算的蜡烛数据范围
@@ -269,176 +394,34 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   /// 数据合并更新结果的处理:
   /// 1. 对于历史数据追加, 像EMA这类依赖于历史数据会适时考虑从头计算.
   /// 2. 对于实时数据更新, 会仅计算[newList]部分.
-  Future<KlineData> _startPrecomputeKlineData(
+  Future<void> _startPrecomputeKlineData(
     KlineData data, {
     List<CandleModel> newList = const [],
     bool reset = false,
   }) async {
-    if (newList.isEmpty) {
+    if (!reset && newList.isEmpty) {
       // 无需计算; 直接返回
-      return data;
-    }
-
-    // 确认当前数据的计算模式
-    final computeMode = _computeMode;
-
-    // 待计算的指标对象集合
-    final paintObjects = [mainPaintObject, /*...tradePaintObjects,*/ ...subPaintObjects];
-
-    final watchPrecompute = Stopwatch();
-
-    try {
-      logd('PrecomputeKlineData Begin:${DateTime.now()}');
-      watchPrecompute.start();
-
-      /// 使用scheduleTask + compute方式运行预计算
-      // return await SchedulerBinding.instance.scheduleTask(
-      //   () => precomputeKlineDataByCompute(
-      //     data,
-      //     newList: newList,
-      //     computeMode: computeMode,
-      //     calcParams: calcParams,
-      //     reset: reset,
-      //     debugLabel: 'Precompute-Compute',
-      //     logger: loggerDelegate,
-      //   ),
-      //   Priority.animation,
-      //   debugLabel: 'Precompute-Task',
-      // );
-
-      /// 使用scheduleTask方式运行预计算
-      return await SchedulerBinding.instance.scheduleTask(
-        () => KlineData.precomputeKlineData(
-          data,
-          indicatorCount: indicatorCount,
-          newList: newList,
-          computeMode: computeMode,
-          paintObjects: paintObjects,
-          reset: reset,
-        ),
-        Priority.animation,
-        debugLabel: 'Precompute-Task',
-      );
-    } catch (e, stack) {
-      loge('PrecomputeKlineData exception!!!', error: e, stackTrace: stack);
-      return data;
-    } finally {
-      watchPrecompute.stop();
-      logd('PrecomputeKlineData End:${DateTime.now()}');
-      logi('PrecomputeKlineData spent:${watchPrecompute.elapsedMicroseconds}');
-    }
-  }
-
-  /// 切换[req]请求指定的蜡烛数据
-  /// [req] 待切换的[CandleReq]
-  /// [useCacheFirst] 优先使用缓存. 注: 如果有缓存数据(说明之前加载过), loading不会展示.
-  /// return
-  ///   1. true:  代表使用了缓存, [curKlineData]的请求状态为[RequestState.none], 不展示loading
-  ///   2. false: 代表未使用缓存; 且[curKlineData]数据会被清空(如果有).
-  bool switchKlineData(
-    CandleReq req, {
-    bool useCacheFirst = true,
-  }) {
-    KlineData? data = _klineDataCache[req.key];
-
-    if (useCacheFirst && data != null && !data.isEmpty) {
-      // 如果优先使用缓存且缓存数据不为空时, 设置缓存为当前KlineData, 同时结束loading状态.
-      _setCurKlineData(data);
-      return true;
-    }
-
-    // 清理历史缓存数据.
-    data?.dispose();
-
-    // 重置当前KlineData为[req]请求指定的KlineData, 并更新到缓存中.
-    data = KlineData(
-      req.copyWith(state: RequestState.initLoading),
-      logger: loggerDelegate,
-    );
-    final old = _klineDataCache.append(req.key, data);
-    if (old != null) Future(() => old.dispose());
-    _curKlineData = data;
-    _updateCandleRequestListener(data.req);
-    return false;
-  }
-
-  /// 结束加载中状态
-  /// [forceStopCurReq] 强制结束当前请求蜡烛数据[curKlineData]的加载中状态
-  /// [request]和[reqKey]指定要结束加载状态的请求, 如果[request]请求的状态非[RequestState.none], 即结束加载中状态
-  void stopLoading({
-    CandleReq? request,
-    String? reqKey,
-    bool forceStopCurReq = false,
-  }) {
-    KlineData? data;
-    reqKey ??= request?.key;
-    if (forceStopCurReq || reqKey == curDataKey) {
-      if (curKlineData.req.state != RequestState.none) {
-        _updateCandleRequestListener(
-          curKlineData.updateRequest(state: RequestState.none),
-        );
-      }
-    } else {
-      if (reqKey != null) data = _klineDataCache[reqKey];
-      if (data != null) {
-        data.updateRequest(state: RequestState.none);
-      }
-    }
-  }
-
-  /// 更新[list]到[req]请求指定的[KlineData]中
-  Future<void> updateKlineData(
-    CandleReq req,
-    List<CandleModel> list,
-  ) async {
-    // 数据为空, 无需要更新.
-    if (list.isEmpty) {
-      stopLoading(request: req);
       return;
     }
 
-    KlineData? data = _klineDataCache[req.key];
-    bool reset = data == null || data.isEmpty;
-    final oldLen = data?.length ?? 0;
+    final beginTime = DateTime.now().millisecondsSinceEpoch;
+    final precomputeLabel = 'Precompute-$beginTime-${newList.length}-$reset';
 
-    data ??= KlineData(
-      req.copyWith(state: RequestState.initLoading),
-      logger: loggerDelegate,
+    logd('startPrecompute Begin: $precomputeLabel');
+
+    /// 使用scheduleTask方式运行预计算
+    await SchedulerBinding.instance.scheduleTask(
+      () => data.precomputeKlineData(
+        newList: newList,
+        mainPaintObjects: mainPaintObject.children,
+        subPaintObjects: subPaintObjects,
+        reset: reset,
+      ),
+      Priority.animation,
+      debugLabel: precomputeLabel,
     );
-
-    /// 首先结束[stat.req]的请求状态为[RequestState.none]
-    stopLoading(request: data.req);
-
-    data = await _startPrecomputeKlineData(
-      data,
-      newList: list,
-      reset: reset,
+    logd(
+      'startPrecompute End:$precomputeLabel spent:${DateTime.now().millisecondsSinceEpoch - beginTime}ms',
     );
-
-    final old = _klineDataCache.append(req.key, data);
-    if (old != null) Future(() => old.dispose());
-
-    if (req.key == curDataKey) {
-      if (reset) {
-        _setCurKlineData(data);
-      } else {
-        _updateCandleRequestListener(data.req);
-        final newLen = data.length;
-        if (paintDxOffset < 0 && newLen > oldLen) {
-          /// 当数据合并后
-          /// 1. 如果paintDxOffset > 0 说明满足一屏, 且最新蜡烛被用户移动到绘制区域外面, 无需调整偏移量paintDxOffset, 重绘时, 仍按此偏移量计算后, 当前首根蜡烛向左移动一个蜡烛.
-          /// 2. 如果paintDxOffset == 0 说明当前最新蜡烛在屏幕第一位(最右边)展示. 无需调整偏移量paintDxOffset, 重绘时calculateCandleIndexAndOffset, 会计算startIndex = 0;
-          /// 2. 如果paintDxOffset < 0 说明未满足一屏, 需要减小偏移量, 以保证新数据能够展示.
-          ///    注: 如果调整后 paintDxOffset > 0 则要置为0, 以保证最新蜡烛在最右边展示.
-          paintDxOffset = math.min(
-            0,
-            paintDxOffset + (newLen - oldLen) * candleActualWidth,
-          );
-        }
-
-        markRepaintChart();
-        markRepaintDraw();
-      }
-    }
   }
 }

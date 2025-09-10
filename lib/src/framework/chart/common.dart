@@ -14,6 +14,26 @@
 
 part of 'indicator.dart';
 
+// K线图绘制类型
+enum ChartType {
+  bar, // 蜡烛图
+  line, // 折线图
+  upDownLine; // 涨跌线图
+}
+
+/// K线柱状图的绘制样式
+enum ChartBarStyle {
+  allSolid, // 全实心
+  allHollow, // 全空心
+  upHollow, // 上涨空心
+  downHollow, // 下跌空心
+  ohlc; // Open-high-low-close chart(美国线)
+
+  bool get isHollowUp => this == ChartBarStyle.upHollow || this == ChartBarStyle.allHollow;
+
+  bool get isHollowDown => this == ChartBarStyle.downHollow || this == ChartBarStyle.allHollow;
+}
+
 /// Indicator绘制模式
 ///
 /// 注: PaintMode仅当Indicator加入MultiPaintObjectIndicator后起作用,
@@ -67,9 +87,7 @@ final class FlexiIndicatorKey implements IIndicatorKey {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is FlexiIndicatorKey &&
-        runtimeType == other.runtimeType &&
-        id == other.id;
+    return other is FlexiIndicatorKey && runtimeType == other.runtimeType && id == other.id;
   }
 
   @override
@@ -92,7 +110,6 @@ typedef IndicatorBuilder<T extends Indicator> = T Function(
 const mainIndicatorKey = FlexiIndicatorKey('main', label: 'Main');
 const candleIndicatorKey = FlexiIndicatorKey('candle', label: 'Candle');
 const timeIndicatorKey = FlexiIndicatorKey('time', label: 'Time');
-const tradeIndicatorKey = FlexiIndicatorKey('trade', label: 'Trade');
 
 /// 可预计算接口
 /// 实现 [IPrecomputable] 接口, 即代表当前对象是可以进行预计算.
@@ -117,9 +134,6 @@ abstract interface class IPaintBoundingBox {
 
   /// 当前指标图底部绘制区域
   Rect get bottomRect;
-
-  /// 设置下一个Tips的绘制区域.
-  Rect shiftNextTipsRect(double height);
 }
 
 /// 指标图的绘制数据初始化接口

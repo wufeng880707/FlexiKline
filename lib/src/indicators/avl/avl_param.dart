@@ -14,28 +14,95 @@
 
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
 import '../../framework/serializers.dart';
 
 part 'avl_param.g.dart';
 
+/// AVL 参数 - 直接对应 JSON 配置结构
 @CopyWith()
 @FlexiParamSerializable
 final class AVLParam extends Equatable {
-  // AVL 指标不需要额外参数，使用默认计算逻辑
-  final int dummy; // 添加一个虚拟参数以满足 copy_with_extension 要求
+  // 外观配置
+  final AVLAppearanceConfig appearance;
   
-  const AVLParam({this.dummy = 0});
+  // 显示配置
+  final AVLDisplayConfig display;
 
+  const AVLParam({
+    this.appearance = const AVLAppearanceConfig(),
+    this.display = const AVLDisplayConfig(),
+  });
+
+  /// 从 JSON 配置创建 AVLParam
+  factory AVLParam.fromJsonConfig(Map<String, dynamic> config) {
+    final appearanceJson = config['appearance'] as Map<String, dynamic>? ?? {};
+    final displayJson = config['display'] as Map<String, dynamic>? ?? {};
+
+    return AVLParam(
+      appearance: AVLAppearanceConfig.fromJson(appearanceJson),
+      display: AVLDisplayConfig.fromJson(displayJson),
+    );
+  }
+
+  /// 验证参数是否有效
   bool isValid(int len) => len > 0;
 
-  factory AVLParam.fromJson(Map<String, dynamic> json) =>
-      _$AVLParamFromJson(json);
+  factory AVLParam.fromJson(Map<String, dynamic> json) => _$AVLParamFromJson(json);
   Map<String, dynamic> toJson() => _$AVLParamToJson(this);
 
   @override
   bool? get stringify => true;
 
   @override
-  List<Object?> get props => [dummy];
+  List<Object?> get props => [appearance, display];
+}
+
+/// AVL 外观配置
+@CopyWith()
+@FlexiParamSerializable
+final class AVLAppearanceConfig extends Equatable {
+  final Color color;
+  final double lineWidth;
+  final double dashWidth;
+
+  const AVLAppearanceConfig({
+    this.color = const Color(0xffff5722),
+    this.lineWidth = 1.0,
+    this.dashWidth = 0.0,
+  });
+
+  factory AVLAppearanceConfig.fromJson(Map<String, dynamic> json) => _$AVLAppearanceConfigFromJson(json);
+  Map<String, dynamic> toJson() => _$AVLAppearanceConfigToJson(this);
+
+  @override
+  bool? get stringify => true;
+
+  @override
+  List<Object?> get props => [color, lineWidth, dashWidth];
+}
+
+/// AVL 显示配置
+@CopyWith()
+@FlexiParamSerializable
+final class AVLDisplayConfig extends Equatable {
+  final int precision;
+  final bool showInTips;
+  final String tipsLabel;
+
+  const AVLDisplayConfig({
+    this.precision = 2,
+    this.showInTips = true,
+    this.tipsLabel = 'AVL',
+  });
+
+  factory AVLDisplayConfig.fromJson(Map<String, dynamic> json) => _$AVLDisplayConfigFromJson(json);
+  Map<String, dynamic> toJson() => _$AVLDisplayConfigToJson(this);
+
+  @override
+  bool? get stringify => true;
+
+  @override
+  List<Object?> get props => [precision, showInTips, tipsLabel];
 } 

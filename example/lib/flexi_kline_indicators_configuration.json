@@ -1,0 +1,769 @@
+{
+  "_comment": "FlexiKline 指标配置文件 - 独立于主题的指标参数配置",
+  "_version": "1.0.0",
+  "_lastModified": "2024-12-19",
+  "_description": "该文件包含所有技术指标的默认参数配置，独立于主题样式",
+  "defaultColors": [
+    "0xffffff00", "0xffff69b4", "0xff9c27b0", "0xff4caf50", "0xff26a69a",
+    "0xff9575cd", "0xffaed581", "0xffff8a65", "0xff42a5f5", "0xfff44336"
+  ],
+  "_comment_defaultColors": "默认颜色池，新增MA线时自动分配",
+
+  
+  "mainIndicators": {    
+    "volume": {
+      "_comment": "成交量指标配置",
+      "type": "volume", 
+      "displayName": "Vol",
+      "enabled": true,
+      "zIndex": 1,
+      "height": 100,
+      "config": {
+        "showInMain": true,
+        "_comment_showInMain": "是否显示在主图中",
+        "heightRatio": 0.3,
+        "_comment_heightRatio": "在主图中的高度比例",
+        "volume": {
+          "useTrendColor": true,
+          "_comment_useTrendColor": "是否使用固定涨跌色显示成交量柱",
+          "bullishColor": "0xff4caf50",
+          "_comment_bullishColor": "看涨成交量颜色（绿色）",
+          "bearishColor": "0xfff44336", 
+          "_comment_bearishColor": "看跌成交量颜色（红色）",
+          "opacity": 0.6,
+          "_comment_opacity": "成交量柱透明度 (0.0-1.0)"
+        },
+        "display": {
+          "precision": 0,
+          "_comment_precision": "数值显示精度，成交量通常不显示小数",
+          "showVolInTips": true,
+          "_comment_showVolInTips": "Tips中是否显示成交量数值",
+          "compactDisplay": true,
+          "_comment_compactDisplay": "是否使用紧凑显示格式（如1.2K、1.5M）"
+        }
+      }
+    },
+    
+    "ma": {
+      "_comment": "移动平均线指标配置",
+      "type": "ma",
+      "displayName": "MA",
+      "enabled": true,
+      "zIndex": 2,
+      "config": {
+        "_comment": "MA线条配置 - 支持动态添加和自定义参数",
+        "maxLines": 10,
+        "_comment_maxLines": "最大支持的MA线条数量",
+        "lines": [
+          {
+            "id": "ma_1",
+            "enabled": true,
+            "period": 5,
+            "_comment_period": "MA周期，用户可自定义任意正整数",
+            "color": "0xffffff00",
+            "_comment_color": "线条颜色",
+            "width": 1.0,
+            "_comment_width": "线宽，可自定义"
+          },
+          {
+            "id": "ma_2", 
+            "enabled": true,
+            "period": 10,
+            "color": "0xffff69b4",
+            "width": 1.0
+          },
+          {
+            "id": "ma_3",
+            "enabled": true, 
+            "period": 20,
+            "color": "0xff9c27b0",
+            "width": 1.0
+          },
+          {
+            "id": "ma_4",
+            "enabled": false,
+            "period": 25,
+            "color": "0xff4caf50",
+            "width": 1.0
+          },
+          {
+            "id": "ma_5",
+            "enabled": false,
+            "period": 0,
+            "color": "0xff9c27b0",
+            "width": 1.0
+          },
+          {
+            "id": "ma_6",
+            "enabled": false,
+            "period": 0,
+            "color": "0xff26a69a",
+            "width": 1.0
+          },
+          {
+            "id": "ma_7",
+            "enabled": false,
+            "period": 0,
+            "color": "0xff9575cd",
+            "width": 1.0
+          },
+          {
+            "id": "ma_8",
+            "enabled": false,
+            "period": 0,
+            "color": "0xffaed581",
+            "width": 1.0
+          },
+          {
+            "id": "ma_9",
+            "enabled": false,
+            "period": 0,
+            "color": "0xffff8a65",
+            "width": 1.0
+          },
+          {
+            "id": "ma_10",
+            "enabled": false,
+            "period": 0,
+            "color": "0xff42a5f5",
+            "width": 1.0
+          }
+        ],
+        "validation": {
+          "minPeriod": 1,
+          "_comment_minPeriod": "最小周期限制",
+          "maxPeriod": 1000,
+          "_comment_maxPeriod": "最大周期限制",
+          "allowDuplicate": false,
+          "_comment_allowDuplicate": "是否允许重复周期"
+        },
+        "display": {
+          "pointRadius": 0.0,
+          "_comment_pointRadius": "MA线节点半径，0表示不显示节点",
+          "showCrossPoint": false,
+          "_comment_showCrossPoint": "是否显示MA线交叉点",
+          "precision": 2,
+          "_comment_precision": "数值显示精度",
+          "showPeriodInTips": true,
+          "_comment_showPeriodInTips": "Tips中是否显示周期数值"
+        }
+      }
+    },
+    
+    "ema": {
+      "_comment": "指数移动平均线指标配置", 
+      "type": "ema",
+      "displayName": "EMA",
+      "enabled": true,
+      "zIndex": 3,
+      "config": {
+        "_comment": "EMA线条配置 - 支持动态添加和自定义参数",
+        "maxLines": 10,
+        "_comment_maxLines": "最大支持的EMA线条数量",
+        "lines": [
+          {
+            "id": "ema_1",
+            "enabled": true,
+            "period": 7,
+            "_comment_period": "EMA周期，用户可自定义任意正整数",
+            "color": "0xffffff00",
+            "_comment_color": "线条颜色",
+            "width": 1.0,
+            "_comment_width": "线宽，可自定义"
+          },
+          {
+            "id": "ema_2",
+            "enabled": true,
+            "period": 25,
+            "color": "0xffff69b4",
+            "width": 1.0
+          },
+          {
+            "id": "ema_3",
+            "enabled": true,
+            "period": 99,
+            "color": "0xff9c27b0",
+            "width": 1.0
+          },
+          {
+            "id": "ema_4",
+            "enabled": true,
+            "period": 120,
+            "color": "0xff4caf50",
+            "width": 1.0
+          },
+          {
+            "id": "ema_5",
+            "enabled": false,
+            "period": 0,
+            "color": "0xff26a69a",
+            "width": 1.0
+          },
+          {
+            "id": "ema_6",
+            "enabled": false,
+            "period": 0,
+            "color": "0xff9575cd",
+            "width": 1.0
+          },
+          {
+            "id": "ema_7",
+            "enabled": false,
+            "period": 0,
+            "color": "0xffaed581",
+            "width": 1.0
+          },
+          {
+            "id": "ema_8",
+            "enabled": false,
+            "period": 0,
+            "color": "0xffff8a65",
+            "width": 1.0
+          },
+          {
+            "id": "ema_9",
+            "enabled": false,
+            "period": 0,
+            "color": "0xff42a5f5",
+            "width": 1.0
+          },
+          {
+            "id": "ema_10",
+            "enabled": false,
+            "period": 0,
+            "color": "0xfff44336",
+            "width": 1.0
+          }
+        ],
+        "validation": {
+          "minPeriod": 1,
+          "_comment_minPeriod": "最小周期限制",
+          "maxPeriod": 1000,
+          "_comment_maxPeriod": "最大周期限制",
+          "allowDuplicate": false,
+          "_comment_allowDuplicate": "是否允许重复周期"
+        },
+        "display": {
+          "pointRadius": 0.0,
+          "_comment_pointRadius": "EMA线节点半径，0表示不显示节点",
+          "showCrossPoint": false,
+          "_comment_showCrossPoint": "是否显示EMA线交叉点",
+          "precision": 2,
+          "_comment_precision": "数值显示精度",
+          "showPeriodInTips": true,
+          "_comment_showPeriodInTips": "Tips中是否显示周期数值"
+        }
+      }
+    },
+    
+    "boll": {
+      "_comment": "布林带指标配置",
+      "type": "boll",
+      "displayName": "BOLL",
+      "enabled": true,
+      "zIndex": 4,
+      "config": {
+        "_comment": "BOLL计算参数",
+        "periods": {
+          "period": 20,
+          "_comment_period": "计算周期，通常使用20",
+          "stdDev": 2,
+          "_comment_stdDev": "标准差倍数，通常使用2"
+        },
+        "_comment_lines": "BOLL三条线的独立配置",
+        "lines": {
+          "ub": {
+            "enabled": true,
+            "color": "0xffffff00",
+            "_comment_color": "UB上轨线颜色-黄色",
+            "width": 1.0,
+            "_comment_width": "UB上轨线宽度"
+          },
+          "boll": {
+            "enabled": true,
+            "color": "0xffff69b4",
+            "_comment_color": "BOLL中轨线颜色-粉色",
+            "width": 1.0,
+            "_comment_width": "BOLL中轨线宽度"
+          },
+          "lb": {
+            "enabled": true,
+            "color": "0xff9c27b0",
+            "_comment_color": "LB下轨线颜色-紫色",
+            "width": 1.0,
+            "_comment_width": "LB下轨线宽度"
+          }
+        },
+        "_comment_fill": "背景填充配置",
+        "fill": {
+          "enabled": true,
+          "_comment_enabled": "是否启用背景填充",
+          "color": "0x1a4caf50",
+          "_comment_color": "填充背景颜色（包含透明度）",
+          "opacity": 0.1,
+          "_comment_opacity": "填充透明度 0.0-1.0"
+        },
+        "_comment_display": "显示相关配置",
+        "display": {
+          "pointRadius": 0.0,
+          "_comment_pointRadius": "线上节点半径，0表示不显示节点",
+          "showCrossPoint": false,
+          "_comment_showCrossPoint": "是否显示BOLL线交叉点",
+          "precision": 2,
+          "_comment_precision": "数值显示精度",
+          "showPeriodInTips": true,
+          "_comment_showPeriodInTips": "Tips中是否显示周期信息"
+        }
+      }
+    },
+    
+    "sar": {
+      "_comment": "抛物线转向指标配置",
+      "type": "sar",
+      "displayName": "SAR",
+      "enabled": true,
+      "zIndex": 5,
+      "config": {
+        "_comment_calculation": "SAR计算参数",
+        "periods": {
+          "start": 0.02,
+          "_comment_start": "开始值（初始加速因子）",
+          "max": 0.6,
+          "_comment_max": "最大值（最大加速因子）",
+          "step": 0.02,
+          "_comment_step": "加速因子步长"
+        },
+        "_comment_appearance": "SAR外观配置",
+        "appearance": {
+          "color": "0xff9c27b0",
+          "_comment_color": "SAR点颜色（当不使用涨跌色时）",
+          "pointRadius": 2.0,
+          "_comment_pointRadius": "SAR点的半径大小",
+          "borderWidth": 0.5,
+          "_comment_borderWidth": "SAR点边框宽度",
+          "minRadius": 1.0,
+          "_comment_minRadius": "SAR点最小半径",
+          "maxRadius": 4.0,
+          "_comment_maxRadius": "SAR点最大半径",
+          "useTrendColor": true,
+          "_comment_useTrendColor": "是否使用涨跌色（true：使用涨跌色，false：使用固定颜色）"
+        },
+        "_comment_display": "显示相关配置",
+        "display": {
+          "precision": 4,
+          "_comment_precision": "数值显示精度",
+          "showPeriodInTips": false,
+          "_comment_showPeriodInTips": "Tips中是否显示周期信息"
+        }
+      }
+    },
+    
+    "avl": {
+      "_comment": "均价线指标配置",
+      "type": "avl",
+      "displayName": "AVL", 
+      "enabled": false,
+      "_comment_enabled": "默认不启用，用户可手动开启",
+      "zIndex": 6,
+      "config": {
+        "_comment_appearance": "AVL外观配置",
+        "appearance": {
+          "color": "0xffff5722",
+          "_comment_color": "AVL线条颜色",
+          "lineWidth": 1,
+          "_comment_lineWidth": "AVL线条宽度",
+          "dashWidth": 0,
+          "_comment_dashWidth": "虚线间隔，0表示实线"
+        },
+        "_comment_display": "显示相关配置",
+        "display": {
+          "precision": 2,
+          "_comment_precision": "数值显示精度"
+        }
+      }
+    }
+  },
+  
+  "subIndicators": {
+    "_comment": "副区指标配置 - 显示在独立副区域的技术指标",
+    
+    "macd": {
+      "_comment": "MACD指标配置",
+      "type": "macd",
+      "displayName": "MACD",
+      "enabled": true,
+      "height": 100,
+      "_comment_height": "副区指标的显示高度",
+      "config": {
+        "periods": {
+          "short": 12,
+          "_comment_short": "短周期EMA",
+          "long": 26,
+          "_comment_long": "长周期EMA", 
+          "signal": 9,
+          "_comment_signal": "移动平均周期(DEA)"
+        },
+        "lines": {
+          "dif": {
+            "enabled": true,
+            "color": "0xffffff00",
+            "_comment_color": "DIF线颜色-黄色",
+            "width": 1.0
+          },
+          "dea": {
+            "enabled": true,
+            "color": "0xff9c27b0",
+            "_comment_color": "DEA线颜色-紫色", 
+            "width": 1.0
+          }
+        },
+        "histogram": {
+          "enabled": true,
+          "_comment_enabled": "是否显示MACD柱状图",
+          "bullish": {
+            "increasing": {
+              "color": "0xff4caf50",
+              "_comment_color": "多头增长-绿色",
+              "style": "hollow",
+              "_comment_style": "样式: hollow(空心), solid(实心)"
+            },
+            "decreasing": {
+              "color": "0xff4caf50", 
+              "_comment_color": "多头减少-绿色",
+              "style": "solid"
+            }
+          },
+          "bearish": {
+            "increasing": {
+              "color": "0xfff44336",
+              "_comment_color": "空头增长-红色", 
+              "style": "hollow"
+            },
+            "decreasing": {
+              "color": "0xfff44336",
+              "_comment_color": "空头减少-红色",
+              "style": "solid"
+            }
+          }
+        },
+        "display": {
+          "precision": 2,
+          "_comment_precision": "数值显示精度",
+          "showZeroLine": true,
+          "_comment_showZeroLine": "是否显示零轴线",
+          "zeroLineColor": "0xff666666",
+          "zeroLineWidth": 0.5
+        }
+      }
+    },
+    
+    "kdj": {
+      "_comment": "KDJ随机指标配置",
+      "type": "kdj",
+      "displayName": "KDJ",
+      "enabled": true,
+      "height": 100,
+      "config": {
+        "_comment": "KDJ计算参数",
+        "calculation": {
+          "kPeriod": 9,
+          "_comment_kPeriod": "K值计算周期（RSV周期）",
+          "dPeriod": 3,
+          "_comment_dPeriod": "D值移动平均周期1",
+          "jPeriod": 3,
+          "_comment_jPeriod": "J值移动平均周期2"
+        },
+        "_comment_lines": "KDJ三条线的独立配置",
+        "lines": {
+          "k": {
+            "enabled": true,
+            "color": "0xffffff00",
+            "_comment_color": "K线颜色-黄色",
+            "width": 1.0,
+            "_comment_width": "K线宽度"
+          },
+          "d": {
+            "enabled": true,
+            "color": "0xffff69b4",
+            "_comment_color": "D线颜色-粉色",
+            "width": 1.0,
+            "_comment_width": "D线宽度"
+          },
+          "j": {
+            "enabled": true,
+            "color": "0xff9c27b0",
+            "_comment_color": "J线颜色-紫色",
+            "width": 1.0,
+            "_comment_width": "J线宽度"
+          }
+        },
+        "_comment_display": "显示相关配置",
+        "display": {
+          "pointRadius": 0.0,
+          "_comment_pointRadius": "线上节点半径，0表示不显示节点",
+          "showCrossPoint": false,
+          "_comment_showCrossPoint": "是否显示KDJ线交叉点",
+          "precision": 2,
+          "_comment_precision": "数值显示精度",
+          "showPeriodInTips": true,
+          "_comment_showPeriodInTips": "Tips中是否显示周期信息"
+        }
+      }
+    },
+    
+    "rsi": {
+      "_comment": "相对强弱指标配置",
+      "type": "rsi",
+      "displayName": "RSI",
+      "enabled": true,
+      "height": 100,
+      "config": {
+        "_comment": "RSI线条配置 - 支持动态添加和自定义周期",
+        "maxLines": 10,
+        "_comment_maxLines": "最大支持的RSI线条数量",
+        "lines": [
+          {
+            "id": "rsi_1",
+            "enabled": true,
+            "period": 6,
+            "_comment_period": "RSI计算周期，用户可自定义任意正整数",
+            "color": "0xffff9800",
+            "_comment_color": "RSI线条颜色",
+            "width": 1.0,
+            "_comment_width": "线宽，可自定义"
+          },
+          {
+            "id": "rsi_2",
+            "enabled": true,
+            "period": 12,
+            "color": "0xff2196f3",
+            "width": 1.0
+          },
+          {
+            "id": "rsi_3",
+            "enabled": true,
+            "period": 24,
+            "color": "0xff9c27b0",
+            "width": 1.0
+          }
+        ],
+        "validation": {
+          "minPeriod": 1,
+          "_comment_minPeriod": "最小周期限制",
+          "maxPeriod": 1000,
+          "_comment_maxPeriod": "最大周期限制",
+          "allowDuplicate": false,
+          "_comment_allowDuplicate": "是否允许重复周期"
+        },
+        "reference": {
+          "enabled": true,
+          "_comment_enabled": "是否显示超买超卖参考线",
+          "overbought": 70,
+          "_comment_overbought": "超买线位置（0-100）",
+          "oversold": 30,
+          "_comment_oversold": "超卖线位置（0-100）",
+          "lineWidth": 0.5,
+          "_comment_lineWidth": "参考线宽度",
+          "color": "0x66666666",
+          "_comment_color": "参考线颜色（半透明灰色）",
+          "dashWidth": 2.0,
+          "_comment_dashWidth": "虚线间隔，0表示实线"
+        },
+        "display": {
+          "pointRadius": 0.0,
+          "_comment_pointRadius": "RSI线节点半径，0表示不显示节点",
+          "showCrossPoint": false,
+          "_comment_showCrossPoint": "是否显示RSI线交叉点",
+          "precision": 2,
+          "_comment_precision": "数值显示精度",
+          "showPeriodInTips": true,
+          "_comment_showPeriodInTips": "Tips中是否显示周期数值",
+          "showReferenceValue": true,
+          "_comment_showReferenceValue": "是否在Tips中显示超买超卖值"
+        }
+      }
+    },
+    
+    "volMa": {
+      "_comment": "成交量移动平均线指标配置",
+      "type": "volMa",
+      "displayName": "MAVOL",
+      "enabled": true, 
+      "height": 100,
+      "config": {
+        "_comment": "VOL_MA线条配置 - 支持动态添加和自定义周期",
+        "maxLines": 10,
+        "_comment_maxLines": "最大支持的VOL_MA线条数量",
+        "lines": [
+          {
+            "id": "ma_1",
+            "enabled": true,
+            "period": 5,
+            "_comment_period": "VOL_MA周期，用户可自定义任意正整数",
+            "color": "0xffff9800",
+            "_comment_color": "线条颜色（橙色）",
+            "width": 1.0,
+            "_comment_width": "线宽，可自定义",
+            "opacity": 0.8,
+            "_comment_opacity": "线条透明度 (0.0-1.0)"
+          },
+          {
+            "id": "ma_2",
+            "enabled": true,
+            "period": 10,
+            "color": "0xff2196f3",
+            "_comment_color": "线条颜色（蓝色）",
+            "width": 1.0,
+            "opacity": 0.8
+          },
+          {
+            "id": "ma_3",
+            "enabled": false,
+            "period": 20,
+            "color": "0xffff9800",
+            "_comment_color": "线条颜色（橙色）",
+            "width": 1.0,
+            "opacity": 0.8
+          },
+          {
+            "id": "ma_4",
+            "enabled": false,
+            "period": 30,
+            "color": "0xffffff00",
+            "_comment_color": "线条颜色（黄色）",
+            "width": 1.0,
+            "opacity": 0.8
+          }
+        ],
+        "validation": {
+          "minPeriod": 1,
+          "_comment_minPeriod": "最小周期限制",
+          "maxPeriod": 1000,
+          "_comment_maxPeriod": "最大周期限制",
+          "allowDuplicate": false,
+          "_comment_allowDuplicate": "是否允许重复周期"
+        },
+        "volume": {
+          "useTrendColor": true,
+          "_comment_useTrendColor": "是否使用固定涨跌色显示成交量柱",
+          "bullishColor": "0xff4caf50",
+          "_comment_bullishColor": "看涨成交量颜色（绿色）",
+          "bearishColor": "0xfff44336",
+          "_comment_bearishColor": "看跌成交量颜色（红色）",
+          "opacity": 0.6,
+          "_comment_opacity": "成交量柱透明度 (0.0-1.0)"
+        },
+        "display": {
+          "pointRadius": 0.0,
+          "_comment_pointRadius": "VOL_MA线节点半径，0表示不显示节点",
+          "showCrossPoint": false,
+          "_comment_showCrossPoint": "是否显示VOL_MA线交叉点",
+          "precision": 0,
+          "_comment_precision": "数值显示精度，成交量通常不显示小数",
+          "showPeriodInTips": true,
+          "_comment_showPeriodInTips": "Tips中是否显示周期数值",
+          "showVolInTips": true,
+          "_comment_showVolInTips": "Tips中是否显示成交量数值"
+        }
+      }
+    },
+    
+    "obv": {
+      "_comment": "能量潮指标配置",
+      "type": "obv",
+      "displayName": "OBV",
+      "enabled": false,
+      "height": 100,
+      "config": {
+        "color": "0xff607d8b",
+        "lineWidth": 1.0,
+        "_comment_lineWidth": "OBV线宽度",
+        "pointRadius": 0.0,
+        "_comment_pointRadius": "线上节点半径",
+        "fillOpacity": 0.1,
+        "_comment_fillOpacity": "OBV区域填充透明度",
+        "tips": {
+          "show": true,
+          "label": "OBV"
+        },
+        "precision": 0
+      }
+    },
+    
+    "cci": {
+      "_comment": "顺势指标配置",
+      "type": "cci", 
+      "displayName": "CCI",
+      "enabled": false,
+      "height": 100,
+      "config": {
+        "period": 14,
+        "_comment_period": "CCI计算周期",
+        "color": "0xff795548",
+        "lineWidth": 1.0,
+        "_comment_lineWidth": "CCI线宽度",
+        "referenceLineWidth": 0.5,
+        "_comment_referenceLineWidth": "CCI参考线宽度(±100)",
+        "pointRadius": 0.0,
+        "_comment_pointRadius": "线上节点半径",
+        "tips": {
+          "show": true,
+          "label": "CCI"
+        },
+        "overbought": 100,
+        "oversold": -100,
+        "precision": 2
+      }
+    },
+    
+    "williams": {
+      "_comment": "威廉指标配置",
+      "type": "williams",
+      "displayName": "WR",
+      "enabled": false,
+      "height": 100,
+      "config": {
+        "periods": [14, 28],
+        "_comment_periods": "威廉指标计算周期",
+        "colors": ["0xff9c27b0", "0xff673ab7"],
+        "lineWidths": [1.0, 1.0],
+        "_comment_lineWidths": "各周期威廉指标线宽数组",
+        "referenceLineWidth": 0.5,
+        "_comment_referenceLineWidth": "超买超卖参考线宽度",
+        "pointRadius": 0.0,
+        "_comment_pointRadius": "线上节点半径",
+        "tips": {
+          "show": true,
+          "labels": ["WR14", "WR28"]
+        },
+        "overbought": -20,
+        "oversold": -80,
+        "precision": 2
+      }
+    }
+  },
+  
+  "indicatorGroups": {
+    "_comment": "指标分组配置 - 用于UI界面的指标分类显示",
+    "trend": {
+      "_comment": "趋势类指标",
+      "name": "趋势指标",
+      "indicators": ["ma", "ema", "boll", "sar", "avl"],
+      "icon": "trending_up"
+    },
+    "momentum": {
+      "_comment": "动量类指标",
+      "name": "动量指标", 
+      "indicators": ["macd", "rsi", "kdj", "cci", "williams"],
+      "icon": "show_chart"
+    },
+    "volume": {
+      "_comment": "成交量类指标",
+      "name": "成交量指标",
+      "indicators": ["volume", "volMa", "obv"],
+      "icon": "bar_chart"
+    }
+  }
+
+  
+}

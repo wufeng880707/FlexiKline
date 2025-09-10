@@ -80,9 +80,9 @@ mixin SarDataMixin<T extends SARIndicator> on PaintObjectBox<T> {
 
     end = end - 1;
 
-    double af = param.startAf;
-    final step = param.step;
-    final maxAf = param.maxAf;
+    double af = param.periods.start;
+    final step = param.periods.step;
+    final maxAf = param.periods.max;
     BagNum? ep;
     bool isIncreasing = false;
     BagNum sar = BagNum.zero;
@@ -140,7 +140,7 @@ mixin SarDataMixin<T extends SARIndicator> on PaintObjectBox<T> {
           sar = ep;
           // 重新初始化值
           flag = 0; // 开始下跌
-          af = param.startAf;
+          af = param.periods.start;
           ep = null;
           isIncreasing = false;
         }
@@ -164,7 +164,7 @@ mixin SarDataMixin<T extends SARIndicator> on PaintObjectBox<T> {
           sar = ep;
           // 重新初始化值
           flag = 0; // 开始上涨
-          af = param.startAf;
+          af = param.periods.start;
           ep = null;
           isIncreasing = true;
         }

@@ -27,28 +27,21 @@ class MACDIndicator extends PaintObjectIndicator implements IPrecomputable {
     required this.macdTips,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-    required this.lineWidth,
-    this.precision = 2,
   }) : super(key: const FlexiIndicatorKey('macd'));
 
-  /// Macd相关参数
+  /// MACD 参数（包含所有配置）
   @override
   final MACDParam calcParam;
 
-  /// 绘制相关参数
+  /// Tips 相关参数（仅用于显示）
   final TipsConfig difTips;
   final TipsConfig deaTips;
   final TipsConfig macdTips;
   final EdgeInsets tipsPadding;
   final int tickCount;
-  final double lineWidth;
-  final int precision;
 
   @override
-  PaintObjectBox createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+  PaintObjectBox createPaintObject(IPaintContext context) {
     return MACDPaintObject(context: context, indicator: this);
   }
 
@@ -79,13 +72,13 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
         canvas,
         size,
         tickCount: indicator.tickCount,
-        precision: indicator.precision,
+        precision: indicator.calcParam.precision,
       );
     }
   }
 
   @override
-  String fromatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(BagNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -98,7 +91,7 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
     paintYAxisTicksOnCross(
       canvas,
       offset,
-      precision: indicator.precision,
+      precision: indicator.calcParam.precision,
     );
   }
 
@@ -120,11 +113,14 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
     int start = klineData.start;
     int end = (klineData.end + 1).clamp(start, len); // 多绘制一根蜡烛
 
+    // 📊 根据配置决定是否收集线条点位
     final List<Offset> difPoints = [];
     final List<Offset> deaPoints = [];
+    final param = indicator.calcParam;
+    
     double zeroDy = valueToDy(BagNum.zero);
     final offset = startCandleDx - candleWidthHalf;
-    final candleHalf = candleWidthHalf - candleSpacing; // 移除 candleSpacing 引用
+    final candleHalf = candleWidthHalf - candleSpacing;
 
     CandleModel m;
     CandleModel? next;
@@ -132,63 +128,125 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
       m = list[i];
       if (!m.isValidMacdData) continue;
       final dx = offset - (i - start) * candleActualWidth;
-      difPoints.add(Offset(dx, valueToDy(m.dif!, correct: false)));
-      deaPoints.add(Offset(dx, valueToDy(m.dea!, correct: false)));
+      
+      // 📈 只有启用的线条才收集点位
+      if (param.difLine.enabled && m.dif != null) {
+        difPoints.add(Offset(dx, valueToDy(m.dif!, correct: false)));
+      }
+      if (param.deaLine.enabled && m.dea != null) {
+        deaPoints.add(Offset(dx, valueToDy(m.dea!, correct: false)));
+      }
 
-      next = list.getItem(i + 1);
-      if (next?.macd != null && m.macd! > next!.macd!) {
-        // 空心
-        final defLongHollowBarPaint = Paint()
-          ..color = longColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1;
-        final defShortHollowBarPaint = Paint()
-          ..color = shortColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1;
+      // 📊 根据配置决定是否绘制柱状图
+      if (param.histogramEnabled && m.macd != null) {
+        next = list.getItem(i + 1);
+        final histogramColor = _getHistogramColor(m.macd!, next?.macd);
+        final histogramStyle = _getHistogramStyle(m.macd!, next?.macd);
+        
+        if (histogramStyle == HistogramStyle.hollow && next?.macd != null && m.macd! > next!.macd!) {
+          // 空心柱状图
+          final hollowBarPaint = Paint()
+            ..color = histogramColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1;
 
-        canvas.drawPath(
-          Path()
-            ..addRect(Rect.fromPoints(
-              Offset(dx - candleHalf, zeroDy),
-              Offset(dx + candleHalf, valueToDy(m.macd!, correct: false)),
-            )),
-          m.macd! > BagNum.zero ? defLongHollowBarPaint : defShortHollowBarPaint,
-        );
-      } else {
-        // 实心
-        final defLongBarPaint = Paint()
-          ..color = longColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = candleWidth;
-        final defShortBarPaint = Paint()
-          ..color = shortColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = candleWidth;
+          canvas.drawPath(
+            Path()
+              ..addRect(Rect.fromPoints(
+                Offset(dx - candleHalf, zeroDy),
+                Offset(dx + candleHalf, valueToDy(m.macd!, correct: false)),
+              )),
+            hollowBarPaint,
+          );
+        } else {
+          // 实心柱状图
+          final solidBarPaint = Paint()
+            ..color = histogramColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = candleWidth;
 
-        canvas.drawLine(
-          Offset(dx, zeroDy),
-          Offset(dx, valueToDy(m.macd!)),
-          m.macd! > BagNum.zero ? defLongBarPaint : defShortBarPaint,
-        );
+          canvas.drawLine(
+            Offset(dx, zeroDy),
+            Offset(dx, valueToDy(m.macd!)),
+            solidBarPaint,
+          );
+        }
       }
     }
 
-    canvas.drawPath(
-      Path()..addPolygon(difPoints, false),
-      Paint()
-        ..color = indicator.difTips.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = indicator.lineWidth,
-    );
+    // 📈 根据配置绘制DIF线
+    if (param.difLine.enabled && difPoints.isNotEmpty) {
+      canvas.drawPath(
+        Path()..addPolygon(difPoints, false),
+        Paint()
+          ..color = param.difLine.color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = param.difLine.width,
+      );
+    }
 
-    canvas.drawPath(
-      Path()..addPolygon(deaPoints, false),
-      Paint()
-        ..color = indicator.deaTips.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = indicator.lineWidth,
+    // 📈 根据配置绘制DEA线
+    if (param.deaLine.enabled && deaPoints.isNotEmpty) {
+      canvas.drawPath(
+        Path()..addPolygon(deaPoints, false),
+        Paint()
+          ..color = param.deaLine.color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = param.deaLine.width,
+      );
+    }
+    
+    // 📏 根据配置绘制零轴线
+    if (param.showZeroLine) {
+      _paintZeroLine(canvas, size, zeroDy);
+    }
+  }
+
+  /// 绘制零轴线
+  void _paintZeroLine(Canvas canvas, Size size, double zeroDy) {
+    final param = indicator.calcParam;
+    final paint = Paint()
+      ..color = param.zeroLineColor
+      ..strokeWidth = param.zeroLineWidth
+      ..style = PaintingStyle.stroke;
+    
+    canvas.drawLine(
+      Offset(0, zeroDy),
+      Offset(size.width, zeroDy),
+      paint,
     );
+  }
+
+  /// 根据 MACD 值和趋势获取柱状图颜色
+  Color _getHistogramColor(BagNum currentMacd, BagNum? nextMacd) {
+    final isBullish = currentMacd > BagNum.zero;
+    final isIncreasing = nextMacd != null && currentMacd > nextMacd;
+    
+    if (isBullish) {
+      return isIncreasing 
+        ? indicator.calcParam.bullishIncreasing.color
+        : indicator.calcParam.bullishDecreasing.color;
+    } else {
+      return isIncreasing 
+        ? indicator.calcParam.bearishIncreasing.color
+        : indicator.calcParam.bearishDecreasing.color;
+    }
+  }
+
+  /// 根据 MACD 值和趋势获取柱状图样式
+  HistogramStyle _getHistogramStyle(BagNum currentMacd, BagNum? nextMacd) {
+    final isBullish = currentMacd > BagNum.zero;
+    final isIncreasing = nextMacd != null && currentMacd > nextMacd;
+    
+    if (isBullish) {
+      return isIncreasing 
+        ? indicator.calcParam.bullishIncreasing.style
+        : indicator.calcParam.bullishDecreasing.style;
+    } else {
+      return isIncreasing 
+        ? indicator.calcParam.bearishIncreasing.style
+        : indicator.calcParam.bearishDecreasing.style;
+    }
   }
 
   @override
@@ -201,41 +259,54 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
     model ??= offsetToCandle(offset);
     if (model == null || !model.isValidMacdData) return null;
 
-    final precision = indicator.precision;
+    final precision = indicator.calcParam.precision;
+    final param = indicator.calcParam;
     final children = <TextSpan>[];
 
-    children.add(TextSpan(
-      text: formatNumber(
-        model.dif?.toDecimal(),
-        precision: indicator.difTips.getP(precision),
-        cutInvalidZero: true,
-        prefix: indicator.difTips.label,
-        suffix: ' ',
-      ),
-      style: indicator.difTips.style,
-    ));
+    // 📈 根据配置决定是否显示DIF
+    if (param.difLine.enabled && model.dif != null) {
+      children.add(TextSpan(
+        text: formatNumber(
+          model.dif!.toDecimal(),
+          precision: indicator.difTips.getP(precision),
+          cutInvalidZero: true,
+          prefix: indicator.difTips.label,
+          suffix: ' ',
+        ),
+        style: indicator.difTips.style.copyWith(color: param.difLine.color),
+      ));
+    }
 
-    children.add(TextSpan(
-      text: formatNumber(
-        model.dea?.toDecimal(),
-        precision: indicator.deaTips.getP(precision),
-        cutInvalidZero: true,
-        prefix: indicator.deaTips.label,
-        suffix: ' ',
-      ),
-      style: indicator.deaTips.style,
-    ));
+    // 📈 根据配置决定是否显示DEA
+    if (param.deaLine.enabled && model.dea != null) {
+      children.add(TextSpan(
+        text: formatNumber(
+          model.dea!.toDecimal(),
+          precision: indicator.deaTips.getP(precision),
+          cutInvalidZero: true,
+          prefix: indicator.deaTips.label,
+          suffix: ' ',
+        ),
+        style: indicator.deaTips.style.copyWith(color: param.deaLine.color),
+      ));
+    }
 
-    children.add(TextSpan(
-      text: formatNumber(
-        model.macd?.toDecimal(),
-        precision: indicator.macdTips.getP(precision),
-        cutInvalidZero: true,
-        prefix: indicator.macdTips.label,
-        suffix: ' ',
-      ),
-      style: indicator.macdTips.style,
-    ));
+    // 📊 根据配置决定是否显示MACD
+    if (param.histogramEnabled && model.macd != null) {
+      children.add(TextSpan(
+        text: formatNumber(
+          model.macd!.toDecimal(),
+          precision: indicator.macdTips.getP(precision),
+          cutInvalidZero: true,
+          prefix: indicator.macdTips.label,
+          suffix: ' ',
+        ),
+        style: indicator.macdTips.style.copyWith(color: _getHistogramColor(model.macd!, null)),
+      ));
+    }
+
+    // 📋 如果没有任何内容要显示，返回null
+    if (children.isEmpty) return null;
 
     tipsRect ??= drawableRect;
     return canvas.drawText(

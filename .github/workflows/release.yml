@@ -21,7 +21,7 @@ jobs:
         with:
           channel: stable
           flutter-version: 3.19.4
-          # flutter-version-file: pubspec.yaml # path to pubspec.yaml
+          # flutter-version-file: pubspec_1.yaml # path to pubspec_1.yaml
 
       - run: flutter --version
 

@@ -35,13 +35,10 @@ extension on CandleModel {
     return MinMax.getMinMaxByList(getVolMaList(dataIndex));
   }
 
-  void cleanVolMaData(int dataIndex) {
-    calcuData.setData(dataIndex, null);
-  }
 }
 
 mixin VolmaDataMixin<T extends VolMaIndicator> on PaintObjectBox<T> {
-  List<MaParam> get calcParam => indicator.calcParams;
+  VolMaParam get calcParam => indicator.calcParam;
 
   @override
   void precompute(Range range, {bool reset = false}) {
@@ -104,41 +101,46 @@ mixin VolmaDataMixin<T extends VolMaIndicator> on PaintObjectBox<T> {
   }
 
   void calcuAndCacheVolMa(
-    List<MaParam> calcParams, {
+    VolMaParam param, {
     required int start,
     required int end,
   }) {
-    if (klineData.isEmpty || calcParams.isEmpty) return;
-    final paramLen = calcParams.length;
+    final enabledLines = param.enabledLines;
+    if (klineData.isEmpty || enabledLines.isEmpty) return;
+    final paramLen = enabledLines.length;
     for (int i = 0; i < paramLen; i++) {
+      final lineConfig = enabledLines[i];
+      if (lineConfig.period <= 0) continue; // 跳过无效周期
+      
       _calculateVolMa(
-        calcParams[i].count,
+        lineConfig.period,
         paramIndex: i,
         paramLen: paramLen,
-        start: math.max(0, start - calcParams[i].count), // 补起上一次未算数据
+        start: math.max(0, start - lineConfig.period), // 补起上一次未算数据
         end: end,
       );
     }
   }
 
   MinMax? calcuVolMaMinmax(
-    List<MaParam> calcParams, {
+    VolMaParam param, {
     int? start,
     int? end,
   }) {
     start ??= klineData.start;
     end ??= klineData.end;
-    if (calcParams.isEmpty || !klineData.checkStartAndEnd(start, end)) {
+    if (param.enabledLines.isEmpty || !klineData.checkStartAndEnd(start, end)) {
       return null;
     }
     final len = klineData.list.length;
 
-    int minCount = MaParam.getMinCountByList(calcParams)!;
-    end = math.min(len - minCount, end - 1);
+    int? minPeriod = param.minPeriod;
+    if (minPeriod == null || len < minPeriod) return null; // 数据不足，直接返回
+    end = math.min(len - minPeriod, end - 1);
 
     if (end < start) return null;
     if (!klineData.list[end].isValidVolMaList(dataIndex)) {
-      calcuAndCacheVolMa(calcParams, start: 0, end: len);
+      calcuAndCacheVolMa(param, start: 0, end: len);
     }
 
     MinMax? minmax;

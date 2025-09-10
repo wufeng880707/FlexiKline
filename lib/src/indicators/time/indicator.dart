@@ -31,9 +31,7 @@ class TimeIndicator extends TimeBaseIndicator {
   final TextAreaConfig timeTick;
 
   @override
-  TimePaintObject createPaintObject(IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+  TimePaintObject createPaintObject(IPaintContext context) {
     return TimePaintObject(context: context, indicator: this);
   }
 
@@ -80,7 +78,7 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
         final timeTick = indicator.timeTick.of(
           textColor: theme.ticksTextColor,
         );
-        final dyCenterOffset = (indicator.height - timeTick.areaHeight) / 2;
+        final dyCenterOffset = (height - timeTick.areaHeight) / 2;
         canvas.drawTextArea(
           offset: Offset(
             offset.dx,
@@ -108,7 +106,7 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
       background: theme.crossTextBg,
     );
 
-    final dyCenterOffset = (indicator.height - ticksText.areaHeight) / 2;
+    final dyCenterOffset = (height - ticksText.areaHeight) / 2;
     canvas.drawTextArea(
       offset: Offset(
         offset.dx,

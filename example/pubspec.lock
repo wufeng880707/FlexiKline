@@ -205,10 +205,10 @@ packages:
     dependency: transitive
     description:
       name: copy_with_extension
-      sha256: fbcf890b0c34aedf0894f91a11a579994b61b4e04080204656b582708b5b1125
+      sha256: "0447e5ea09845b275fbeaa7605bc85e74da759788678760b2a6c4e06ca622410"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "5.0.4"
+    version: "6.0.1"
   crypto:
     dependency: transitive
     description:
@@ -337,13 +337,21 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.5.1"
+  flexi_formatter:
+    dependency: transitive
+    description:
+      name: flexi_formatter
+      sha256: cf37fb95c9635566d2176aed09fcd623acb4b5f8156ce7f3b68e1bc737580cfa
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.7.1"
   flexi_kline:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.9.0"
+    version: "1.0.0"
   flutter:
     dependency: "direct main"
     description: flutter

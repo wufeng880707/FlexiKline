@@ -90,34 +90,35 @@ mixin BollDataMixin<T extends BOLLIndicator> on PaintObjectBox<T> {
     required int end,
   }) {
     final len = klineData.list.length;
-    if (param.n > len || !klineData.checkStartAndEnd(start, end)) return;
-    logd('calculateBoll [end:$end ~ start:$start] n:${param.n}');
+    final period = param.periods.period;
+    if (period > len || !klineData.checkStartAndEnd(start, end)) return;
+    print('calculateBoll [end:$end ~ start:$start] period:$period');
 
-    end = math.min(len - param.n, end - 1);
+    end = math.min(len - period, end - 1);
 
     for (int i = end; i >= start; i--) {
       final m = klineData.list[i];
-      if (i + param.n > len) continue;
+      if (i + period > len) continue;
 
       // 计算移动平均
       BagNum sum = m.close;
-      for (int j = i + 1; j < i + param.n; j++) {
+      for (int j = i + 1; j < i + period; j++) {
         sum += klineData.list[j].close;
       }
-      final ma = sum.divNum(param.n);
+      final ma = sum.divNum(period);
 
       // 计算标准差
       double variance = (m.close.toDouble() - ma.toDouble()) * (m.close.toDouble() - ma.toDouble());
-      for (int j = i + 1; j < i + param.n; j++) {
+      for (int j = i + 1; j < i + period; j++) {
         variance += (klineData.list[j].close.toDouble() - ma.toDouble()) *
             (klineData.list[j].close.toDouble() - ma.toDouble());
       }
-      final std = BagNum.fromNum(math.sqrt(variance / param.n));
+      final std = BagNum.fromNum(math.sqrt(variance / period));
 
       // 设置BOLL值
       m.mb = ma;
-      m.up = ma + std * BagNum.fromNum(param.std);
-      m.dn = ma - std * BagNum.fromNum(param.std);
+      m.up = ma + std * BagNum.fromNum(param.periods.stdDev);
+      m.dn = ma - std * BagNum.fromNum(param.periods.stdDev);
     }
   }
 
@@ -130,7 +131,7 @@ mixin BollDataMixin<T extends BOLLIndicator> on PaintObjectBox<T> {
     if (klineData.isEmpty) return;
     _calculateBoll(
       calcParam,
-      start: math.max(0, start - calcParam.n), // 补起上一次未算数据
+      start: math.max(0, start - calcParam.periods.period), // 补起上一次未算数据
       end: end,
     );
   }
@@ -150,7 +151,8 @@ mixin BollDataMixin<T extends BOLLIndicator> on PaintObjectBox<T> {
     }
 
     final len = klineData.list.length;
-    end = math.min(len - param.n, end - 1);
+    final period = param.periods.period;
+    end = math.min(len - period, end - 1);
 
     if (!klineData.list[end].isValidBollData) {
       calcuAndCacheBoll(param, start: 0, end: len);

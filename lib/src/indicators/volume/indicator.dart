@@ -15,24 +15,22 @@
 part of 'volume.dart';
 
 @CopyWith()
-@FlexiIndicatorSerializable
 class VolumeIndicator extends PaintObjectIndicator {
   VolumeIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
-    required this.volTips,
+    required this.calcParam,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-    this.precision = 2,
   }) : super(key: const FlexiIndicatorKey('volume'), paintMode: PaintMode.alone);
 
-  /// 绘制相关参数
-  final TipsConfig volTips;
+  @override
+  final VolumeParam calcParam;
   final EdgeInsets tipsPadding;
   final int tickCount;
-  // 默认精度
-  final int precision;
+
+  dynamic getCalcParam() => calcParam;
 
   /// 控制参数(Volume可用于主图和副图, 以下开关控制在主/副图的展示效果)
   // final bool showYAxisTick;
@@ -42,16 +40,11 @@ class VolumeIndicator extends PaintObjectIndicator {
 
   @override
   VolumePaintObject createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+    IPaintContext context,
+  ) {
     return VolumePaintObject(context: context, indicator: this);
   }
 
-  factory VolumeIndicator.fromJson(Map<String, dynamic> json) => _$VolumeIndicatorFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() => _$VolumeIndicatorToJson(this);
 }
 
 class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
@@ -81,19 +74,18 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
         canvas,
         size,
         tickCount: indicator.tickCount,
-        precision: indicator.precision,
+        precision: indicator.calcParam.display.precision,
       );
     }
   }
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String fromatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(BagNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: true,
-      showCompact: true,
     );
   }
 
@@ -103,7 +95,7 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
     paintYAxisTicksOnCross(
       canvas,
       offset,
-      precision: indicator.precision,
+      precision: indicator.calcParam.display.precision,
     );
   }
 
@@ -114,7 +106,6 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: true,
-      showCompact: true,
     );
   }
 
@@ -127,15 +118,25 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
 
     final offset = startCandleDx - candleWidthHalf;
     final dyBottom = chartRect.bottom;
+    final volumeConfig = indicator.calcParam.volume;
 
-    final longPaint = Paint()
-      ..color = longColor
+    // 使用和K线图相同的宽度
+    final barWidth = candleWidth;
+
+    // 绘制成交量柱
+    final bullishPaint = Paint()
+      ..color = volumeConfig.useTrendColor 
+          ? volumeConfig.bullishColorWithOpacity 
+          : longColor.withValues(alpha: volumeConfig.opacity)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = candleLineWidth;
-    final shortPaint = Paint()
-      ..color = shortColor
+      ..strokeWidth = barWidth;
+
+    final bearishPaint = Paint()
+      ..color = volumeConfig.useTrendColor 
+          ? volumeConfig.bearishColorWithOpacity 
+          : shortColor.withValues(alpha: volumeConfig.opacity)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = candleLineWidth;
+      ..strokeWidth = barWidth;
 
     for (var i = start; i < end; i++) {
       final model = list[i];
@@ -143,10 +144,11 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
       final dy = valueToDy(model.vol);
       final isLong = model.close >= model.open;
 
+      // 绘制成交量柱
       canvas.drawLine(
         Offset(dx, dy),
         Offset(dx, dyBottom),
-        isLong ? longPaint : shortPaint,
+        isLong ? bullishPaint : bearishPaint,
       );
     }
   }
@@ -163,20 +165,23 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
   }) {
     model ??= offsetToCandle(offset);
     if (model == null) return null;
+    final param = indicator.calcParam;
+
+    // 如果不显示成交量在Tips中，返回null
+    if (!param.display.showVolInTips) return null;
 
     final text = formatNumber(
       model.vol.toDecimal(),
-      precision: indicator.volTips.getP(indicator.precision),
+      precision: param.display.precision,
       cutInvalidZero: true,
-      showCompact: true,
-      prefix: indicator.volTips.label,
+      prefix: 'VOL: ',
     );
 
     tipsRect ??= drawableRect;
     return canvas.drawText(
       offset: tipsRect.topLeft,
       text: text,
-      style: indicator.volTips.style,
+      style: TextStyle(color: theme.textColor, fontSize: 12),
       drawDirection: DrawDirection.ltr,
       drawableRect: tipsRect,
       textAlign: TextAlign.left,

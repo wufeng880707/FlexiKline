@@ -18,7 +18,7 @@ import 'package:flutter/painting.dart';
 
 import 'common.dart';
 
-extension DrawRect on Canvas {
+extension FlexiDrawRect on Canvas {
   /// 绘制一个背景区域.
   Offset drawRectBackground({
     ///绘制启始坐标位置
@@ -44,8 +44,8 @@ extension DrawRect on Canvas {
     Color borderColor = const Color(0x00000000),
     double borderWidth = 0,
   }) {
-    final isDrawBg = backgroundColor.alpha != 0;
-    final isDrawBorder = borderColor.alpha != 0 && borderWidth > 0;
+    final isDrawBg = backgroundColor.a != 0;
+    final isDrawBorder = borderColor.a != 0 && borderWidth > 0;
     if (size.isEmpty && !isDrawBg && !isDrawBorder) {
       return offset;
     }

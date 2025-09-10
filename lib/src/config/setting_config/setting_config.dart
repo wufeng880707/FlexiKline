@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:math' as math;
+
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/painting.dart';
 
-import '../../constant.dart';
 import '../../framework/serializers.dart';
 import '../loading_config/loading_config.dart';
-import '../text_area_config/text_area_config.dart';
 
 part 'setting_config.g.dart';
 
@@ -26,9 +26,6 @@ part 'setting_config.g.dart';
 @FlexiConfigSerializable
 class SettingConfig {
   const SettingConfig({
-    required this.pixel,
-    required this.indraTodayAvgColor,
-    required this.indraTodayCloseColor,
     /// Long/Short 浅色不透明度 [longTintColor] 和 [shortTintColor]
     this.opacity = 0.5,
 
@@ -38,10 +35,12 @@ class SettingConfig {
     ///  如果不指定默认为设置为20*20的逻辑像素区域.
     this.mainMinSize = const Size(120, 80),
     this.subMinHeight = 30,
+    this.useCandleTicksAsZoomSlideBar = true,
 
     /// 蜡烛图绘制配置
     this.minPaintBlankRate = 0.5,
     this.alwaysCalculateScreenOfCandlesIfEnough = false,
+    required this.candleMinWidth,
     required this.candleMaxWidth,
     required this.candleWidth,
     this.candleFixedSpacing,
@@ -50,33 +49,13 @@ class SettingConfig {
     required this.candleLineWidth,
     required this.firstCandleInitOffset,
 
-    /// 最小蜡烛高度，当开盘价和收盘价非常接近时，确保蜡烛有最小可见高度
-    this.minCandleHeight = 1.0,
+    /// 绘制额外内容是否在允许在主图绘制区域之外
+    this.allowPaintExtraOutsideMainRect = true,
 
     /// 是否展示Y轴刻度.
     this.showYAxisTick = true,
-
-    /// 全局默认的刻度值配置.
-    required this.ticksText,
-
-    /// 副图配置
-    // 副区的指标图最大数量
-    this.subChartMaxCount = defaultSubChartMaxCount,
-    
-    // 交易区的指标图最大数量
-    this.tradeChartMaxCount = defaultTradeChartMaxCount,
-    
   });
 
-  /// 单个像素值
-  final double pixel;
-
-  ///分时图均价线颜色
-  final Color indraTodayAvgColor;
-
-  ///分时图折线颜色
-  final Color indraTodayCloseColor;
-  
   /// Long/Short 浅色不透明度 [longTintColor] 和 [shortTintColor]
   final double opacity;
 
@@ -88,6 +67,9 @@ class SettingConfig {
   // 副区指标图的最小高度
   final double subMinHeight;
 
+  /// 使用蜡烛图的刻度作为进行缩放拖拽滑动条
+  final bool useCandleTicksAsZoomSlideBar;
+
   /// 绘制区域最少留白比例
   /// 例如: 当蜡烛数量不足以绘制一屏, 向右移动到末尾时, 绘制区域左边最少留白区域占可绘制区域(canvasWidth)的比例
   final double minPaintBlankRate;
@@ -97,6 +79,8 @@ class SettingConfig {
   final bool alwaysCalculateScreenOfCandlesIfEnough;
 
   /// 蜡烛配置
+  /// 最小蜡烛宽度[1, 50]
+  final double candleMinWidth;
   // 最大蜡烛宽度[1, 50]
   final double candleMaxWidth;
   // 单根蜡烛柱的宽度
@@ -107,43 +91,26 @@ class SettingConfig {
   final int candleSpacingParts;
   // 蜡烛空心柱的边框宽度
   final double candleHollowBarBorderWidth;
-  // 蜡烛高低线宽(high, low)
+  // 蜡烛空心线宽; 高低线宽(high, low)
   final double candleLineWidth;
   // Candle 第一根Candle相对于mainRect右边的偏移
   final double firstCandleInitOffset;
 
-  /// 最小蜡烛高度，当开盘价和收盘价非常接近时，确保蜡烛有最小可见高度
-  final double minCandleHeight;
+  /// 绘制额外内容是否在允许在主图绘制区域之外
+  final bool allowPaintExtraOutsideMainRect;
 
   /// 是否展示Y轴刻度.
   final bool showYAxisTick;
 
-  /// 全局默认的刻度值文本配置.
-  final TextAreaConfig ticksText;
-
-  // 副区的指标图最大数量
-  final int subChartMaxCount;
-  // 交易区的指标图最大数量
-  final int tradeChartMaxCount;
-
   bool get isFixedCandleSpacing {
-    return candleFixedSpacing != null && candleFixedSpacing! > pixel;
+    return candleFixedSpacing != null && candleFixedSpacing! > candleMinWidth;
   }
 
   int get spacingCandleParts {
-    return candleSpacingParts.clamp(1, candleWidth.toInt());
+    return candleSpacingParts.clamp(1, math.max(1, candleWidth.toInt()));
   }
 
-  // /// 蜡烛间距 [candleFixedSpacing] 优先于 [candleSpacingParts]
-  // double? _candleSpacing;
-  // double get candleSpacing {
-  //   _candleSpacing = candleFixedSpacing ?? candleWidth / candleSpacingParts;
-  //   _candleSpacing = _candleSpacing! < pixel ? pixel : _candleSpacing;
-  //   return _candleSpacing!;
-  // }
-
-  factory SettingConfig.fromJson(Map<String, dynamic> json) =>
-      _$SettingConfigFromJson(json);
+  factory SettingConfig.fromJson(Map<String, dynamic> json) => _$SettingConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$SettingConfigToJson(this);
 }

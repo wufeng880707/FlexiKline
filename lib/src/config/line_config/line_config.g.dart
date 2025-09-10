@@ -22,10 +22,10 @@ abstract class _$LineConfigCWProxy {
   /// LineConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   LineConfig call({
-    LineType? type,
+    LineType type,
     double? length,
-    List<double>? dashes,
-    PaintConfig? paint,
+    List<double> dashes,
+    PaintConfig paint,
   });
 }
 
@@ -62,7 +62,7 @@ class _$LineConfigCWProxyImpl implements _$LineConfigCWProxy {
     Object? paint = const $CopyWithPlaceholder(),
   }) {
     return LineConfig(
-      type: type == const $CopyWithPlaceholder() || type == null
+      type: type == const $CopyWithPlaceholder()
           ? _value.type
           // ignore: cast_nullable_to_non_nullable
           : type as LineType,
@@ -70,11 +70,11 @@ class _$LineConfigCWProxyImpl implements _$LineConfigCWProxy {
           ? _value.length
           // ignore: cast_nullable_to_non_nullable
           : length as double?,
-      dashes: dashes == const $CopyWithPlaceholder() || dashes == null
+      dashes: dashes == const $CopyWithPlaceholder()
           ? _value.dashes
           // ignore: cast_nullable_to_non_nullable
           : dashes as List<double>,
-      paint: paint == const $CopyWithPlaceholder() || paint == null
+      paint: paint == const $CopyWithPlaceholder()
           ? _value.paint
           // ignore: cast_nullable_to_non_nullable
           : paint as PaintConfig,

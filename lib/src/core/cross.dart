@@ -65,6 +65,22 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
     }
   }
 
+  LineConfig? _crosshair;
+  PointConfig? _crosspoint;
+
+  @override
+  void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
+    super.onThemeChanged(oldTheme);
+    _crosshair = null;
+    _crosspoint = null;
+  }
+
+  @override
+  void onLanguageChanged() {
+    super.onLanguageChanged();
+    markRepaintCross();
+  }
+
   // 是否正在绘制Cross
   @override
   bool get isCrossing => crossOffset?.isFinite == true;
@@ -157,7 +173,7 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       if (crossConfig.showLatestTipsInBlank) {
         model = dxToCandle(offset.dx);
         // 如果当前model为空, 则根据offset.dx计算当前model是最新的, 还是最后的.
-        if (model == null && !curKlineData.isEmpty) {
+        if (model == null && curKlineData.isNotEmpty) {
           if (offset.dx > startCandleDx) {
             model = curKlineData.latest;
           } else {
@@ -172,10 +188,10 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       /// 绘制 Tooltip
       paintTooltip(canvas, offset, model: model);
 
-      mainPaintObject.doOnCross(canvas, offset, model: model);
       for (var paintObject in subPaintObjects) {
         paintObject.doOnCross(canvas, offset, model: model);
       }
+      mainPaintObject.doOnCross(canvas, offset, model: model);
     }
   }
 
@@ -188,24 +204,32 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       ..moveTo(offset.dx, 0)
       ..lineTo(offset.dx, canvasHeight);
 
+    _crosshair ??= crossConfig.crosshair.of(paintColor: theme.crossColor);
+
     canvas.drawLineByConfig(
       path,
-      crossConfig.crosshair,
+      _crosshair!,
     );
 
+    _crosspoint ??= crossConfig.crosspoint.of(color: theme.crossColor);
     canvas.drawCirclePoint(
       offset,
-      crossConfig.crosspoint,
+      _crosspoint!,
     );
   }
 
   /// 绘制 Tooltip
   void paintTooltip(Canvas canvas, Offset offset, {CandleModel? model}) {
+    final tooltipConfig = crossConfig.tooltipConfig;
     if (!tooltipConfig.show) return;
+    final tooltipTextStyle = tooltipConfig.style.copyWith(
+      color: theme.tooltipTextColor,
+    );
+
     int? index = dxToIndex(offset.dx);
     if (index == null) return;
-    model ??= curKlineData.getCandle(index);
-    final pre = curKlineData.getCandle(index + 1);
+    model ??= curKlineData.get(index);
+    final pre = curKlineData.get(index + 1);
     if (model == null) return;
 
     /// 准备数据
@@ -242,9 +266,9 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       String br = i < tooltipInfoList.length - 1 ? '\n' : '';
       labelSpanList.add(TextSpan(
         text: info.label + br,
-        style: info.labelStyle ?? tooltipConfig.style,
+        style: info.labelStyle ?? tooltipTextStyle,
       ));
-      TextStyle valStyle = info.valueStyle ?? tooltipConfig.style;
+      TextStyle valStyle = info.valueStyle ?? tooltipTextStyle;
       if (info.riseOrFall > 0) {
         valStyle = valStyle.copyWith(color: theme.long);
       } else if (info.riseOrFall < 0) {
@@ -258,8 +282,10 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
 
     /// 开始绘制
     double top = tooltipConfig.margin.top;
-    if (mainPaintObject.drawBelowTipsArea) {
-      top += mainPaintObject.padding.top;
+    if (isStartZoomChart) {
+      top += mainOriginPadding.top;
+    } else {
+      top += mainPadding.top;
     }
 
     if (offset.dx > mainChartWidthHalf) {
@@ -275,12 +301,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         drawableRect: mainChartRect,
         textSpan: TextSpan(
           children: labelSpanList,
-          style: tooltipConfig.style,
+          style: tooltipTextStyle,
         ),
         textAlign: TextAlign.start,
         textWidthBasis: TextWidthBasis.longestLine,
         padding: tooltipConfig.padding,
-        backgroundColor: tooltipConfig.background,
+        backgroundColor: theme.tooltipBg,
         borderRadius: BorderRadius.only(
           topLeft: tooltipConfig.radius.topLeft,
           bottomLeft: tooltipConfig.radius.bottomLeft,
@@ -296,12 +322,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         drawableRect: mainChartRect,
         textSpan: TextSpan(
           children: valueSpanList,
-          style: tooltipConfig.style,
+          style: tooltipTextStyle,
         ),
         textAlign: TextAlign.end,
         textWidthBasis: TextWidthBasis.longestLine,
         padding: tooltipConfig.padding,
-        backgroundColor: tooltipConfig.background,
+        backgroundColor: theme.tooltipBg,
         borderRadius: BorderRadius.only(
           topRight: tooltipConfig.radius.topRight,
           bottomRight: tooltipConfig.radius.bottomRight,
@@ -320,12 +346,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         drawableRect: mainChartRect,
         textSpan: TextSpan(
           children: valueSpanList,
-          style: tooltipConfig.style,
+          style: tooltipTextStyle,
         ),
         textAlign: TextAlign.end,
         textWidthBasis: TextWidthBasis.longestLine,
         padding: tooltipConfig.padding,
-        backgroundColor: tooltipConfig.background,
+        backgroundColor: theme.tooltipBg,
         borderRadius: BorderRadius.only(
           topRight: tooltipConfig.radius.topRight,
           bottomRight: tooltipConfig.radius.bottomRight,
@@ -341,12 +367,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         drawableRect: mainChartRect,
         textSpan: TextSpan(
           children: labelSpanList,
-          style: tooltipConfig.style,
+          style: tooltipTextStyle,
         ),
         textAlign: TextAlign.start,
         textWidthBasis: TextWidthBasis.longestLine,
         padding: tooltipConfig.padding,
-        backgroundColor: tooltipConfig.background,
+        backgroundColor: theme.tooltipBg,
         borderRadius: BorderRadius.only(
           topLeft: tooltipConfig.radius.topLeft,
           bottomLeft: tooltipConfig.radius.bottomLeft,
@@ -383,37 +409,37 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
           value = model.formatDateTime(timeBar);
           break;
         case TooltipLabel.open:
-          value = formatPrice(model.o, precision: p);
+          value = formatPrice(model.o, precision: p, cutInvalidZero: false);
           break;
         case TooltipLabel.high:
-          value = formatPrice(model.h, precision: p);
+          value = formatPrice(model.h, precision: p, cutInvalidZero: false);
           break;
         case TooltipLabel.low:
-          value = formatPrice(model.l, precision: p);
+          value = formatPrice(model.l, precision: p, cutInvalidZero: false);
           break;
         case TooltipLabel.close:
-          value = formatPrice(model.c, precision: p);
+          value = formatPrice(model.c, precision: p, cutInvalidZero: false);
           break;
         case TooltipLabel.chg:
-          value = formatPrice(model.change, precision: p);
+          value = formatPrice(model.change, precision: p, cutInvalidZero: false);
           break;
         case TooltipLabel.chgRate:
-          value = formatPercentage(model.changeRate);
+          value = formatPercentage(model.changeRate.d, precision: 2);
           riseOrFall = model.change.signum;
           break;
         case TooltipLabel.range:
           if (pre != null) {
-            value = formatPercentage(model.rangeRate(pre));
+            value = formatPercentage(model.rangeRate(pre).d, precision: 2);
           } else {
-            value = formatPrice(model.range, precision: p);
+            value = formatPrice(model.range, precision: p, cutInvalidZero: false);
           }
           break;
         case TooltipLabel.amount:
-          value = formatAmount(model.v);
+          value = formatAmount(model.v, precision: 2);
           break;
         case TooltipLabel.turnover:
           if (model.vc != null) {
-            value = formatAmount(model.vc);
+            value = formatAmount(model.vc, precision: 2);
           }
           break;
       }

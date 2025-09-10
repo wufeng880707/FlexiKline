@@ -16,43 +16,29 @@ part of 'vol_ma.dart';
 
 /// VolMa 移动平均指标线
 @CopyWith()
-@FlexiIndicatorSerializable
 class VolMaIndicator extends PaintObjectIndicator implements IPrecomputable {
   VolMaIndicator({
     super.zIndex = 0,
     super.height = defaultSubIndicatorHeight,
     super.padding = defaultSubIndicatorPadding,
-
-    /// 绘制相关参数
-    required this.volTips,
-    required this.calcParams,
+    required this.calcParam,
     required this.tipsPadding,
     this.ticksCount = defaultSubTickCount,
-    required this.maLineWidth,
-    this.precision = 2,
   }) : super(key: const FlexiIndicatorKey('volMa'));
 
-  final TipsConfig volTips;
   @override
-  final List<MaParam> calcParams;
+  final VolMaParam calcParam;
   final EdgeInsets tipsPadding;
   final int ticksCount;
-  final double maLineWidth;
-  // 默认精度
-  final int precision;
+
+  dynamic getCalcParam() => calcParam;
 
   @override
   VolMaPaintObject createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+    IPaintContext context,
+  ) {
     return VolMaPaintObject(context: context, indicator: this);
   }
-
-  factory VolMaIndicator.fromJson(Map<String, dynamic> json) => _$VolMaIndicatorFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() => _$VolMaIndicatorToJson(this);
 }
 
 class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
@@ -72,7 +58,7 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
     );
 
     final maMinmax = calcuVolMaMinmax(
-      indicator.calcParams,
+      indicator.calcParam,
       start: start,
       end: end,
     );
@@ -99,7 +85,7 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
         canvas,
         size,
         tickCount: indicator.ticksCount,
-        precision: indicator.precision,
+        precision: indicator.calcParam.display.precision,
       );
     }
   }
@@ -110,7 +96,7 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
     paintYAxisTicksOnCross(
       canvas,
       offset,
-      precision: indicator.precision,
+      precision: indicator.calcParam.display.precision,
     );
   }
 
@@ -123,16 +109,25 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
 
     final offset = startCandleDx - candleWidthHalf;
     final dyBottom = chartRect.bottom;
+    final volumeConfig = indicator.calcParam.volume;
 
-    // 实心
-    final longPaint = Paint()
-      ..color = longColor
+    // 使用和K线图相同的宽度
+    final barWidth = candleWidth;
+
+    // 绘制成交量柱
+    final bullishPaint = Paint()
+      ..color = (volumeConfig.useTrendColor
+          ? volumeConfig.bullishColorWithOpacity
+          : longColor.withValues(alpha: volumeConfig.opacity))
       ..style = PaintingStyle.stroke
-      ..strokeWidth = candleWidth;
-    final shortPaint = Paint()
-      ..color = shortColor
+      ..strokeWidth = barWidth;
+
+    final bearishPaint = Paint()
+      ..color = (volumeConfig.useTrendColor
+          ? volumeConfig.bearishColorWithOpacity
+          : shortColor.withValues(alpha: volumeConfig.opacity))
       ..style = PaintingStyle.stroke
-      ..strokeWidth = candleWidth;
+      ..strokeWidth = barWidth;
 
     for (var i = start; i < end; i++) {
       final model = list[i];
@@ -140,10 +135,11 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
       final dy = valueToDy(model.vol);
       final isLong = model.close >= model.open;
 
+      // 绘制成交量柱
       canvas.drawLine(
         Offset(dx, dy),
         Offset(dx, dyBottom),
-        isLong ? longPaint : shortPaint,
+        isLong ? bullishPaint : bearishPaint,
       );
     }
   }
@@ -151,13 +147,15 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
   /// 绘制VOLMA指标线
   void paintVolMALine(Canvas canvas, Size size) {
     if (!klineData.canPaintChart) return;
-    if (indicator.calcParams.isEmpty) return;
+    final enabledLines = indicator.calcParam.enabledLines;
+    if (enabledLines.isEmpty) return;
     final list = klineData.list;
     int start = klineData.start;
     int end = (klineData.end + 1).clamp(start, list.length); // 多绘制一根蜡烛
 
     final offset = startCandleDx - candleWidthHalf;
-    for (int j = 0; j < indicator.calcParams.length; j++) {
+    for (int j = 0; j < enabledLines.length; j++) {
+      final lineConfig = enabledLines[j];
       BagNum? val;
       final List<Offset> points = [];
       for (int i = start; i < end; i++) {
@@ -169,13 +167,28 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
         ));
       }
 
-      canvas.drawPath(
-        Path()..addPolygon(points, false),
-        Paint()
-          ..color = indicator.calcParams[j].tips.color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = indicator.maLineWidth,
-      );
+      if (points.isNotEmpty) {
+        canvas.drawPath(
+          Path()..addPolygon(points, false),
+          Paint()
+            ..color = lineConfig.colorWithOpacity
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = lineConfig.width,
+        );
+
+        // 绘制节点
+        if (indicator.calcParam.display.pointRadius > 0) {
+          for (final point in points) {
+            canvas.drawCircle(
+              point,
+              indicator.calcParam.display.pointRadius,
+              Paint()
+                ..color = lineConfig.colorWithOpacity
+                ..style = PaintingStyle.fill,
+            );
+          }
+        }
+      }
     }
   }
 
@@ -190,40 +203,50 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
     model ??= offsetToCandle(offset);
     if (model == null) return null;
     final children = <TextSpan>[];
+    final param = indicator.calcParam;
+    final precision = param.display.precision;
 
-    /// Vol Tips文本
-    final text = formatNumber(
-      model.vol.toDecimal(),
-      precision: indicator.volTips.getP(indicator.precision),
-      cutInvalidZero: true,
-      showCompact: true,
-      prefix: indicator.volTips.label,
-    );
-    children.add(TextSpan(
-      text: '$text  ',
-      style: indicator.volTips.style,
-    ));
+    /// Vol Tips文本（如果启用）
+    if (param.display.showVolInTips) {
+      final text = formatNumber(
+        model.vol.toDecimal(),
+        precision: precision,
+        cutInvalidZero: true,
+        prefix: 'VOL: ',
+        suffix: '  ',
+      );
+      children.add(TextSpan(
+        text: text,
+        style: TextStyle(color: theme.textColor, fontSize: 12),
+      ));
+    }
 
     final volMaList = model.getVolMaList(dataIndex);
     if (volMaList != null) {
+      final enabledLines = param.enabledLines;
+
       /// Ma Tips文本
       BagNum? val;
-      for (int i = 0; i < volMaList.length; i++) {
+      for (int i = 0; i < volMaList.length && i < enabledLines.length; i++) {
         val = volMaList.getItem(i);
         if (val == null) continue;
-        final param = indicator.calcParams.getItem(i);
-        if (param == null) continue;
+        final lineConfig = enabledLines[i];
+
+        String label = 'MAVOL';
+        if (param.display.showPeriodInTips) {
+          label = 'MAVOL${lineConfig.period}';
+        }
 
         final text = formatNumber(
           val.toDecimal(),
-          precision: param.tips.getP(klineData.precision),
+          precision: precision,
           cutInvalidZero: true,
-          prefix: param.tips.label,
+          prefix: '$label: ',
           suffix: '  ',
         );
         children.add(TextSpan(
           text: text,
-          style: param.tips.style,
+          style: TextStyle(color: lineConfig.color, fontSize: 12),
         ));
       }
     }

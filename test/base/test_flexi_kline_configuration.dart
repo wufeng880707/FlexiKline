@@ -19,9 +19,6 @@ import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart' hide Overlay;
 
 class TestFlexiKlineTheme implements IFlexiKlineTheme {
-  @override
-  String key = 'flexi_kline_config_key_test';
-
   double? _scale;
   @override
   double get scale {
@@ -64,8 +61,8 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color crossTextBg = const Color(0xFF111111);
 
-  @override
-  Color drawTextBg = Colors.blue;
+  // @override
+  // Color drawTextBg = Colors.blue;
 
   @override
   Color transparent = Colors.transparent;
@@ -83,7 +80,7 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   Color get drawColor => Colors.blueAccent;
 
   @override
-  Color markLine = const Color(0xFF000000);
+  Color markLineColor = Colors.blue;
 
   @override
   Color get themeColor => Colors.white;
@@ -104,21 +101,16 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   Color tooltipTextColor = const Color(0xFF949494);
 
   @override
-  Color get indraTodayAvgColor => const Color(0xffff9933);
+  Color get latestPriceTextBg => throw UnimplementedError();
 
   @override
-  Color get indraTodayCloseColor => const Color(0xff4d78ff);
+  Color get dragBg => throw UnimplementedError();
+
+  @override
+  Color get lineChartColor => throw UnimplementedError();
 }
 
 class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
-  @override
-  FlexiKlineConfig getFlexiKlineConfig() {
-    return genFlexiKlineConfig();
-  }
-
-  @override
-  void saveFlexiKlineConfig(FlexiKlineConfig config) {}
-
   @override
   IFlexiKlineTheme get theme => TestFlexiKlineTheme();
 
@@ -129,19 +121,19 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   @override
   MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
-    // TODO: implement genMainIndicator
     throw UnimplementedError();
   }
 
   @override
   Map<String, dynamic>? getConfig(String key) {
-    // TODO: implement getConfig
     throw UnimplementedError();
   }
 
   @override
   Future<bool> setConfig(String key, Map<String, dynamic> value) {
-    // TODO: implement setConfig
     throw UnimplementedError();
   }
+
+  @override
+  String get configKey => 'test';
 }

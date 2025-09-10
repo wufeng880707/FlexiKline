@@ -14,21 +14,6 @@
 
 part of 'indicator.dart';
 
-/// 添加事件注册表
-typedef KlineEventCallback = void Function(dynamic args);
-
-class KlineEventBus {
-  final Map<String, KlineEventCallback> _handlers = {};
-
-  void on(String event, KlineEventCallback callback) {
-    _handlers[event] = callback;
-  }
-
-  void emit(String event, [dynamic args]) {
-    _handlers[event]?.call(args);
-  }
-}
-
 /// 指标基础配置
 ///
 /// [key] 唯一指定Indicator
@@ -52,7 +37,7 @@ abstract class Indicator implements IPrecomputable {
 
   double height;
 
-  EdgeInsets padding;
+  final EdgeInsets padding;
 
   final PaintMode paintMode;
 
@@ -80,7 +65,7 @@ abstract class PaintObjectIndicator extends Indicator {
   });
 
   @override
-  PaintObject createPaintObject(covariant IPaintContext context);
+  PaintObjectBox createPaintObject(IPaintContext context);
 }
 
 /// 蜡烛指标配置基类
@@ -117,26 +102,24 @@ abstract class TimeBaseIndicator extends Indicator {
 @FlexiIndicatorSerializable
 class MainPaintObjectIndicator<T extends PaintObjectIndicator> extends Indicator {
   MainPaintObjectIndicator({
-    required Size size,
+    required this.size,
     required super.padding,
     this.drawBelowTipsArea = false,
-    Set<IIndicatorKey>? indicatorKeys,
-  })  : _size = size,
-        indicatorKeys = indicatorKeys ?? <IIndicatorKey>{},
+    Set<IIndicatorKey>? children,
+  })  : children = children ?? <IIndicatorKey>{},
         super(key: mainIndicatorKey, height: size.height);
 
-  late Size _size;
-  Size get size => _size;
+  late Size size;
+
+  @override
+  double get height => size.height;
   final bool drawBelowTipsArea;
 
   /// 当前主区已选中指标集合(由PaintObjectManager管理)
-  final Set<IIndicatorKey> indicatorKeys;
+  final Set<IIndicatorKey> children;
 
   @override
-  MainPaintObject createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+  MainPaintObject createPaintObject(IPaintContext context) {
     return MainPaintObject(context: context, indicator: this);
   }
 

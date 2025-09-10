@@ -15,59 +15,36 @@
 part of 'boll.dart';
 
 /// BOLL 布林带指标
-@CopyWith()
-@FlexiIndicatorSerializable
 class BOLLIndicator extends PaintObjectIndicator implements IPrecomputable {
   BOLLIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
-    required this.calcParam,
-    required this.mbTips,
-    required this.upTips,
-    required this.dnTips,
+    this.calcParam = const BOLLParam(),
     required this.tipsPadding,
-    required this.lineWidth,
-    this.isFillBetweenUpAndDn = true,
-    Color? fillColor,
     this.tickCount = defaultSubTickCount,
-  })  : fillColor = fillColor ?? mbTips.color.withValues(alpha: 0.1),
-        super(key: const FlexiIndicatorKey('boll'));
+  }) : super(key: const FlexiIndicatorKey('boll'));
 
-  /// BOLL计算参数
+  /// BOLL计算参数 - 包含所有配置
   @override
   final BOLLParam calcParam;
 
-  /// 绘制相关参数
-  final TipsConfig mbTips;
-  final TipsConfig upTips;
-  final TipsConfig dnTips;
+  /// Tips 布局参数
   final EdgeInsets tipsPadding;
-  final double lineWidth;
-
-  /// 填充配置
-  final bool isFillBetweenUpAndDn;
-  final Color fillColor;
 
   /// YAxis刻度数量(注: 仅在key为subBollKey时有用)
   final int tickCount;
 
   @override
   PaintObjectBox createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+    IPaintContext context,
+  ) {
     return BOLLPaintObject(context: context, indicator: this);
   }
-
-  factory BOLLIndicator.fromJson(Map<String, dynamic> json) => _$BOLLIndicatorFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() => _$BOLLIndicatorToJson(this);
 }
 
 class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
-    with BollDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin, PaintSimpleCandleMixin {
+    with BollDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   BOLLPaintObject({
     required super.context,
     required super.indicator,
@@ -105,19 +82,18 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
         canvas,
         size,
         tickCount: indicator.tickCount,
-        precision: klineData.precision,
+        precision: indicator.calcParam.display.precision,
       );
     }
   }
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String fromatTicksValue(BagNum value, {required int precision}) {
-    return formatPrice(
+  String formatTicksValue(BagNum value, {required int precision}) {
+    return formatNumber(
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showThousands: true,
     );
   }
 
@@ -128,7 +104,7 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
       paintYAxisTicksOnCross(
         canvas,
         offset,
-        precision: klineData.precision,
+        precision: indicator.calcParam.display.precision,
       );
     }
   }
@@ -136,11 +112,10 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
   /// 在onCross时, 重写[paintYAxisTicksOnCross]中的格式化刻度值
   @override
   String formatTicksValueOnCross(BagNum value, {required int precision}) {
-    return formatPrice(
+    return formatNumber(
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showThousands: true,
     );
   }
 
@@ -153,57 +128,99 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
     int start = klineData.start;
     int end = (klineData.end + 1).clamp(start, len); // 多绘制一根蜡烛
 
-    if (isInSub) {
-      // 绘制简易蜡烛
-      paintSimpleCandleChart(canvas, size);
+    // 如果在子指标中，可以在这里添加额外的绘制逻辑
+
+    final enabledLines = indicator.calcParam.enabledLines;
+    if (enabledLines.isEmpty) return;
+
+    // 收集各线条的点位
+    final Map<BOLLLineType, List<Offset>> linePoints = {};
+    for (final lineType in enabledLines) {
+      linePoints[lineType] = [];
     }
 
-    final List<Offset> mbPoints = [];
-    final List<Offset> upPoints = [];
-    final List<Offset> dnPoints = [];
     final offset = startCandleDx - candleWidthHalf;
-
     CandleModel m;
+    
     for (int i = start; i < end; i++) {
       m = list[i];
       if (!m.isValidBollData) continue;
       final dx = offset - (i - start) * candleActualWidth;
-      mbPoints.add(Offset(dx, valueToDy(m.mb!, correct: false)));
-      upPoints.add(Offset(dx, valueToDy(m.up!, correct: false)));
-      dnPoints.add(Offset(dx, valueToDy(m.dn!, correct: false)));
+      
+      for (final lineType in enabledLines) {
+        BagNum? value;
+        switch (lineType) {
+          case BOLLLineType.ub:
+            value = m.up;
+            break;
+          case BOLLLineType.boll:
+            value = m.mb;
+            break;
+          case BOLLLineType.lb:
+            value = m.dn;
+            break;
+        }
+        if (value != null) {
+          linePoints[lineType]!.add(Offset(dx, valueToDy(value, correct: false)));
+        }
+      }
     }
 
-    canvas.drawPath(
-      Path()..addPolygon(mbPoints, false),
-      Paint()
-        ..color = indicator.mbTips.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = indicator.lineWidth,
-    );
-
-    canvas.drawPath(
-      Path()..addPolygon(upPoints, false),
-      Paint()
-        ..color = indicator.upTips.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = indicator.lineWidth,
-    );
-
-    canvas.drawPath(
-      Path()..addPolygon(dnPoints, false),
-      Paint()
-        ..color = indicator.dnTips.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = indicator.lineWidth,
-    );
-
-    if (indicator.isFillBetweenUpAndDn) {
+    // 绘制背景填充（如果启用）
+    if (indicator.calcParam.fill.enabled && 
+        linePoints[BOLLLineType.ub]?.isNotEmpty == true && 
+        linePoints[BOLLLineType.lb]?.isNotEmpty == true) {
+      final ubPoints = linePoints[BOLLLineType.ub]!;
+      final lbPoints = linePoints[BOLLLineType.lb]!;
+      
+      final fillPath = Path();
+      fillPath.addPolygon([...ubPoints, ...lbPoints.reversed], true);
+      
       canvas.drawPath(
-        Path()..addPolygon([...upPoints, ...dnPoints.reversed], false),
+        fillPath,
         Paint()
-          ..color = indicator.fillColor
+          ..color = indicator.calcParam.fill.color.withOpacity(indicator.calcParam.fill.opacity)
           ..style = PaintingStyle.fill,
       );
+    }
+
+    // 绘制各条线
+    for (final lineType in enabledLines) {
+      final points = linePoints[lineType]!;
+      if (points.isEmpty) continue;
+
+      BOLLLineConfig lineConfig;
+      switch (lineType) {
+        case BOLLLineType.ub:
+          lineConfig = indicator.calcParam.lines.ub;
+          break;
+        case BOLLLineType.boll:
+          lineConfig = indicator.calcParam.lines.boll;
+          break;
+        case BOLLLineType.lb:
+          lineConfig = indicator.calcParam.lines.lb;
+          break;
+      }
+
+      // 绘制线条
+      canvas.drawPath(
+        Path()..addPolygon(points, false),
+        Paint()
+          ..color = lineConfig.color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = lineConfig.width,
+      );
+
+      // 绘制节点（如果配置了节点半径）
+      if (indicator.calcParam.display.pointRadius > 0) {
+        final pointPaint = Paint()
+          ..color = lineConfig.color
+          ..style = PaintingStyle.fill;
+        
+        for (final point in points) {
+          canvas.drawCircle(point, indicator.calcParam.display.pointRadius, pointPaint);
+        }
+      }
     }
   }
 
@@ -218,41 +235,56 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
     model ??= offsetToCandle(offset);
     if (model == null || !model.isValidBollData) return null;
 
-    final precision = klineData.precision;
+    final enabledLines = indicator.calcParam.enabledLines;
+    if (enabledLines.isEmpty) return null;
+
+    final precision = indicator.calcParam.display.precision;
     final children = <TextSpan>[];
 
-    children.add(TextSpan(
-      text: formatNumber(
-        model.mb?.toDecimal(),
-        precision: indicator.mbTips.getP(precision),
-        cutInvalidZero: true,
-        prefix: indicator.mbTips.label,
-        suffix: ' ',
-      ),
-      style: indicator.mbTips.style,
-    ));
+    // 动态构建 tips 文本
+    for (final lineType in enabledLines) {
+      BagNum? value;
+      String label;
+      Color color;
 
-    children.add(TextSpan(
-      text: formatNumber(
-        model.up?.toDecimal(),
-        precision: indicator.upTips.getP(precision),
-        cutInvalidZero: true,
-        prefix: indicator.upTips.label,
-        suffix: ' ',
-      ),
-      style: indicator.upTips.style,
-    ));
+      switch (lineType) {
+        case BOLLLineType.ub:
+          value = model.up;
+          label = 'UB';
+          color = indicator.calcParam.lines.ub.color;
+          break;
+        case BOLLLineType.boll:
+          value = model.mb;
+          label = 'BOLL';
+          color = indicator.calcParam.lines.boll.color;
+          break;
+        case BOLLLineType.lb:
+          value = model.dn;
+          label = 'LB';
+          color = indicator.calcParam.lines.lb.color;
+          break;
+      }
 
-    children.add(TextSpan(
-      text: formatNumber(
-        model.dn?.toDecimal(),
-        precision: indicator.dnTips.getP(precision),
-        cutInvalidZero: true,
-        prefix: indicator.dnTips.label,
-        suffix: ' ',
-      ),
-      style: indicator.dnTips.style,
-    ));
+      if (value != null) {
+        // 根据配置决定是否显示周期信息
+        final displayLabel = indicator.calcParam.display.showPeriodInTips 
+            ? '$label(${indicator.calcParam.periods.period})'
+            : label;
+
+        children.add(TextSpan(
+          text: formatNumber(
+            value.toDecimal(),
+            precision: precision,
+            cutInvalidZero: true,
+            prefix: '$displayLabel: ',
+            suffix: ' ',
+          ),
+          style: TextStyle(color: color),
+        ));
+      }
+    }
+
+    if (children.isEmpty) return null;
 
     tipsRect ??= drawableRect;
     return canvas.drawText(

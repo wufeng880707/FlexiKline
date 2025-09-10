@@ -15,25 +15,43 @@
 part of 'indicator.dart';
 
 extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
+  void setHeight(double height) {
+    if (isAllowUpdateHeight) {
+      _tmpHeight = null;
+      // indicator中只保留正常布局模式/适配模式下的高度, 其他模式会根据当前父布局自适应.
+      indicator.height = height;
+    } else {
+      _tmpHeight = height;
+    }
+  }
+
+  void restoreHeight() {
+    _tmpHeight = null;
+  }
+
+  void setPadding(EdgeInsets padding) {
+    _tmpPadding = padding;
+  }
+
   /// 更新布布局参数
   bool doUpdateLayout({
     double? height,
     EdgeInsets? padding,
     bool reset = false,
   }) {
-    bool hasChange = false;
-    if (height != null && height > 0 && height != indicator.height) {
-      _indicator.height = height;
+    bool hasChange = reset;
+    if (height != null && height > 0 && height != this.height) {
+      setHeight(height);
       hasChange = true;
     }
 
-    if (padding != null && padding != indicator.padding) {
-      _indicator.padding = padding;
+    if (padding != null && padding != this.padding) {
+      setPadding(padding);
       hasChange = true;
     }
 
-    if (reset || hasChange) resetPaintBounding();
-    return reset || hasChange;
+    if (hasChange) resetPaintBounding();
+    return hasChange;
   }
 
   MinMax? doInitState(
@@ -74,7 +92,9 @@ extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
         tipsRect: drawableRect,
       );
     }
+  }
 
+  void doPaintExtraAboveChart(Canvas canvas, Size size) {
     paintExtraAboveChart(canvas, size);
   }
 
@@ -94,10 +114,33 @@ extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
     _indicator = newIndicator;
     didUpdateIndicator(oldIndicator);
   }
+
+  void doDidChangeTheme() {
+    didChangeTheme();
+  }
+
+  Future<bool> doStoreConfig() {
+    return _context.setConfig(key.id, indicator.toJson());
+  }
 }
 
-extension MainPaintDelegateExt<T extends MainPaintObjectIndicator>
-    on MainPaintObject<T> {
+extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintObject<T> {
+  @protected
+  void setSize(Size size) {
+    if (isAllowUpdateHeight) {
+      _tmpSize = null;
+      indicator.size = size;
+    } else {
+      _tmpSize = size;
+    }
+    setHeight(size.height);
+  }
+
+  void restoreSize() {
+    _tmpSize = null;
+    _tmpHeight = null;
+  }
+
   void setMinMax(MinMax val) {
     if (_minMax == null) {
       _minMax = val;
@@ -106,34 +149,21 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator>
     }
   }
 
-  /// 当前[tipsHeight]是否需要更新布局参数
-  bool _needUpdateLayout(double tipsHeight) {
-    return drawBelowTipsArea && _initialPadding.top + tipsHeight != padding.top;
-  }
-
   bool doUpdateLayout({
     Size? size,
     EdgeInsets? padding,
     bool reset = false,
-    double? tipsHeight,
   }) {
-    if (drawBelowTipsArea && tipsHeight != null) {
-      // 如果tipsHeight不为空, 说明是绘制过程中动态调整, 只需要在MultiPaintObjectIndicator原padding基础上增加即可.
-      padding = _initialPadding.copyWith(
-        top: _initialPadding.top + tipsHeight,
-      );
-    }
-
-    bool hasChange = false;
-    if (padding != null && padding != indicator.padding) {
-      indicator.padding == padding;
+    bool hasChange = reset;
+    if (padding != null && padding != this.padding) {
+      setPadding(padding);
       hasChange = true;
     }
-    if (size != null && size != indicator.size) {
-      indicator._size = size;
-      indicator.height = size.height;
+    if (size != null && size != this.size) {
+      setSize(size);
       hasChange = true;
     }
+    if (hasChange) resetPaintBounding();
 
     for (var object in children) {
       final childChange = object.doUpdateLayout(
@@ -144,8 +174,7 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator>
       hasChange = hasChange || childChange;
     }
 
-    if (reset || hasChange) resetPaintBounding();
-    return reset || hasChange;
+    return hasChange;
   }
 
   MinMax? doInitState(
@@ -188,17 +217,25 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator>
     return _minMax;
   }
 
-  void doPaintChart(Canvas canvas, Size size) {
-    if (drawBelowTipsArea) {
-      // 1.1 如果设置总是要在Tips区域下绘制指标图, 则要首先绘制完所有Tips.
-      if (!isCrossing) {
-        final tipsHeight = doPaintTips(
-          canvas,
-          model: klineData.latest,
-        );
+  /// 是否首先绘制Tips区域
+  /// 1. drawBelowTipsArea标识为true
+  /// 2. 当前不处在Zooming中时
+  bool get isFirstDrawTipsArea {
+    return indicator.drawBelowTipsArea && !_context.isStartZoomChart;
+  }
 
-        if (_needUpdateLayout(tipsHeight)) {
-          doUpdateLayout(tipsHeight: tipsHeight);
+  void doPaintChart(Canvas canvas, Size size) {
+    if (isFirstDrawTipsArea) {
+      // 如果设置总是要在Tips区域下绘制指标图, 则要首先绘制完所有Tips.
+      if (!isCrossing) {
+        final tipsHeight = doPaintTips(canvas, model: klineData.latest);
+
+        if (indicator.padding.top + tipsHeight > padding.top) {
+          doUpdateLayout(
+            padding: indicator.padding.copyWith(
+              top: indicator.padding.top + tipsHeight,
+            ),
+          );
         }
       }
       for (var object in children) {
@@ -212,19 +249,25 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator>
         doPaintTips(canvas, model: klineData.latest);
       }
     }
+  }
 
+  void doPaintExtraAboveChart(Canvas canvas, Size size) {
     for (var object in children) {
       object.paintExtraAboveChart(canvas, size);
     }
   }
 
   void doOnCross(Canvas canvas, Offset offset, {CandleModel? model}) {
-    if (drawBelowTipsArea) {
+    if (isFirstDrawTipsArea) {
       if (isCrossing) {
         final tipsHeight = doPaintTips(canvas, offset: offset, model: model);
 
-        if (_needUpdateLayout(tipsHeight)) {
-          doUpdateLayout(tipsHeight: tipsHeight);
+        if (indicator.padding.top + tipsHeight > padding.top) {
+          doUpdateLayout(
+            padding: indicator.padding.copyWith(
+              top: indicator.padding.top + tipsHeight,
+            ),
+          );
         }
       }
       for (var object in children) {
@@ -243,7 +286,7 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator>
   double doPaintTips(Canvas canvas, {CandleModel? model, Offset? offset}) {
     // 每次绘制前, 重置Tips区域大小为0
     double height = 0;
-    for (var object in children) {
+    for (var object in children.originList) {
       final size = object.paintTips(
         canvas,
         model: model,
@@ -256,8 +299,7 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator>
   }
 }
 
-extension MainPaintManagerExt<T extends MainPaintObjectIndicator>
-    on MainPaintObject<T> {
+extension MainPaintManagerExt<T extends MainPaintObjectIndicator> on MainPaintObject<T> {
   void appendPaintObjects(Iterable<PaintObject> objects) {
     for (var object in objects) {
       appendPaintObject(object);
@@ -274,7 +316,7 @@ extension MainPaintManagerExt<T extends MainPaintObjectIndicator>
       padding: object.paintMode.isCombine ? padding : null,
     );
     final old = children.append(object);
-    indicator.indicatorKeys.add(object.key);
+    indicator.children.add(object.key);
     old?.dispose();
   }
 
@@ -283,8 +325,10 @@ extension MainPaintManagerExt<T extends MainPaintObjectIndicator>
     children.removeWhere((object) {
       if (object.key == key) {
         object.dispose();
-        indicator.indicatorKeys.remove(object.key);
+        indicator.children.remove(object.key);
         hasRemove = true;
+        _tmpHeight = null;
+        _tmpPadding = null;
         return true;
       }
       return false;
@@ -307,5 +351,13 @@ extension MainPaintManagerExt<T extends MainPaintObjectIndicator>
       return true;
     }
     return false;
+  }
+
+  Future<bool> doStoreConfig() async {
+    await _context.setConfig(key.id, indicator.toJson());
+    for (var object in children) {
+      object.doStoreConfig();
+    }
+    return true;
   }
 }

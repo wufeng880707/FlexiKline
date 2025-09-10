@@ -17,7 +17,15 @@ abstract class _$GridConfigCWProxy {
 
   GridConfig dragHitTestMinDistance(double dragHitTestMinDistance);
 
+  GridConfig draggingBgOpacity(double draggingBgOpacity);
+
+  GridConfig dragBgOpacity(double dragBgOpacity);
+
   GridConfig dragLine(LineConfig? dragLine);
+
+  GridConfig dragLineOpacity(double dragLineOpacity);
+
+  GridConfig ticksText(TextAreaConfig ticksText);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GridConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -26,12 +34,16 @@ abstract class _$GridConfigCWProxy {
   /// GridConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   GridConfig call({
-    bool? show,
-    GridAxis? horizontal,
-    GridAxis? vertical,
-    bool? isAllowDragIndicatorHeight,
-    double? dragHitTestMinDistance,
+    bool show,
+    GridAxis horizontal,
+    GridAxis vertical,
+    bool isAllowDragIndicatorHeight,
+    double dragHitTestMinDistance,
+    double draggingBgOpacity,
+    double dragBgOpacity,
     LineConfig? dragLine,
+    double dragLineOpacity,
+    TextAreaConfig ticksText,
   });
 }
 
@@ -59,7 +71,22 @@ class _$GridConfigCWProxyImpl implements _$GridConfigCWProxy {
       this(dragHitTestMinDistance: dragHitTestMinDistance);
 
   @override
+  GridConfig draggingBgOpacity(double draggingBgOpacity) =>
+      this(draggingBgOpacity: draggingBgOpacity);
+
+  @override
+  GridConfig dragBgOpacity(double dragBgOpacity) =>
+      this(dragBgOpacity: dragBgOpacity);
+
+  @override
   GridConfig dragLine(LineConfig? dragLine) => this(dragLine: dragLine);
+
+  @override
+  GridConfig dragLineOpacity(double dragLineOpacity) =>
+      this(dragLineOpacity: dragLineOpacity);
+
+  @override
+  GridConfig ticksText(TextAreaConfig ticksText) => this(ticksText: ticksText);
 
   @override
 
@@ -75,38 +102,55 @@ class _$GridConfigCWProxyImpl implements _$GridConfigCWProxy {
     Object? vertical = const $CopyWithPlaceholder(),
     Object? isAllowDragIndicatorHeight = const $CopyWithPlaceholder(),
     Object? dragHitTestMinDistance = const $CopyWithPlaceholder(),
+    Object? draggingBgOpacity = const $CopyWithPlaceholder(),
+    Object? dragBgOpacity = const $CopyWithPlaceholder(),
     Object? dragLine = const $CopyWithPlaceholder(),
+    Object? dragLineOpacity = const $CopyWithPlaceholder(),
+    Object? ticksText = const $CopyWithPlaceholder(),
   }) {
     return GridConfig(
-      show: show == const $CopyWithPlaceholder() || show == null
+      show: show == const $CopyWithPlaceholder()
           ? _value.show
           // ignore: cast_nullable_to_non_nullable
           : show as bool,
-      horizontal:
-          horizontal == const $CopyWithPlaceholder() || horizontal == null
-              ? _value.horizontal
-              // ignore: cast_nullable_to_non_nullable
-              : horizontal as GridAxis,
-      vertical: vertical == const $CopyWithPlaceholder() || vertical == null
+      horizontal: horizontal == const $CopyWithPlaceholder()
+          ? _value.horizontal
+          // ignore: cast_nullable_to_non_nullable
+          : horizontal as GridAxis,
+      vertical: vertical == const $CopyWithPlaceholder()
           ? _value.vertical
           // ignore: cast_nullable_to_non_nullable
           : vertical as GridAxis,
       isAllowDragIndicatorHeight:
-          isAllowDragIndicatorHeight == const $CopyWithPlaceholder() ||
-                  isAllowDragIndicatorHeight == null
+          isAllowDragIndicatorHeight == const $CopyWithPlaceholder()
               ? _value.isAllowDragIndicatorHeight
               // ignore: cast_nullable_to_non_nullable
               : isAllowDragIndicatorHeight as bool,
       dragHitTestMinDistance:
-          dragHitTestMinDistance == const $CopyWithPlaceholder() ||
-                  dragHitTestMinDistance == null
+          dragHitTestMinDistance == const $CopyWithPlaceholder()
               ? _value.dragHitTestMinDistance
               // ignore: cast_nullable_to_non_nullable
               : dragHitTestMinDistance as double,
+      draggingBgOpacity: draggingBgOpacity == const $CopyWithPlaceholder()
+          ? _value.draggingBgOpacity
+          // ignore: cast_nullable_to_non_nullable
+          : draggingBgOpacity as double,
+      dragBgOpacity: dragBgOpacity == const $CopyWithPlaceholder()
+          ? _value.dragBgOpacity
+          // ignore: cast_nullable_to_non_nullable
+          : dragBgOpacity as double,
       dragLine: dragLine == const $CopyWithPlaceholder()
           ? _value.dragLine
           // ignore: cast_nullable_to_non_nullable
           : dragLine as LineConfig?,
+      dragLineOpacity: dragLineOpacity == const $CopyWithPlaceholder()
+          ? _value.dragLineOpacity
+          // ignore: cast_nullable_to_non_nullable
+          : dragLineOpacity as double,
+      ticksText: ticksText == const $CopyWithPlaceholder()
+          ? _value.ticksText
+          // ignore: cast_nullable_to_non_nullable
+          : ticksText as TextAreaConfig,
     );
   }
 }
@@ -131,9 +175,9 @@ abstract class _$GridAxisCWProxy {
   /// GridAxis(...).copyWith(id: 12, name: "My name")
   /// ````
   GridAxis call({
-    bool? show,
-    int? count,
-    LineConfig? line,
+    bool show,
+    int count,
+    LineConfig line,
   });
 }
 
@@ -166,15 +210,15 @@ class _$GridAxisCWProxyImpl implements _$GridAxisCWProxy {
     Object? line = const $CopyWithPlaceholder(),
   }) {
     return GridAxis(
-      show: show == const $CopyWithPlaceholder() || show == null
+      show: show == const $CopyWithPlaceholder()
           ? _value.show
           // ignore: cast_nullable_to_non_nullable
           : show as bool,
-      count: count == const $CopyWithPlaceholder() || count == null
+      count: count == const $CopyWithPlaceholder()
           ? _value.count
           // ignore: cast_nullable_to_non_nullable
           : count as int,
-      line: line == const $CopyWithPlaceholder() || line == null
+      line: line == const $CopyWithPlaceholder()
           ? _value.line
           // ignore: cast_nullable_to_non_nullable
           : line as LineConfig,
@@ -204,9 +248,14 @@ GridConfig _$GridConfigFromJson(Map<String, dynamic> json) => GridConfig(
           json['isAllowDragIndicatorHeight'] as bool? ?? true,
       dragHitTestMinDistance:
           (json['dragHitTestMinDistance'] as num?)?.toDouble() ?? 10,
+      draggingBgOpacity: (json['draggingBgOpacity'] as num?)?.toDouble() ?? 0.1,
+      dragBgOpacity: (json['dragBgOpacity'] as num?)?.toDouble() ?? 0,
       dragLine: json['dragLine'] == null
           ? null
           : LineConfig.fromJson(json['dragLine'] as Map<String, dynamic>),
+      dragLineOpacity: (json['dragLineOpacity'] as num?)?.toDouble() ?? 0.1,
+      ticksText:
+          TextAreaConfig.fromJson(json['ticksText'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$GridConfigToJson(GridConfig instance) =>
@@ -217,6 +266,10 @@ Map<String, dynamic> _$GridConfigToJson(GridConfig instance) =>
       'isAllowDragIndicatorHeight': instance.isAllowDragIndicatorHeight,
       'dragHitTestMinDistance': instance.dragHitTestMinDistance,
       if (instance.dragLine?.toJson() case final value?) 'dragLine': value,
+      'dragLineOpacity': instance.dragLineOpacity,
+      'draggingBgOpacity': instance.draggingBgOpacity,
+      'dragBgOpacity': instance.dragBgOpacity,
+      'ticksText': instance.ticksText.toJson(),
     };
 
 GridAxis _$GridAxisFromJson(Map<String, dynamic> json) => GridAxis(

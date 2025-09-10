@@ -16,19 +16,17 @@ import 'dart:math' as math;
 
 import 'package:flutter/painting.dart';
 
+import '../constant.dart';
 import '../utils/vector_util.dart';
 
-extension RectExt on Rect {
+extension FlexiKlineRectExt on Rect {
   /// Whether the point specified by the given offset (which is assumed to be
   /// relative to the origin) lies between the left and right and the top and
   /// bottom edges of this rectangle.
   ///
   /// Rectangles include their top, left, bottom and right edges.
   bool include(Offset offset) {
-    return offset.dx >= left &&
-        offset.dx <= right &&
-        offset.dy >= top &&
-        offset.dy <= bottom;
+    return offset.dx >= left && offset.dx <= right && offset.dy >= top && offset.dy <= bottom;
   }
 
   bool includeDx(double dx) {
@@ -63,12 +61,22 @@ extension RectExt on Rect {
   }
 }
 
-extension OffsetExt on Offset {
+extension FlexiOffsetExt on Offset {
   Offset clamp(Rect rect) {
     return Offset(
       dx.clamp(rect.left, rect.right),
       dy.clamp(rect.top, rect.bottom),
     );
+  }
+
+  Offset min(Offset? min) {
+    if (min == null) return this;
+    return Offset(math.min(min.dx, dx), math.min(min.dy, dy));
+  }
+
+  Offset max(Offset? max) {
+    if (max == null) return this;
+    return Offset(math.max(max.dx, dx), math.max(max.dy, dy));
   }
 
   double get length => distance;
@@ -166,11 +174,31 @@ extension OffsetExt on Offset {
   }
 }
 
-extension SizeExt on Size {
-  bool get nonzero => width > 0 || height > 0;
+extension FlexiOffsetDoubleExt on double {
+  Offset offsetWithDyOnAB(Offset A, Offset B) {
+    return Offset(getDxAtDyOnAB(A, B, this), this);
+  }
+
+  Offset offsetWithDxOnAB(Offset A, Offset B) {
+    return Offset(this, getDyAtDxOnAB(A, B, this));
+  }
 }
 
-extension PaddingExt on EdgeInsets {
+extension FlexiSizeExt on Size {
+  bool get nonzero => width > 0 || height > 0;
+
+  /// 等于(带浮点数计算误差的判断)
+  bool equlas(Size size, {double precision = precisionError}) {
+    return (width - size.width).abs() < precision && (height - size.height).abs() < precision;
+  }
+
+  /// 大于(带浮点数计算误差的判断)
+  bool gt(Size size, {double precision = precisionError}) {
+    return width - size.width > precision && height - size.height > precision;
+  }
+}
+
+extension FlexiPaddingExt on EdgeInsets {
   double get height {
     return top + bottom;
   }

@@ -21,11 +21,11 @@ class FlexiKlineController extends KlineBindingBase
         GridBinding,
         ChartBinding,
         CrossBinding,
-        DrawBinding,
-        ClickBinding {
+        DrawBinding {
   FlexiKlineController({
     required super.configuration,
     super.autoSave,
+    super.subIndicatorMaxCount,
     super.logger,
     super.klineDataCacheCapacity,
   });

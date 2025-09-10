@@ -16,19 +16,20 @@ import 'package:flutter/material.dart' hide Overlay;
 
 import '../constant.dart';
 import '../extension/render/common.dart';
+import '../extension/basic_type_ext.dart';
 import '../framework/export.dart';
 import '../indicators/export.dart';
 import 'cross_config/cross_config.dart';
+import 'magnifier_config/magnifier_config.dart';
+import 'point_config/point_config.dart';
 import 'draw_config/draw_config.dart';
 import 'flexi_kline_config/flexi_kline_config.dart';
 import 'gesture_config/gesture_config.dart';
 import 'grid_config/grid_config.dart';
 import 'line_config/line_config.dart';
 import 'loading_config/loading_config.dart';
-import 'magnifier_config/magnifier_config.dart';
 import 'mark_config/mark_config.dart';
 import 'paint_config/paint_config.dart';
-import 'point_config/point_config.dart';
 import 'setting_config/setting_config.dart';
 import 'text_area_config/text_area_config.dart';
 import 'tolerance_config/tolerance_config.dart';
@@ -52,8 +53,8 @@ extension IFlexiKlineThemeExt on IFlexiKlineTheme {
 
   /// 默认主图区域Padding
   EdgeInsets get mainIndicatorPadding => EdgeInsets.only(
-        top: 20 * scale, // 顶部留白
-        bottom: 20 * scale, // 底部留白, 5: 最低价字体高度的一半, 保证最低价文本不会绘制到边线上.
+        top: 5 * scale, // 顶部留白
+        bottom: 5 * scale, // 底部留白, 5: 最低价字体高度的一半, 保证最低价文本不会绘制到边线上.
       );
 
   /// 默认副指标图Padding
@@ -75,120 +76,94 @@ extension IFlexiKlineThemeExt on IFlexiKlineTheme {
 }
 
 abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
-  BaseFlexiKlineTheme({
+  const BaseFlexiKlineTheme({
     required this.long,
     required this.short,
+    required this.dragBg,
     required this.chartBg,
     required this.tooltipBg,
     required this.crossTextBg,
-    required this.drawTextBg,
     this.transparent = Colors.transparent,
     required this.latestPriceTextBg,
+    required this.lastPriceTextBg,
     required this.countDownTextBg,
     required this.gridLine,
     required this.crossColor,
     required this.drawColor,
-    required this.markLine,
+    required this.markLineColor,
+    required this.lineChartColor,
     required this.themeColor,
     required this.textColor,
     required this.ticksTextColor,
-    required this.latestPriceTextColor,
+    required this.lastPriceTextColor,
     required this.crossTextColor,
     required this.tooltipTextColor,
-    required this.indraTodayAvgColor,
-    required this.indraTodayCloseColor,
   });
 
-  BaseFlexiKlineTheme.simple({
-    required this.long,
-    required this.short,
-    required this.chartBg,
-    required Color markBg,
-    required this.crossTextBg,
-    this.transparent = Colors.transparent,
-    required this.latestPriceTextColor,
-    required this.latestPriceTextBg,
-    required Color color,
-    required this.gridLine,
-    required this.ticksTextColor,
-    required this.crossTextColor,
-  })  : tooltipBg = markBg,
-        countDownTextBg = markBg,
-        crossColor = color,
-        markLine = color,
-        textColor = color,
-        latestPriceTextColor = color,
-        latestPriceTextBg = color,
-        tooltipTextColor = color;
-
   @override
-  late Color long;
+  final Color long;
   @override
-  late Color short;
+  final Color short;
 
   /// 背景色
   @override
-  late Color chartBg;
+  final Color dragBg;
   @override
-  late Color tooltipBg;
+  final Color chartBg;
   @override
-  late Color crossTextBg;
+  final Color tooltipBg;
   @override
-  late Color drawTextBg;
+  final Color crossTextBg;
   @override
-  late Color transparent;
+  final Color transparent;
   @override
-  late Color latestPriceTextBg;
+  final Color latestPriceTextBg;
   @override
-  late Color countDownTextBg;
+  final Color lastPriceTextBg;
+  @override
+  final Color countDownTextBg;
 
   /// 分隔线
   @override
-  late Color gridLine;
+  final Color gridLine;
   @override
-  late Color crossColor;
+  final Color crossColor;
   @override
-  late Color drawColor;
+  final Color drawColor;
   @override
-  late Color markLine;
+  final Color markLineColor;
+  @override
+  final Color lineChartColor;
 
   @override
-  late Color themeColor;
+  final Color themeColor;
 
   /// 文本颜色配置
   @override
-  late Color textColor;
+  final Color textColor;
   @override
-  late Color ticksTextColor;
+  final Color ticksTextColor;
   @override
-  late Color latestPriceTextColor;
+  final Color lastPriceTextColor;
   @override
-  late Color crossTextColor;
+  final Color crossTextColor;
   @override
-  late Color tooltipTextColor;
-
-  @override
-  late Color indraTodayCloseColor;
-  @override
-  late Color indraTodayAvgColor;
+  final Color tooltipTextColor;
 }
 
 /// 通过[IFlexiKlineTheme]来配置FlexiKline基类.
 mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   /// 扩展[key]
-  String getCacheKey(String key) => key;
-  // @override
-  // FlexiKlineConfig getFlexiKlineConfig();
+  String getCacheKey(String key) => '$configKey-$key';
 
-  FlexiKlineConfig genFlexiKlineConfig() {
+  @override
+  FlexiKlineConfig generateFlexiKlineConfig([Map<String, dynamic>? origin]) {
     return FlexiKlineConfig(
-      key: theme.key,
       grid: genGridConfig(),
       setting: genSettingConfig(),
       gesture: genGestureConfig(),
       cross: genCrossConfig(),
       draw: genDrawConfig(),
-      tooltip: genTooltipConfig(),
       mainIndicator: genMainIndicator(),
       sub: {},
     );
@@ -209,15 +184,12 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   }
 
   @override
-  @mustCallSuper
   Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders => {};
 
   @override
-  @mustCallSuper
   Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders => {};
 
   @override
-  @mustCallSuper
   Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders => {};
 
   /// Grid配置
@@ -253,10 +225,23 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       dragLine: LineConfig(
         type: LineType.dashed,
         dashes: const [3, 5],
+        length: 20,
         paint: PaintConfig(
-          color: theme.markLine,
+          color: theme.markLineColor,
           strokeWidth: theme.pixel * 5,
         ),
+      ),
+      dragLineOpacity: 0.1,
+      // 全局默认的刻度值配置.
+      ticksText: TextAreaConfig(
+        style: TextStyle(
+          fontSize: theme.normalTextSize,
+          // color: theme.ticksTextColor,
+          overflow: TextOverflow.ellipsis,
+          height: defaultTextHeight,
+        ),
+        textAlign: TextAlign.end,
+        padding: EdgeInsets.symmetric(horizontal: 2 * theme.scale),
       ),
     );
   }
@@ -270,14 +255,12 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       loadMoreWhenNoEnoughCandles: 60,
       scalePosition: ScalePosition.auto,
       scaleSpeed: 10,
+      zoomSpeed: 1,
     );
   }
 
   SettingConfig genSettingConfig() {
     return SettingConfig(
-      indraTodayAvgColor: theme.indraTodayAvgColor,
-      indraTodayCloseColor: theme.indraTodayCloseColor,
-      pixel: theme.pixel,
       opacity: 0.5,
 
       /// 内置LoadingView样式配置
@@ -286,10 +269,12 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       /// 主区域最小Size
       mainMinSize: Size(120 * theme.scale, 80 * theme.scale),
       subMinHeight: 30 * theme.scale,
+      useCandleTicksAsZoomSlideBar: true,
 
       /// 主/副图绘制参数
       minPaintBlankRate: 0.5,
       alwaysCalculateScreenOfCandlesIfEnough: false,
+      candleMinWidth: theme.pixel,
       candleMaxWidth: 40 * theme.scale,
       candleWidth: 7 * theme.scale,
       candleSpacingParts: 7,
@@ -297,25 +282,12 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       candleHollowBarBorderWidth: 1 * theme.scale,
       candleLineWidth: 1 * theme.scale,
       firstCandleInitOffset: 80 * theme.scale,
-      minCandleHeight: 1 * theme.scale,
 
-      /// 全局默认的刻度值配置.
-      ticksText: TextAreaConfig(
-        style: TextStyle(
-          fontSize: theme.normalTextSize,
-          // color: theme.ticksTextColor,
-          overflow: TextOverflow.ellipsis,
-          height: defaultTextHeight,
-        ),
-        textAlign: TextAlign.end,
-        padding: EdgeInsets.symmetric(horizontal: 2 * theme.scale),
-      ),
+      /// 绘制额外内容是否在允许在主图绘制区域之外
+      allowPaintExtraOutsideMainRect: true,
 
-      /// 副区的指标图最大数量
-      subChartMaxCount: defaultSubChartMaxCount,
-
-      /// 交易区的指标图最大数量
-      tradeChartMaxCount: defaultTradeChartMaxCount,
+      /// 是否展示Y轴刻度.
+      showYAxisTick: true,
     );
   }
 
@@ -333,7 +305,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       enable: true,
       crosshair: LineConfig(
         paint: PaintConfig(
-          color: theme.crossColor,
+          // color: theme.crossColor,
           strokeWidth: 0.5 * theme.scale,
         ),
         type: LineType.dashed,
@@ -342,9 +314,9 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       crosspoint: PointConfig(
         radius: 2 * theme.scale,
         width: 0 * theme.scale,
-        color: theme.crossColor,
+        // color: theme.crossColor,
         borderWidth: 2 * theme.scale,
-        borderColor: theme.crossColor.withOpacity(0.5),
+        borderColor: theme.crossColor.withAlpha(0.5.alpha),
       ),
       ticksText: TextAreaConfig(
         style: TextStyle(
@@ -363,6 +335,29 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       spacing: 1 * theme.scale,
       // onCross时, 当移动到空白区域时, Tips区域是否展示最新的蜡烛的Tips数据.
       showLatestTipsInBlank: true,
+      tooltipConfig: TooltipConfig(
+        show: true,
+
+        /// tooltip 区域设置
+        margin: EdgeInsets.only(
+          left: 15 * theme.scale,
+          right: 65 * theme.scale,
+          top: 10 * theme.scale,
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: 4 * theme.scale,
+          vertical: 4 * theme.scale,
+        ),
+        radius: BorderRadius.all(Radius.circular(4 * theme.scale)),
+
+        /// tooltip 文本设置
+        style: TextStyle(
+          fontSize: theme.normalTextSize,
+          // color: theme.tooltipTextColor,
+          overflow: TextOverflow.ellipsis,
+          height: defaultMultiTextHeight,
+        ),
+      ),
     );
   }
 
@@ -372,7 +367,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       crosshair: LineConfig(
         paint: PaintConfig(
           strokeWidth: 0.5 * theme.scale,
-          color: theme.drawColor,
+          // color: theme.drawColor,
         ),
         type: LineType.dashed,
         dashes: const [5, 3],
@@ -380,35 +375,35 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       crosspoint: PointConfig(
         radius: 2 * theme.scale,
         width: 0 * theme.scale,
-        color: theme.drawColor,
+        // color: theme.drawColor,
         borderWidth: 2 * theme.scale,
-        borderColor: theme.drawColor.withOpacity(0.5),
+        borderColor: theme.drawColor.withAlpha(0.5.alpha),
       ),
       drawLine: LineConfig(
         paint: PaintConfig(
           strokeWidth: 1 * theme.scale,
-          color: theme.drawColor,
+          color: theme.drawColor, // 必须指定
         ),
         type: LineType.solid,
         dashes: [5, 3],
       ),
       // 绘制[drawPoint]和[ticksText]刻度时, 是否始终使用[drawLine]指定的颜色.
-      useDrawLineColor: true,
+      // useDrawLineColor: true,
       drawPoint: PointConfig(
         radius: 9 * theme.scale,
         width: 0 * theme.scale,
-        color: const Color(0xFFFFFFFF),
+        color: const Color(0xFFFFFFFF), // 必须指定
         borderWidth: 1 * theme.scale,
         borderColor: theme.drawColor,
       ),
       ticksText: TextAreaConfig(
         style: TextStyle(
-          color: const Color(0xFFFFFFFF),
+          color: const Color(0xFFFFFFFF), // 必须指定
           fontSize: theme.normalTextSize,
           fontWeight: FontWeight.normal,
           height: defaultTextHeight,
         ),
-        background: theme.drawTextBg,
+        // background: theme.drawTextBg, // 已废弃
         padding: EdgeInsets.all(2 * theme.scale),
         border: BorderSide.none,
         borderRadius: BorderRadius.all(
@@ -430,40 +425,13 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
             offset: const Offset(0.1, 0.1),
             blurRadius: 2,
             spreadRadius: 3,
-            color: theme.themeColor.withOpacity(0.1),
+            color: theme.themeColor.withAlpha(0.1.alpha), // 此处不适配Theme
           )
         ],
         shapeSide: BorderSide(
-          color: theme.gridLine,
+          // color: theme.gridLine,
           width: 1 * theme.scale,
         ),
-      ),
-    );
-  }
-
-  TooltipConfig genTooltipConfig() {
-    return TooltipConfig(
-      show: true,
-
-      /// tooltip 区域设置
-      background: theme.tooltipBg,
-      margin: EdgeInsets.only(
-        left: 15 * theme.scale,
-        right: 65 * theme.scale,
-        top: 10 * theme.scale,
-      ),
-      padding: EdgeInsets.symmetric(
-        horizontal: 4 * theme.scale,
-        vertical: 4 * theme.scale,
-      ),
-      radius: BorderRadius.all(Radius.circular(4 * theme.scale)),
-
-      /// tooltip 文本设置
-      style: TextStyle(
-        fontSize: theme.normalTextSize,
-        color: theme.tooltipTextColor,
-        overflow: TextOverflow.ellipsis,
-        height: defaultMultiTextHeight,
       ),
     );
   }
@@ -524,6 +492,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
             strokeWidth: 0.5 * theme.scale,
           ),
         ),
+        hitTestMargin: 4,
         text: TextAreaConfig(
           style: TextStyle(
             fontSize: theme.normalTextSize,
@@ -579,6 +548,13 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         padding: theme.textPading,
         borderRadius: BorderRadius.all(Radius.circular(2 * theme.scale)),
       ),
+      chartBarStyle: instance?.chartBarStyle ?? ChartBarStyle.allSolid,
+      chartType: instance?.chartType ?? ChartType.bar,
+      zoomToMinChartType: instance?.zoomToMinChartType ?? ChartType.line,
+      secondsChartType: instance?.secondsChartType ?? ChartType.line,
+      longColor: instance?.longColor,
+      shortColor: instance?.shortColor,
+      lineColor: instance?.lineColor,
     );
   }
 

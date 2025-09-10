@@ -13,9 +13,8 @@
 // limitations under the License.
 
 import 'package:decimal/decimal.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flutter/widgets.dart';
-
-import '../constant.dart';
 
 int valueToInt(dynamic value) {
   return parseInt(value) ?? 0;
@@ -89,7 +88,7 @@ Decimal? parseDecimal(dynamic value, {Decimal? def}) {
 }
 
 String convertDecimal(Decimal value) {
-  return value.toStringAsFixed(defaultScaleOnInfinitePrecision);
+  return value.toStringAsFixed(FlexiFormatter.scaleOnInfinitePrecision);
 }
 
 double? parseDouble(dynamic value, {double? def}) {
@@ -238,9 +237,7 @@ TextBaseline parseTextBaseline(
   TextBaseline def = TextBaseline.ideographic,
 }) {
   if (textBaseline == null) return def;
-  return 'alphabetic' == textBaseline
-      ? TextBaseline.alphabetic
-      : TextBaseline.ideographic;
+  return 'alphabetic' == textBaseline ? TextBaseline.alphabetic : TextBaseline.ideographic;
 }
 
 String convertTextBaseline(

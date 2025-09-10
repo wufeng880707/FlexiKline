@@ -14,14 +14,37 @@
 
 part of 'rsi.dart';
 
+@visibleForTesting
+extension on CandleModel {
+  List<double?>? getRsiList(int dataIndex, [int? paramLen]) {
+    List<double?>? list = calcuData.getData(dataIndex);
+    if (list == null && paramLen != null && paramLen > 0) {
+      calcuData.setData(
+        dataIndex,
+        list = List.filled(paramLen, null, growable: false),
+      );
+    }
+    return list;
+  }
+
+  bool isValidRsi(int dataIndex) {
+    return getRsiList(dataIndex)?.hasValidData ?? false;
+  }
+
+  MinMax? getRsiMinmax(int dataIndex) {
+    final rsiList = getRsiList(dataIndex);
+    if (rsiList == null) return null;
+    return MinMax.getMinMaxByList(rsiList.map((e) => e != null ? BagNum.fromNum(e) : null).toList());
+  }
+}
+
 mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
-  @override
-  List<RsiParam> get calcParams => indicator.calcParams;
+  RsiParam get calcParam => indicator.calcParam;
 
   @override
   void precompute(Range range, {bool reset = false}) {
     calcuAndCacheRsi(
-      calcParams,
+      calcParam,
       start: range.start,
       end: range.end,
       reset: reset,
@@ -68,7 +91,7 @@ mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
       }
 
       if (i <= index - count) {
-        m.rsiList ??= List.filled(paramLen, null, growable: false);
+        m.getRsiList(dataIndex, paramLen);
 
         if (avgGain == null) {
           avgGain = sumGain.divNum(count);
@@ -81,7 +104,7 @@ mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
           avgLoss = (avgLoss.mulNum(count - 1) + loss).divNum(count);
         }
 
-        m.rsiList![paramIndex] =
+        m.getRsiList(dataIndex, paramLen)![paramIndex] =
             avgLoss == BagNum.zero ? 0 : 100 - (100 / (1 + avgGain.div(avgLoss).toDouble()));
 
         diff = _calculateUpVal(i + count - 1);
@@ -104,50 +127,65 @@ mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
   }
 
   void calcuAndCacheRsi(
-    List<RsiParam> calcParams, {
+    RsiParam param, {
     int? start,
     int? end,
     bool reset = false,
   }) {
-    if (klineData.isEmpty || calcParams.isEmpty) return;
-    final paramLen = calcParams.length;
+    if (klineData.isEmpty || param.enabledLines.isEmpty) return;
+    final enabledLines = param.enabledLines;
+    final paramLen = enabledLines.length;
     for (int i = 0; i < paramLen; i++) {
+      final lineConfig = enabledLines[i];
       _calculateRsi(
-        calcParams[i].count,
+        lineConfig.period,
         paramIndex: i,
         paramLen: paramLen,
-        start: math.max(0, (start ?? klineData.start) - calcParams[i].count), // 补起上一次未算数据
+        start: math.max(0, (start ?? klineData.start) - lineConfig.period), // 补起上一次未算数据
         end: end ?? klineData.end,
       );
     }
   }
 
   MinMax? calcuRsiMinmax(
-    List<RsiParam> calcParams, {
+    RsiParam param, {
     int? start,
     int? end,
   }) {
     start ??= klineData.start;
     end ??= klineData.end;
-    if (calcParams.isEmpty || !klineData.checkStartAndEnd(start, end)) return null;
+    if (param.enabledLines.isEmpty || !klineData.checkStartAndEnd(start, end)) return null;
     final len = klineData.list.length;
 
-    int minCount = RsiParam.getMinCountByList(calcParams)!;
-    if (len < minCount) return null; // 数据不足，直接返回
-    end = math.min(len - minCount - 1, end - 1);
+    int? minPeriod = param.minPeriod;
+    if (minPeriod == null || len < minPeriod) return null; // 数据不足，直接返回
+    end = math.min(len - minPeriod - 1, end - 1);
     if (end < start) return null; // 区间非法，直接返回
 
-    if (!klineData.list[end].isValidRsiList) {
-      calcuAndCacheRsi(calcParams, start: 0, end: len);
+    if (!klineData.list[end].isValidRsi(dataIndex)) {
+      calcuAndCacheRsi(param, start: 0, end: len);
     }
 
     MinMax? minmax;
     CandleModel m;
     for (int i = end; i >= start; i--) {
       m = klineData.list[i];
-      minmax ??= m.rsiListMinmax;
-      minmax?.updateMinMax(m.rsiListMinmax);
+      minmax ??= m.getRsiMinmax(dataIndex);
+      minmax?.updateMinMax(m.getRsiMinmax(dataIndex));
     }
+    
+    // 如果启用参考线，需要考虑参考线的范围
+    if (param.reference.enabled) {
+      minmax ??= MinMax(
+        min: BagNum.fromNum(param.reference.oversold),
+        max: BagNum.fromNum(param.reference.overbought),
+      );
+      minmax.updateMinMax(MinMax(
+        min: BagNum.fromNum(param.reference.oversold),
+        max: BagNum.fromNum(param.reference.overbought),
+      ));
+    }
+    
     return minmax;
   }
 }

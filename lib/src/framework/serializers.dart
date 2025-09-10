@@ -69,6 +69,36 @@ class PaintModeConverter implements JsonConverter<PaintMode, String> {
   String toJson(PaintMode mode) => mode.name;
 }
 
+class ChartTypeConverter implements JsonConverter<ChartType, String> {
+  const ChartTypeConverter();
+
+  @override
+  ChartType fromJson(String json) {
+    return ChartType.values.firstWhere(
+      (e) => e.name.equalsIgnoreCase(json),
+      orElse: () => ChartType.bar,
+    );
+  }
+
+  @override
+  String toJson(ChartType style) => style.name;
+}
+
+class ChartBarStyleConverter implements JsonConverter<ChartBarStyle, String> {
+  const ChartBarStyleConverter();
+
+  @override
+  ChartBarStyle fromJson(String json) {
+    return ChartBarStyle.values.firstWhere(
+      (e) => e.name.equalsIgnoreCase(json),
+      orElse: () => ChartBarStyle.allSolid,
+    );
+  }
+
+  @override
+  String toJson(ChartBarStyle style) => style.name;
+}
+
 /// 基础样式转换
 
 class DrawPositionConverter implements JsonConverter<DrawPosition, String> {
@@ -190,7 +220,9 @@ class EdgeInsetsConverter implements JsonConverter<EdgeInsets, Map<String, dynam
     if (edgeInsets.left == 0 &&
         edgeInsets.top == 0 &&
         edgeInsets.right == 0 &&
-        edgeInsets.bottom == 0) return {};
+        edgeInsets.bottom == 0) {
+      return {};
+    }
 
     if (edgeInsets.left == edgeInsets.right && edgeInsets.top == edgeInsets.bottom) {
       return {
@@ -366,7 +398,7 @@ class TextStyleConverter implements JsonConverter<TextStyle, Map<String, dynamic
 
   @override
   TextStyle fromJson(Map<String, dynamic> json) {
-    if (json.isEmpty) return const TextStyle(); // TODO: 待优化.
+    if (json.isEmpty) return const TextStyle();
     return TextStyle(
       color: parseHexColor(json['color']),
       fontSize: parseDouble(json['fontSize']),
@@ -602,6 +634,8 @@ const _basicConverterList = <JsonConverter>[
   ColorConverter(),
   DecimalConverter(),
   BagNumConverter(),
+  ChartTypeConverter(),
+  ChartBarStyleConverter(),
 ];
 
 // ignore: constant_identifier_names
@@ -638,7 +672,7 @@ const FlexiParamSerializable = JsonSerializable(
 // ignore: constant_identifier_names
 const FlexiModelSerializable = JsonSerializable(
   converters: _basicConverterList,
-  ignoreUnannotated: true,
+  // ignoreUnannotated: true,
   explicitToJson: true,
   includeIfNull: false,
 );

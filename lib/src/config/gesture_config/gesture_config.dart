@@ -39,6 +39,8 @@ class GestureConfig {
     this.scalePosition = ScalePosition.auto,
     double scaleSpeed = 10,
     this.supportKeyboardShortcuts = true,
+    this.zoomStartMinDistance = 5,
+    this.zoomSpeed = 1,
   })  : tolerance = tolerance ?? ToleranceConfig(),
         scaleSpeed = scaleSpeed.clamp(1, 30);
 
@@ -60,14 +62,19 @@ class GestureConfig {
   /// 缩放操作位置
   final ScalePosition scalePosition;
 
-  /// 缩放速度. 取值范围[1~30], 建议10.
+  /// 按比例缩放蜡烛图速度. 取值范围[1~30], 建议10.
   final double scaleSpeed;
 
   /// 是否支持键盘操作
   final bool supportKeyboardShortcuts;
 
-  factory GestureConfig.fromJson(Map<String, dynamic> json) =>
-      _$GestureConfigFromJson(json);
+  /// Zoom缩放操作启动最小距离. 默认5. 注: 仅支持触摸设备.
+  final int zoomStartMinDistance;
+
+  /// Zoom缩放速度主区图表速度. 默认1.
+  final int zoomSpeed;
+
+  factory GestureConfig.fromJson(Map<String, dynamic> json) => _$GestureConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$GestureConfigToJson(this);
 }

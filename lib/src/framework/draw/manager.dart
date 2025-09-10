@@ -28,8 +28,7 @@ final class OverlayDrawObjectManager with KlineLog {
   }) {
     loggerDelegate = logger;
     final drawObjectbuilders = configuration.drawObjectBuilders;
-    for (final MapEntry(key: type, value: builder)
-        in drawObjectbuilders.entries) {
+    for (final MapEntry(key: type, value: builder) in drawObjectbuilders.entries) {
       registerDrawOverlayObjectBuilder(type, builder);
     }
   }
@@ -40,25 +39,7 @@ final class OverlayDrawObjectManager with KlineLog {
   String get logTag => 'OverlayDrawObjectManager';
 
   /// DrawType的Overlay对应DrawObject的构建生成器集合
-  final Map<IDrawType, DrawObjectBuilder> _overlayBuilders = {
-    DrawType.trendLine: TrendLineDrawObject.new,
-    DrawType.trendAngle: TrendAngleDrawObject.new,
-    DrawType.crossLine: CrossLineDrawObject.new,
-    DrawType.horizontalLine: HorizontalLineDrawObject.new,
-    DrawType.horizontalRayLine: HorizontalRayLineDrawObject.new,
-    DrawType.horizontalTrendLine: HorizontalTrendLineDrawObject.new,
-    DrawType.verticalLine: VerticalLineDrawObject.new,
-    DrawType.extendedTrendLine: ExtendedTrendLineDrawObject.new,
-    DrawType.arrowLine: ArrowLineDrawObject.new,
-    DrawType.rayLine: RayLineDrawObject.new,
-    DrawType.priceLine: PriceLineDrawObject.new,
-    // 多线
-    DrawType.parallelChannel: ParalleChannelDrawObject.new,
-    DrawType.rectangle: RectangleDrawObject.new,
-    DrawType.fibRetracement: FibRetracementDrawObject.new,
-    DrawType.fibExpansion: FibExpansionDrawObject.new,
-    DrawType.fibFans: FibFansDrawObject.new,
-  };
+  final Map<IDrawType, DrawObjectBuilder> _overlayBuilders = {};
 
   Iterable<IDrawType>? _supportDrawTypes;
   Iterable<IDrawType> get supportDrawTypes {
@@ -72,9 +53,7 @@ final class OverlayDrawObjectManager with KlineLog {
       for (var type in supportDrawTypes) {
         final set = groupMap[type.groupId] ??= LinkedHashSet<IDrawType>(
           equals: (p0, p1) {
-            return p0.groupId == p1.groupId &&
-                p0.id == p1.id &&
-                p0.steps == p1.steps;
+            return p0.groupId == p1.groupId && p0.id == p1.id && p0.steps == p1.steps;
           },
         );
         set.add(type);
@@ -112,7 +91,7 @@ final class OverlayDrawObjectManager with KlineLog {
     logd('onChangeCandleRequest $_instId => ${request.instId}');
     // 缓存上一次OverlayObject到本地.
     if (_instId.isNotEmpty && hasObject) {
-      saveOverlayListToLocal();
+      storeAndCleanAllDrawObject();
     }
     // 加载新的OverlayObject.
     _overlayObjectList.clear();
@@ -127,28 +106,39 @@ final class OverlayDrawObjectManager with KlineLog {
   }
 
   /// 将当前[Overlay]列表缓存到本地
-  void saveOverlayListToLocal({bool isDispose = true}) {
+  void storeDrawOverlaysConfig() {
     configuration.saveDrawOverlayList(
       _instId,
-      _overlayObjectList.map((obj) {
-        if (isDispose) obj.dispose();
-        return obj._overlay;
-      }),
+      _overlayObjectList.map((obj) => obj._overlay),
     );
+  }
+
+  /// 从本地缓存重新加载OverlayObject列表
+  void updateDrawOverlaysConfig(DrawConfig config) {
     _overlayObjectList.clear();
+    final list = configuration.getDrawOverlayList(_instId);
+    for (var overlay in list) {
+      final object = generateDrawObject(overlay, config);
+      if (object != null) {
+        addDrawObject(object);
+      }
+    }
   }
 
   void dispose() {
-    saveOverlayListToLocal();
-  }
-
-  /// 清理当前所有的Overlay.
-  void cleanAllDrawObject() {
     for (var obj in _overlayObjectList) {
       obj.dispose();
     }
     _overlayObjectList.clear();
-    saveOverlayListToLocal(isDispose: false);
+  }
+
+  /// 清理当前所有的Overlay.
+  void storeAndCleanAllDrawObject() {
+    storeDrawOverlaysConfig();
+    for (var obj in _overlayObjectList) {
+      obj.dispose();
+    }
+    _overlayObjectList.clear();
   }
 
   /// 通过[type]创建Overlay.
@@ -157,7 +147,7 @@ final class OverlayDrawObjectManager with KlineLog {
     required DrawConfig drawConfig,
   }) {
     return generateDrawObject(
-      Overlay(
+      Overlay.fromType(
         key: _instId,
         type: type,
         line: drawConfig.drawLine,
@@ -169,7 +159,9 @@ final class OverlayDrawObjectManager with KlineLog {
   DrawObject? generateDrawObject(Overlay overlay, DrawConfig config) {
     final builder = _overlayBuilders[overlay.type];
     if (builder == null) return null;
-    return builder.call(overlay, config);
+    final object = builder.call(overlay, config);
+    object?.doDidChangeTheme(configuration.theme);
+    return object;
   }
 
   /// 添加新的[object].
@@ -188,9 +180,17 @@ final class OverlayDrawObjectManager with KlineLog {
     old?.dispose();
   }
 
+  void removeAllDrawObject() {
+    dispose();
+    configuration.delDrawOverlayList(_instId);
+  }
+
   bool removeDrawObject(DrawObject object) {
     object.dispose();
-    return _overlayObjectList.remove(object);
+    final removed = _overlayObjectList.remove(object);
+    // configuration.delDrawOverlay(_instId, object._overlay);
+    configuration.saveDrawOverlayList(_instId, _overlayObjectList.map((e) => e._overlay));
+    return removed;
   }
 
   void resetObjectListSort() => _overlayObjectList.resetSort();

@@ -16,13 +16,14 @@ import 'package:flutter/painting.dart';
 
 import '../../config/point_config/point_config.dart';
 
-extension DrawCircle on Canvas {
+extension FlexiDrawCircle on Canvas {
   /// 绘制一个带边框的圆点.
   void drawBorderCircle({
     ///绘制启始坐标位置
     required Offset offset,
     required double radius,
-    required Paint paint,
+    required Color color,
+    required double strokeWidth,
     double? borderWidth,
     Color? borderColor,
     Paint? borderPaint,
@@ -30,10 +31,7 @@ extension DrawCircle on Canvas {
     if (offset.isInfinite) return;
     borderWidth ??= borderPaint?.strokeWidth;
     borderColor ??= borderPaint?.color;
-    if (borderWidth != null &&
-        borderWidth > 0 &&
-        borderColor != null &&
-        borderColor.alpha != 0) {
+    if (borderWidth != null && borderWidth > 0 && borderColor != null && borderColor.a != 0) {
       drawCircle(
         offset,
         radius + borderWidth / 2,
@@ -43,17 +41,26 @@ extension DrawCircle on Canvas {
           ..style = PaintingStyle.stroke,
       );
     }
-    drawCircle(offset, radius, paint);
+    drawCircle(
+      offset,
+      radius,
+      Paint()
+        ..color = color
+        ..strokeWidth = strokeWidth
+        ..style = PaintingStyle.fill,
+    );
   }
 
   void drawCirclePoint(
     Offset offset,
-    PointConfig point,
-  ) {
+    PointConfig point, {
+    Color? color,
+  }) {
     drawBorderCircle(
       offset: offset,
       radius: point.radius,
-      paint: point.paint,
+      strokeWidth: point.width,
+      color: color ?? point.color,
       borderWidth: point.borderWidth,
       borderColor: point.borderColor,
     );

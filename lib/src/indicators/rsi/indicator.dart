@@ -16,41 +16,28 @@ part of 'rsi.dart';
 
 /// RSI 相对强弱指标
 @CopyWith()
-@FlexiIndicatorSerializable
 class RSIIndicator extends PaintObjectIndicator implements IPrecomputable {
   RSIIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultSubIndicatorPadding,
-    required this.calcParams,
+    required this.calcParam,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-    required this.lineWidth,
-    this.precision = 2,
   }) : super(key: const FlexiIndicatorKey('rsi'));
 
-  final List<RsiParam> calcParams;
+  final RsiParam calcParam;
   final EdgeInsets tipsPadding;
   final int tickCount;
-  final double lineWidth;
-  // 默认精度
-  final int precision;
 
-  @override
-  dynamic getCalcParam() => calcParams;
+  dynamic getCalcParam() => calcParam;
 
   @override
   PaintObjectBox createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+    IPaintContext context,
+  ) {
     return RSIPaintObject(context: context, indicator: this);
   }
-
-  factory RSIIndicator.fromJson(Map<String, dynamic> json) => _$RSIIndicatorFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() => _$RSIIndicatorToJson(this);
 }
 
 class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
@@ -65,7 +52,7 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
     if (!klineData.canPaintChart) return null;
 
     return calcuRsiMinmax(
-      indicator.calcParams,
+      indicator.calcParam,
       start: start,
       end: end,
     );
@@ -74,6 +61,7 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
   @override
   void paintChart(Canvas canvas, Size size) {
     paintRsiLine(canvas, size);
+    paintReferenceLines(canvas, size);
 
     /// 绘制Y轴刻度值
     if (settingConfig.showYAxisTick) {
@@ -81,19 +69,18 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
         canvas,
         size,
         tickCount: indicator.tickCount,
-        precision: indicator.precision,
+        precision: indicator.calcParam.display.precision,
       );
     }
   }
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String fromatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(BagNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showCompact: true,
     );
   }
 
@@ -103,7 +90,7 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
     paintYAxisTicksOnCross(
       canvas,
       offset,
-      precision: indicator.precision,
+      precision: indicator.calcParam.display.precision,
     );
   }
 
@@ -114,24 +101,25 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showCompact: true,
     );
   }
 
   /// 绘制RSI指标线
   void paintRsiLine(Canvas canvas, Size size) {
     if (!klineData.canPaintChart) return;
-    if (indicator.calcParams.isEmpty) return;
+    final enabledLines = indicator.calcParam.enabledLines;
+    if (enabledLines.isEmpty) return;
     final list = klineData.list;
     int start = klineData.start;
     int end = (klineData.end + 1).clamp(start, list.length); // 多绘制一根蜡烛
 
     final offset = startCandleDx - candleWidthHalf;
-    for (int j = 0; j < indicator.calcParams.length; j++) {
+    for (int j = 0; j < enabledLines.length; j++) {
+      final lineConfig = enabledLines[j];
       double? val;
       final List<Offset> points = [];
       for (int i = start; i < end; i++) {
-        val = list[i].rsiList?.getItem(j);
+        val = list[i].getRsiList(dataIndex)?.getItem(j);
         if (val == null) continue;
         points.add(Offset(
           offset - (i - start) * candleActualWidth,
@@ -139,13 +127,77 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
         ));
       }
 
-      canvas.drawPath(
-        Path()..addPolygon(points, false),
-        Paint()
-          ..color = indicator.calcParams[j].tips.color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = indicator.lineWidth,
-      );
+      if (points.isNotEmpty) {
+        canvas.drawPath(
+          Path()..addPolygon(points, false),
+          Paint()
+            ..color = lineConfig.color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = lineConfig.width,
+        );
+
+        // 绘制节点
+        if (indicator.calcParam.display.pointRadius > 0) {
+          for (final point in points) {
+            canvas.drawCircle(
+              point,
+              indicator.calcParam.display.pointRadius,
+              Paint()
+                ..color = lineConfig.color
+                ..style = PaintingStyle.fill,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  /// 绘制参考线（超买超卖线）
+  void paintReferenceLines(Canvas canvas, Size size) {
+    final reference = indicator.calcParam.reference;
+    if (!reference.enabled) return;
+
+    final paint = Paint()
+      ..color = reference.color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = reference.lineWidth;
+
+    // 超买线
+    final overboughtY = valueToDy(BagNum.fromNum(reference.overbought), correct: false);
+    if (reference.dashWidth > 0) {
+      _drawDashedLine(canvas, Offset(0, overboughtY), Offset(size.width, overboughtY), paint, reference.dashWidth);
+    } else {
+      canvas.drawLine(Offset(0, overboughtY), Offset(size.width, overboughtY), paint);
+    }
+
+    // 超卖线
+    final oversoldY = valueToDy(BagNum.fromNum(reference.oversold), correct: false);
+    if (reference.dashWidth > 0) {
+      _drawDashedLine(canvas, Offset(0, oversoldY), Offset(size.width, oversoldY), paint, reference.dashWidth);
+    } else {
+      canvas.drawLine(Offset(0, oversoldY), Offset(size.width, oversoldY), paint);
+    }
+  }
+
+  /// 绘制虚线
+  void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint, double dashWidth) {
+    final path = Path();
+    path.moveTo(start.dx, start.dy);
+    path.lineTo(end.dx, end.dy);
+
+    final pathMetrics = path.computeMetrics();
+    for (final metric in pathMetrics) {
+      double distance = 0.0;
+      bool draw = true;
+      while (distance < metric.length) {
+        final nextDistance = (distance + dashWidth).clamp(0.0, metric.length);
+        if (draw) {
+          final extractPath = metric.extractPath(distance, nextDistance);
+          canvas.drawPath(extractPath, paint);
+        }
+        distance = nextDistance;
+        draw = !draw;
+      }
     }
   }
 
@@ -158,29 +210,46 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
     Rect? tipsRect,
   }) {
     model ??= offsetToCandle(offset);
-    if (model == null || !model.isValidRsiList) return null;
+    if (model == null || !model.isValidRsi(dataIndex)) return null;
 
-    final precision = indicator.precision;
+    final param = indicator.calcParam;
+    final enabledLines = param.enabledLines;
+    final precision = param.display.precision;
     final children = <TextSpan>[];
     double? val;
-    for (int i = 0; i < model.rsiList!.length; i++) {
-      val = model.rsiList?.getItem(i);
+    
+    final rsiList = model.getRsiList(dataIndex)!;
+    for (int i = 0; i < rsiList.length && i < enabledLines.length; i++) {
+      val = rsiList.getItem(i);
       if (val == null) continue;
-      final param = indicator.calcParams.getItem(i);
-      if (param == null) continue;
+      final lineConfig = enabledLines[i];
+
+      String label = 'RSI';
+      if (param.display.showPeriodInTips) {
+        label = 'RSI${lineConfig.period}';
+      }
 
       final text = formatNumber(
         val.toDecimal(),
-        precision: param.tips.getP(precision),
+        precision: precision,
         cutInvalidZero: true,
-        prefix: param.tips.label,
+        prefix: '$label: ',
         suffix: '  ',
       );
       children.add(TextSpan(
         text: text,
-        style: param.tips.style,
+        style: TextStyle(color: lineConfig.color, fontSize: 12),
       ));
     }
+
+    // 显示参考线数值
+    if (param.reference.enabled && param.display.showReferenceValue) {
+      children.add(TextSpan(
+        text: 'OB:${param.reference.overbought.toInt()} OS:${param.reference.oversold.toInt()}  ',
+        style: TextStyle(color: param.reference.color, fontSize: 12),
+      ));
+    }
+
     if (children.isNotEmpty) {
       tipsRect ??= drawableRect;
       return canvas.drawText(

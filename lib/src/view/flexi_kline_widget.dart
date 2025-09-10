@@ -12,17 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:math' as math;
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
+import '../core/core.dart';
+import '../extension/basic_type_ext.dart';
+import '../extension/functions_ext.dart';
+import '../extension/geometry_ext.dart';
 import '../framework/configuration.dart';
+import '../framework/logger.dart';
 import '../kline_controller.dart';
 import '../utils/platform_util.dart';
 import 'non_touch_gesture_detector.dart';
 import 'touch_gesture_detector.dart';
 
-typedef MagnifierDecorationShapBuilder = ShapeBorder Function(
+typedef MagnifierDecorationShapeBuilder = ShapeBorder Function(
   BuildContext context,
   BorderSide side,
 );
@@ -42,7 +48,11 @@ class FlexiKlineWidget extends StatefulWidget {
     this.onDoubleTap,
     this.drawToolbar,
     this.drawToolbarInitHeight = 50,
-    this.magnifierDecorationShapBuilder,
+    this.keepDrawToolbarFullyVisible = true,
+    this.magnifierDecorationShapeBuilder,
+    this.exitZoomButtonBuilder,
+    this.exitZoomButtonAlignment = AlignmentDirectional.bottomEnd,
+    this.exitZoomButtonPadding = const EdgeInsetsDirectional.all(12),
   })  : isTouchDevice = isTouchDevice ?? PlatformUtil.isTouch,
         autoAdaptLayout = autoAdaptLayout ?? !PlatformUtil.isMobile;
 
@@ -73,6 +83,9 @@ class FlexiKlineWidget extends StatefulWidget {
   /// 用于计算[drawToolbar]初始展示的位置向对于canvas底部的位置.
   final double drawToolbarInitHeight;
 
+  /// 是否保持[drawToolbar]完全可见.
+  final bool keepDrawToolbarFullyVisible;
+
   /// 是否自动适配所在布局约束.
   /// 在可以动态调整窗口大小的设备上, 此值为true, 将会动态适配窗口的调整; 否则, 请自行控制.
   /// 非移动设备默认为true.
@@ -82,58 +95,84 @@ class FlexiKlineWidget extends StatefulWidget {
   final bool isTouchDevice;
 
   /// 绘制点指针放大镜DecorationShape.
-  final MagnifierDecorationShapBuilder? magnifierDecorationShapBuilder;
+  final MagnifierDecorationShapeBuilder? magnifierDecorationShapeBuilder;
+
+  /// 自定义退出指标缩放按钮
+  final WidgetBuilder? exitZoomButtonBuilder;
+
+  /// 退出指标缩放按钮Alignment
+  final AlignmentGeometry exitZoomButtonAlignment;
+
+  /// 缩放按钮Padding
+  final EdgeInsetsGeometry exitZoomButtonPadding;
 
   @override
   State<FlexiKlineWidget> createState() => _FlexiKlineWidgetState();
 }
 
-class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
+class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBindingObserver, KlineLog {
+  @override
+  String get logTag => 'FlexiKlineWidget';
+
   /// 绘制工具条globalKey: 用于获取其大小
-  final GlobalKey _drawToolbarKey = GlobalKey();
+  GlobalKey? _drawToolbarKey;
+  GlobalKey get drawToolbarKey => _drawToolbarKey ??= GlobalKey();
 
   /// 绘制工具条位置
-  Offset _position = Offset.infinite;
+  late final ValueNotifier<Offset> _drawToolbarPosition;
+  Offset get drawToolbarPosition => _drawToolbarPosition.value;
 
-  IConfiguration get configuration => widget.controller.configuration;
+  FlexiKlineController get controller => widget.controller;
+
+  IConfiguration get configuration => controller.configuration;
+
+  IFlexiKlineTheme get theme => configuration.theme;
 
   @override
   void initState() {
     super.initState();
 
-    widget.controller.initState();
+    loggerDelegate = controller.loggerDelegate;
+
+    controller.initState();
     if (widget.mainSize != null) {
-      widget.controller.setMainSize(widget.mainSize!);
+      controller.setMainSize(widget.mainSize!);
     }
 
-    _position = configuration.getDrawToolbarPosition();
-
-    widget.controller.canvasSizeChangeListener.addListener(() {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        if (widget.controller.drawState.isEditing) {
-          _updateDrawToolbarPosition(_position);
-        }
-        setState(() {});
-      });
-    });
+    _drawToolbarPosition = ValueNotifier(
+      configuration.getDrawToolbarPosition(),
+    );
   }
 
   @override
   void didUpdateWidget(covariant FlexiKlineWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    widget.controller.logd('View didUpdateWidget');
+    logd('didUpdateWidget');
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    widget.controller.logd('View didChangeDependencies');
+    logd('didChangeDependencies');
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    logd('didChangeAppLifecycleState($state)');
+    // if (state == AppLifecycleState.resumed) {
+    // } else {
+    // }
+  }
+
+  @override
+  void didHaveMemoryPressure() {
+    controller.cleanUnlessKlineData();
   }
 
   @override
   void dispose() {
-    configuration.saveDrawToolbarPosition(_position);
-    widget.controller.dispose();
+    configuration.saveDrawToolbarPosition(drawToolbarPosition);
+    _drawToolbarKey = null;
     super.dispose();
   }
 
@@ -142,7 +181,18 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
     if (widget.autoAdaptLayout) {
       return LayoutBuilder(
         builder: (context, constraints) {
-          widget.controller.adaptLayoutChange(constraints.biggest);
+          switch (controller.layoutMode) {
+            case FixedLayoutMode(fixedSize: final size):
+              controller.setFixedLayoutMode(Size(
+                constraints.biggest.width,
+                size.height,
+              ));
+            case NormalLayoutMode(mainSize: final size):
+            case AdaptLayoutMode(mainSize: final size):
+              controller.setAdaptLayoutMode(
+                Size(constraints.biggest.width, size.height),
+              );
+          }
           return _buildKlineContainer(context);
         },
       );
@@ -152,8 +202,25 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
   }
 
   Widget _buildKlineContainer(BuildContext context) {
-    final canvasRect = widget.controller.canvasRect;
+    return ValueListenableBuilder(
+      valueListenable: controller.canvasSizeChangeListener,
+      builder: (context, canvasRect, child) {
+        if (controller.drawState.isEditing) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            configuration.saveDrawToolbarPosition(
+              _updateDrawToolbarPosition(drawToolbarPosition, canvasRect),
+            );
+          });
+        }
+        return _buildKlineContent(context, canvasRect);
+      },
+    );
+  }
+
+  Widget _buildKlineContent(BuildContext context, Rect canvasRect) {
+    // final canvasRect = controller.canvasRect;
     final canvasSize = canvasRect.size;
+    final mainRect = controller.mainRect;
     return Container(
       alignment: widget.alignment,
       width: canvasRect.width,
@@ -165,7 +232,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
           if (widget.mainBackgroundView != null)
             Positioned.fromRect(
               key: const ValueKey('MainBackground'),
-              rect: widget.controller.mainRect,
+              rect: mainRect,
               child: widget.mainBackgroundView!,
             ),
           RepaintBoundary(
@@ -173,10 +240,10 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
             child: CustomPaint(
               size: canvasSize,
               painter: GridPainter(
-                controller: widget.controller,
+                controller: controller,
               ),
               foregroundPainter: ChartPainter(
-                controller: widget.controller,
+                controller: controller,
               ),
               isComplex: true,
             ),
@@ -186,10 +253,10 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
             child: CustomPaint(
               size: canvasSize,
               painter: DrawPainter(
-                controller: widget.controller,
+                controller: controller,
               ),
               foregroundPainter: CrossPainter(
-                controller: widget.controller,
+                controller: controller,
               ),
               isComplex: true,
             ),
@@ -197,18 +264,22 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
           widget.isTouchDevice
               ? TouchGestureDetector(
                   key: const ValueKey('TouchGestureDetector'),
-                  controller: widget.controller,
+                  controller: controller,
                   onDoubleTap: widget.onDoubleTap,
                 )
               : NonTouchGestureDetector(
                   key: const ValueKey('NonTouchGestureDetector'),
-                  controller: widget.controller,
+                  controller: controller,
                   onDoubleTap: widget.onDoubleTap,
                 ),
           _buildMagnifier(context, canvasRect),
+          Positioned.fromRect(
+            rect: mainRect,
+            child: _buildExitZoomButton(context, mainRect),
+          ),
           _buildDrawToolbar(context, canvasRect),
           Positioned.fromRect(
-            rect: widget.controller.mainRect,
+            rect: mainRect,
             child: _buildMainForgroundView(context),
           ),
         ],
@@ -222,21 +293,19 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
     }
 
     return ValueListenableBuilder(
-      valueListenable: widget.controller.candleRequestListener,
+      valueListenable: controller.candleRequestListener,
       builder: (context, request, child) {
         return Offstage(
           offstage: !request.state.showLoading,
           child: Center(
             key: const ValueKey('loadingView'),
             child: SizedBox.square(
-              dimension: widget.controller.settingConfig.loading.size,
+              dimension: controller.settingConfig.loading.size,
               child: CircularProgressIndicator(
-                strokeWidth:
-                    widget.controller.settingConfig.loading.strokeWidth,
-                backgroundColor:
-                    widget.controller.settingConfig.loading.background,
+                strokeWidth: controller.settingConfig.loading.strokeWidth,
+                backgroundColor: controller.settingConfig.loading.background,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  widget.controller.settingConfig.loading.valueColor,
+                  controller.settingConfig.loading.valueColor,
                 ),
               ),
             ),
@@ -246,65 +315,113 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
     );
   }
 
-  bool _updateDrawToolbarPosition(Offset newPosition) {
-    final size = _drawToolbarKey.currentContext?.size;
-    if (size != null && !size.isEmpty) {
-      final canvasRect = widget.controller.canvasRect;
-      _position = Offset(
-        newPosition.dx.clamp(canvasRect.left, canvasRect.right - size.width),
-        newPosition.dy.clamp(canvasRect.top, canvasRect.bottom - size.height),
+  Offset _updateDrawToolbarPosition(Offset newPosition, [Rect? canvasRect]) {
+    canvasRect ??= controller.canvasRect;
+    final size = drawToolbarKey.currentContext?.size;
+    if (widget.keepDrawToolbarFullyVisible && size != null && size.isFinite) {
+      newPosition = Offset(
+        newPosition.dx.clamp(
+          canvasRect.left,
+          math.max(canvasRect.left, canvasRect.right - size.width),
+        ),
+        newPosition.dy.clamp(
+          canvasRect.top,
+          math.max(canvasRect.top, canvasRect.bottom - size.height),
+        ),
       );
-      return true;
+    } else {
+      newPosition = newPosition.clamp(canvasRect);
     }
-    return false;
+    return _drawToolbarPosition.value = newPosition;
   }
 
   /// 绘制DrawToolBar
-  Widget _buildDrawToolbar(BuildContext context, Rect canvasRect) {
+  Widget _buildDrawToolbar(BuildContext flexiKlineContext, Rect canvasRect) {
     if (widget.drawToolbar == null) return const SizedBox.shrink();
-    if (_position == Offset.infinite || !canvasRect.contains(_position)) {
-      // 如果_position无效, 则重置其为当前canvas区域左下角.
-      _position = Offset(0, canvasRect.height - widget.drawToolbarInitHeight);
-    }
-    return Positioned(
-      left: _position.dx,
-      top: _position.dy,
-      child: ValueListenableBuilder(
-        valueListenable: widget.controller.drawStateListener,
-        builder: (context, state, child) {
-          return Visibility(
-            visible: state.isEditing,
-            child: GestureDetector(
-              onPanUpdate: (DragUpdateDetails details) {
-                if (_updateDrawToolbarPosition(_position + details.delta)) {
-                  // TODO: 优化此处避免使用setState
-                  setState(() {});
-                }
-              },
-              onPanEnd: (event) {
-                configuration.saveDrawToolbarPosition(_position);
-              },
-              child: SizedBox(
-                key: _drawToolbarKey,
-                child: widget.drawToolbar,
+    final drawToolbarWrapper = SizedBox(
+      key: drawToolbarKey,
+      child: widget.drawToolbar!,
+    );
+    return ValueListenableBuilder(
+      valueListenable: controller.drawStateListener,
+      builder: (context, state, child) => Visibility(
+        visible: state.isEditing,
+        child: ValueListenableBuilder(
+          valueListenable: _drawToolbarPosition,
+          builder: (context, position, child) {
+            if (position == Offset.infinite || !canvasRect.contains(position)) {
+              // 如果position无效, 则重置其为当前canvas区域左下角.
+              position = Offset(0, canvasRect.height - widget.drawToolbarInitHeight);
+            }
+            return Positioned(
+              left: position.dx,
+              top: position.dy,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.move,
+                child: Draggable(
+                  key: const ValueKey('DrawToolbarDraggable'),
+                  feedback: drawToolbarWrapper,
+                  childWhenDragging: const SizedBox.shrink(),
+                  child: drawToolbarWrapper,
+                  onDragEnd: (details) {
+                    final box = flexiKlineContext.findRenderObject() as RenderBox;
+                    final newPosition = box.globalToLocal(details.offset);
+                    configuration.saveDrawToolbarPosition(
+                      _updateDrawToolbarPosition(newPosition, canvasRect),
+                    );
+                  },
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
+    // return ValueListenableBuilder(
+    //   valueListenable: controller.drawStateListener,
+    //   builder: (context, state, child) => Visibility(
+    //     visible: state.isEditing,
+    //     child: ValueListenableBuilder(
+    //       valueListenable: _drawToolbarPosition,
+    //       builder: (context, position, child) {
+    //         if (position == Offset.infinite || !canvasRect.contains(position)) {
+    //           // 如果position无效, 则重置其为当前canvas区域左下角.
+    //           position = Offset(0, canvasRect.height - widget.drawToolbarInitHeight);
+    //         }
+    //         return Positioned(
+    //           left: position.dx,
+    //           top: position.dy,
+    //           child: MouseRegion(
+    //             cursor: SystemMouseCursors.move,
+    //             child: GestureDetector(
+    //               onPanUpdate: (DragUpdateDetails details) {
+    //                 _updateDrawToolbarPosition(position + details.delta, canvasRect);
+    //               },
+    //               onPanEnd: (event) {
+    //                 configuration.saveDrawToolbarPosition(position);
+    //               },
+    //               child: SizedBox(
+    //                 key: drawToolbarKey,
+    //                 child: widget.drawToolbar,
+    //               ),
+    //             ),
+    //           ),
+    //         );
+    //       },
+    //     ),
+    //   ),
+    // );
   }
 
   /// 放大镜
   Widget _buildMagnifier(BuildContext context, Rect drawRect) {
-    final config = widget.controller.drawConfig.magnifier;
-    // Web平台暂不支持放大镜; TODO: 后续适配
-    if (PlatformUtil.isWeb || !config.enable || config.size.isEmpty) {
+    final config = controller.drawConfig.magnifier;
+    if (!config.enable || config.size.isEmpty) {
       return const SizedBox.shrink();
     }
 
     return ValueListenableBuilder(
-      valueListenable: widget.controller.drawPointerListener,
+      valueListenable: controller.drawPointerListener,
       builder: (context, pointer, child) {
         bool visible = false;
         final pointerOffset = pointer?.offset;
@@ -323,8 +440,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
             );
           } else {
             alignment = AlignmentDirectional.topEnd;
-            final valueTxtWidth =
-                widget.controller.drawState.object?.valueTicksSize?.width ?? 0;
+            final valueTxtWidth = controller.drawState.object?.valueTicksSize?.width ?? 0;
             margin = margin.copyWith(right: margin.right + valueTxtWidth);
             position = Offset(
               drawRect.right - margin.right - config.size.width / 2,
@@ -333,7 +449,6 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
           }
           focalPosition = pointerOffset - position;
         }
-
         return Visibility(
           key: const ValueKey('MagnifierVisibility'),
           visible: visible,
@@ -346,11 +461,13 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
               decoration: MagnifierDecoration(
                 opacity: config.decorationOpactity,
                 shadows: config.decorationShadows,
-                shape: widget.magnifierDecorationShapBuilder?.call(
+                shape: widget.magnifierDecorationShapeBuilder?.call(
                       context,
-                      config.shapeSide,
+                      config.shapeSide.copyWith(color: theme.gridLine),
                     ) ??
-                    CircleBorder(side: config.shapeSide),
+                    CircleBorder(
+                      side: config.shapeSide.copyWith(color: theme.gridLine),
+                    ),
               ),
               size: config.size,
               focalPointOffset: focalPosition,
@@ -359,6 +476,37 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> {
           ),
         );
       },
+    );
+  }
+
+  /// 退出Zoom缩放按钮
+  Widget _buildExitZoomButton(BuildContext context, Rect mainRect) {
+    return ValueListenableBuilder(
+      valueListenable: controller.isStartZoomChartListener,
+      builder: (context, isStartZomming, child) => Visibility(
+        visible: isStartZomming,
+        child: Container(
+          alignment: widget.exitZoomButtonAlignment,
+          padding: widget.exitZoomButtonPadding,
+          child: widget.exitZoomButtonBuilder?.call(context) ??
+              IconButton(
+                onPressed: controller.exitChartZoom.debounce(),
+                constraints: const BoxConstraints(),
+                style: IconButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  fixedSize: Size(20, 20),
+                  foregroundColor: theme.tooltipTextColor,
+                  backgroundColor: theme.tooltipBg.withAlpha(0.8.alpha),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  side: BorderSide(color: theme.gridLine, width: 1),
+                ),
+                icon: Text('A', style: TextStyle(fontSize: 12)),
+              ),
+        ),
+      ),
     );
   }
 }
@@ -372,7 +520,7 @@ class GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    controller.paintGridBg(canvas, size);
+    controller.paintGrid(canvas, size);
   }
 
   @override
@@ -392,19 +540,15 @@ class ChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Timeline.startSync("Flexi-PaintChart");
 
-    try {
-      /// 保存画布状态
-      canvas.save();
-
-      canvas.clipRect(controller.canvasRect);
-
-      controller.calculateCandleDrawIndex();
-
-      controller.paintChart(canvas, size);
-    } finally {
-      /// 恢复画布状态
-      canvas.restore();
-    }
+    // try {
+    //   /// 保存画布状态
+    //   canvas.save();
+    //   canvas.clipRect(controller.canvasRect);
+    controller.paintChart(canvas, size);
+    // } finally {
+    //   /// 恢复画布状态
+    //   canvas.restore();
+    // }
 
     Timeline.finishSync();
   }
@@ -427,9 +571,7 @@ class DrawPainter extends CustomPainter {
     if (!controller.isDrawVisibility) return;
 
     try {
-      /// 保存画布状态
       canvas.save();
-
       canvas.clipRect(controller.mainRect);
 
       controller.paintDraw(canvas, size);
@@ -455,7 +597,14 @@ class CrossPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    controller.paintCross(canvas, size);
+    try {
+      canvas.save();
+      canvas.clipRect(controller.canvasRect);
+
+      controller.paintCross(canvas, size);
+    } finally {
+      canvas.restore();
+    }
   }
 
   @override

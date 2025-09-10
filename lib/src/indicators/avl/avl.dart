@@ -14,20 +14,18 @@
 
 library avl;
 
-import 'dart:math' as math;
-
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-import '../../config/export.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
+
 import 'avl_param.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
 import '../../extension/export.dart';
 import '../../framework/export.dart';
 import '../../model/export.dart';
-import '../../utils/export.dart';
 
 part 'data.dart';
 part 'indicator.dart';

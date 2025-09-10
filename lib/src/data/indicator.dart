@@ -12,17 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:flexi_kline/flexi_kline.dart';
-import 'package:flutter_test/flutter_test.dart';
+part of 'kline_data.dart';
 
-void main() {
-  group('test-configs', () {
-    test('test-indicators', () {
-      final json = <String, dynamic>{};
-      // final indicators = IndicatorsConfig.fromJson(json);
-
-      // indicators.volume = VolumeIndicator(paintMode: PaintMode.combine);
-      // expect(indicators.mavol.children.length, 2);
-    });
-  });
-}
+mixin IndicatorData on BaseData {}

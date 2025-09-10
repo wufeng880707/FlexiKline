@@ -16,6 +16,11 @@ part of 'indicator.dart';
 
 /// FlexiKlineController 状态/配置/接口代理
 extension IndicatorObjectExt on IndicatorObject {
+  bool get isAllowUpdateHeight {
+    // return _context.layoutMode is NormalLayoutMode || _context.layoutMode is AdaptLayoutMode;
+    return _context.isAllowUpdateLayoutHeight;
+  }
+
   /// Config
   SettingConfig get settingConfig => _context.settingConfig;
 
@@ -45,18 +50,16 @@ extension IndicatorObjectExt on IndicatorObject {
   IFlexiKlineTheme get theme => _context.theme;
 
   /// 全局默认的刻度值文本配置.
-  TextAreaConfig get defTicksTextConfig => settingConfig.ticksText.of(
+  TextAreaConfig get defTicksTextConfig => gridConfig.ticksText.of(
         textColor: theme.ticksTextColor,
       );
 
-  Color get longColor => theme.long;
-
-  Color get shortColor => theme.short;
-
   /// 指标图 涨跌 bar/line 配置
-  Color get longTintColor => longColor.withOpacity(settingConfig.opacity);
-  Color get shortTintColor => shortColor.withOpacity(settingConfig.opacity);
-  // 实心
+  /// 涨跌浅色
+  Color get longTintColor => longColor.withAlpha(settingConfig.opacity.alpha);
+  Color get shortTintColor => shortColor.withAlpha(settingConfig.opacity.alpha);
+
+  /// 涨跌色实心柱画笔
   Paint get defLongBarPaint => Paint()
     ..color = longColor
     ..style = PaintingStyle.stroke
@@ -65,7 +68,8 @@ extension IndicatorObjectExt on IndicatorObject {
     ..color = shortColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleWidth;
-  // 实心, 浅色
+
+  /// 涨跌浅色实心柱画笔
   Paint get defLongTintBarPaint => Paint()
     ..color = longTintColor
     ..style = PaintingStyle.stroke
@@ -74,7 +78,8 @@ extension IndicatorObjectExt on IndicatorObject {
     ..color = shortTintColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleWidth;
-  // 空心
+
+  /// 涨跌色空心柱画笔
   Paint get defLongHollowBarPaint => Paint()
     ..color = longColor
     ..style = PaintingStyle.stroke
@@ -83,7 +88,8 @@ extension IndicatorObjectExt on IndicatorObject {
     ..color = shortColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = settingConfig.candleHollowBarBorderWidth;
-  // 线
+
+  /// 涨跌色线画笔
   Paint get defLongLinePaint => Paint()
     ..color = longColor
     ..style = PaintingStyle.stroke
@@ -92,6 +98,12 @@ extension IndicatorObjectExt on IndicatorObject {
     ..color = shortColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleLineWidth;
+
+  /// 定制线画笔
+  Paint getLinePaint({Color? color, double? strokeWidth}) => Paint()
+    ..color = color ?? theme.lineChartColor
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = strokeWidth ?? candleLineWidth;
 }
 
 /// 绘制对象混入边界计算的通用扩展
@@ -133,7 +145,7 @@ mixin PaintObjectBoundingMixin on IndicatorObject implements IPaintBoundingBox {
         subRect.left,
         subRect.top + top,
         subRect.right,
-        subRect.top + top + indicator.height,
+        subRect.top + top + height,
       );
     }
     return _drawableRect!;
@@ -142,9 +154,9 @@ mixin PaintObjectBoundingMixin on IndicatorObject implements IPaintBoundingBox {
   @override
   Rect get topRect {
     return _topRect ??= Rect.fromLTRB(
-      drawableRect.left,
+      drawableRect.left + padding.left,
       drawableRect.top,
-      drawableRect.right,
+      drawableRect.right - padding.right,
       drawableRect.top + padding.top,
     );
   }
@@ -152,9 +164,9 @@ mixin PaintObjectBoundingMixin on IndicatorObject implements IPaintBoundingBox {
   @override
   Rect get bottomRect {
     return _bottomRect ??= Rect.fromLTRB(
-      drawableRect.left,
+      drawableRect.left + padding.left,
       drawableRect.bottom - padding.bottom,
-      drawableRect.right,
+      drawableRect.right - padding.right,
       drawableRect.bottom,
     );
   }
@@ -162,12 +174,12 @@ mixin PaintObjectBoundingMixin on IndicatorObject implements IPaintBoundingBox {
   @override
   Rect get chartRect {
     if (_chartRect != null) return _chartRect!;
-    final chartBottom = drawableRect.bottom - padding.bottom;
+    final chartBottom = bottomRect.top;
     double chartTop;
-    if (indicator.paintMode == PaintMode.alone) {
-      chartTop = chartBottom - indicator.height;
+    if (paintMode == PaintMode.alone) {
+      chartTop = math.max(chartBottom - height, topRect.bottom);
     } else {
-      chartTop = drawableRect.top + padding.top;
+      chartTop = topRect.bottom;
     }
     return _chartRect = Rect.fromLTRB(
       drawableRect.left + padding.left,
@@ -179,11 +191,16 @@ mixin PaintObjectBoundingMixin on IndicatorObject implements IPaintBoundingBox {
 
   double get chartRectWidthHalf => chartRect.width / 2;
 
-  double clampDxInChart(double dx) => dx.clamp(chartRect.left, chartRect.right);
-  double clampDyInChart(double dy) => dy.clamp(chartRect.top, chartRect.bottom);
+  double clampDxInChart(double dx) => dx.clamp(
+        chartRect.left,
+        math.max(chartRect.left, chartRect.right),
+      );
+  double clampDyInChart(double dy) => dy.clamp(
+        chartRect.top,
+        math.max(chartRect.top, chartRect.bottom),
+      );
 
   // Tips区域向下移动height.
-  @override
   Rect shiftNextTipsRect(double height) {
     return drawableRect.shiftYAxis(height);
   }
@@ -235,7 +252,7 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
 
   CandleModel? dxToCandle(double dx) {
     final index = dxToIndex(dx).toInt();
-    return klineData.getCandle(index);
+    return klineData.get(index);
   }
 
   CandleModel? offsetToCandle(Offset? offset) {
@@ -273,7 +290,7 @@ mixin PaintYAxisTicksMixin<T extends Indicator> on PaintObject<T> {
       final value = dyToValue(dy);
       if (value == null) continue;
 
-      final text = fromatTicksValue(value, precision: precision);
+      final text = formatTicksValue(value, precision: precision);
 
       final ticksText = defTicksTextConfig;
 
@@ -292,12 +309,12 @@ mixin PaintYAxisTicksMixin<T extends Indicator> on PaintObject<T> {
 
   /// 如果要定制格式化刻度值. 在PaintObject中覆写此方法.
   @protected
-  String fromatTicksValue(BagNum value, {required int precision}) {
-    return formatNumber(
+  String formatTicksValue(BagNum value, {required int precision}) {
+    return formatPrice(
       value.toDecimal(),
       precision: precision,
+      cutInvalidZero: false,
       defIfZero: '0.00',
-      showCompact: true,
     );
   }
 }
@@ -316,7 +333,10 @@ mixin PaintYAxisTicksOnCrossMixin<T extends Indicator> on PaintObject<T> {
 
     final text = formatTicksValueOnCross(value, precision: precision);
 
-    final ticksText = crossConfig.ticksText;
+    final ticksText = crossConfig.ticksText.of(
+      textColor: theme.crossTextColor,
+      background: theme.crossTextBg,
+    );
 
     canvas.drawTextArea(
       offset: Offset(
@@ -332,62 +352,266 @@ mixin PaintYAxisTicksOnCrossMixin<T extends Indicator> on PaintObject<T> {
 
   @protected
   String formatTicksValueOnCross(BagNum value, {required int precision}) {
-    return formatNumber(
+    return formatPrice(
       value.toDecimal(),
       precision: precision,
+      cutInvalidZero: false,
       defIfZero: '0.00',
-      showCompact: true,
     );
   }
 }
 
-/// 绘制简易蜡烛图
-/// 主要用于SubBoll图和SubSar图中
-mixin PaintSimpleCandleMixin<T extends Indicator> on PaintObject<T> {
-  void paintSimpleCandleChart(
-    Canvas canvas,
-    Size size, {
-    double? lineWidth, // 简易蜡烛线宽.
+/// 绘制蜡烛图辅助Mixin
+mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
+  /// 绘制Open-high-low-close样式的蜡烛图(美国线图)
+  /// 主区: 蜡烛图
+  /// 副区: 用于SubBoll图和SubSar图中
+  void paintOHPLStyleCandleChart(
+    Canvas canvas, {
+    int? start,
+    int? end,
+    double? startOffset, // 起始偏移量.
   }) {
     if (!klineData.canPaintChart) return;
-    final list = klineData.list;
-    int start = klineData.start;
-    int end = klineData.end;
+    start ??= klineData.start;
+    end ??= (klineData.end + 1).clamp(start, klineData.length); // 多绘制一根蜡烛;
+    startOffset ??= startCandleDx - candleWidthHalf;
+    final barWidthHalf = candleWidthHalf;
+    for (var i = start; i < end; i++) {
+      paintCandleBar(
+        canvas,
+        klineData[i],
+        dx: startOffset - (i - start) * candleActualWidth,
+        barWidthHalf: barWidthHalf,
+        chartStyle: ChartBarStyle.ohlc,
+      );
+    }
+  }
 
-    final offset = startCandleDx - candleWidthHalf;
+  /// 绘制单根蜡烛柱(支持上涨下跌柱为空心或实心)
+  /// [open], [close], [low], [high]为蜡烛[m]在当前图表中转换后的坐标值, 若不传, 则实时计算.
+  /// [barWidthHalf]为蜡烛柱的宽度的一半, 若不传, 则实时计算.
+  /// [chartStyle]为蜡烛柱的样式, 支持: ohlcChart, upHollow, downHollow
+  void paintCandleBar(
+    Canvas canvas,
+    CandleModel m, {
+    required double dx,
+    double? high,
+    double? low,
+    double? open,
+    double? close,
+    double? barWidthHalf,
+    required ChartBarStyle chartStyle,
+  }) {
+    barWidthHalf ??= candleWidthHalf - candleSpacing;
+    final isLong = m.close >= m.open;
+    high ??= valueToDy(m.high);
+    low ??= valueToDy(m.low);
+    (open, close) = ensureMinDistance(
+      open ?? valueToDy(m.open),
+      close ?? valueToDy(m.close),
+    );
 
+    final path = Path()..moveTo(dx, high);
+    if (chartStyle == ChartBarStyle.ohlc) {
+      path.moveTo(dx, high);
+      path.lineTo(dx, low);
+      path.moveTo(dx - barWidthHalf, open);
+      path.lineTo(dx, open);
+      path.moveTo(dx + barWidthHalf, close);
+      path.lineTo(dx, close);
+      canvas.drawPath(path, isLong ? defLongLinePaint : defShortLinePaint);
+    } else if (isLong) {
+      if (chartStyle.isHollowUp) {
+        path.lineTo(dx, close);
+        path.addRect(Rect.fromPoints(
+          Offset(dx - barWidthHalf, close),
+          Offset(dx + barWidthHalf, open),
+        ));
+        if (low > open) {
+          path.moveTo(dx, low);
+          path.lineTo(dx, open);
+        }
+        canvas.drawPath(path, defLongLinePaint);
+      } else {
+        path.lineTo(dx, low);
+        canvas.drawPath(path, defLongLinePaint);
+        canvas.drawLine(
+          Offset(dx, open),
+          Offset(dx, close),
+          defLongBarPaint,
+        );
+      }
+    } else {
+      if (chartStyle.isHollowDown) {
+        path.lineTo(dx, open);
+        path.addRect(Rect.fromPoints(
+          Offset(dx - barWidthHalf, open),
+          Offset(dx + barWidthHalf, close),
+        ));
+        if (low > close) {
+          path.moveTo(dx, low);
+          path.lineTo(dx, close);
+        }
+        canvas.drawPath(path, defShortHollowBarPaint);
+      } else {
+        path.lineTo(dx, low);
+        canvas.drawPath(path, defShortLinePaint);
+        canvas.drawLine(
+          Offset(dx, open),
+          Offset(dx, close),
+          defShortBarPaint,
+        );
+      }
+    }
+  }
+
+  /// 绘线类型的制蜡烛图
+  void paintLineTypeCandleChart(
+    Canvas canvas, {
+    int? start,
+    int? end,
+    double? startOffset, // 起始偏移量.
+    Paint? linePaint, // 蜡烛线图画笔.
+  }) {
+    if (!klineData.canPaintChart) return;
+    start ??= klineData.start;
+    end ??= (klineData.end + 1).clamp(start, klineData.length); // 多绘制一根蜡烛;
+    startOffset ??= startCandleDx - candleWidthHalf;
+
+    List<Offset> points = [];
     CandleModel m;
     for (var i = start; i < end; i++) {
-      m = list[i];
-      final dx = offset - (i - start) * candleActualWidth;
-      final isLong = m.close >= m.open;
+      m = klineData[i];
+      points.add(Offset(
+        startOffset - (i - start) * candleActualWidth,
+        valueToDy(m.close, correct: false),
+      ));
+    }
 
-      final linePaint = isLong ? defLongLinePaint : defShortLinePaint;
+    linePaint ??= getLinePaint();
+    paintLineChart(
+      canvas,
+      points: points,
+      boundEnd: Offset(points.last.dx, chartRect.bottom),
+      boundStart: Offset(points.first.dx, chartRect.bottom),
+      linePaint: linePaint,
+      shader: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: <Color>[
+          linePaint.color.withAlpha(0.5.alpha),
+          theme.transparent,
+        ],
+        stops: [0, 1],
+        tileMode: TileMode.decal,
+      ),
+    );
+  }
 
-      if (lineWidth != null) linePaint.strokeWidth = lineWidth;
-
-      final highOff = Offset(dx, valueToDy(m.high));
-      final lowOff = Offset(dx, valueToDy(m.low));
-
-      canvas.drawLine(
-        highOff,
-        lowOff,
-        linePaint,
+  @protected
+  void paintLineChart(
+    Canvas canvas, {
+    required List<Offset> points, // 绘制线
+    required Paint linePaint, // 蜡烛线图画笔.
+    Offset? boundEnd, // 边界结束坐标
+    Offset? boundStart, // 边界起始坐标
+    LinearGradient? shader, // 阴影配置.
+  }) {
+    canvas.drawPath(
+      Path()..addPolygon(points, false),
+      linePaint,
+    );
+    if (boundEnd != null && boundStart != null && shader != null) {
+      points.add(boundEnd);
+      points.add(boundStart);
+      final path = Path()..addPolygon(points, true);
+      canvas.drawPath(
+        path,
+        Paint()..shader = shader.createShader(path.getBounds()),
       );
+    }
+  }
 
-      final openDy = valueToDy(m.open);
-      canvas.drawLine(
-        Offset(dx - candleWidthHalf, openDy),
-        Offset(dx, openDy),
-        linePaint,
-      );
+  /// 绘制涨跌线类型的蜡烛图
+  void paintUpDownLineTypeCandleChart(
+    Canvas canvas, {
+    int? start,
+    int? end,
+    double? startOffset, // 起始偏移量.
+  }) {
+    if (!klineData.canPaintChart) return;
+    start ??= klineData.start;
+    end ??= (klineData.end + 1).clamp(start, klineData.length); // 多绘制一根蜡烛;
+    startOffset ??= startCandleDx - candleWidthHalf;
 
-      final closeDy = valueToDy(m.close);
-      canvas.drawLine(
-        Offset(dx, closeDy),
-        Offset(dx + candleWidthHalf, closeDy),
-        linePaint,
-      );
+    final latestDy = valueToDy(klineData.latest!.close, correct: false);
+    Offset boundStart, boundEnd, prev, point;
+    boundStart = Offset(startOffset.clamp(chartRect.left, chartRect.right), latestDy);
+    prev = point = Offset(startOffset, valueToDy(klineData[start].close, correct: false));
+    final points = [point];
+    bool isLong = point.dy <= latestDy;
+    for (var i = start + 1; i <= end; i++) {
+      if (i < end) {
+        point = Offset(
+          startOffset - (i - start) * candleActualWidth,
+          valueToDy(klineData[i].close, correct: false),
+        );
+      }
+      if (point.dy <= latestDy != isLong || i == end) {
+        if (point.dy <= latestDy != isLong) {
+          boundEnd = latestDy.offsetWithDyOnAB(prev, point);
+          points.add(boundEnd);
+        } else {
+          points.add(point);
+          boundEnd = Offset(point.dx, boundStart.dy);
+        }
+        if (isLong) {
+          // 绘制上涨区间的线图
+          paintLineChart(
+            canvas,
+            points: points,
+            boundEnd: boundEnd,
+            boundStart: boundStart, //Offset(points.first.dx, latestDy),
+            linePaint: getLinePaint(color: longColor),
+            shader: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[
+                longColor.withAlpha(0.5.alpha),
+                theme.transparent,
+              ],
+              stops: [0, 1],
+              tileMode: TileMode.decal,
+            ),
+          );
+        } else {
+          // 绘制下跌区间的线图
+          paintLineChart(
+            canvas,
+            points: points,
+            boundEnd: boundEnd,
+            boundStart: boundStart, //Offset(points.first.dx, latestDy),
+            linePaint: getLinePaint(color: shortColor),
+            shader: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: <Color>[
+                shortColor.withAlpha(0.5.alpha),
+                theme.transparent,
+              ],
+              stops: [0, 1],
+              tileMode: TileMode.decal,
+            ),
+          );
+        }
+        isLong = !isLong;
+        boundStart = boundEnd;
+        points.clear();
+        points.add(boundEnd);
+      }
+      points.add(point);
+      prev = point;
     }
   }
 }

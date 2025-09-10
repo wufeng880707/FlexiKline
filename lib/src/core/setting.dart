@@ -15,19 +15,18 @@
 part of 'core.dart';
 
 /// 负责FlexiKline的各种设置与配置的获取.
-mixin SettingBinding on KlineBindingBase
-    implements ISetting, IGrid, IChart, ICross, IDraw {
+mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICross, IDraw {
   @override
   void init() {
     super.init();
     logd("init setting");
-    _paintObjectManager.init(
-      this,
-      mainIndicator: _flexiKlineConfig.mainIndicator,
-      initSubIndicatorKeys: _flexiKlineConfig.sub,
-    );
-    _canvasSizeChangeListener = KlineStateNotifier(canvasRect);
     _candleWidth = settingConfig.candleWidth;
+    _layoutMode = NormalLayoutMode(flexiKlineConfig.mainIndicator.size);
+    _paintObjectManager.init(this);
+    _canvasSizeChangeListener = KlineStateNotifier(canvasRect);
+    _subHeightListListener = KlineStateNotifier<List<double>>(
+      getSubIndiatorHeights().toList(growable: false),
+    );
   }
 
   @override
@@ -41,11 +40,24 @@ mixin SettingBinding on KlineBindingBase
     super.dispose();
     logd("dispose setting");
     _canvasSizeChangeListener.dispose();
+    _subHeightListListener.dispose();
+  }
+
+  @override
+  void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
+    super.onThemeChanged(oldTheme);
   }
 
   /// 蜡烛宽度
   late double _candleWidth;
   double? _candleSpacing;
+
+  /// 副区指标图高度变化监听(不包括时间轴高度)
+  late final ValueNotifier<List<double>> _subHeightListListener;
+  ValueListenable<List<double>> get subHeightListListener => _subHeightListListener;
+  void _updateSubHeightList() {
+    _subHeightListListener.value = getSubIndiatorHeights().toList(growable: false);
+  }
 
   /// KlineData整个图表区域大小变化监听器
   late final KlineStateNotifier<Rect> _canvasSizeChangeListener;
@@ -54,35 +66,29 @@ mixin SettingBinding on KlineBindingBase
     return _canvasSizeChangeListener;
   }
 
-  void _invokeSizeChanged({bool force = false}) {
-    if (isFixedSizeMode) {
-      final mainSize = mainRect.size;
-      if (mainSize != mainPaintObject.size) {
-        final updated = mainPaintObject.doUpdateLayout(size: mainSize);
-        force = updated || force;
-      }
-    }
-    _canvasSizeChangeListener.value = canvasRect;
-    if (force) _canvasSizeChangeListener.notifyListeners();
-    markRepaintChart(reset: force);
-    markRepaintCross();
+  /// 当前而已模式.
+  /// 初始值为NormalLayoutMode(mainIndicator.size)
+  late LayoutMode _layoutMode;
+
+  LayoutMode get layoutMode => _layoutMode;
+  bool get isFixedLayoutMode => _layoutMode is FixedLayoutMode;
+  @override
+  bool get isAllowUpdateLayoutHeight {
+    if (layoutMode is NormalLayoutMode) return true;
+    return layoutMode is AdaptLayoutMode;
   }
 
-  /// 临时变量: 记录首次进入固定大小模式时主区的大小, 用于退出固定大小模式时, 恢复使用.
-  Size? _mainSize;
-  Rect? _fixedCanvasRect;
-  bool get isFixedSizeMode => _fixedCanvasRect != null;
+  Size? get fixedSize {
+    if (!isFixedLayoutMode) return null;
+    return (_layoutMode as FixedLayoutMode).fixedSize;
+  }
 
   /// 主区大小
   @override
   Rect get mainRect {
-    if (_fixedCanvasRect != null) {
-      return Rect.fromLTRB(
-        _fixedCanvasRect!.left,
-        _fixedCanvasRect!.top,
-        _fixedCanvasRect!.right,
-        _fixedCanvasRect!.bottom - subRectHeight,
-      );
+    if (_layoutMode is FixedLayoutMode) {
+      final size = (_layoutMode as FixedLayoutMode).fixedSize;
+      return Offset.zero & Size(size.width, size.height - subRectHeight);
     }
     return mainPaintObject.drawableRect;
   }
@@ -90,8 +96,8 @@ mixin SettingBinding on KlineBindingBase
   /// 整个画布区域大小 = 主区 + 副区
   @override
   Rect get canvasRect {
-    if (_fixedCanvasRect != null) {
-      return _fixedCanvasRect!;
+    if (_layoutMode is FixedLayoutMode) {
+      return Offset.zero & (_layoutMode as FixedLayoutMode).fixedSize;
     }
     return Rect.fromLTRB(
       mainRect.left,
@@ -108,12 +114,13 @@ mixin SettingBinding on KlineBindingBase
   /// 副区大小
   @override
   Rect get subRect {
-    if (_fixedCanvasRect != null) {
+    if (_layoutMode is FixedLayoutMode) {
+      final size = (_layoutMode as FixedLayoutMode).fixedSize;
       return Rect.fromLTRB(
-        _fixedCanvasRect!.left,
-        _fixedCanvasRect!.bottom - subRectHeight,
-        _fixedCanvasRect!.right,
-        _fixedCanvasRect!.bottom,
+        0,
+        size.height - subRectHeight,
+        size.width,
+        size.height,
       );
     }
     return Rect.fromLTRB(
@@ -130,83 +137,181 @@ mixin SettingBinding on KlineBindingBase
     return timePaintObject.drawableRect;
   }
 
-  /// 主区域最小宽高
-  Size get mainMinSize => settingConfig.mainMinSize;
-
-  /// 当前主区最低限制高度
-  double get mainMinimumHeight {
-    return math.max(
-      mainPaintObject.padding.height + settingConfig.subMinHeight,
-      mainMinSize.height,
+  /// 如果已是zoom缩放图表时, 需要按比例[scale]缩放Padding.
+  EdgeInsets? _zoomMainPaddingByScale(double scale) {
+    if (!isStartZoomChart || scale == 1) return null;
+    return mainPadding.copyWith(
+      top: mainPadding.top * scale,
+      bottom: mainPadding.bottom * scale,
     );
   }
 
+  /// 主区域最小宽高
+  Size get mainMinSize => settingConfig.mainMinSize;
+
+  /// 主区域当前大小
+  Size get mainSize => mainPaintObject.size;
+
+  /// 是否能设置主区域大小
+  bool canSetMainSize([Size? size]) {
+    return (size ?? mainSize).gt(mainMinSize);
+    // todo: 有小误差(0.12)
+  }
+
+  void _invokeSizeChanged({bool force = false}) {
+    if (_layoutMode is FixedLayoutMode) {
+      final size = mainRect.size;
+      if (!size.equlas(mainSize)) {
+        final updated = mainPaintObject.doUpdateLayout(
+          size: size,
+          padding: _zoomMainPaddingByScale(size.height / mainSize.height),
+        );
+        force = updated || force;
+      }
+    }
+    _canvasSizeChangeListener.value = canvasRect;
+    if (force) _canvasSizeChangeListener.notifyListeners();
+    markRepaintChart(reset: force);
+    markRepaintCross();
+  }
+
+  /// 设置绘制区域大小.
+  bool setCanvasSize(Size size) {
+    return setMainSize(Size(size.width, size.height - subRectHeight));
+  }
+
   /// 主区域大小设置
-  void setMainSize(Size size) {
-    if (size.width < mainMinSize.width || size.height < mainMinimumHeight) {
-      return;
+  bool setMainSize(Size size) {
+    if (!canSetMainSize(size) || size == mainSize) return false;
+    switch (_layoutMode) {
+      case NormalLayoutMode():
+      case AdaptLayoutMode():
+        _layoutMode = _layoutMode.update(size);
+      case FixedLayoutMode():
+      // _layoutMode = _layoutMode.updateMainSize(size);
+    }
+    final changed = mainPaintObject.doUpdateLayout(
+      size: size,
+      padding: _zoomMainPaddingByScale(size.height / mainSize.height),
+    );
+    _invokeSizeChanged(force: changed);
+    return true;
+  }
+
+  /// 进入正常布局模式
+  /// [size] 代表正常布局大小
+  /// [limitSize] 代表当前Kline所在正常布局模式下的最大宽高, 如果指定, 则校正当前Kline宽高不能大于此宽高.
+  void setNormalLayoutMode(Size? size, [Size? limitSize]) {
+    size ??= _layoutMode.mainSize;
+    if (limitSize != null) {
+      size = Size(
+        size.width.clamp(
+          mainMinSize.width,
+          math.max(mainMinSize.width, limitSize.width),
+        ),
+        size.height.clamp(
+          mainMinSize.height,
+          math.max(mainMinSize.height, limitSize.height),
+        ),
+      );
+    }
+    if (_layoutMode.isNormal) {
+      _layoutMode = _layoutMode.update(size);
+    } else {
+      _layoutMode = NormalLayoutMode(size);
     }
 
-    if (size != mainPaintObject.size) {
-      final changed = mainPaintObject.doUpdateLayout(size: size);
-      _invokeSizeChanged(force: changed);
-    }
+    if (size == mainSize) return;
+    final changed = mainPaintObject.doUpdateLayout(
+      size: size,
+      padding: _zoomMainPaddingByScale(size.height / mainSize.height),
+    );
+    // 将所有副区对象恢复正常布局下的高度.
+    _paintObjectManager.restoreHeight();
+    _invokeSizeChanged(force: changed);
   }
 
   /// 自适应[FlexiKlineWidget]所在父组件的布局的变化
-  /// 注: 目前仅主区的宽度会适配父组件宽度的变化
+  /// 注: 仅适配主区的宽度变化
   /// 这主要是通过[FlexiKlineWidget]的autoAdaptLayout配置决定, 并会导致无法手动调整[FlexiKlineWidget]的宽度.
-  void adaptLayoutChange(Size size) {
-    if (size.width != mainRect.width) {
-      setMainSize(Size(size.width, mainRect.height));
+  /// //[syncMainSize] 是否同步更新MainSize
+  bool setAdaptLayoutMode(Size size) {
+    if (!canSetMainSize(size)) return false;
+
+    if (_layoutMode.isAdapt) {
+      if ((_layoutMode as AdaptLayoutMode).mainSize == size) {
+        return true;
+      }
+      _layoutMode = _layoutMode.update(size);
+    } else {
+      _layoutMode = AdaptLayoutMode(size, _layoutMode);
     }
-  }
 
-  void exitFixedSizeMode() {
-    if (_fixedCanvasRect == null) return;
-
-    _fixedCanvasRect = null;
-    final changed = mainPaintObject.doUpdateLayout(size: _mainSize);
-    _mainSize = null;
+    final changed = mainPaintObject.doUpdateLayout(size: _layoutMode.mainSize);
     _invokeSizeChanged(force: changed);
+    return true;
   }
 
   /// 设置Kline固定大小(主要在全屏或横屏场景中使用此API)
   /// 当设置[_fixedCanvasRect]后, 主区高度=[_fixedCanvasRect]的总高度 - [subRectHeight]副区所有指标高度
-  /// [size] 当前Kline主区+副区的大小.
+  /// [fixedSize] 当前Kline主区+副区的大小.
   /// 注: 设置是临时的, 并不会更新到配置中.
-  void entryFixedSizeMode(Size size) {
-    if ((_fixedCanvasRect != null && _fixedCanvasRect!.size == size) ||
-        size.width < mainMinSize.width ||
-        size.height < mainMinimumHeight) {
-      return;
-    }
+  bool setFixedLayoutMode(Size fixedSize) {
+    if (!canSetMainSize(fixedSize)) return false;
 
-    _mainSize ??= mainPaintObject.size;
-    _fixedCanvasRect = Rect.fromLTRB(0, 0, size.width, size.height);
-    final changed = mainPaintObject.doUpdateLayout(size: size);
+    final oldMainHeight = mainRect.height;
+    if (_layoutMode.isFixed) {
+      if ((_layoutMode as FixedLayoutMode).fixedSize == fixedSize) {
+        return true;
+      }
+      _layoutMode = _layoutMode.update(fixedSize);
+    } else {
+      _layoutMode = FixedLayoutMode(fixedSize, _layoutMode);
+    }
+    final changed = mainPaintObject.doUpdateLayout(
+      size: mainRect.size,
+      padding: _zoomMainPaddingByScale(mainRect.height / oldMainHeight),
+    );
     _invokeSizeChanged(force: changed);
+    return true;
+  }
+
+  bool exitCurrentLayoutMode() {
+    final prevMode = _layoutMode.prevMode;
+    switch (prevMode) {
+      case null:
+        return true;
+      case NormalLayoutMode():
+        setNormalLayoutMode(prevMode.mainSize);
+        return true;
+      case AdaptLayoutMode():
+        return setAdaptLayoutMode(prevMode.mainSize);
+      case FixedLayoutMode():
+        return false;
+    }
   }
 
   @protected
   double get subRectHeight {
-    double totalHeight = 0.0;
-    for (final indicator in subPaintObjects) {
-      totalHeight += indicator.height;
-    }
-    return totalHeight;
+    return subPaintObjects.fold(0.0, (total, e) => total + e.height);
   }
 
-  /// 主图区域大小
-  Rect get mainChartRect {
-    final mainPadding = mainPaintObject.padding;
-    return Rect.fromLTRB(
-      mainRect.left + mainPadding.left,
-      mainRect.top + mainPadding.top,
-      mainRect.right - mainPadding.right,
-      mainRect.bottom - mainPadding.bottom,
+  /// 获取当前副区指标高度列表
+  /// [includeTime] 是否包含时间轴高度
+  Iterable<double> getSubIndiatorHeights([bool includeTime = false]) {
+    return subPaintObjects.mapNonNullList(
+      (object) => (includeTime || object.key != timeIndicatorKey) ? object.height : null,
     );
   }
+
+  /// 主区当前Padding
+  EdgeInsets get mainPadding => mainPaintObject.padding;
+
+  /// 主区原始配置Padding
+  EdgeInsets get mainOriginPadding => mainPaintObject.indicator.padding;
+
+  /// 主图区域大小
+  Rect get mainChartRect => mainPaintObject.chartRect;
 
   /// 主图区域宽.
   double get mainChartWidth => mainChartRect.width;
@@ -234,21 +339,21 @@ mixin SettingBinding on KlineBindingBase
     return mainChartWidth * settingConfig.minPaintBlankRate.clamp(0, 0.9);
   }
 
-  /// 最大蜡烛宽度[1, 50]
-  double get candleMaxWidth => settingConfig.candleMaxWidth;
+  /// 最小蜡烛宽度[1, 50]
+  double get candleMinWidth => settingConfig.candleMinWidth;
 
-  /// 单根蜡烛宽度, 限制范围1[pixel] ~ [candleMaxWidth] 之间
+  /// 最大蜡烛宽度[1, 50]
+  double get candleMaxWidth => math.max(candleMinWidth, settingConfig.candleMaxWidth);
+
+  /// 单根蜡烛宽度, 限制范围1[candleMinWidth] ~ [candleMaxWidth] 之间
   @override
   double get candleWidth => _candleWidth;
-  _setCandleWidth(double width, {bool sync = false}) {
+  void _setCandleWidth(double width, {bool sync = false}) {
     _candleWidth = width;
     if (!settingConfig.isFixedCandleSpacing) _candleSpacing = null;
     if (sync) {
       settingConfig = settingConfig.copyWith(
-        candleWidth: width.clamp(
-          settingConfig.pixel,
-          candleMaxWidth,
-        ),
+        candleWidth: width.clamp(candleMinWidth, candleMaxWidth),
       );
     }
   }
@@ -261,7 +366,10 @@ mixin SettingBinding on KlineBindingBase
     }
     if (_candleSpacing != null && _candleSpacing! > 0) return _candleSpacing!;
     _candleSpacing = candleWidth / settingConfig.spacingCandleParts;
-    _candleSpacing!.clamp(settingConfig.pixel, candleWidthHalf);
+    _candleSpacing!.clamp(
+      candleMinWidth,
+      math.max(candleMinWidth, candleWidthHalf),
+    );
     return _candleSpacing!;
   }
 
@@ -285,7 +393,7 @@ mixin SettingBinding on KlineBindingBase
   }
 
   Iterable<IIndicatorKey> get mainIndicatorKeys {
-    return _paintObjectManager.mainIndciatorKeys;
+    return _paintObjectManager.mainIndicatorKeys;
   }
 
   Iterable<IIndicatorKey> get subIndicatorKeys {
@@ -312,25 +420,25 @@ mixin SettingBinding on KlineBindingBase
     return top;
   }
 
-  ///// Indicator operation /////
+  /// Indicator operation ///
 
-  bool hasRegisterInMain(IIndicatorKey key) {
-    return _paintObjectManager.hasRegisterInMain(key);
+  bool hasRegisteredInMain(IIndicatorKey key) {
+    return _paintObjectManager.hasRegisteredInMain(key);
   }
 
-  bool hasRegisterInSub(IIndicatorKey key) {
-    return _paintObjectManager.hasRegisterInSub(key);
+  bool hasRegisteredInSub(IIndicatorKey key) {
+    return _paintObjectManager.hasRegisteredInSub(key);
   }
 
-  bool hasRegisterIndicator(IIndicatorKey key) {
-    return hasRegisterInMain(key) || hasRegisterInSub(key);
+  bool hasRegistered(IIndicatorKey key) {
+    return hasRegisteredInMain(key) || hasRegisteredInSub(key);
   }
 
   /// 在主图中添加指标
-  void addIndicatorInMain(IIndicatorKey key) {
-    final newObj = _paintObjectManager.addPaintObjectInMain(key, this);
+  void addMainIndicator(IIndicatorKey key) {
+    final newObj = _paintObjectManager.addMainPaintObject(key, this);
     if (newObj != null) {
-      // TODO: 后续优化执行时机
+      // 优化执行时机
       newObj.precompute(curKlineData.computableRange, reset: true);
       markRepaintChart(reset: true);
       markRepaintCross();
@@ -338,30 +446,40 @@ mixin SettingBinding on KlineBindingBase
   }
 
   /// 删除主图中[key]指定的指标
-  void delIndicatorInMain(IIndicatorKey key) {
-    if (_paintObjectManager.delPaintObjectInMain(key)) {
+  void removeMainIndicator(IIndicatorKey key) {
+    if (_paintObjectManager.removeMainPaintObject(key)) {
       markRepaintChart(reset: true);
       markRepaintCross();
     }
   }
 
+  /// 是否已添加主图[key]指定的指标
+  bool hasAddedMainIndicator(IIndicatorKey key) {
+    return mainIndicatorKeys.contains(key);
+  }
+
   /// 在副图中添加指标
-  void addIndicatorInSub(IIndicatorKey key) {
-    final newObj = _paintObjectManager.addPaintObjectInSub(key, this);
+  void addSubIndicator(IIndicatorKey key) {
+    final newObj = _paintObjectManager.addSubPaintObject(key, this);
     if (newObj != null) {
-      // TODO: 后续优化执行时机
+      // 优化执行时机
       newObj.precompute(curKlineData.computableRange, reset: true);
-      _flexiKlineConfig.sub.add(key);
       _invokeSizeChanged();
+      _updateSubHeightList();
     }
   }
 
   /// 删除副图[key]指定的指标
-  void delIndicatorInSub(IIndicatorKey key) {
-    if (_paintObjectManager.delPaintObjectInSub(key)) {
-      _flexiKlineConfig.sub.remove(key);
+  void removeSubIndicator(IIndicatorKey key) {
+    if (_paintObjectManager.removeSubPaintObject(key)) {
       _invokeSizeChanged();
+      _updateSubHeightList();
     }
+  }
+
+  /// 是否已添加副图[key]指定的指标
+  bool hasAddedSubIndicator(IIndicatorKey key) {
+    return subIndicatorKeys.contains(key);
   }
 
   /// 恢复所有注册的指标配置为默认
@@ -374,76 +492,59 @@ mixin SettingBinding on KlineBindingBase
     return _paintObjectManager.restoreIndicator(key);
   }
 
-  //// Config ////
-
-  FlexiKlineConfig? __flexiKlineConfig;
-  FlexiKlineConfig get _flexiKlineConfig {
-    if (__flexiKlineConfig == null) {
-      final config = configuration.getFlexiKlineConfig();
-      _flexiKlineConfig = config;
-    }
-    return __flexiKlineConfig!;
-  }
-
-  set _flexiKlineConfig(config) {
-    // __flexiKlineConfig = config.clone();
-    __flexiKlineConfig = config;
-  }
-
+  /// Config ///
   /// 保存当前FlexiKline配置到本地
   @override
-  void storeFlexiKlineConfig() {
-    // _flexiKlineConfig.main = _paintObjectManager.mainIndciatorKeys.toSet();
-    _flexiKlineConfig.sub = _paintObjectManager.subIndicatorKeys.toSet();
-    configuration.saveFlexiKlineConfig(_flexiKlineConfig);
+  void storeFlexiKlineConfig({
+    bool storeIndicators = true,
+    bool storeDrawOverlays = true,
+  }) {
+    _paintObjectManager.storeFlexiKlineConfig(
+      storeIndicators: storeIndicators,
+      layoutMode: layoutMode,
+    );
+    if (storeDrawOverlays) {
+      _drawObjectManager.storeDrawOverlaysConfig();
+    }
   }
 
-  /// 更新[config]到[_flexiKlineConfig]
-  @override
-  void updateFlexiKlineConfig(FlexiKlineConfig config) {
-    if (config.key != _flexiKlineConfig.key) {
-      /// 保存当前配置
-      storeFlexiKlineConfig();
-
-      /// 使用当前配置更新config
-      config.update(_flexiKlineConfig);
-
-      /// 更新当前配置为[config]
-      _flexiKlineConfig = config;
-
-      /// 保存当前配置
-      if (autoSave) storeFlexiKlineConfig();
-    } else {
-      _flexiKlineConfig = config;
-
-      /// 保存当前配置
-      if (autoSave) storeFlexiKlineConfig();
+  /// 更新FlexiKlineConfig
+  void updateFlexiKlineConfig({
+    bool updateIndicators = true,
+    bool updateDrawOverlays = true,
+  }) {
+    _paintObjectManager.updateFlexiKlineConfig(this);
+    _invokeSizeChanged(force: updateIndicators);
+    _updateSubHeightList();
+    if (updateDrawOverlays) {
+      _drawObjectManager.updateDrawOverlaysConfig(drawConfig);
+      markRepaintDraw();
     }
   }
 
   /// SettingConfig
   @override
-  SettingConfig get settingConfig => _flexiKlineConfig.setting;
+  SettingConfig get settingConfig => flexiKlineConfig.setting;
   set settingConfig(SettingConfig config) {
-    _flexiKlineConfig.setting = config;
+    flexiKlineConfig.setting = config;
     markRepaintChart();
     markRepaintCross();
   }
 
   /// SettingConfig
   @override
-  GestureConfig get gestureConfig => _flexiKlineConfig.gesture;
+  GestureConfig get gestureConfig => flexiKlineConfig.gesture;
   set gestureConfig(GestureConfig config) {
-    _flexiKlineConfig.gesture = config;
+    flexiKlineConfig.gesture = config;
     markRepaintChart();
     markRepaintCross();
   }
 
   /// GridConfig
   @override
-  GridConfig get gridConfig => _flexiKlineConfig.grid;
+  GridConfig get gridConfig => flexiKlineConfig.grid;
   set gridConfig(GridConfig config) {
-    _flexiKlineConfig.grid = config;
+    flexiKlineConfig.grid = config;
     markRepaintChart();
     markRepaintCross();
     markRepaintGrid();
@@ -451,34 +552,25 @@ mixin SettingBinding on KlineBindingBase
 
   /// CrossConfig
   @override
-  CrossConfig get crossConfig => _flexiKlineConfig.cross;
+  CrossConfig get crossConfig => flexiKlineConfig.cross;
   set crossConfig(CrossConfig config) {
-    _flexiKlineConfig.cross = config;
+    flexiKlineConfig.cross = config;
     markRepaintChart();
     markRepaintCross();
   }
 
   /// DrawConfig
   @override
-  DrawConfig get drawConfig => _flexiKlineConfig.draw;
+  DrawConfig get drawConfig => flexiKlineConfig.draw;
   set drawConfig(DrawConfig config) {
-    _flexiKlineConfig.draw = config;
+    flexiKlineConfig.draw = config;
     markRepaintChart();
     markRepaintDraw();
   }
 
-  /// TooltipConfig
-  @override
-  TooltipConfig get tooltipConfig => _flexiKlineConfig.tooltip;
-  set tooltipConfig(TooltipConfig config) {
-    _flexiKlineConfig.tooltip = config;
-    markRepaintChart();
-    markRepaintCross();
-  }
-
   /// 获取[key]指定的指标实例
   /// 1. 如果已载入, 则直接返回绘制对象的指标实例
-  /// 2. 如果示载入, 则从本地缓存中加载, 并创建指标实现.
+  /// 2. 如果未载入, 则从本地缓存中加载, 并创建指标实现.
   T? getIndicator<T extends Indicator>(IIndicatorKey key) {
     return _paintObjectManager.getIndicator(key);
   }
@@ -490,5 +582,15 @@ mixin SettingBinding on KlineBindingBase
     final updated = _paintObjectManager.updateIndicator(indicator);
     if (updated) markRepaintChart();
     return updated;
+  }
+
+  /// 获取蜡烛图指标配置
+  T getCandleIndicator<T extends CandleBaseIndicator>() {
+    return candlePaintObject.indicator as T;
+  }
+
+  /// 获取时间轴指标配置
+  T getTimeIndicator<T extends TimeBaseIndicator>() {
+    return timePaintObject.indicator as T;
   }
 }

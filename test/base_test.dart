@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:async';
 
 import 'package:decimal/decimal.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flexi_kline/flexi_kline.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Overlay;
 import 'package:flutter_test/flutter_test.dart';
 
 typedef Runable<T> = FutureOr<T> Function();
@@ -26,7 +28,7 @@ void main() {
   int val = 0;
   void microtask() {
     scheduleMicrotask(() {
-      print('scheduleMicrotask:${val++}');
+      debugPrint('scheduleMicrotask:${val++}');
     });
   }
 
@@ -36,42 +38,30 @@ void main() {
     Decimal sumDown = Decimal.fromJson('15.4');
     Decimal ret = sumUp.div((sumUp + sumDown)) * hundred;
 
-    print(ret.toString());
+    debugPrint(ret.toString());
 
-    Decimal ret2 =
-        sumUp.divNum(9).div(sumUp.divNum(9) + sumDown.divNum(9)) * hundred;
+    Decimal ret2 = sumUp.divNum(9).div(sumUp.divNum(9) + sumDown.divNum(9)) * hundred;
 
-    print(ret2.toString());
+    debugPrint(ret2.toString());
   });
 
   test('math ', () {
-    print('math.log(0) ${math.log(0)}');
-    print('math.log(0.1) ${math.log(0.1)}');
-    print('math.log(0.9) ${math.log(0.9)}');
-    print('math.log(1) ${math.log(1)}');
-    print('math.log(1.1) ${math.log(1.1)}');
-    print('math.log(2) ${math.log(2)}');
-    print('math.log(2000) ${math.log(2000)}');
-    print('math.log(-1) ${math.log(-1)}');
-    print('math.log(-2) ${math.log(-2)}');
+    debugPrint('math.log(0) ${math.log(0)}');
+    debugPrint('math.log(0.1) ${math.log(0.1)}');
+    debugPrint('math.log(0.9) ${math.log(0.9)}');
+    debugPrint('math.log(1) ${math.log(1)}');
+    debugPrint('math.log(1.1) ${math.log(1.1)}');
+    debugPrint('math.log(2) ${math.log(2)}');
+    debugPrint('math.log(2000) ${math.log(2000)}');
+    debugPrint('math.log(-1) ${math.log(-1)}');
+    debugPrint('math.log(-2) ${math.log(-2)}');
   });
 
   test('math log2', () {
     for (double i = 0.1; i < 2.5; i += 0.02) {
       final x = double.parse(i.toStringAsFixed(2));
       double scaleFactor = math.log(x); // 使用自然对数函数调整缩放速度
-      print('math.log(${i.toStringAsFixed(2)}) \t $scaleFactor');
-    }
-  });
-
-  test('test future', () async {
-    final stopwatch = Stopwatch();
-    for (var element in [1, 2, 3, 4]) {
-      microtask();
-      await stopwatch.runAsync(
-        () => debugPrint('$element'),
-      );
-      microtask();
+      debugPrint('math.log(${i.toStringAsFixed(2)}) \t $scaleFactor');
     }
   });
 
@@ -80,12 +70,12 @@ void main() {
       if (value is Future<T>) {
         microtask();
         var result = await value;
-        print(result);
+        debugPrint('$result');
         microtask();
         return result;
       } else {
         microtask();
-        print(value);
+        debugPrint('$value');
         microtask();
         return value;
       }
@@ -97,23 +87,23 @@ void main() {
   });
 
   test('test  base', () {
-    Future.microtask(() => print('在Microtask queue里运行的Future'));
+    Future.microtask(() => debugPrint('在Microtask queue里运行的Future'));
 
     Future.delayed(
       const Duration(seconds: 1),
-      () => print('1秒后在Event queue中运行的Future'),
+      () => debugPrint('1秒后在Event queue中运行的Future'),
     );
 
-    Future(() => print('立刻在Event queue中运行的Future'));
+    Future(() => debugPrint('立刻在Event queue中运行的Future'));
 
-    Future.sync(() => print('同步运行的Future'));
+    Future.sync(() => debugPrint('同步运行的Future'));
 
     scheduleMicrotask(() {
-      print('scheduleMicrotask');
+      debugPrint('scheduleMicrotask');
     });
 
     Timer.run(() {
-      print('Timer.run');
+      debugPrint('Timer.run');
     });
   });
 
@@ -123,30 +113,22 @@ void main() {
       value++;
       await Future.delayed(const Duration(seconds: 1));
       if (value == 3) {
-        print('Finished with $value');
+        debugPrint('Finished with $value');
         return false;
       }
       return true;
     });
   });
 
-  test('future dowhile', () async {
-    DrawState state = DrawState.exited();
-    final aaa = false;
-    debugPrint('>>>>>>');
-    switch (state) {
-      case Drawing():
-        debugPrint('drawing');
-        return;
-      case Editing():
-        debugPrint('editing');
-        break;
-      case Exited():
-        debugPrint('Exited1111');
-      case Prepared():
-        debugPrint('Exited222');
-        debugPrint('prepared');
-    }
-    debugPrint('<<<<<');
+  test('Test Overlay', () async {
+    final overlay = Overlay.fromType(
+      key: 'BTCUSDT',
+      type: FlexiDrawType('aaa', 1),
+      line: LineConfig(),
+    );
+
+    final str = jsonEncode(overlay);
+
+    debugPrint(str);
   });
 }

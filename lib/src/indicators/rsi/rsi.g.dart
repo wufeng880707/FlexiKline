@@ -13,15 +13,11 @@ abstract class _$RSIIndicatorCWProxy {
 
   RSIIndicator padding(EdgeInsets padding);
 
-  RSIIndicator calcParams(List<RsiParam> calcParams);
+  RSIIndicator calcParam(RsiParam calcParam);
 
   RSIIndicator tipsPadding(EdgeInsets tipsPadding);
 
   RSIIndicator tickCount(int tickCount);
-
-  RSIIndicator lineWidth(double lineWidth);
-
-  RSIIndicator precision(int precision);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `RSIIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -30,14 +26,12 @@ abstract class _$RSIIndicatorCWProxy {
   /// RSIIndicator(...).copyWith(id: 12, name: "My name")
   /// ````
   RSIIndicator call({
-    int? zIndex,
-    double? height,
-    EdgeInsets? padding,
-    List<RsiParam>? calcParams,
-    EdgeInsets? tipsPadding,
-    int? tickCount,
-    double? lineWidth,
-    int? precision,
+    int zIndex,
+    double height,
+    EdgeInsets padding,
+    RsiParam calcParam,
+    EdgeInsets tipsPadding,
+    int tickCount,
   });
 }
 
@@ -57,8 +51,7 @@ class _$RSIIndicatorCWProxyImpl implements _$RSIIndicatorCWProxy {
   RSIIndicator padding(EdgeInsets padding) => this(padding: padding);
 
   @override
-  RSIIndicator calcParams(List<RsiParam> calcParams) =>
-      this(calcParams: calcParams);
+  RSIIndicator calcParam(RsiParam calcParam) => this(calcParam: calcParam);
 
   @override
   RSIIndicator tipsPadding(EdgeInsets tipsPadding) =>
@@ -66,12 +59,6 @@ class _$RSIIndicatorCWProxyImpl implements _$RSIIndicatorCWProxy {
 
   @override
   RSIIndicator tickCount(int tickCount) => this(tickCount: tickCount);
-
-  @override
-  RSIIndicator lineWidth(double lineWidth) => this(lineWidth: lineWidth);
-
-  @override
-  RSIIndicator precision(int precision) => this(precision: precision);
 
   @override
 
@@ -85,47 +72,35 @@ class _$RSIIndicatorCWProxyImpl implements _$RSIIndicatorCWProxy {
     Object? zIndex = const $CopyWithPlaceholder(),
     Object? height = const $CopyWithPlaceholder(),
     Object? padding = const $CopyWithPlaceholder(),
-    Object? calcParams = const $CopyWithPlaceholder(),
+    Object? calcParam = const $CopyWithPlaceholder(),
     Object? tipsPadding = const $CopyWithPlaceholder(),
     Object? tickCount = const $CopyWithPlaceholder(),
-    Object? lineWidth = const $CopyWithPlaceholder(),
-    Object? precision = const $CopyWithPlaceholder(),
   }) {
     return RSIIndicator(
-      zIndex: zIndex == const $CopyWithPlaceholder() || zIndex == null
+      zIndex: zIndex == const $CopyWithPlaceholder()
           ? _value.zIndex
           // ignore: cast_nullable_to_non_nullable
           : zIndex as int,
-      height: height == const $CopyWithPlaceholder() || height == null
+      height: height == const $CopyWithPlaceholder()
           ? _value.height
           // ignore: cast_nullable_to_non_nullable
           : height as double,
-      padding: padding == const $CopyWithPlaceholder() || padding == null
+      padding: padding == const $CopyWithPlaceholder()
           ? _value.padding
           // ignore: cast_nullable_to_non_nullable
           : padding as EdgeInsets,
-      calcParams:
-          calcParams == const $CopyWithPlaceholder() || calcParams == null
-              ? _value.calcParams
-              // ignore: cast_nullable_to_non_nullable
-              : calcParams as List<RsiParam>,
-      tipsPadding:
-          tipsPadding == const $CopyWithPlaceholder() || tipsPadding == null
-              ? _value.tipsPadding
-              // ignore: cast_nullable_to_non_nullable
-              : tipsPadding as EdgeInsets,
-      tickCount: tickCount == const $CopyWithPlaceholder() || tickCount == null
+      calcParam: calcParam == const $CopyWithPlaceholder()
+          ? _value.calcParam
+          // ignore: cast_nullable_to_non_nullable
+          : calcParam as RsiParam,
+      tipsPadding: tipsPadding == const $CopyWithPlaceholder()
+          ? _value.tipsPadding
+          // ignore: cast_nullable_to_non_nullable
+          : tipsPadding as EdgeInsets,
+      tickCount: tickCount == const $CopyWithPlaceholder()
           ? _value.tickCount
           // ignore: cast_nullable_to_non_nullable
           : tickCount as int,
-      lineWidth: lineWidth == const $CopyWithPlaceholder() || lineWidth == null
-          ? _value.lineWidth
-          // ignore: cast_nullable_to_non_nullable
-          : lineWidth as double,
-      precision: precision == const $CopyWithPlaceholder() || precision == null
-          ? _value.precision
-          // ignore: cast_nullable_to_non_nullable
-          : precision as int,
     );
   }
 }
@@ -135,36 +110,3 @@ extension $RSIIndicatorCopyWith on RSIIndicator {
   // ignore: library_private_types_in_public_api
   _$RSIIndicatorCWProxy get copyWith => _$RSIIndicatorCWProxyImpl(this);
 }
-
-// **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
-
-RSIIndicator _$RSIIndicatorFromJson(Map<String, dynamic> json) => RSIIndicator(
-      zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
-      height: (json['height'] as num).toDouble(),
-      padding: json['padding'] == null
-          ? defaultSubIndicatorPadding
-          : const EdgeInsetsConverter()
-              .fromJson(json['padding'] as Map<String, dynamic>),
-      calcParams: (json['calcParams'] as List<dynamic>)
-          .map((e) => RsiParam.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      tipsPadding: const EdgeInsetsConverter()
-          .fromJson(json['tipsPadding'] as Map<String, dynamic>),
-      tickCount: (json['tickCount'] as num?)?.toInt() ?? defaultSubTickCount,
-      lineWidth: (json['lineWidth'] as num).toDouble(),
-      precision: (json['precision'] as num?)?.toInt() ?? 2,
-    );
-
-Map<String, dynamic> _$RSIIndicatorToJson(RSIIndicator instance) =>
-    <String, dynamic>{
-      'height': instance.height,
-      'padding': const EdgeInsetsConverter().toJson(instance.padding),
-      'zIndex': instance.zIndex,
-      'calcParams': instance.calcParams.map((e) => e.toJson()).toList(),
-      'tipsPadding': const EdgeInsetsConverter().toJson(instance.tipsPadding),
-      'tickCount': instance.tickCount,
-      'lineWidth': instance.lineWidth,
-      'precision': instance.precision,
-    };

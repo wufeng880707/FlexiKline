@@ -20,22 +20,12 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   void init() {
     super.init();
     logd("init draw");
-    _drawObjectManager = OverlayDrawObjectManager(
-      configuration: configuration,
-      logger: loggerDelegate,
-    );
   }
 
   @override
   void initState() {
     super.initState();
     logd('initState draw');
-    candleRequestListener.addListener(() {
-      _drawObjectManager.onChangeCandleRequest(
-        candleRequestListener.value,
-        drawConfig,
-      );
-    });
   }
 
   @override
@@ -48,10 +38,8 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     _drawVisibilityListener.dispose();
     _drawMagnetModeListener.dispose();
     _drawContinuousListener.dispose();
-    _drawObjectManager.dispose();
   }
 
-  late final OverlayDrawObjectManager _drawObjectManager;
   final _repaintDraw = ValueNotifier(0);
   final _drawStateListener = KlineStateNotifier(DrawState.exited());
   final _drawPointerListener = KlineStateNotifier<Point?>(null);
@@ -100,8 +88,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
 
   ValueListenable<bool> get drawVisibilityListener => _drawVisibilityListener;
 
-  ValueListenable<MagnetMode> get drawMagnetModeListener =>
-      _drawMagnetModeListener;
+  ValueListenable<MagnetMode> get drawMagnetModeListener => _drawMagnetModeListener;
 
   ValueListenable<bool> get drawContinuousListener => _drawContinuousListener;
 
@@ -109,6 +96,27 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
 
   @override
   MagnetMode get drawMagnet => drawMagnetModeListener.value;
+
+  @override
+  void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
+    super.onThemeChanged(oldTheme);
+    if (drawState is Drawing) {
+      drawState.object?.doDidChangeTheme(theme);
+    }
+    for (var object in _drawObjectManager.overlayObjectList) {
+      object.doDidChangeTheme(theme);
+    }
+  }
+
+  @override
+  void onRequestChanged(CandleReq oldRequest) {
+    super.onRequestChanged(oldRequest);
+    final request = curKlineData.req;
+    if (request.instId != oldRequest.instId) {
+      _drawObjectManager.onChangeCandleRequest(request, drawConfig);
+      exitDraw();
+    }
+  }
 
   void prepareDraw({bool force = false}) {
     // 如果是非退出状态, 则无需变更状态.
@@ -317,7 +325,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
 
   ////// 操作 //////
   /// 删除[object]; 如果不指定, 删除当前绘制[drawState]的object.
-  void deleteDrawObject({DrawObject? object}) {
+  void removeDrawObject({DrawObject? object}) {
     if (object != null) {
       if (_drawObjectManager.removeDrawObject(object)) {
         _markRepaintDraw();
@@ -332,8 +340,8 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     }
   }
 
-  void deleteAllDrawObject() {
-    _drawObjectManager.cleanAllDrawObject();
+  void removeAllDrawObject() {
+    _drawObjectManager.removeAllDrawObject();
     final object = drawState.object;
     if (object != null) {
       _drawObjectManager.removeDrawObject(object);

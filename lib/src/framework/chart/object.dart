@@ -17,25 +17,30 @@ part of 'indicator.dart';
 /// IndicatorObject: 保存Indicator配置
 /// 提供[Indicator]的所有属性
 abstract class IndicatorObject<T extends Indicator>
-    implements
-        Comparable<IndicatorObject<T>>,
-        IPaintBoundingBox,
-        IPaintDataInit,
-        IPaintObject {
+    implements Comparable<IndicatorObject<T>>, IPaintBoundingBox, IPaintDataInit, IPaintObject {
   IndicatorObject(this._indicator, this._context);
 
   // ignore: prefer_final_fields
   T _indicator;
-  final IPaintContext _context;
+  late final IPaintContext _context;
 
   T get indicator => _indicator;
 
   IIndicatorKey get key => _indicator.key;
-  double get height => _indicator.height;
-  EdgeInsets get padding => _indicator.padding;
+
+  double? _tmpHeight;
+  double get height => _tmpHeight ?? _indicator.height;
+
+  EdgeInsets? _tmpPadding;
+  EdgeInsets get padding => _tmpPadding ?? indicator.padding;
+
   PaintMode get paintMode => _indicator.paintMode;
   int get zIndex => _indicator.zIndex;
   dynamic get calcParams => _indicator.calcParam;
+
+  /// 当前指标所使用的涨跌颜色
+  Color get longColor => theme.long;
+  Color get shortColor => theme.short;
 
   @override
   int compareTo(IndicatorObject<T> other) {
@@ -44,8 +49,7 @@ abstract class IndicatorObject<T extends Indicator>
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is IndicatorObject && key == other.key);
+    return identical(this, other) || (other is IndicatorObject && key == other.key);
   }
 
   @override
@@ -82,8 +86,7 @@ abstract class PaintObject<T extends Indicator> extends IndicatorObject
 
   @protected
   bool shouldPrecompute(covariant T oldIndicator) {
-    return oldIndicator.calcParam != indicator.calcParam &&
-        indicator.calcParam != null;
+    return oldIndicator.calcParam != indicator.calcParam && indicator.calcParam != null;
   }
 
   // 指标配置发生变改
@@ -95,15 +98,12 @@ abstract class PaintObject<T extends Indicator> extends IndicatorObject
     }
   }
 
+  @protected
+  void didChangeTheme() {}
+
   @mustCallSuper
   @protected
   void dispose() {
-    final json = indicator.toJson();
-    assert(() {
-      logi('dispose > PaintOjbect[$key] > $json');
-      return true;
-    }());
-    _context.setConfig(key.id, json);
     _parent = null;
   }
 
@@ -114,13 +114,16 @@ abstract class PaintObject<T extends Indicator> extends IndicatorObject
   @override
   void precompute(Range range, {bool reset = false}) {}
 
+  /// 处理Tap事件
+  /// 注: 自行处理[position]位置的点击事件
+  bool handleTap(Offset position) => false;
+
   @override
   String get logTag => '${super.logTag}\t${indicator.key.toString()}';
 }
 
 /// PaintObjectBox
-abstract class PaintObjectBox<T extends PaintObjectIndicator>
-    extends PaintObject {
+abstract class PaintObjectBox<T extends PaintObjectIndicator> extends PaintObject {
   PaintObjectBox({
     required super.context,
     required T super.indicator,
@@ -131,20 +134,30 @@ abstract class PaintObjectBox<T extends PaintObjectIndicator>
 }
 
 /// 蜡烛图绘制对象
-abstract class CandleBasePaintObject<T extends CandleBaseIndicator>
-    extends PaintObject {
+abstract class CandleBasePaintObject<T extends CandleBaseIndicator> extends PaintObject {
   CandleBasePaintObject({
     required super.context,
     required T super.indicator,
   });
+
+  @nonVirtual
+  void moveToInitialPosition() {
+    (_context as StateBinding).moveToInitialPosition();
+  }
+
+  @nonVirtual
+  void updateZoomSlideBarRect(Rect rect) {
+    if (settingConfig.useCandleTicksAsZoomSlideBar) {
+      (_context as ChartBinding).setChartZoomSlideBarRect(rect);
+    }
+  }
 
   @override
   T get indicator => _indicator as T;
 }
 
 /// 时间轴指标绘制对象
-abstract class TimeBasePaintObject<T extends TimeBaseIndicator>
-    extends PaintObject {
+abstract class TimeBasePaintObject<T extends TimeBaseIndicator> extends PaintObject {
   TimeBasePaintObject({
     required super.context,
     required T super.indicator,
@@ -157,16 +170,13 @@ abstract class TimeBasePaintObject<T extends TimeBaseIndicator>
 }
 
 /// 主区绘制对象
-final class MainPaintObject<T extends MainPaintObjectIndicator>
-    extends PaintObject {
+final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObject {
   MainPaintObject({
     required super.context,
     required T super.indicator,
-  })  : children = SortableHashSet<PaintObject>.from([]),
-        _initialPadding = indicator.padding;
+  }) : children = SortableHashSet<PaintObject>.from(<PaintObject>[], (a, b) => a.compareTo(b));
 
   final SortableHashSet<PaintObject> children;
-  final EdgeInsets _initialPadding;
 
   @override
   T get indicator => _indicator as T;
@@ -174,19 +184,33 @@ final class MainPaintObject<T extends MainPaintObjectIndicator>
   @override
   int get dataIndex => -1;
 
-  bool get drawBelowTipsArea => indicator.drawBelowTipsArea;
-
-  Size get size => indicator.size;
+  Size? _tmpSize;
+  Size get size => _tmpSize ?? indicator.size;
 
   @override
   Rect get drawableRect {
-    return _drawableRect ??= Rect.fromLTWH(0, 0, size.width, size.height);
+    return _drawableRect ??= Offset.zero & size;
+  }
+
+  @override
+  bool handleTap(Offset position) {
+    for (var object in children) {
+      if (object.handleTap(position)) return true;
+    }
+    return false;
   }
 
   @override
   void precompute(Range range, {bool reset = false}) {
     for (var object in children) {
       object.precompute(range, reset: reset);
+    }
+  }
+
+  @override
+  void didChangeTheme() {
+    for (var object in children) {
+      object.didChangeTheme();
     }
   }
 
@@ -213,10 +237,10 @@ final class MainPaintObject<T extends MainPaintObjectIndicator>
 
   @override
   void dispose() {
+    super.dispose();
     for (var object in children) {
       object.dispose();
     }
     children.clear();
-    super.dispose();
   }
 }

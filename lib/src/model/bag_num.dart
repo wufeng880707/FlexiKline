@@ -15,8 +15,7 @@
 import 'dart:math' as math;
 
 import 'package:decimal/decimal.dart';
-
-import '../constant.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
 
 extension NumBagExt on num {
   BagNum toBagNum() => BagNum.fromNum(this);
@@ -49,8 +48,6 @@ class BagNum implements Comparable<BagNum> {
   static const BagNum fifty = BagNum._(50);
   static const BagNum hundred = BagNum._(100);
 
-  // @Deprecated('unsafe')
-  // factory BagNum.form(dynamic value) => BagNum._(value);
   factory BagNum.fromDecimal(Decimal value) => BagNum._(value);
   factory BagNum.fromNum(num value) => BagNum._(value);
   factory BagNum.fromInt(num value) => BagNum._(value);
@@ -137,11 +134,11 @@ class BagNum implements Comparable<BagNum> {
     } else if (_value is Decimal) {
       if (other._value is Decimal) {
         return BagNum._((_value / other._value).toDecimal(
-          scaleOnInfinitePrecision: defaultScaleOnInfinitePrecision,
+          scaleOnInfinitePrecision: FlexiFormatter.scaleOnInfinitePrecision,
         ));
       } else if (other._value is num) {
         return BagNum._((_value / other._value.toDecimal()).toDecimal(
-          scaleOnInfinitePrecision: defaultScaleOnInfinitePrecision,
+          scaleOnInfinitePrecision: FlexiFormatter.scaleOnInfinitePrecision,
         ));
       }
     }
@@ -324,7 +321,7 @@ class BagNum implements Comparable<BagNum> {
       return BagNum._(_value / value);
     } else if (_value is Decimal) {
       return BagNum._((_value / value.toDecimal()).toDecimal(
-        scaleOnInfinitePrecision: defaultScaleOnInfinitePrecision,
+        scaleOnInfinitePrecision: FlexiFormatter.scaleOnInfinitePrecision,
       ));
     }
     throw const BagNumException('BagNum divNum Type not match!');
@@ -336,7 +333,7 @@ class BagNum implements Comparable<BagNum> {
       return BagNum._(_value / value.toDouble());
     } else if (_value is Decimal) {
       return BagNum._((_value / value).toDecimal(
-        scaleOnInfinitePrecision: defaultScaleOnInfinitePrecision,
+        scaleOnInfinitePrecision: FlexiFormatter.scaleOnInfinitePrecision,
       ));
     }
     throw const BagNumException('BagNum divDecimal Type not match!');
@@ -569,7 +566,7 @@ class BagNum implements Comparable<BagNum> {
 
   String doubleString() {
     if (_value is Decimal) {
-      return _value.toStringAsFixed(defaultScaleOnInfinitePrecision);
+      return _value.toStringAsFixed(FlexiFormatter.scaleOnInfinitePrecision);
     }
     return _value.toString();
   }

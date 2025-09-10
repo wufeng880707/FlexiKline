@@ -25,10 +25,6 @@ abstract class _$MACDIndicatorCWProxy {
 
   MACDIndicator tickCount(int tickCount);
 
-  MACDIndicator lineWidth(double lineWidth);
-
-  MACDIndicator precision(int precision);
-
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `MACDIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -36,17 +32,15 @@ abstract class _$MACDIndicatorCWProxy {
   /// MACDIndicator(...).copyWith(id: 12, name: "My name")
   /// ````
   MACDIndicator call({
-    int? zIndex,
-    double? height,
-    EdgeInsets? padding,
-    MACDParam? calcParam,
-    TipsConfig? difTips,
-    TipsConfig? deaTips,
-    TipsConfig? macdTips,
-    EdgeInsets? tipsPadding,
-    int? tickCount,
-    double? lineWidth,
-    int? precision,
+    int zIndex,
+    double height,
+    EdgeInsets padding,
+    MACDParam calcParam,
+    TipsConfig difTips,
+    TipsConfig deaTips,
+    TipsConfig macdTips,
+    EdgeInsets tipsPadding,
+    int tickCount,
   });
 }
 
@@ -85,12 +79,6 @@ class _$MACDIndicatorCWProxyImpl implements _$MACDIndicatorCWProxy {
   MACDIndicator tickCount(int tickCount) => this(tickCount: tickCount);
 
   @override
-  MACDIndicator lineWidth(double lineWidth) => this(lineWidth: lineWidth);
-
-  @override
-  MACDIndicator precision(int precision) => this(precision: precision);
-
-  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `MACDIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -108,55 +96,44 @@ class _$MACDIndicatorCWProxyImpl implements _$MACDIndicatorCWProxy {
     Object? macdTips = const $CopyWithPlaceholder(),
     Object? tipsPadding = const $CopyWithPlaceholder(),
     Object? tickCount = const $CopyWithPlaceholder(),
-    Object? lineWidth = const $CopyWithPlaceholder(),
-    Object? precision = const $CopyWithPlaceholder(),
   }) {
     return MACDIndicator(
-      zIndex: zIndex == const $CopyWithPlaceholder() || zIndex == null
+      zIndex: zIndex == const $CopyWithPlaceholder()
           ? _value.zIndex
           // ignore: cast_nullable_to_non_nullable
           : zIndex as int,
-      height: height == const $CopyWithPlaceholder() || height == null
+      height: height == const $CopyWithPlaceholder()
           ? _value.height
           // ignore: cast_nullable_to_non_nullable
           : height as double,
-      padding: padding == const $CopyWithPlaceholder() || padding == null
+      padding: padding == const $CopyWithPlaceholder()
           ? _value.padding
           // ignore: cast_nullable_to_non_nullable
           : padding as EdgeInsets,
-      calcParam: calcParam == const $CopyWithPlaceholder() || calcParam == null
+      calcParam: calcParam == const $CopyWithPlaceholder()
           ? _value.calcParam
           // ignore: cast_nullable_to_non_nullable
           : calcParam as MACDParam,
-      difTips: difTips == const $CopyWithPlaceholder() || difTips == null
+      difTips: difTips == const $CopyWithPlaceholder()
           ? _value.difTips
           // ignore: cast_nullable_to_non_nullable
           : difTips as TipsConfig,
-      deaTips: deaTips == const $CopyWithPlaceholder() || deaTips == null
+      deaTips: deaTips == const $CopyWithPlaceholder()
           ? _value.deaTips
           // ignore: cast_nullable_to_non_nullable
           : deaTips as TipsConfig,
-      macdTips: macdTips == const $CopyWithPlaceholder() || macdTips == null
+      macdTips: macdTips == const $CopyWithPlaceholder()
           ? _value.macdTips
           // ignore: cast_nullable_to_non_nullable
           : macdTips as TipsConfig,
-      tipsPadding:
-          tipsPadding == const $CopyWithPlaceholder() || tipsPadding == null
-              ? _value.tipsPadding
-              // ignore: cast_nullable_to_non_nullable
-              : tipsPadding as EdgeInsets,
-      tickCount: tickCount == const $CopyWithPlaceholder() || tickCount == null
+      tipsPadding: tipsPadding == const $CopyWithPlaceholder()
+          ? _value.tipsPadding
+          // ignore: cast_nullable_to_non_nullable
+          : tipsPadding as EdgeInsets,
+      tickCount: tickCount == const $CopyWithPlaceholder()
           ? _value.tickCount
           // ignore: cast_nullable_to_non_nullable
           : tickCount as int,
-      lineWidth: lineWidth == const $CopyWithPlaceholder() || lineWidth == null
-          ? _value.lineWidth
-          // ignore: cast_nullable_to_non_nullable
-          : lineWidth as double,
-      precision: precision == const $CopyWithPlaceholder() || precision == null
-          ? _value.precision
-          // ignore: cast_nullable_to_non_nullable
-          : precision as int,
     );
   }
 }
@@ -188,8 +165,6 @@ MACDIndicator _$MACDIndicatorFromJson(Map<String, dynamic> json) =>
       tipsPadding: const EdgeInsetsConverter()
           .fromJson(json['tipsPadding'] as Map<String, dynamic>),
       tickCount: (json['tickCount'] as num?)?.toInt() ?? defaultSubTickCount,
-      lineWidth: (json['lineWidth'] as num).toDouble(),
-      precision: (json['precision'] as num?)?.toInt() ?? 2,
     );
 
 Map<String, dynamic> _$MACDIndicatorToJson(MACDIndicator instance) =>
@@ -203,6 +178,4 @@ Map<String, dynamic> _$MACDIndicatorToJson(MACDIndicator instance) =>
       'macdTips': instance.macdTips.toJson(),
       'tipsPadding': const EdgeInsetsConverter().toJson(instance.tipsPadding),
       'tickCount': instance.tickCount,
-      'lineWidth': instance.lineWidth,
-      'precision': instance.precision,
     };

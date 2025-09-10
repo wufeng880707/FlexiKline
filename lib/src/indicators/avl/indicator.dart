@@ -24,20 +24,16 @@ class AVLIndicator extends PaintObjectIndicator implements IPrecomputable {
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
-    required this.calcParam,
-    required this.line,
-    required this.tips,
+    this.calcParam = const AVLParam(),
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
   }) : super(key: const FlexiIndicatorKey('avl'));
 
-  /// AVL计算参数
+  /// AVL计算参数 - 包含所有配置
   @override
   final AVLParam calcParam;
 
-  /// 绘制相关参数
-  final LineConfig line;
-  final TipsConfig tips;
+  /// Tips 布局参数
   final EdgeInsets tipsPadding;
 
   /// YAxis刻度数量(注: 仅在key为subAvlKey时有用)
@@ -45,9 +41,8 @@ class AVLIndicator extends PaintObjectIndicator implements IPrecomputable {
 
   @override
   PaintObjectBox createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+    IPaintContext context,
+  ) {
     return AVLPaintObject(context: context, indicator: this);
   }
 
@@ -103,12 +98,11 @@ class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String fromatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(BagNum value, {required int precision}) {
     return formatPrice(
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showThousands: true,
     );
   }
 
@@ -131,7 +125,6 @@ class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showThousands: true,
     );
   }
 
@@ -144,6 +137,7 @@ class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
     int start = klineData.start;
     int end = (klineData.end + 1).clamp(start, len); // 多绘制一根蜡烛
 
+    final appearance = indicator.calcParam.appearance;
     final List<Offset> points = [];
     final offset = startCandleDx - candleWidthHalf;
 
@@ -155,11 +149,37 @@ class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
       points.add(Offset(dx, valueToDy(m.avl!, correct: false)));
     }
 
-    canvas.drawLineType(
-      indicator.line.type,
-      Path()..addPolygon(points, false),
-      indicator.line.linePaint,
-    );
+    if (points.isEmpty) return;
+
+    // 创建线条画笔
+    final linePaint = Paint()
+      ..color = appearance.color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = appearance.lineWidth;
+
+    // 绘制线条
+    final path = Path()..addPolygon(points, false);
+    
+    if (appearance.dashWidth > 0) {
+      // 绘制虚线 - 使用简单的实现
+      final pathMetrics = path.computeMetrics();
+      for (final metric in pathMetrics) {
+        double distance = 0.0;
+        bool draw = true;
+        while (distance < metric.length) {
+          final nextDistance = (distance + appearance.dashWidth).clamp(0.0, metric.length);
+          if (draw) {
+            final segment = metric.extractPath(distance, nextDistance);
+            canvas.drawPath(segment, linePaint);
+          }
+          distance = nextDistance;
+          draw = !draw;
+        }
+      }
+    } else {
+      // 绘制实线
+      canvas.drawPath(path, linePaint);
+    }
   }
 
   @override
@@ -172,18 +192,24 @@ class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
     model ??= offsetToCandle(offset);
     if (model == null || !model.isValidAvlData) return null;
 
-    final precision = klineData.req.precision;
+    final display = indicator.calcParam.display;
+    if (!display.showInTips) return null;
+
     final text = formatNumber(
       model.avl!.toDecimal(),
-      precision: indicator.tips.getP(precision),
+      precision: display.precision,
       cutInvalidZero: true,
-      prefix: indicator.tips.label,
+      prefix: '${display.tipsLabel}: ',
     );
+
     tipsRect ??= drawableRect;
     return canvas.drawText(
       offset: tipsRect.topLeft,
       text: text,
-      style: indicator.tips.style,
+      style: TextStyle(
+        color: theme.textColor,
+        fontSize: 12,
+      ),
       drawDirection: DrawDirection.ltr,
       drawableRect: tipsRect,
       textAlign: TextAlign.left,

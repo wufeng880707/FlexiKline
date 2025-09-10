@@ -28,18 +28,25 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
   /// 指标绘制对象管理
   final IndicatorPaintObjectManager _paintObjectManager;
 
+  final OverlayDrawObjectManager _drawObjectManager;
+
   KlineBindingBase({
     required this.configuration,
     this.autoSave = true,
+    int subIndicatorMaxCount = defaultSubIndicatorMaxCount,
     ILogger? logger,
     this.klineDataCacheCapacity,
-  }) : _paintObjectManager = IndicatorPaintObjectManager(
+  })  : _paintObjectManager = IndicatorPaintObjectManager(
+          configuration: configuration,
+          subIndicatorMaxCount: subIndicatorMaxCount,
+          logger: logger,
+        ),
+        _drawObjectManager = OverlayDrawObjectManager(
           configuration: configuration,
           logger: logger,
         ) {
     logd("constrouct");
     loggerDelegate = logger;
-    // initFlexiKlineConfig();
     init();
   }
 
@@ -59,8 +66,34 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
   @mustCallSuper
   void dispose() {
     logd("dispose base");
-    _paintObjectManager.dispose();
     if (autoSave) storeFlexiKlineConfig();
+    _paintObjectManager.dispose();
+    _drawObjectManager.dispose();
+  }
+
+  @protected
+  @mustCallSuper
+  void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
+    logd("onThemeChanged base");
+  }
+
+  @protected
+  @mustCallSuper
+  void onLanguageChanged() {
+    logd("onLanguageChanged base");
+  }
+
+  @protected
+  @mustCallSuper
+  void onRequestChanged(CandleReq oldRequest) {
+    logd("onRequestChanged base");
+  }
+
+  @protected
+  @mustCallSuper
+  bool onTap(Offset position) {
+    logd("onTap base");
+    return false;
   }
 
   KlineBindingBase get instance => this;
@@ -85,8 +118,16 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
 
 /// KlineController内部扩展
 extension on KlineBindingBase {
+  FlexiKlineConfig get flexiKlineConfig {
+    return _paintObjectManager.flexiKlineConfig;
+  }
+
   MainPaintObject get mainPaintObject {
     return _paintObjectManager.mainPaintObject;
+  }
+
+  CandleBasePaintObject get candlePaintObject {
+    return _paintObjectManager.candlePaintObject;
   }
 
   TimeBasePaintObject get timePaintObject {

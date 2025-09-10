@@ -34,17 +34,41 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     super.dispose();
     logd('dispose indicator');
     _repaintChart.dispose();
+    _isChartStartZoom.dispose();
+    _chartZoomSlideBarRect.dispose();
     _lastPriceCountDownTimer?.cancel();
     _lastPriceCountDownTimer = null;
   }
 
+  @override
+  void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
+    super.onThemeChanged(oldTheme);
+    for (var paintObject in [mainPaintObject, ...subPaintObjects]) {
+      paintObject.doDidChangeTheme();
+    }
+  }
+
   final ValueNotifier<int> _repaintChart = ValueNotifier(0);
+  final _isChartStartZoom = ValueNotifier<bool>(false);
+  final _chartZoomSlideBarRect = ValueNotifier(Rect.zero);
+
   Listenable get repaintChart => _repaintChart;
   void _markRepaintChart() {
     _repaintChart.value++;
   }
 
-  //// Latest Price ////
+  ValueListenable<bool> get isStartZoomChartListener => _isChartStartZoom;
+
+  @override
+  bool get isStartZoomChart => isStartZoomChartListener.value;
+
+  ValueListenable<Rect> get chartZoomSlideBarRectListener {
+    return _chartZoomSlideBarRect;
+  }
+
+  Rect get chartZoomSlideBarRect => _chartZoomSlideBarRect.value;
+
+  /// Latest Price ///
   Timer? _lastPriceCountDownTimer;
   @protected
   void markRepaintLastPrice({bool latestPriceUpdated = false}) {
@@ -89,34 +113,36 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
       return;
     }
 
+    calculatePaintChartRange();
     int solt = mainIndicatorSlot;
 
-    var paintObjects = <PaintObject>[];
+    /// 绘制额外内容是否在允许在主图绘制区域之外
+    final allowPaintExtraOutsideMainRect = settingConfig.allowPaintExtraOutsideMainRect;
+    try {
+      /// 保存画布状态
+      canvas.save();
+      canvas.clipRect(mainRect);
+      mainPaintObject.doInitState(
+        solt++,
+        start: curKlineData.start,
+        end: curKlineData.end,
+        reset: _reset,
+      );
+      mainPaintObject.doPaintChart(
+        canvas,
+        size,
+      );
 
-    if (curKlineData.req.timeBar.intraDay) {
-      // 当为日内时间粒度时，只保留蜡烛图指标
-      try {
-        final candlePaintObject =
-            mainPaintObject.children.firstWhere((obj) => obj.key == candleIndicatorKey);
-        candlePaintObject.doInitState(
-          solt++,
-          start: curKlineData.start,
-          end: curKlineData.end,
-          reset: _reset,
-        );
-        candlePaintObject.doPaintChart(canvas, size);
-      } catch (e) {
-        // 如果找不到蜡烛图指标，则只绘制副区指标
-        paintObjects = [...subPaintObjects];
+      if (!allowPaintExtraOutsideMainRect) {
+        mainPaintObject.doPaintExtraAboveChart(canvas, size);
       }
-    } else {
-    mainPaintObject.doInitState(
-      solt++,
-      start: curKlineData.start,
-      end: curKlineData.end,
-      reset: _reset,
-    );
-    mainPaintObject.doPaintChart(canvas, size);
+    } finally {
+      /// 恢复画布状态
+      canvas.restore();
+    }
+
+    if (allowPaintExtraOutsideMainRect) {
+      mainPaintObject.doPaintExtraAboveChart(canvas, size);
     }
 
     for (var paintObject in subPaintObjects) {
@@ -130,6 +156,8 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
 
       /// 绘制副区的指标图
       paintObject.doPaintChart(canvas, size);
+
+      paintObject.doPaintExtraAboveChart(canvas, size);
     }
 
     if (_reset) _reset = false;
@@ -178,7 +206,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
       newState = RequestState.none;
     }
 
-    final request = curKlineData.updateRequest(state: newState);
+    final request = curKlineData.updateState(state: newState);
     logd('checkAndLoadMoreCandlesWhenPanEnd new candle request:$request');
 
     if (newState == RequestState.loadingMore && panDuration != null) {
@@ -197,12 +225,29 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   }
 
   void onChartMove(GestureData data) {
-    // super.handleMove(data);
     if (!data.moved) return;
 
+    bool changed = false;
     final newDxOffset = clampPaintDxOffset(paintDxOffset + data.dxDelta);
     if (newDxOffset != paintDxOffset) {
       paintDxOffset = newDxOffset;
+      changed = true;
+    }
+
+    double dyDelta;
+    if (data.isMove && (dyDelta = data.dyDelta) != 0) {
+      final newPadding = mainPadding.copyWith(
+        top: mainPadding.top + dyDelta,
+        bottom: mainPadding.bottom - dyDelta,
+      );
+      if (newPadding.top > mainSize.height || newPadding.bottom > mainSize.height) {
+        return;
+      }
+
+      changed = mainPaintObject.doUpdateLayout(padding: newPadding) || changed;
+    }
+
+    if (changed) {
       markRepaintChart();
       markRepaintDraw();
     }
@@ -210,24 +255,22 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
 
   /// 蜡烛图缩放中...
   void onChartScale(GestureData data) {
-    // super.handleScale(data);
-
     double? newWidth;
 
     if (data.scaled) {
       // 处理触摸设备的缩放逻辑.
       if (data.scale > 1 && candleWidth >= candleMaxWidth) return;
-      if (data.scale < 1 && candleWidth <= settingConfig.pixel) return;
+      if (data.scale < 1 && candleWidth <= candleMinWidth) return;
 
       final dxGrowth = data.scaleDelta * gestureConfig.scaleSpeed;
       newWidth = (candleWidth + dxGrowth).clamp(
-        settingConfig.pixel,
+        candleMinWidth,
         candleMaxWidth,
       );
     } else if (data.isSignal) {
       // 处理鼠标滚轴滚动/触控板向上向下的缩放逻辑.
       newWidth = (candleWidth + data.scale).clamp(
-        settingConfig.pixel,
+        candleMinWidth,
         candleMaxWidth,
       );
     }
@@ -235,7 +278,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     if (newWidth == null || newWidth == candleWidth) return;
 
     final scaleFactor = (newWidth + candleSpacing) / candleActualWidth;
-    // logd('handleScale candleWidth:$candleWidth>$newWidth; factor:$scaleFactor');
+    // logd('onChartScale candleWidth:$candleWidth>$newWidth; factor:$scaleFactor');
 
     /// 更新蜡烛宽度
     _setCandleWidth(newWidth);
@@ -277,5 +320,74 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   // 蜡烛图缩放结束
   void onChartScaleEnd() {
     _setCandleWidth(candleWidth, sync: true);
+  }
+
+  /// 退出指标图的缩放
+  void exitChartZoom() {
+    _isChartStartZoom.value = false;
+    final changed = mainPaintObject.doUpdateLayout(
+      padding: mainOriginPadding,
+    );
+    markRepaintChart(reset: changed);
+    markRepaintDraw();
+  }
+
+  /// 设置指标图中用于缩放操作的滑竿区域
+  /// 注: 此区域是相对于mainRect
+  void setChartZoomSlideBarRect(Rect rect) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _chartZoomSlideBarRect.value = rect;
+    });
+  }
+
+  /// 检测是否开始指标图缩放
+  /// [isConvert] 是否转换为canvas区域坐标
+  bool onChartZoomStart(Offset position, [bool isConvert = true]) {
+    if (chartZoomSlideBarRect.isEmpty) return false;
+    if (isConvert) position += chartZoomSlideBarRect.topLeft;
+    return _isChartStartZoom.value = chartZoomSlideBarRect.include(position);
+  }
+
+  /// 指标图缩放更新
+  void onChartZoomUpdate(GestureData data) {
+    double delta = data.dyDelta / 2;
+    if (delta == 0) return;
+    if (delta > 0 &&
+        (!canSetMainSize() || mainMinSize.height > (mainChartHeight + mainOriginPadding.height))) {
+      logw(
+        'onChartZoomUpdate > cannot zoom($delta), mainSize:$mainSize is smaller than the minSize:$mainMinSize',
+      );
+      return;
+    }
+
+    delta = delta * gestureConfig.zoomSpeed;
+    final newPadding = mainPadding.copyWith(
+      top: mainPadding.top + delta,
+      bottom: mainPadding.bottom + delta,
+    );
+    if (newPadding.top > mainSize.height || newPadding.bottom > mainSize.height) {
+      return;
+    }
+
+    final changed = mainPaintObject.doUpdateLayout(padding: newPadding);
+    if (changed) {
+      markRepaintChart();
+      markRepaintDraw();
+    }
+  }
+
+  void onChartZoomEnd() {
+    if (mainOriginPadding == mainPadding) {
+      exitChartZoom();
+    }
+  }
+
+  @override
+  bool onTap(Offset position) {
+    if (super.onTap(position)) return true;
+    for (var paintObject in [mainPaintObject, ...subPaintObjects]) {
+      if (paintObject.handleTap(position)) return true;
+    }
+    return false;
   }
 }

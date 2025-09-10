@@ -90,19 +90,20 @@ mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
     required int end,
   }) {
     final len = klineData.list.length;
-    if (param.n > len || !klineData.checkStartAndEnd(start, end)) return;
-    logd('calculateKdj [end:$end ~ start:$start] n:${param.n}');
+    final kPeriod = param.calculation.kPeriod;
+    if (kPeriod > len || !klineData.checkStartAndEnd(start, end)) return;
+    print('calculateKdj [end:$end ~ start:$start] kPeriod:$kPeriod');
 
-    end = math.min(len - param.n, end - 1);
+    end = math.min(len - kPeriod, end - 1);
 
     for (int i = end; i >= start; i--) {
       final m = klineData.list[i];
-      if (i + param.n > len) continue;
+      if (i + kPeriod > len) continue;
 
       // 计算RSV
       BagNum high = m.high;
       BagNum low = m.low;
-      for (int j = i + 1; j < i + param.n; j++) {
+      for (int j = i + 1; j < i + kPeriod; j++) {
         final candle = klineData.list[j];
         if (candle.high > high) high = candle.high;
         if (candle.low < low) low = candle.low;
@@ -115,7 +116,7 @@ mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
       BagNum k = BagNum.fromNum(50);
       if (i < len - 1) {
         final prevK = klineData.list[i + 1].k ?? BagNum.fromNum(50);
-        k = (prevK * BagNum.fromNum(param.m1 - 1) + rsv) / BagNum.fromNum(param.m1);
+        k = (prevK * BagNum.fromNum(param.calculation.dPeriod - 1) + rsv) / BagNum.fromNum(param.calculation.dPeriod);
       } else {
         k = rsv;
       }
@@ -124,7 +125,7 @@ mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
       BagNum d = BagNum.fromNum(50);
       if (i < len - 1) {
         final prevD = klineData.list[i + 1].d ?? BagNum.fromNum(50);
-        d = (prevD * BagNum.fromNum(param.m2 - 1) + k) / BagNum.fromNum(param.m2);
+        d = (prevD * BagNum.fromNum(param.calculation.jPeriod - 1) + k) / BagNum.fromNum(param.calculation.jPeriod);
       } else {
         d = k;
       }
@@ -148,7 +149,7 @@ mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
     if (klineData.isEmpty) return;
     _calculateKdj(
       calcParam,
-      start: math.max(0, start - calcParam.n), // 补起上一次未算数据
+      start: math.max(0, start - calcParam.calculation.kPeriod), // 补起上一次未算数据
       end: end,
     );
   }
@@ -168,7 +169,8 @@ mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
     }
 
     final len = klineData.list.length;
-    end = math.min(len - param.n, end - 1);
+    final kPeriod = param.calculation.kPeriod;
+    end = math.min(len - kPeriod, end - 1);
 
     if (!klineData.list[end].isValidKdjData) {
       calcuAndCacheKdj(param, start: 0, end: len);

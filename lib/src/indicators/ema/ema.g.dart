@@ -13,11 +13,9 @@ abstract class _$EMAIndicatorCWProxy {
 
   EMAIndicator padding(EdgeInsets padding);
 
-  EMAIndicator calcParams(List<MaParam> calcParams);
+  EMAIndicator calcParam(EmaParam calcParam);
 
   EMAIndicator tipsPadding(EdgeInsets tipsPadding);
-
-  EMAIndicator lineWidth(double lineWidth);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `EMAIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -26,12 +24,11 @@ abstract class _$EMAIndicatorCWProxy {
   /// EMAIndicator(...).copyWith(id: 12, name: "My name")
   /// ````
   EMAIndicator call({
-    int? zIndex,
-    double? height,
-    EdgeInsets? padding,
-    List<MaParam>? calcParams,
-    EdgeInsets? tipsPadding,
-    double? lineWidth,
+    int zIndex,
+    double height,
+    EdgeInsets padding,
+    EmaParam calcParam,
+    EdgeInsets tipsPadding,
   });
 }
 
@@ -51,15 +48,11 @@ class _$EMAIndicatorCWProxyImpl implements _$EMAIndicatorCWProxy {
   EMAIndicator padding(EdgeInsets padding) => this(padding: padding);
 
   @override
-  EMAIndicator calcParams(List<MaParam> calcParams) =>
-      this(calcParams: calcParams);
+  EMAIndicator calcParam(EmaParam calcParam) => this(calcParam: calcParam);
 
   @override
   EMAIndicator tipsPadding(EdgeInsets tipsPadding) =>
       this(tipsPadding: tipsPadding);
-
-  @override
-  EMAIndicator lineWidth(double lineWidth) => this(lineWidth: lineWidth);
 
   @override
 
@@ -73,37 +66,30 @@ class _$EMAIndicatorCWProxyImpl implements _$EMAIndicatorCWProxy {
     Object? zIndex = const $CopyWithPlaceholder(),
     Object? height = const $CopyWithPlaceholder(),
     Object? padding = const $CopyWithPlaceholder(),
-    Object? calcParams = const $CopyWithPlaceholder(),
+    Object? calcParam = const $CopyWithPlaceholder(),
     Object? tipsPadding = const $CopyWithPlaceholder(),
-    Object? lineWidth = const $CopyWithPlaceholder(),
   }) {
     return EMAIndicator(
-      zIndex: zIndex == const $CopyWithPlaceholder() || zIndex == null
+      zIndex: zIndex == const $CopyWithPlaceholder()
           ? _value.zIndex
           // ignore: cast_nullable_to_non_nullable
           : zIndex as int,
-      height: height == const $CopyWithPlaceholder() || height == null
+      height: height == const $CopyWithPlaceholder()
           ? _value.height
           // ignore: cast_nullable_to_non_nullable
           : height as double,
-      padding: padding == const $CopyWithPlaceholder() || padding == null
+      padding: padding == const $CopyWithPlaceholder()
           ? _value.padding
           // ignore: cast_nullable_to_non_nullable
           : padding as EdgeInsets,
-      calcParams:
-          calcParams == const $CopyWithPlaceholder() || calcParams == null
-              ? _value.calcParams
-              // ignore: cast_nullable_to_non_nullable
-              : calcParams as List<MaParam>,
-      tipsPadding:
-          tipsPadding == const $CopyWithPlaceholder() || tipsPadding == null
-              ? _value.tipsPadding
-              // ignore: cast_nullable_to_non_nullable
-              : tipsPadding as EdgeInsets,
-      lineWidth: lineWidth == const $CopyWithPlaceholder() || lineWidth == null
-          ? _value.lineWidth
+      calcParam: calcParam == const $CopyWithPlaceholder()
+          ? _value.calcParam
           // ignore: cast_nullable_to_non_nullable
-          : lineWidth as double,
+          : calcParam as EmaParam,
+      tipsPadding: tipsPadding == const $CopyWithPlaceholder()
+          ? _value.tipsPadding
+          // ignore: cast_nullable_to_non_nullable
+          : tipsPadding as EdgeInsets,
     );
   }
 }
@@ -113,32 +99,3 @@ extension $EMAIndicatorCopyWith on EMAIndicator {
   // ignore: library_private_types_in_public_api
   _$EMAIndicatorCWProxy get copyWith => _$EMAIndicatorCWProxyImpl(this);
 }
-
-// **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
-
-EMAIndicator _$EMAIndicatorFromJson(Map<String, dynamic> json) => EMAIndicator(
-      zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
-      height: (json['height'] as num).toDouble(),
-      padding: json['padding'] == null
-          ? defaultMainIndicatorPadding
-          : const EdgeInsetsConverter()
-              .fromJson(json['padding'] as Map<String, dynamic>),
-      calcParams: (json['calcParams'] as List<dynamic>)
-          .map((e) => MaParam.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      tipsPadding: const EdgeInsetsConverter()
-          .fromJson(json['tipsPadding'] as Map<String, dynamic>),
-      lineWidth: (json['lineWidth'] as num).toDouble(),
-    );
-
-Map<String, dynamic> _$EMAIndicatorToJson(EMAIndicator instance) =>
-    <String, dynamic>{
-      'height': instance.height,
-      'padding': const EdgeInsetsConverter().toJson(instance.padding),
-      'zIndex': instance.zIndex,
-      'calcParams': instance.calcParams.map((e) => e.toJson()).toList(),
-      'tipsPadding': const EdgeInsetsConverter().toJson(instance.tipsPadding),
-      'lineWidth': instance.lineWidth,
-    };

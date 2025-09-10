@@ -20,7 +20,7 @@ import '../../config/text_area_config/text_area_config.dart';
 import '../geometry_ext.dart';
 import 'common.dart';
 
-extension DrawTextExt on Canvas {
+extension FlexiDrawTextExt on Canvas {
   /// 绘制文本
   Size drawText({
     ///绘制启始坐标位置
@@ -172,10 +172,10 @@ extension DrawTextExt on Canvas {
       }
     }
 
-    final isDrawBg = backgroundColor != null && backgroundColor.alpha != 0;
-    final isDrawBorder = (borderColor.alpha != 0 && borderWidth > 0) ||
+    final isDrawBg = backgroundColor != null && backgroundColor.a != 0;
+    final isDrawBorder = (borderColor.a != 0 && borderWidth > 0) ||
         (borderSide != null &&
-            borderSide.color.alpha != 0 &&
+            borderSide.color.a != 0 &&
             borderSide.width > 0);
     if (hasPadding || isDrawBg || isDrawBorder) {
       // if (margin != null && margin.isNonNegative) {

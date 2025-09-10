@@ -14,7 +14,7 @@ abstract class _$MainPaintObjectIndicatorCWProxy<
 
   MainPaintObjectIndicator<T> drawBelowTipsArea(bool drawBelowTipsArea);
 
-  MainPaintObjectIndicator<T> indicatorKeys(Set<IIndicatorKey>? indicatorKeys);
+  MainPaintObjectIndicator<T> children(Set<IIndicatorKey>? children);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `MainPaintObjectIndicator<T>(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -23,10 +23,10 @@ abstract class _$MainPaintObjectIndicatorCWProxy<
   /// MainPaintObjectIndicator<T>(...).copyWith(id: 12, name: "My name")
   /// ````
   MainPaintObjectIndicator<T> call({
-    Size? size,
-    EdgeInsets? padding,
-    bool? drawBelowTipsArea,
-    Set<IIndicatorKey>? indicatorKeys,
+    Size size,
+    EdgeInsets padding,
+    bool drawBelowTipsArea,
+    Set<IIndicatorKey>? children,
   });
 }
 
@@ -49,9 +49,8 @@ class _$MainPaintObjectIndicatorCWProxyImpl<T extends PaintObjectIndicator>
       this(drawBelowTipsArea: drawBelowTipsArea);
 
   @override
-  MainPaintObjectIndicator<T> indicatorKeys(
-          Set<IIndicatorKey>? indicatorKeys) =>
-      this(indicatorKeys: indicatorKeys);
+  MainPaintObjectIndicator<T> children(Set<IIndicatorKey>? children) =>
+      this(children: children);
 
   @override
 
@@ -65,26 +64,25 @@ class _$MainPaintObjectIndicatorCWProxyImpl<T extends PaintObjectIndicator>
     Object? size = const $CopyWithPlaceholder(),
     Object? padding = const $CopyWithPlaceholder(),
     Object? drawBelowTipsArea = const $CopyWithPlaceholder(),
-    Object? indicatorKeys = const $CopyWithPlaceholder(),
+    Object? children = const $CopyWithPlaceholder(),
   }) {
     return MainPaintObjectIndicator<T>(
-      size: size == const $CopyWithPlaceholder() || size == null
+      size: size == const $CopyWithPlaceholder()
           ? _value.size
           // ignore: cast_nullable_to_non_nullable
           : size as Size,
-      padding: padding == const $CopyWithPlaceholder() || padding == null
+      padding: padding == const $CopyWithPlaceholder()
           ? _value.padding
           // ignore: cast_nullable_to_non_nullable
           : padding as EdgeInsets,
-      drawBelowTipsArea: drawBelowTipsArea == const $CopyWithPlaceholder() ||
-              drawBelowTipsArea == null
+      drawBelowTipsArea: drawBelowTipsArea == const $CopyWithPlaceholder()
           ? _value.drawBelowTipsArea
           // ignore: cast_nullable_to_non_nullable
           : drawBelowTipsArea as bool,
-      indicatorKeys: indicatorKeys == const $CopyWithPlaceholder()
-          ? _value.indicatorKeys
+      children: children == const $CopyWithPlaceholder()
+          ? _value.children
           // ignore: cast_nullable_to_non_nullable
-          : indicatorKeys as Set<IIndicatorKey>?,
+          : children as Set<IIndicatorKey>?,
     );
   }
 }
@@ -110,7 +108,7 @@ MainPaintObjectIndicator<T>
           padding: const EdgeInsetsConverter()
               .fromJson(json['padding'] as Map<String, dynamic>),
           drawBelowTipsArea: json['drawBelowTipsArea'] as bool? ?? false,
-          indicatorKeys: (json['indicatorKeys'] as List<dynamic>?)
+          children: (json['children'] as List<dynamic>?)
               ?.map((e) => const IIndicatorKeyConvert().fromJson(e as String))
               .toSet(),
         )..height = (json['height'] as num).toDouble();
@@ -119,11 +117,11 @@ Map<String, dynamic>
     _$MainPaintObjectIndicatorToJson<T extends PaintObjectIndicator>(
             MainPaintObjectIndicator<T> instance) =>
         <String, dynamic>{
-          'height': instance.height,
           'padding': const EdgeInsetsConverter().toJson(instance.padding),
           'size': const SizeConverter().toJson(instance.size),
+          'height': instance.height,
           'drawBelowTipsArea': instance.drawBelowTipsArea,
-          'indicatorKeys': instance.indicatorKeys
+          'children': instance.children
               .map(const IIndicatorKeyConvert().toJson)
               .toList(),
         };

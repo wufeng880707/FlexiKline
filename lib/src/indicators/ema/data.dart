@@ -24,12 +24,12 @@ extension CandleEmaExt on CandleModel {
 }
 
 mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
-  List<ma_param.MaParam> get calcParams => indicator.calcParams;
+  EmaParam get calcParam => indicator.calcParam;
 
   @override
   void precompute(Range range, {bool reset = false}) {
     calcuAndCacheEma(
-      calcParams,
+      calcParam,
       start: range.start,
       end: range.end,
       reset: reset,
@@ -79,12 +79,13 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
   }
 
   void calcuAndCacheEma(
-    List<ma_param.MaParam> params, {
+    EmaParam param, {
     required int start,
     required int end,
     bool reset = false,
   }) {
-    if (klineData.isEmpty || params.isEmpty) return;
+    final enabledLines = param.enabledLines;
+    if (klineData.isEmpty || enabledLines.isEmpty) return;
 
     final list = klineData.list;
     final len = list.length;
@@ -96,16 +97,17 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
     }
 
     // 获取最大周期，确保有足够的数据
-    final maxCount = ma_param.MaParam.getMaxCountByList(params);
-    if (maxCount == null || len < maxCount) return;
+    final maxPeriod = param.maxPeriod;
+    if (maxPeriod == null || len < maxPeriod) return;
 
     // klineData.list 是从新到旧的, 需要反转为从旧到新来计算.
     final closeValues = list.map((c) => c.close).toList().reversed.toList();
 
-    // 为每个参数计算EMA
+    // 为每个启用的EMA线计算EMA
     final emaResults = <List<BagNum?>>[];
-    for (final param in params) {
-      final emaResult = _ema(closeValues, param.count);
+    for (final lineConfig in enabledLines) {
+      if (lineConfig.period <= 0) continue; // 跳过无效周期
+      final emaResult = _ema(closeValues, lineConfig.period);
       emaResults.add(emaResult);
     }
 
@@ -134,21 +136,22 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
   }
 
   MinMax? calcuEmaMinmax(
-    List<ma_param.MaParam> params, {
+    EmaParam param, {
     required int start,
     required int end,
   }) {
-    if (params.isEmpty || !klineData.checkStartAndEnd(start, end)) {
+    final enabledLines = param.enabledLines;
+    if (enabledLines.isEmpty || !klineData.checkStartAndEnd(start, end)) {
       return null;
     }
 
     final len = klineData.list.length;
-    final maxCount = ma_param.MaParam.getMaxCountByList(params);
-    if (maxCount == null || len < maxCount) return null;
+    final maxPeriod = param.maxPeriod;
+    if (maxPeriod == null || len < maxPeriod) return null;
 
     // 确保数据已计算
     if (!klineData.list[end].isValidEmaList) {
-      calcuAndCacheEma(params, start: 0, end: len);
+      calcuAndCacheEma(param, start: 0, end: len);
     }
 
     MinMax? minmax;

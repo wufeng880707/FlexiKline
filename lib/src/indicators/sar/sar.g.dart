@@ -15,15 +15,7 @@ abstract class _$SARIndicatorCWProxy {
 
   SARIndicator calcParam(SARParam calcParam);
 
-  SARIndicator radius(double? radius);
-
-  SARIndicator useCandleColor(bool useCandleColor);
-
-  SARIndicator paint(PaintConfig paint);
-
   SARIndicator tipsPadding(EdgeInsets tipsPadding);
-
-  SARIndicator tipsStyle(TextStyle tipsStyle);
 
   SARIndicator tickCount(int tickCount);
 
@@ -34,16 +26,12 @@ abstract class _$SARIndicatorCWProxy {
   /// SARIndicator(...).copyWith(id: 12, name: "My name")
   /// ````
   SARIndicator call({
-    int? zIndex,
-    double? height,
-    EdgeInsets? padding,
-    SARParam? calcParam,
-    double? radius,
-    bool? useCandleColor,
-    PaintConfig? paint,
-    EdgeInsets? tipsPadding,
-    TextStyle? tipsStyle,
-    int? tickCount,
+    int zIndex,
+    double height,
+    EdgeInsets padding,
+    SARParam calcParam,
+    EdgeInsets tipsPadding,
+    int tickCount,
   });
 }
 
@@ -66,21 +54,8 @@ class _$SARIndicatorCWProxyImpl implements _$SARIndicatorCWProxy {
   SARIndicator calcParam(SARParam calcParam) => this(calcParam: calcParam);
 
   @override
-  SARIndicator radius(double? radius) => this(radius: radius);
-
-  @override
-  SARIndicator useCandleColor(bool useCandleColor) =>
-      this(useCandleColor: useCandleColor);
-
-  @override
-  SARIndicator paint(PaintConfig paint) => this(paint: paint);
-
-  @override
   SARIndicator tipsPadding(EdgeInsets tipsPadding) =>
       this(tipsPadding: tipsPadding);
-
-  @override
-  SARIndicator tipsStyle(TextStyle tipsStyle) => this(tipsStyle: tipsStyle);
 
   @override
   SARIndicator tickCount(int tickCount) => this(tickCount: tickCount);
@@ -98,53 +73,31 @@ class _$SARIndicatorCWProxyImpl implements _$SARIndicatorCWProxy {
     Object? height = const $CopyWithPlaceholder(),
     Object? padding = const $CopyWithPlaceholder(),
     Object? calcParam = const $CopyWithPlaceholder(),
-    Object? radius = const $CopyWithPlaceholder(),
-    Object? useCandleColor = const $CopyWithPlaceholder(),
-    Object? paint = const $CopyWithPlaceholder(),
     Object? tipsPadding = const $CopyWithPlaceholder(),
-    Object? tipsStyle = const $CopyWithPlaceholder(),
     Object? tickCount = const $CopyWithPlaceholder(),
   }) {
     return SARIndicator(
-      zIndex: zIndex == const $CopyWithPlaceholder() || zIndex == null
+      zIndex: zIndex == const $CopyWithPlaceholder()
           ? _value.zIndex
           // ignore: cast_nullable_to_non_nullable
           : zIndex as int,
-      height: height == const $CopyWithPlaceholder() || height == null
+      height: height == const $CopyWithPlaceholder()
           ? _value.height
           // ignore: cast_nullable_to_non_nullable
           : height as double,
-      padding: padding == const $CopyWithPlaceholder() || padding == null
+      padding: padding == const $CopyWithPlaceholder()
           ? _value.padding
           // ignore: cast_nullable_to_non_nullable
           : padding as EdgeInsets,
-      calcParam: calcParam == const $CopyWithPlaceholder() || calcParam == null
+      calcParam: calcParam == const $CopyWithPlaceholder()
           ? _value.calcParam
           // ignore: cast_nullable_to_non_nullable
           : calcParam as SARParam,
-      radius: radius == const $CopyWithPlaceholder()
-          ? _value.radius
+      tipsPadding: tipsPadding == const $CopyWithPlaceholder()
+          ? _value.tipsPadding
           // ignore: cast_nullable_to_non_nullable
-          : radius as double?,
-      useCandleColor: useCandleColor == const $CopyWithPlaceholder() ||
-              useCandleColor == null
-          ? _value.useCandleColor
-          // ignore: cast_nullable_to_non_nullable
-          : useCandleColor as bool,
-      paint: paint == const $CopyWithPlaceholder() || paint == null
-          ? _value.paint
-          // ignore: cast_nullable_to_non_nullable
-          : paint as PaintConfig,
-      tipsPadding:
-          tipsPadding == const $CopyWithPlaceholder() || tipsPadding == null
-              ? _value.tipsPadding
-              // ignore: cast_nullable_to_non_nullable
-              : tipsPadding as EdgeInsets,
-      tipsStyle: tipsStyle == const $CopyWithPlaceholder() || tipsStyle == null
-          ? _value.tipsStyle
-          // ignore: cast_nullable_to_non_nullable
-          : tipsStyle as TextStyle,
-      tickCount: tickCount == const $CopyWithPlaceholder() || tickCount == null
+          : tipsPadding as EdgeInsets,
+      tickCount: tickCount == const $CopyWithPlaceholder()
           ? _value.tickCount
           // ignore: cast_nullable_to_non_nullable
           : tickCount as int,
@@ -170,15 +123,10 @@ SARIndicator _$SARIndicatorFromJson(Map<String, dynamic> json) => SARIndicator(
           : const EdgeInsetsConverter()
               .fromJson(json['padding'] as Map<String, dynamic>),
       calcParam: json['calcParam'] == null
-          ? const SARParam(startAf: 0.02, step: 0.02, maxAf: 0.2)
+          ? const SARParam()
           : SARParam.fromJson(json['calcParam'] as Map<String, dynamic>),
-      radius: (json['radius'] as num?)?.toDouble(),
-      useCandleColor: json['useCandleColor'] as bool? ?? true,
-      paint: PaintConfig.fromJson(json['paint'] as Map<String, dynamic>),
       tipsPadding: const EdgeInsetsConverter()
           .fromJson(json['tipsPadding'] as Map<String, dynamic>),
-      tipsStyle: const TextStyleConverter()
-          .fromJson(json['tipsStyle'] as Map<String, dynamic>),
       tickCount: (json['tickCount'] as num?)?.toInt() ?? defaultSubTickCount,
     );
 
@@ -188,10 +136,6 @@ Map<String, dynamic> _$SARIndicatorToJson(SARIndicator instance) =>
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'zIndex': instance.zIndex,
       'calcParam': instance.calcParam.toJson(),
-      'radius': instance.radius,
-      'paint': instance.paint.toJson(),
-      'useCandleColor': instance.useCandleColor,
       'tipsPadding': const EdgeInsetsConverter().toJson(instance.tipsPadding),
-      'tipsStyle': const TextStyleConverter().toJson(instance.tipsStyle),
       'tickCount': instance.tickCount,
     };

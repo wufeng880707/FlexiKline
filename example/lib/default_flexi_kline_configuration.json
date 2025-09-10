@@ -1,0 +1,421 @@
+{
+  "_comment": "FlexiKline K线图主题配置文件 - 控制UI样式、颜色、主题相关设置",
+  "_version": "1.0.0", 
+  "_lastModified": "2024-12-19",
+  "_description": "该文件主要包含主题相关的配置，如颜色、样式、布局等。指标配置请参考 flexi_kline_indicators_config.json",
+  "_relatedFiles": [
+    "flexi_kline_indicators_config.json"
+  ],
+  
+  "grid": {
+    "_comment": "网格配置 - 控制K线图背景网格线的显示和样式",
+    "show": true,
+    "horizontal": {
+      "_comment": "水平网格线配置",
+      "show": true,
+      "count": 5,
+      "line": {
+        "type": "solid",
+        "_comment": "线条类型: solid(实线), dashed(虚线), dotted(点线)",
+        "dashes": [2.0, 2.0],
+        "paint": {
+          "color": "0xffe9e9e9",
+          "strokeWidth": 0.5,
+          "style": "stroke",
+          "blendMode": "srcOver",
+          "isAntiAlias": true
+        }
+      }
+    },
+    "vertical": {
+      "_comment": "垂直网格线配置", 
+      "show": true,
+      "count": 5,
+      "line": {
+        "type": "solid",
+        "dashes": [2.0, 2.0],
+        "paint": {
+          "color": "0xffe9e9e9", 
+          "strokeWidth": 0.5,
+          "style": "stroke",
+          "blendMode": "srcOver",
+          "isAntiAlias": true
+        }
+      }
+    },
+    "_comment_drag": "拖拽相关配置",
+    "isAllowDragIndicatorHeight": true,
+    "dragHitTestMinDistance": 10.0,
+    "dragLineOpacity": 0.1,
+    "draggingBgOpacity": 0.1,
+    "dragBgOpacity": 0.01,
+    "ticksText": {
+      "_comment": "全局默认刻度文本样式",
+      "style": {
+        "color": "0xff666666",
+        "fontSize": 10.0,
+        "fontFamily": null,
+        "fontStyle": "normal",
+        "height": 1.0,
+        "fontWeight": "w400",
+        "textBaseline": "ideographic",
+        "decoration": "none",
+        "decorationColor": null,
+        "decorationStyle": "solid"
+      },
+      "textAlign": "end",
+      "padding": {
+        "horizontal": 2.0,
+        "vertical": 0.0
+      }
+    }
+  },
+  "setting": {
+    "_comment": "基础设置配置 - 控制K线图的基本显示参数",
+    "opacity": 0.5,
+    "_comment_opacity": "涨跌颜色的透明度 (0.0-1.0)",
+    
+    "loading": {
+      "_comment": "加载状态指示器配置",
+      "size": 24.0,
+      "strokeWidth": 4.0,
+      "background": "0x80ececec",
+      "valueColor": "0xff000000"
+    },
+    
+    "_comment_size": "主区和副区的最小尺寸配置",
+    "mainMinSize": {
+      "width": 120.0,
+      "height": 80.0
+    },
+    "subMinHeight": 30.0,
+    
+    "_comment_candleConfig": "蜡烛图相关配置 - 关键的绘制参数",
+    "useCandleTicksAsZoomSlideBar": true,
+    "minPaintBlankRate": 0.5,
+    "_comment_minPaintBlankRate": "绘制区域最少留白比例，当蜡烛不足一屏时的留白",
+    "alwaysCalculateScreenOfCandlesIfEnough": false,
+    "_comment_alwaysCalculate": "足够时总是按一屏蜡烛计算",
+    
+    "_comment_candleSize": "蜡烛尺寸和间距配置",
+    "candleMinWidth": 1.0,
+    "candleMaxWidth": 40.0,
+    "candleWidth": 7.0,
+    "candleFixedSpacing": 1.0,
+    "candleSpacingParts": 7,
+    "_comment_spacingParts": "蜡烛间距按宽度平分的份数",
+    "candleHollowBarBorderWidth": 1.0,
+    "candleLineWidth": 1.0,
+    "_comment_candleLineWidth": "蜡烛高低线宽度",
+    "firstCandleInitOffset": 80.0,
+    "_comment_initOffset": "第一根蜡烛相对于主区右边的偏移",
+    
+    "_comment_extra": "额外绘制配置",
+    "allowPaintExtraOutsideMainRect": true,
+    "showYAxisTick": true
+  },
+  "gesture": {
+    "_comment": "手势操作配置 - 控制用户交互行为",
+    "supportLongPress": true,
+    "_comment_longPress": "是否支持长按显示十字线",
+    "isInertialPan": true,
+    "_comment_inertialPan": "是否启用惯性平移动画",
+    
+    "tolerance": {
+      "_comment": "惯性平移动画容忍参数",
+      "maxDuration": 1500,
+      "distanceFactor": 0.5,
+      "curvestr": "easeOutCirc"
+    },
+    
+    "_comment_loadMore": "预加载相关配置",
+    "loadMoreWhenNoEnoughCandles": 60,
+    "_comment_loadMoreCandles": "剩余蜡烛数量触发加载更多 (默认60根约1.5屏)",
+    "loadMoreWhenNoEnoughDistance": null,
+    "_comment_loadMoreDistance": "剩余距离触发加载更多 (null表示使用蜡烛数量)",
+    
+    "_comment_scale": "缩放相关配置",
+    "scalePosition": "auto",
+    "_comment_scalePosition": "缩放操作位置: auto, center, pointer",
+    "scaleSpeed": 10.0,
+    "_comment_scaleSpeed": "缩放速度 (1-30, 推荐10)",
+    
+    "_comment_keyboard": "键盘和触控配置",
+    "supportKeyboardShortcuts": true,
+    "zoomStartMinDistance": 5,
+    "_comment_zoomStartDistance": "触控缩放启动最小距离",
+    "zoomSpeed": 1,
+    "_comment_zoomSpeed": "触控缩放速度"
+  },
+  "cross": {
+    "_comment": "十字线配置 - 控制长按时显示的十字线和数据提示",
+    "enable": true,
+    
+    "crosshair": {
+      "_comment": "十字线样式配置",
+      "type": "dashed",
+      "dashes": [3.0, 3.0],
+      "paint": {
+        "color": "0x80666666",
+        "_comment_crossColor": "十字线颜色，建议使用半透明色",
+        "strokeWidth": 0.5,
+        "style": "stroke",
+        "blendMode": "srcOver", 
+        "isAntiAlias": true
+      }
+    },
+    
+    "crosspoint": {
+      "_comment": "十字线交叉点配置",
+      "radius": 2.0,
+      "width": 0.0,
+      "color": "0xff666666",
+      "borderWidth": 2.0,
+      "borderColor": "0x80666666"
+    },
+    
+    "ticksText": {
+      "_comment": "十字线刻度文本配置",
+      "style": {
+        "color": "0xffffffff",
+        "fontSize": 10.0,
+        "fontFamily": null,
+        "fontStyle": "normal",
+        "height": 1.0,
+        "fontWeight": "w400",
+        "textBaseline": "ideographic",
+        "decoration": "none",
+        "decorationColor": null,
+        "decorationStyle": "solid"
+      },
+      "textAlign": "start",
+      "padding": {
+        "horizontal": 2.0,
+        "vertical": 2.0
+      },
+      "border": {
+        "color": "0xff666666",
+        "width": 0.5,
+        "style": "solid"
+      },
+      "borderRadius": {
+        "topLeft": 2.0,
+        "topRight": 2.0,
+        "bottomLeft": 2.0,
+        "bottomRight": 2.0
+      }
+    },
+    
+    "tooltipConfig": {
+      "_comment": "数据提示框配置",
+      "show": true,
+      "margin": {
+        "left": 15.0,
+        "top": 10.0,
+        "right": 65.0,
+        "bottom": 0.0
+      },
+      "padding": {
+        "horizontal": 4.0,
+        "vertical": 4.0
+      },
+      "radius": {
+        "topLeft": 4.0,
+        "topRight": 4.0,
+        "bottomLeft": 4.0,
+        "bottomRight": 4.0
+      },
+      "style": {
+        "color": "0xff333333",
+        "fontSize": 10.0,
+        "fontFamily": null,
+        "fontStyle": "normal",
+        "height": 1.4,
+        "_comment_height": "行高倍数，用于多行文本",
+        "fontWeight": "w400",
+        "textBaseline": "ideographic",
+        "decoration": "none",
+        "decorationColor": null,
+        "decorationStyle": "solid"
+      }
+    },
+    
+    "_comment_behavior": "十字线行为配置",
+    "spacing": 1.0,
+    "showLatestTipsInBlank": true,
+    "_comment_showLatest": "空白区域是否显示最新数据提示",
+    "moveByCandleInBlank": false,
+    "_comment_moveByCandle": "空白区域是否按蜡烛宽度移动"
+  },
+  "draw": {
+    "_comment": "绘制工具配置 - 控制趋势线、形状等绘制工具的样式",
+    "enable": true,
+    "allowSelectWhenExit": true,
+    "_comment_allowSelect": "退出绘制模式时是否允许选择已绘制的图形",
+    
+    "crosspoint": {
+      "_comment": "绘制时的指针点配置",
+      "radius": 2.0,
+      "width": 0.0,
+      "color": "0xff448aff",
+      "borderWidth": 2.0,
+      "borderColor": "0x80448aff"
+    },
+    
+    "crosshair": {
+      "_comment": "绘制时的十字线配置",
+      "type": "dashed",
+      "dashes": [5.0, 3.0],
+      "paint": {
+        "color": "0x80448aff",
+        "strokeWidth": 0.5,
+        "style": "stroke",
+        "blendMode": "srcOver",
+        "isAntiAlias": true
+      }
+    },
+    
+    "drawLine": {
+      "_comment": "默认绘制线的样式配置",
+      "type": "solid",
+      "dashes": [5.0, 3.0],
+      "paint": {
+        "color": "0xff448aff",
+        "_comment_drawColor": "绘制线默认颜色 - 蓝色系",
+        "strokeWidth": 1.0,
+        "style": "stroke",
+        "blendMode": "srcOver",
+        "isAntiAlias": true
+      }
+    },
+    
+    "drawPoint": {
+      "_comment": "绘制点的样式配置",
+      "radius": 8.0,
+      "width": 0.0,
+      "color": "0xffffffff",
+      "borderWidth": 1.0,
+      "borderColor": "0xff448aff"
+    },
+    
+    "ticksText": {
+      "_comment": "绘制工具刻度文本配置",
+      "style": {
+        "color": "0xffffffff",
+        "fontSize": 10.0,
+        "fontFamily": null,
+        "fontStyle": "normal",
+        "height": 1.0,
+        "fontWeight": "w400",
+        "textBaseline": "ideographic",
+        "decoration": "none",
+        "decorationColor": null,
+        "decorationStyle": "solid"
+      },
+      "textAlign": "start",
+      "padding": {
+        "horizontal": 2.0,
+        "vertical": 2.0
+      },
+      "border": {
+        "color": "0xff448aff",
+        "width": 0.5,
+        "style": "solid"
+      },
+      "borderRadius": {
+        "topLeft": 2.0,
+        "topRight": 2.0,
+        "bottomLeft": 2.0,
+        "bottomRight": 2.0
+      }
+    },
+    
+    "_comment_interaction": "绘制交互配置",
+    "spacing": 1.0,
+    "ticksGapBgOpacity": 0.1,
+    "_comment_ticksGap": "刻度间隙背景不透明度",
+    "hitTestMinDistance": 10.0,
+    "_comment_hitTest": "命中测试最小距离 - 点击选择的敏感度",
+    "magnetMinDistance": 10.0,
+    "_comment_magnet": "磁吸模式下的最小吸附距离",
+    
+    "magnifier": {
+      "_comment": "放大镜配置 - 精确绘制时的放大辅助工具",
+      "enable": true,
+      "margin": {
+        "horizontal": 1.0,
+        "vertical": 1.0
+      },
+      "size": {
+        "width": 80.0,
+        "height": 80.0
+      },
+      "magnificationScale": 2.0,
+      "_comment_magnification": "放大倍数",
+      "clipBehavior": "none",
+      "decorationOpactity": 1.0,
+      "decorationShadows": [
+        {
+          "_comment": "放大镜阴影效果",
+          "color": "0x20000000",
+          "offset": {
+            "dx": "2.0",
+            "dy": "2.0"
+          },
+          "blurRadius": "4.0",
+          "spreadRadius": "1.0",
+          "blurStyle": "normal"
+        }
+      ],
+      "shapeSide": {
+        "_comment": "放大镜边框样式",
+        "color": "0xff666666",
+        "width": 1.0,
+        "style": "solid"
+      }
+    }
+  },
+  "mainIndicator": {
+    "_comment": "主区指标配置 - 控制主图表区域显示的指标",
+    "padding": {
+      "horizontal": 0.0,
+      "vertical": 5.0
+    },
+    "size": {
+      "_comment": "主区域尺寸 - 会根据设备自动调整",
+      "width": 375.0,
+      "height": 300.0
+    },
+    "height": 300.0,
+    "drawBelowTipsArea": true,
+    "_comment_drawBelow": "是否在提示区域下方绘制",
+    "_comment_children": "主区指标列表现在通过独立的 flexi_kline_indicators_config.json 文件配置"
+  },
+  
+  "sub": {
+    "_comment": "副区指标配置 - 现在通过独立的 flexi_kline_indicators_config.json 文件配置",
+    "_comment_migration": "副区指标的具体配置、参数、颜色等已移至指标配置文件中"
+  },
+  
+  "_themeColors": {
+    "_comment": "主题色彩配置 - 用于统一UI色彩风格",
+    "primary": "0xff2196f3",
+    "secondary": "0xff03a9f4", 
+    "success": "0xff4caf50",
+    "warning": "0xffff9800",
+    "danger": "0xfff44336",
+    "info": "0xff00bcd4",
+    "light": "0xfff5f5f5",
+    "dark": "0xff212529",
+    "muted": "0xff6c757d"
+  },
+  
+  "_performance": {
+    "_comment": "性能优化配置建议",
+    "maxVisibleCandles": 200,
+    "preloadCandles": 50,
+    "animationDuration": 300,
+    "enableHardwareAcceleration": true,
+    "cacheEnabled": true
+  }
+}

@@ -72,6 +72,7 @@ class PriceLineDrawObject extends DrawObject {
         value,
         precision: context.curKlineData.precision,
       );
+
       final ticksText = drawParams.priceText ?? ticksTextConfig;
       final margin = drawParams.priceTextMargin;
       canvas.drawTextArea(

@@ -15,10 +15,6 @@ abstract class _$AVLIndicatorCWProxy {
 
   AVLIndicator calcParam(AVLParam calcParam);
 
-  AVLIndicator line(LineConfig line);
-
-  AVLIndicator tips(TipsConfig tips);
-
   AVLIndicator tipsPadding(EdgeInsets tipsPadding);
 
   AVLIndicator tickCount(int tickCount);
@@ -30,14 +26,12 @@ abstract class _$AVLIndicatorCWProxy {
   /// AVLIndicator(...).copyWith(id: 12, name: "My name")
   /// ````
   AVLIndicator call({
-    int? zIndex,
-    double? height,
-    EdgeInsets? padding,
-    AVLParam? calcParam,
-    LineConfig? line,
-    TipsConfig? tips,
-    EdgeInsets? tipsPadding,
-    int? tickCount,
+    int zIndex,
+    double height,
+    EdgeInsets padding,
+    AVLParam calcParam,
+    EdgeInsets tipsPadding,
+    int tickCount,
   });
 }
 
@@ -60,12 +54,6 @@ class _$AVLIndicatorCWProxyImpl implements _$AVLIndicatorCWProxy {
   AVLIndicator calcParam(AVLParam calcParam) => this(calcParam: calcParam);
 
   @override
-  AVLIndicator line(LineConfig line) => this(line: line);
-
-  @override
-  AVLIndicator tips(TipsConfig tips) => this(tips: tips);
-
-  @override
   AVLIndicator tipsPadding(EdgeInsets tipsPadding) =>
       this(tipsPadding: tipsPadding);
 
@@ -85,42 +73,31 @@ class _$AVLIndicatorCWProxyImpl implements _$AVLIndicatorCWProxy {
     Object? height = const $CopyWithPlaceholder(),
     Object? padding = const $CopyWithPlaceholder(),
     Object? calcParam = const $CopyWithPlaceholder(),
-    Object? line = const $CopyWithPlaceholder(),
-    Object? tips = const $CopyWithPlaceholder(),
     Object? tipsPadding = const $CopyWithPlaceholder(),
     Object? tickCount = const $CopyWithPlaceholder(),
   }) {
     return AVLIndicator(
-      zIndex: zIndex == const $CopyWithPlaceholder() || zIndex == null
+      zIndex: zIndex == const $CopyWithPlaceholder()
           ? _value.zIndex
           // ignore: cast_nullable_to_non_nullable
           : zIndex as int,
-      height: height == const $CopyWithPlaceholder() || height == null
+      height: height == const $CopyWithPlaceholder()
           ? _value.height
           // ignore: cast_nullable_to_non_nullable
           : height as double,
-      padding: padding == const $CopyWithPlaceholder() || padding == null
+      padding: padding == const $CopyWithPlaceholder()
           ? _value.padding
           // ignore: cast_nullable_to_non_nullable
           : padding as EdgeInsets,
-      calcParam: calcParam == const $CopyWithPlaceholder() || calcParam == null
+      calcParam: calcParam == const $CopyWithPlaceholder()
           ? _value.calcParam
           // ignore: cast_nullable_to_non_nullable
           : calcParam as AVLParam,
-      line: line == const $CopyWithPlaceholder() || line == null
-          ? _value.line
+      tipsPadding: tipsPadding == const $CopyWithPlaceholder()
+          ? _value.tipsPadding
           // ignore: cast_nullable_to_non_nullable
-          : line as LineConfig,
-      tips: tips == const $CopyWithPlaceholder() || tips == null
-          ? _value.tips
-          // ignore: cast_nullable_to_non_nullable
-          : tips as TipsConfig,
-      tipsPadding:
-          tipsPadding == const $CopyWithPlaceholder() || tipsPadding == null
-              ? _value.tipsPadding
-              // ignore: cast_nullable_to_non_nullable
-              : tipsPadding as EdgeInsets,
-      tickCount: tickCount == const $CopyWithPlaceholder() || tickCount == null
+          : tipsPadding as EdgeInsets,
+      tickCount: tickCount == const $CopyWithPlaceholder()
           ? _value.tickCount
           // ignore: cast_nullable_to_non_nullable
           : tickCount as int,
@@ -145,9 +122,9 @@ AVLIndicator _$AVLIndicatorFromJson(Map<String, dynamic> json) => AVLIndicator(
           ? defaultMainIndicatorPadding
           : const EdgeInsetsConverter()
               .fromJson(json['padding'] as Map<String, dynamic>),
-      calcParam: AVLParam.fromJson(json['calcParam'] as Map<String, dynamic>),
-      line: LineConfig.fromJson(json['line'] as Map<String, dynamic>),
-      tips: TipsConfig.fromJson(json['tips'] as Map<String, dynamic>),
+      calcParam: json['calcParam'] == null
+          ? const AVLParam()
+          : AVLParam.fromJson(json['calcParam'] as Map<String, dynamic>),
       tipsPadding: const EdgeInsetsConverter()
           .fromJson(json['tipsPadding'] as Map<String, dynamic>),
       tickCount: (json['tickCount'] as num?)?.toInt() ?? defaultSubTickCount,
@@ -159,8 +136,6 @@ Map<String, dynamic> _$AVLIndicatorToJson(AVLIndicator instance) =>
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'zIndex': instance.zIndex,
       'calcParam': instance.calcParam.toJson(),
-      'line': instance.line.toJson(),
-      'tips': instance.tips.toJson(),
       'tipsPadding': const EdgeInsetsConverter().toJson(instance.tipsPadding),
       'tickCount': instance.tickCount,
     };

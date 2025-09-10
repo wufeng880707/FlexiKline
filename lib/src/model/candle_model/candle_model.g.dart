@@ -32,15 +32,15 @@ abstract class _$CandleModelCWProxy {
   /// CandleModel(...).copyWith(id: 12, name: "My name")
   /// ````
   CandleModel call({
-    int? ts,
-    Decimal? o,
-    Decimal? h,
-    Decimal? l,
-    Decimal? c,
-    Decimal? v,
+    int ts,
+    Decimal o,
+    Decimal h,
+    Decimal l,
+    Decimal c,
+    Decimal v,
     Decimal? vc,
     Decimal? vcq,
-    String? confirm,
+    String confirm,
   });
 }
 
@@ -97,27 +97,27 @@ class _$CandleModelCWProxyImpl implements _$CandleModelCWProxy {
     Object? confirm = const $CopyWithPlaceholder(),
   }) {
     return CandleModel(
-      ts: ts == const $CopyWithPlaceholder() || ts == null
+      ts: ts == const $CopyWithPlaceholder()
           ? _value.ts
           // ignore: cast_nullable_to_non_nullable
           : ts as int,
-      o: o == const $CopyWithPlaceholder() || o == null
+      o: o == const $CopyWithPlaceholder()
           ? _value.o
           // ignore: cast_nullable_to_non_nullable
           : o as Decimal,
-      h: h == const $CopyWithPlaceholder() || h == null
+      h: h == const $CopyWithPlaceholder()
           ? _value.h
           // ignore: cast_nullable_to_non_nullable
           : h as Decimal,
-      l: l == const $CopyWithPlaceholder() || l == null
+      l: l == const $CopyWithPlaceholder()
           ? _value.l
           // ignore: cast_nullable_to_non_nullable
           : l as Decimal,
-      c: c == const $CopyWithPlaceholder() || c == null
+      c: c == const $CopyWithPlaceholder()
           ? _value.c
           // ignore: cast_nullable_to_non_nullable
           : c as Decimal,
-      v: v == const $CopyWithPlaceholder() || v == null
+      v: v == const $CopyWithPlaceholder()
           ? _value.v
           // ignore: cast_nullable_to_non_nullable
           : v as Decimal,
@@ -129,7 +129,7 @@ class _$CandleModelCWProxyImpl implements _$CandleModelCWProxy {
           ? _value.vcq
           // ignore: cast_nullable_to_non_nullable
           : vcq as Decimal?,
-      confirm: confirm == const $CopyWithPlaceholder() || confirm == null
+      confirm: confirm == const $CopyWithPlaceholder()
           ? _value.confirm
           // ignore: cast_nullable_to_non_nullable
           : confirm as String,
@@ -148,7 +148,7 @@ extension $CandleModelCopyWith on CandleModel {
 // **************************************************************************
 
 CandleModel _$CandleModelFromJson(Map<String, dynamic> json) => CandleModel(
-      ts: valueToInt(json['ts']),
+      ts: (json['ts'] as num).toInt(),
       o: const DecimalConverter().fromJson(json['o']),
       h: const DecimalConverter().fromJson(json['h']),
       l: const DecimalConverter().fromJson(json['l']),
@@ -161,7 +161,7 @@ CandleModel _$CandleModelFromJson(Map<String, dynamic> json) => CandleModel(
 
 Map<String, dynamic> _$CandleModelToJson(CandleModel instance) =>
     <String, dynamic>{
-      'ts': intToString(instance.ts),
+      'ts': instance.ts,
       if (const DecimalConverter().toJson(instance.o) case final value?)
         'o': value,
       if (const DecimalConverter().toJson(instance.h) case final value?)

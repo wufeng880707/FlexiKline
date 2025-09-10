@@ -12,112 +12,116 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library kline_data;
+library;
 
-import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/foundation.dart';
 
-part 'base_data.dart';
+import '../constant.dart';
+import '../extension/export.dart';
+import '../framework/chart/indicator.dart';
+import '../framework/logger.dart';
+import '../model/export.dart';
 
-class KlineData extends BaseData {
+part 'base_data.dart';
+part 'candle_req.dart';
+part 'candle_list.dart';
+part 'paint_draw.dart';
+part 'indicator.dart';
+
+class KlineData extends BaseData with CandleReqData, CandleListData, PaintDrawData, IndicatorData {
   KlineData(
-    super.req, {
+    super.req,
+    super.indicatorCount, {
     super.list,
+    super.computeMode,
     super.logger,
   });
 
-  String get instId => req.instId;
-  int get precision => req.precision;
-  String get key => req.key;
-  String get reqKey => req.reqKey;
-  TimeBarConfig? get timeBar => req.timeBar;
-  bool get invalid => req.instId.isEmpty;
-
-  CandleReq updateRequest({RequestState state = RequestState.none}) {
-    req = req.copyWith(
-      after: list.lastOrNull?.ts,
-      before: list.firstOrNull?.ts,
-      state: state,
-    );
-    return req;
-  }
-
-  CandleReq getLoadMoreRequest() {
-    return req.copyWith(
-      after: list.lastOrNull?.ts,
-      before: null,
-    );
-  }
+  final FlexiStopwatch stopwatch = FlexiStopwatch();
 
   static final KlineData empty = KlineData(
-    const CandleReq(
-        instId: "",
-        timeBar: TimeBarConfig(
-            key: '',
-            bar: '',
-            milliseconds: 0,
-            multiplier: 0,
-            timespan: Timespan.minute,
-            showName: '')),
+    const CandleReq(instId: "", bar: ""),
+    0,
     list: List.empty(growable: false),
   );
 
   /// 预计算Kline指标数据
-  /// [data] 待计算的Kline蜡烛数据
   /// [indicatorCount]指标图个数
   /// [newList] 新增的蜡烛数据
-  /// [computeMode] 计算模式
-  /// [paintObjects] 待计算的指标集合
+  /// [subPaintObjects] 待计算的指标集合
   /// [reset] 是否重置; 如果有, 忽略之前的计算结果.
-  static Future<KlineData> precomputeKlineData(
-    KlineData data, {
-    required int indicatorCount,
+  Future<void> precomputeKlineData({
     required List<CandleModel> newList,
-    required ComputeMode computeMode,
-    required List<PaintObject> paintObjects,
+    required Iterable<PaintObject> mainPaintObjects,
+    required Iterable<PaintObject> subPaintObjects,
     bool reset = false,
   }) async {
-    DateTime beginTime = DateTime.now();
-    data.logd('WatchRun precomputeKlineData Begin:$beginTime');
-    final stopwatch = Stopwatch();
-
-    ///1. 合并[newList]到[data]中
-    Range? range = await stopwatch.runAsync(
-      () => data.mergeCandleList(newList),
-      debugLabel: 'mergeCandleList\t${newList.length}|$reset',
-    );
-    data.updateRequest(); // 更新当前data的[CandleReq]的请求边界[before, after]
-
-    ///2. 确认要计算的范围.
-    range ??= Range.empty;
-    if (reset) range = Range(0, data.length);
-
-    ///3. 根据计算模式初始化基础数据
-    await stopwatch.runAsync(
-      () => data.initBasicData(
-        computeMode,
-        range!,
-        indicatorCount,
-        reset: reset,
-      ),
-      debugLabel: 'initBasicData\t$range|$reset',
-    );
-
-    ///4. 预计算指标数据
-    for (final object in paintObjects) {
-      await stopwatch.runAsync(
-        () => object.precompute(
-          range!,
-          reset: reset,
-        ),
-        debugLabel: 'precompute${object.key}\t$range|$reset',
-      );
+    if (stopwatch.isRunning) {
+      logd('precomputeKlineData is running, waitingData.size:${_waitingData.length}');
+      _waitingData.add(newList);
+      return;
     }
 
-    final endTime = DateTime.now();
-    final spent = endTime.difference(beginTime).inMicroseconds;
-    data.logd('WatchRun precomputeKlineData End:$endTime, spent:$spentμs');
-    return data;
+    try {
+      stopwatch
+        ..reset()
+        ..start();
+
+      /// 1. 合并数据
+      final data = newList.isEmpty ? _waitingData : [newList, ..._waitingData];
+      Range? range = stopwatch.run(
+        () => mergeCandleData(data),
+        label: '$logTag-mergeCandleData-${data.length}',
+      );
+      _waitingData.clear();
+
+      /// 2. 确认要计算的范围.
+      if (reset) range = allRange;
+      if (range == null || range.isEmpty) {
+        // 没有合并新的数据, 且不是重置, 则不计算
+        logd('precomputeKlineData There is no data($range) to be calculated!');
+        return;
+      } else if (range.start < 0 || range.end >= length || range.length == length) {
+        // 如果不是首根更新, 或者是加载更多(尾部)数据, 指标计算结果需要重置.
+        range = allRange;
+        reset = true;
+      }
+
+      /// 3. 计算指标数据
+      logd('precomputeKlineData Start Main $reset-$range');
+      for (final object in mainPaintObjects) {
+        await stopwatch.exec(
+          () => object.precompute(
+            range!,
+            reset: reset,
+          ),
+          label: '$logTag-Main-precompute:${object.key}-$range',
+        );
+      }
+
+      logd('precomputeKlineData Start Sub $reset-$range');
+      for (final object in subPaintObjects) {
+        await stopwatch.exec(
+          () => object.precompute(
+            range!,
+            reset: reset,
+          ),
+          label: '$logTag-Sub-precompute:${object.key}-$range',
+        );
+      }
+      logd('precomputeKlineData End $reset-$range');
+    } catch (e, stack) {
+      loge('precomputeKlineData catch an exception!!!', error: e, stackTrace: stack);
+    } finally {
+      stopwatch.stop();
+      if (_waitingData.isNotEmpty) {
+        precomputeKlineData(
+          newList: [],
+          mainPaintObjects: mainPaintObjects,
+          subPaintObjects: subPaintObjects,
+        );
+      }
+    }
   }
 }
 
@@ -129,7 +133,6 @@ class KlineData extends BaseData {
 //   KlineData data, {
 //   required int indicatorCount,
 //   required List<CandleModel> newList,
-//   required ComputeMode computeMode,
 //   required Map<IIndicatorKey, dynamic> calcParams,
 //   bool reset = false,
 //   String? debugLabel,
@@ -150,13 +153,12 @@ class KlineData extends BaseData {
 //           params[0],
 //           indicatorCount: params[1],
 //           newList: params[2],
-//           computeMode: params[3],
-//           calcParams: params[4],
-//           reset: params[5],
+//           calcParams: params[3],
+//           reset: params[4],
 //         );
 //         return newData;
 //       },
-//       [data, indicatorCount, newList, computeMode, calcParams, reset],
+//       [data, indicatorCount, newList, calcParams, reset],
 //       debugLabel: debugLabel,
 //     );
 //     logger?.logd('compute End:${DateTime.now()}');
@@ -171,3 +173,61 @@ class KlineData extends BaseData {
 //   }
 //   return data;
 // }
+
+/// 合并[oldList]和[newList]为一个新数组
+/// 约定: [newList]和[oldList]都是按时间倒序排好的, 即最近/新的蜡烛数据以数组0开始依次存放.
+/// 去重: 如两个数组拼接过程中发现重复的, 要去掉[oldList]中重复的元素.
+(List<CandleModel>, Range) combineCandleList(
+  List<CandleModel> oldList,
+  List<CandleModel> newList, {
+  ILogger? logger,
+}) {
+  if (newList.isEmpty) {
+    logger?.logw("combineCandleList newList is empty!");
+    return (oldList, Range.empty);
+  }
+  if (oldList.isEmpty) {
+    logger?.logw("combineCandleList Use newList directly!");
+    return (List.of(newList), Range(0, newList.length));
+  }
+
+  if (oldList.first.ts <= newList.first.ts) {
+    int start = 0;
+    while (start < oldList.length && oldList[start].ts >= newList.last.ts) {
+      start++;
+    }
+    final curIterable = oldList.getRange(start, oldList.length);
+    final mergedList = List.of(newList, growable: true)..addAll(curIterable);
+    return (
+      mergedList,
+      Range(0, newList.length),
+    );
+  } else if (oldList.last.ts >= newList.last.ts) {
+    int end = oldList.length - 1;
+    while (end >= 0 && oldList[end].ts <= newList.first.ts) {
+      end--;
+    }
+    final curIterable = oldList.getRange(0, end + 1);
+    final mergedlist = List.of(curIterable, growable: true)..addAll(newList);
+    return (
+      mergedlist,
+      Range(end + 1, mergedlist.length),
+    );
+  }
+  return (oldList, Range.empty);
+}
+
+/// 去重
+List<CandleModel> removeDuplicate(List<CandleModel> list) {
+  int n = list.length;
+  int fast = 1;
+  int slow = 1;
+  while (fast < n) {
+    if (list[fast].ts != list[fast - 1].ts) {
+      list[slow] = list[fast];
+      ++slow;
+    }
+    ++fast;
+  }
+  return list.sublist(0, slow);
+}

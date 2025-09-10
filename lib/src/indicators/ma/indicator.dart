@@ -16,34 +16,27 @@ part of 'ma.dart';
 
 /// MA 移动平均指标线
 @CopyWith()
-@FlexiIndicatorSerializable
 class MAIndicator extends PaintObjectIndicator implements IPrecomputable {
   MAIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
-    required this.calcParams,
+    this.calcParam = const MaParam(),
     required this.tipsPadding,
-    required this.lineWidth,
   }) : super(key: const FlexiIndicatorKey('ma'));
 
+  /// MA 参数（包含所有配置）
   @override
-  final List<MaParam> calcParams;
+  final MaParam calcParam;
+  
+  /// Tips 相关参数（仅用于显示）
   final EdgeInsets tipsPadding;
-  final double lineWidth;
 
   @override
-  PaintObjectBox createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+  PaintObjectBox createPaintObject(IPaintContext context) {
     return MAPaintObject(context: context, indicator: this);
   }
 
-  factory MAIndicator.fromJson(Map<String, dynamic> json) => _$MAIndicatorFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() => _$MAIndicatorToJson(this);
 }
 
 class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> with MaDataMixin {
@@ -57,7 +50,7 @@ class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> with MaData
     if (!klineData.canPaintChart) return null;
 
     return calcuMaMinmax(
-      indicator.calcParams,
+      indicator.calcParam,
       start: start,
       end: end,
     );
@@ -76,33 +69,52 @@ class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> with MaData
   /// 绘制MA指标线
   void paintMALine(Canvas canvas, Size size) {
     if (!klineData.canPaintChart) return;
-    if (indicator.calcParams.isEmpty) return;
+    final enabledLines = indicator.calcParam.enabledLines;
+    if (enabledLines.isEmpty) return;
     final list = klineData.list;
     int start = klineData.start;
     int end = (klineData.end + 1).clamp(start, list.length); // 多绘制一根蜡烛
 
     final offset = startCandleDx - candleWidthHalf;
-    for (int j = 0; j < indicator.calcParams.length; j++) {
+    for (int j = 0; j < enabledLines.length; j++) {
+      final lineConfig = enabledLines[j];
+      if (lineConfig.period <= 0) continue; // 跳过无效周期
       BagNum? val;
       final List<Offset> points = [];
       for (int i = start; i < end; i++) {
         val = list[i].getMaList(dataIndex)?.getItem(j);
         if (val == null) continue;
-        points.add(Offset(
+        final point = Offset(
           offset - (i - start) * candleActualWidth,
           valueToDy(val, correct: false),
-        ));
+        );
+        points.add(point);
+        
+        // 📍 绘制节点（如果配置了 pointRadius > 0）
+        if (indicator.calcParam.display.pointRadius > 0) {
+          canvas.drawCircle(
+            point,
+            indicator.calcParam.display.pointRadius,
+            Paint()
+              ..color = lineConfig.color
+              ..style = PaintingStyle.fill,
+          );
+        }
       }
 
-      canvas.drawPath(
-        Path()..addPolygon(points, false),
-        Paint()
-          ..color = indicator.calcParams[j].tips.color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = indicator.lineWidth,
-      );
+      // 📈 绘制线条
+      if (points.isNotEmpty) {
+        canvas.drawPath(
+          Path()..addPolygon(points, false),
+          Paint()
+            ..color = lineConfig.color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = lineConfig.width,
+        );
+      }
     }
   }
+
 
   /// MA 绘制tips区域
   @override
@@ -116,29 +128,38 @@ class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> with MaData
     if (model == null || !model.isValidMaList(dataIndex)) return null;
 
     final children = <TextSpan>[];
-    BagNum? val;
+    final enabledLines = indicator.calcParam.enabledLines;
     final maList = model.getMaList(dataIndex)!;
-    for (int i = 0; i < maList.length; i++) {
-      val = maList.getItem(i);
+    
+    for (int i = 0; i < enabledLines.length && i < maList.length; i++) {
+      final lineConfig = enabledLines[i];
+      if (lineConfig.period <= 0) continue; // 跳过无效周期
+      
+      final val = maList.getItem(i);
       if (val == null) continue;
-      final param = indicator.calcParams.getItem(i);
-      if (param == null) continue;
 
+      // 📊 根据配置决定显示内容
+      final displayPeriod = indicator.calcParam.display.showPeriodInTips;
+      final prefix = displayPeriod ? 'MA${lineConfig.period}:' : 'MA:';
+      
       final text = formatNumber(
         val.toDecimal(),
-        precision: param.tips.getP(klineData.precision),
+        precision: indicator.calcParam.display.precision,
         cutInvalidZero: true,
-        prefix: param.tips.label,
+        prefix: prefix,
         suffix: '  ',
       );
       children.add(TextSpan(
         text: text,
-        style: param.tips.style,
+        style: TextStyle(color: lineConfig.color),
       ));
     }
-    if (children.isNotEmpty) {
-      tipsRect ??= drawableRect;
-      return canvas.drawText(
+    
+    // 📋 如果没有任何内容要显示，返回null
+    if (children.isEmpty) return null;
+    
+    tipsRect ??= drawableRect;
+    return canvas.drawText(
         offset: tipsRect.topLeft,
         textSpan: TextSpan(children: children),
         drawDirection: DrawDirection.ltr,
@@ -147,7 +168,5 @@ class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> with MaData
         padding: indicator.tipsPadding,
         maxLines: 1,
       );
-    }
-    return null;
   }
 }

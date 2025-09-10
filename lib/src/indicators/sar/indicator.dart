@@ -25,42 +25,27 @@ class SARIndicator extends PaintObjectIndicator implements IPrecomputable {
     required super.height,
     super.padding = defaultMainIndicatorPadding,
 
-    /// SAR计算参数
-    this.calcParam = const SARParam(startAf: 0.02, step: 0.02, maxAf: 0.2),
+    /// SAR计算参数 - 包含所有配置
+    this.calcParam = const SARParam(),
 
-    /// 绘制相关参数
-    this.radius,
-    this.useCandleColor = true,
-    required this.paint,
     required this.tipsPadding,
-    required this.tipsStyle,
     this.tickCount = defaultSubTickCount,
   }) : super(key: const FlexiIndicatorKey('sar'));
 
-  /// SAR计算参数
+  /// SAR计算参数 - 包含所有配置
   @override
   final SARParam calcParam;
 
-  /// 圆的半径.
-  /// 注: 如果为空, 将取蜡烛宽度的1/3, 随着缩放操作自动变化大小.
-  final double? radius;
-
-  /// 绘制SAR的画笔.
-  final PaintConfig paint;
-
-  /// SAR画笔颜色是否使用蜡烛色, 如果设置为true, 则[paint]中的color配置无效.
-  final bool useCandleColor;
+  /// Tips 布局参数
   final EdgeInsets tipsPadding;
-  final TextStyle tipsStyle;
 
   /// YAxis刻度数量(注: 仅在key为subSarKey时有用)
   final int tickCount;
 
   @override
   PaintObjectBox createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+    IPaintContext context,
+  ) {
     return SARPaintObject(context: context, indicator: this);
   }
 
@@ -71,7 +56,7 @@ class SARIndicator extends PaintObjectIndicator implements IPrecomputable {
 }
 
 class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
-    with SarDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin, PaintSimpleCandleMixin {
+    with SarDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   SARPaintObject({
     required super.context,
     required super.indicator,
@@ -116,12 +101,11 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String fromatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(BagNum value, {required int precision}) {
     return formatPrice(
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showThousands: true,
     );
   }
 
@@ -144,7 +128,6 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showThousands: true,
     );
   }
 
@@ -156,13 +139,18 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
     int start = klineData.start;
     int end = (klineData.end + 1).clamp(start, len); // 多绘制一根蜡烛
 
-    if (isInSub) {
-      // 绘制简易蜡烛
-      paintSimpleCandleChart(canvas, size);
-    }
+    // 注：如果需要在子图中绘制简易蜡烛，可以在这里添加逻辑
 
-    Paint paint = indicator.paint.paint;
-    final radius = indicator.radius ?? candleActualWidth / 3;
+    // 使用新的配置结构
+    final appearance = indicator.calcParam.appearance;
+    final paint = Paint()..style = PaintingStyle.fill;
+    
+    // 计算半径：使用配置的半径，但限制在最小和最大值之间
+    final configRadius = appearance.pointRadius;
+    final radius = configRadius.clamp(
+      appearance.minRadius,
+      appearance.maxRadius,
+    );
 
     final offset = startCandleDx - candleWidthHalf;
     CandleModel m;
@@ -170,20 +158,33 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
       m = list[i];
       if (!m.isValidSarData) continue;
       final dx = offset - (i - start) * candleActualWidth;
-      if (indicator.useCandleColor) {
+      
+      // 根据配置决定使用涨跌色还是固定颜色
+      if (appearance.useTrendColor) {
         if (m.sarFlag! > 0) {
-          paint.color = settingConfig.longColor;
+          paint.color = longColor;
         } else if (m.sarFlag! < 0) {
-          paint.color = settingConfig.shortColor;
+          paint.color = shortColor;
         } else {
-          paint.color = settingConfig.textColor;
+          paint.color = theme.textColor;
         }
+      } else {
+        paint.color = appearance.color;
       }
-      canvas.drawCircle(
-        Offset(dx, valueToDy(m.sar!, correct: false)),
-        radius,
-        paint,
-      );
+      
+      final center = Offset(dx, valueToDy(m.sar!, correct: false));
+      
+      // 绘制 SAR 点
+      canvas.drawCircle(center, radius, paint);
+      
+      // 如果有边框宽度，绘制边框
+      if (appearance.borderWidth > 0) {
+        final borderPaint = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = appearance.borderWidth
+          ..color = paint.color.withOpacity(0.8);
+        canvas.drawCircle(center, radius, borderPaint);
+      }
     }
   }
 
@@ -197,19 +198,31 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
     model ??= offsetToCandle(offset);
     if (model == null || !model.isValidSarData) return null;
 
-    final text = formatNumber(
+    final display = indicator.calcParam.display;
+    final periods = indicator.calcParam.periods;
+    
+    // 构建 tips 文本
+    String text;
+    if (display.showPeriodInTips) {
+      text = 'SAR(${periods.start.toStringAsFixed(2)}-${periods.max.toStringAsFixed(2)}): ';
+    } else {
+      text = 'SAR: ';
+    }
+    
+    text += formatNumber(
       model.sar?.toDecimal(),
-      precision: klineData.precision,
-      showThousands: true,
+      precision: display.precision,
       cutInvalidZero: true,
-      prefix: 'SAR: ',
     );
 
     tipsRect ??= drawableRect;
     return canvas.drawText(
       offset: tipsRect.topLeft,
       text: text,
-      style: indicator.tipsStyle,
+      style: TextStyle(
+        color: theme.textColor,
+        fontSize: 12,
+      ),
       drawDirection: DrawDirection.ltr,
       drawableRect: tipsRect,
       textAlign: TextAlign.left,

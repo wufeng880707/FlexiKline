@@ -12,25 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library overlay;
+library;
 
 import 'dart:collection';
-import 'dart:ui';
-
-import 'package:flutter/foundation.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
+import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../config/draw_params/draw_params.dart';
 import '../../config/export.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
 import '../../data/kline_data.dart';
-import '../../draw_objects/export.dart';
 import '../../extension/export.dart';
 import '../../model/export.dart';
-import '../../utils/date_time.dart';
-import '../../utils/decimal_format_util.dart';
-import '../../utils/vector_util.dart';
 import '../collection/sortable_hash_set.dart';
 import '../configuration.dart';
 import '../logger.dart';
@@ -38,8 +32,8 @@ import '../serializers.dart';
 
 part 'common.dart';
 part 'draw_state.dart';
-part 'manager.dart';
 part 'model.dart';
+part 'manager.dart';
 part 'object.dart';
 part 'object_helper.dart';
 part 'overlay.g.dart';

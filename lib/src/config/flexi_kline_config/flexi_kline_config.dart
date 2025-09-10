@@ -12,59 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:flutter/foundation.dart';
-
 import '../../framework/export.dart';
 import '../cross_config/cross_config.dart';
 import '../draw_config/draw_config.dart';
 import '../gesture_config/gesture_config.dart';
 import '../grid_config/grid_config.dart';
 import '../setting_config/setting_config.dart';
-import '../tooltip_config/tooltip_config.dart';
 
 part 'flexi_kline_config.g.dart';
 
 @FlexiConfigSerializable
 class FlexiKlineConfig {
   FlexiKlineConfig({
-    required this.key,
     required this.grid,
     required this.setting,
     required this.gesture,
     required this.cross,
     required this.draw,
-    required this.tooltip,
     required this.mainIndicator,
     this.sub = const <IIndicatorKey>{},
-    // this.trade = const <IIndicatorKey>{},
   });
 
-  final String key;
   GridConfig grid;
   SettingConfig setting;
   GestureConfig gesture;
   CrossConfig cross;
   DrawConfig draw;
-  TooltipConfig tooltip;
   MainPaintObjectIndicator mainIndicator;
   Set<IIndicatorKey> sub;
-  // Set<IIndicatorKey> trade;
 
-  FlexiKlineConfig clone() {
-    try {
-      return FlexiKlineConfig.fromJson(toJson());
-    } catch (e) {
-      debugPrint('FlexiKlineConfig clone failed!!!');
-    }
-    return this;
-  }
-
-  // TODO: 废弃
-  void update(FlexiKlineConfig config) {
-    sub = config.sub;
-  }
-
-  factory FlexiKlineConfig.fromJson(Map<String, dynamic> json) => _$FlexiKlineConfigFromJson(json);
+  factory FlexiKlineConfig.fromJson(Map<String, dynamic> json) =>
+      _$FlexiKlineConfigFromJson(json);
 
   Map<String, dynamic> toJson() {
     return _$FlexiKlineConfigToJson(this);

@@ -7,12 +7,6 @@ part of 'setting_config.dart';
 // **************************************************************************
 
 abstract class _$SettingConfigCWProxy {
-  SettingConfig pixel(double pixel);
-
-  SettingConfig indraTodayAvgColor(Color indraTodayAvgColor);
-
-  SettingConfig indraTodayCloseColor(Color indraTodayCloseColor);
-
   SettingConfig opacity(double opacity);
 
   SettingConfig loading(LoadingConfig loading);
@@ -21,10 +15,14 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig subMinHeight(double subMinHeight);
 
+  SettingConfig useCandleTicksAsZoomSlideBar(bool useCandleTicksAsZoomSlideBar);
+
   SettingConfig minPaintBlankRate(double minPaintBlankRate);
 
   SettingConfig alwaysCalculateScreenOfCandlesIfEnough(
       bool alwaysCalculateScreenOfCandlesIfEnough);
+
+  SettingConfig candleMinWidth(double candleMinWidth);
 
   SettingConfig candleMaxWidth(double candleMaxWidth);
 
@@ -40,15 +38,10 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig firstCandleInitOffset(double firstCandleInitOffset);
 
-  SettingConfig minCandleHeight(double minCandleHeight);
+  SettingConfig allowPaintExtraOutsideMainRect(
+      bool allowPaintExtraOutsideMainRect);
 
   SettingConfig showYAxisTick(bool showYAxisTick);
-
-  SettingConfig ticksText(TextAreaConfig ticksText);
-
-  SettingConfig subChartMaxCount(int subChartMaxCount);
-
-  SettingConfig tradeChartMaxCount(int tradeChartMaxCount);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SettingConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -57,27 +50,23 @@ abstract class _$SettingConfigCWProxy {
   /// SettingConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   SettingConfig call({
-    double? pixel,
-    Color? indraTodayAvgColor,
-    Color? indraTodayCloseColor,
-    double? opacity,
-    LoadingConfig? loading,
-    Size? mainMinSize,
-    double? subMinHeight,
-    double? minPaintBlankRate,
-    bool? alwaysCalculateScreenOfCandlesIfEnough,
-    double? candleMaxWidth,
-    double? candleWidth,
+    double opacity,
+    LoadingConfig loading,
+    Size mainMinSize,
+    double subMinHeight,
+    bool useCandleTicksAsZoomSlideBar,
+    double minPaintBlankRate,
+    bool alwaysCalculateScreenOfCandlesIfEnough,
+    double candleMinWidth,
+    double candleMaxWidth,
+    double candleWidth,
     double? candleFixedSpacing,
-    int? candleSpacingParts,
-    double? candleHollowBarBorderWidth,
-    double? candleLineWidth,
-    double? firstCandleInitOffset,
-    double? minCandleHeight,
-    bool? showYAxisTick,
-    TextAreaConfig? ticksText,
-    int? subChartMaxCount,
-    int? tradeChartMaxCount,
+    int candleSpacingParts,
+    double candleHollowBarBorderWidth,
+    double candleLineWidth,
+    double firstCandleInitOffset,
+    bool allowPaintExtraOutsideMainRect,
+    bool showYAxisTick,
   });
 }
 
@@ -86,17 +75,6 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
   const _$SettingConfigCWProxyImpl(this._value);
 
   final SettingConfig _value;
-
-  @override
-  SettingConfig pixel(double pixel) => this(pixel: pixel);
-
-  @override
-  SettingConfig indraTodayAvgColor(Color indraTodayAvgColor) =>
-      this(indraTodayAvgColor: indraTodayAvgColor);
-
-  @override
-  SettingConfig indraTodayCloseColor(Color indraTodayCloseColor) =>
-      this(indraTodayCloseColor: indraTodayCloseColor);
 
   @override
   SettingConfig opacity(double opacity) => this(opacity: opacity);
@@ -112,6 +90,11 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
       this(subMinHeight: subMinHeight);
 
   @override
+  SettingConfig useCandleTicksAsZoomSlideBar(
+          bool useCandleTicksAsZoomSlideBar) =>
+      this(useCandleTicksAsZoomSlideBar: useCandleTicksAsZoomSlideBar);
+
+  @override
   SettingConfig minPaintBlankRate(double minPaintBlankRate) =>
       this(minPaintBlankRate: minPaintBlankRate);
 
@@ -121,6 +104,10 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
       this(
           alwaysCalculateScreenOfCandlesIfEnough:
               alwaysCalculateScreenOfCandlesIfEnough);
+
+  @override
+  SettingConfig candleMinWidth(double candleMinWidth) =>
+      this(candleMinWidth: candleMinWidth);
 
   @override
   SettingConfig candleMaxWidth(double candleMaxWidth) =>
@@ -151,24 +138,13 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
       this(firstCandleInitOffset: firstCandleInitOffset);
 
   @override
-  SettingConfig minCandleHeight(double minCandleHeight) =>
-      this(minCandleHeight: minCandleHeight);
+  SettingConfig allowPaintExtraOutsideMainRect(
+          bool allowPaintExtraOutsideMainRect) =>
+      this(allowPaintExtraOutsideMainRect: allowPaintExtraOutsideMainRect);
 
   @override
   SettingConfig showYAxisTick(bool showYAxisTick) =>
       this(showYAxisTick: showYAxisTick);
-
-  @override
-  SettingConfig ticksText(TextAreaConfig ticksText) =>
-      this(ticksText: ticksText);
-
-  @override
-  SettingConfig subChartMaxCount(int subChartMaxCount) =>
-      this(subChartMaxCount: subChartMaxCount);
-
-  @override
-  SettingConfig tradeChartMaxCount(int tradeChartMaxCount) =>
-      this(tradeChartMaxCount: tradeChartMaxCount);
 
   @override
 
@@ -179,16 +155,15 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
   /// SettingConfig(...).copyWith(id: 12, name: "My name")
   /// ````
   SettingConfig call({
-    Object? pixel = const $CopyWithPlaceholder(),
-    Object? indraTodayAvgColor = const $CopyWithPlaceholder(),
-    Object? indraTodayCloseColor = const $CopyWithPlaceholder(),
     Object? opacity = const $CopyWithPlaceholder(),
     Object? loading = const $CopyWithPlaceholder(),
     Object? mainMinSize = const $CopyWithPlaceholder(),
     Object? subMinHeight = const $CopyWithPlaceholder(),
+    Object? useCandleTicksAsZoomSlideBar = const $CopyWithPlaceholder(),
     Object? minPaintBlankRate = const $CopyWithPlaceholder(),
     Object? alwaysCalculateScreenOfCandlesIfEnough =
         const $CopyWithPlaceholder(),
+    Object? candleMinWidth = const $CopyWithPlaceholder(),
     Object? candleMaxWidth = const $CopyWithPlaceholder(),
     Object? candleWidth = const $CopyWithPlaceholder(),
     Object? candleFixedSpacing = const $CopyWithPlaceholder(),
@@ -196,118 +171,83 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
     Object? candleHollowBarBorderWidth = const $CopyWithPlaceholder(),
     Object? candleLineWidth = const $CopyWithPlaceholder(),
     Object? firstCandleInitOffset = const $CopyWithPlaceholder(),
-    Object? minCandleHeight = const $CopyWithPlaceholder(),
+    Object? allowPaintExtraOutsideMainRect = const $CopyWithPlaceholder(),
     Object? showYAxisTick = const $CopyWithPlaceholder(),
-    Object? ticksText = const $CopyWithPlaceholder(),
-    Object? subChartMaxCount = const $CopyWithPlaceholder(),
-    Object? tradeChartMaxCount = const $CopyWithPlaceholder(),
   }) {
     return SettingConfig(
-      pixel: pixel == const $CopyWithPlaceholder() || pixel == null
-          ? _value.pixel
-          // ignore: cast_nullable_to_non_nullable
-          : pixel as double,
-      indraTodayAvgColor: indraTodayAvgColor == const $CopyWithPlaceholder() ||
-              indraTodayAvgColor == null
-          ? _value.indraTodayAvgColor
-          // ignore: cast_nullable_to_non_nullable
-          : indraTodayAvgColor as Color,
-      indraTodayCloseColor:
-          indraTodayCloseColor == const $CopyWithPlaceholder() ||
-                  indraTodayCloseColor == null
-              ? _value.indraTodayCloseColor
-              // ignore: cast_nullable_to_non_nullable
-              : indraTodayCloseColor as Color,
-      opacity: opacity == const $CopyWithPlaceholder() || opacity == null
+      opacity: opacity == const $CopyWithPlaceholder()
           ? _value.opacity
           // ignore: cast_nullable_to_non_nullable
           : opacity as double,
-      loading: loading == const $CopyWithPlaceholder() || loading == null
+      loading: loading == const $CopyWithPlaceholder()
           ? _value.loading
           // ignore: cast_nullable_to_non_nullable
           : loading as LoadingConfig,
-      mainMinSize:
-          mainMinSize == const $CopyWithPlaceholder() || mainMinSize == null
-              ? _value.mainMinSize
+      mainMinSize: mainMinSize == const $CopyWithPlaceholder()
+          ? _value.mainMinSize
+          // ignore: cast_nullable_to_non_nullable
+          : mainMinSize as Size,
+      subMinHeight: subMinHeight == const $CopyWithPlaceholder()
+          ? _value.subMinHeight
+          // ignore: cast_nullable_to_non_nullable
+          : subMinHeight as double,
+      useCandleTicksAsZoomSlideBar:
+          useCandleTicksAsZoomSlideBar == const $CopyWithPlaceholder()
+              ? _value.useCandleTicksAsZoomSlideBar
               // ignore: cast_nullable_to_non_nullable
-              : mainMinSize as Size,
-      subMinHeight:
-          subMinHeight == const $CopyWithPlaceholder() || subMinHeight == null
-              ? _value.subMinHeight
-              // ignore: cast_nullable_to_non_nullable
-              : subMinHeight as double,
-      minPaintBlankRate: minPaintBlankRate == const $CopyWithPlaceholder() ||
-              minPaintBlankRate == null
+              : useCandleTicksAsZoomSlideBar as bool,
+      minPaintBlankRate: minPaintBlankRate == const $CopyWithPlaceholder()
           ? _value.minPaintBlankRate
           // ignore: cast_nullable_to_non_nullable
           : minPaintBlankRate as double,
       alwaysCalculateScreenOfCandlesIfEnough:
-          alwaysCalculateScreenOfCandlesIfEnough ==
-                      const $CopyWithPlaceholder() ||
-                  alwaysCalculateScreenOfCandlesIfEnough == null
+          alwaysCalculateScreenOfCandlesIfEnough == const $CopyWithPlaceholder()
               ? _value.alwaysCalculateScreenOfCandlesIfEnough
               // ignore: cast_nullable_to_non_nullable
               : alwaysCalculateScreenOfCandlesIfEnough as bool,
-      candleMaxWidth: candleMaxWidth == const $CopyWithPlaceholder() ||
-              candleMaxWidth == null
+      candleMinWidth: candleMinWidth == const $CopyWithPlaceholder()
+          ? _value.candleMinWidth
+          // ignore: cast_nullable_to_non_nullable
+          : candleMinWidth as double,
+      candleMaxWidth: candleMaxWidth == const $CopyWithPlaceholder()
           ? _value.candleMaxWidth
           // ignore: cast_nullable_to_non_nullable
           : candleMaxWidth as double,
-      candleWidth:
-          candleWidth == const $CopyWithPlaceholder() || candleWidth == null
-              ? _value.candleWidth
-              // ignore: cast_nullable_to_non_nullable
-              : candleWidth as double,
+      candleWidth: candleWidth == const $CopyWithPlaceholder()
+          ? _value.candleWidth
+          // ignore: cast_nullable_to_non_nullable
+          : candleWidth as double,
       candleFixedSpacing: candleFixedSpacing == const $CopyWithPlaceholder()
           ? _value.candleFixedSpacing
           // ignore: cast_nullable_to_non_nullable
           : candleFixedSpacing as double?,
-      candleSpacingParts: candleSpacingParts == const $CopyWithPlaceholder() ||
-              candleSpacingParts == null
+      candleSpacingParts: candleSpacingParts == const $CopyWithPlaceholder()
           ? _value.candleSpacingParts
           // ignore: cast_nullable_to_non_nullable
           : candleSpacingParts as int,
       candleHollowBarBorderWidth:
-          candleHollowBarBorderWidth == const $CopyWithPlaceholder() ||
-                  candleHollowBarBorderWidth == null
+          candleHollowBarBorderWidth == const $CopyWithPlaceholder()
               ? _value.candleHollowBarBorderWidth
               // ignore: cast_nullable_to_non_nullable
               : candleHollowBarBorderWidth as double,
-      candleLineWidth: candleLineWidth == const $CopyWithPlaceholder() ||
-              candleLineWidth == null
+      candleLineWidth: candleLineWidth == const $CopyWithPlaceholder()
           ? _value.candleLineWidth
           // ignore: cast_nullable_to_non_nullable
           : candleLineWidth as double,
       firstCandleInitOffset:
-          firstCandleInitOffset == const $CopyWithPlaceholder() ||
-                  firstCandleInitOffset == null
+          firstCandleInitOffset == const $CopyWithPlaceholder()
               ? _value.firstCandleInitOffset
               // ignore: cast_nullable_to_non_nullable
               : firstCandleInitOffset as double,
-      minCandleHeight: minCandleHeight == const $CopyWithPlaceholder() ||
-              minCandleHeight == null
-          ? _value.minCandleHeight
-          // ignore: cast_nullable_to_non_nullable
-          : minCandleHeight as double,
-      showYAxisTick:
-          showYAxisTick == const $CopyWithPlaceholder() || showYAxisTick == null
-              ? _value.showYAxisTick
+      allowPaintExtraOutsideMainRect:
+          allowPaintExtraOutsideMainRect == const $CopyWithPlaceholder()
+              ? _value.allowPaintExtraOutsideMainRect
               // ignore: cast_nullable_to_non_nullable
-              : showYAxisTick as bool,
-      ticksText: ticksText == const $CopyWithPlaceholder() || ticksText == null
-          ? _value.ticksText
+              : allowPaintExtraOutsideMainRect as bool,
+      showYAxisTick: showYAxisTick == const $CopyWithPlaceholder()
+          ? _value.showYAxisTick
           // ignore: cast_nullable_to_non_nullable
-          : ticksText as TextAreaConfig,
-      subChartMaxCount: subChartMaxCount == const $CopyWithPlaceholder() ||
-              subChartMaxCount == null
-          ? _value.subChartMaxCount
-          // ignore: cast_nullable_to_non_nullable
-          : subChartMaxCount as int,
-      tradeChartMaxCount: tradeChartMaxCount == const $CopyWithPlaceholder() ||
-              tradeChartMaxCount == null
-          ? _value.tradeChartMaxCount
-          // ignore: cast_nullable_to_non_nullable
-          : tradeChartMaxCount as int,
+          : showYAxisTick as bool,
     );
   }
 }
@@ -324,11 +264,6 @@ extension $SettingConfigCopyWith on SettingConfig {
 
 SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
     SettingConfig(
-      pixel: (json['pixel'] as num).toDouble(),
-      indraTodayAvgColor:
-          const ColorConverter().fromJson(json['indraTodayAvgColor'] as String),
-      indraTodayCloseColor: const ColorConverter()
-          .fromJson(json['indraTodayCloseColor'] as String),
       opacity: (json['opacity'] as num?)?.toDouble() ?? 0.5,
       loading: LoadingConfig.fromJson(json['loading'] as Map<String, dynamic>),
       mainMinSize: json['mainMinSize'] == null
@@ -336,9 +271,12 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
           : const SizeConverter()
               .fromJson(json['mainMinSize'] as Map<String, dynamic>),
       subMinHeight: (json['subMinHeight'] as num?)?.toDouble() ?? 30,
+      useCandleTicksAsZoomSlideBar:
+          json['useCandleTicksAsZoomSlideBar'] as bool? ?? true,
       minPaintBlankRate: (json['minPaintBlankRate'] as num?)?.toDouble() ?? 0.5,
       alwaysCalculateScreenOfCandlesIfEnough:
           json['alwaysCalculateScreenOfCandlesIfEnough'] as bool? ?? false,
+      candleMinWidth: (json['candleMinWidth'] as num).toDouble(),
       candleMaxWidth: (json['candleMaxWidth'] as num).toDouble(),
       candleWidth: (json['candleWidth'] as num).toDouble(),
       candleFixedSpacing: (json['candleFixedSpacing'] as num?)?.toDouble(),
@@ -347,30 +285,22 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
           (json['candleHollowBarBorderWidth'] as num).toDouble(),
       candleLineWidth: (json['candleLineWidth'] as num).toDouble(),
       firstCandleInitOffset: (json['firstCandleInitOffset'] as num).toDouble(),
-      minCandleHeight: (json['minCandleHeight'] as num?)?.toDouble() ?? 1.0,
+      allowPaintExtraOutsideMainRect:
+          json['allowPaintExtraOutsideMainRect'] as bool? ?? true,
       showYAxisTick: json['showYAxisTick'] as bool? ?? true,
-      ticksText:
-          TextAreaConfig.fromJson(json['ticksText'] as Map<String, dynamic>),
-      subChartMaxCount: (json['subChartMaxCount'] as num?)?.toInt() ??
-          defaultSubChartMaxCount,
-      tradeChartMaxCount: (json['tradeChartMaxCount'] as num?)?.toInt() ??
-          defaultTradeChartMaxCount,
     );
 
 Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
     <String, dynamic>{
-      'pixel': instance.pixel,
-      'indraTodayAvgColor':
-          const ColorConverter().toJson(instance.indraTodayAvgColor),
-      'indraTodayCloseColor':
-          const ColorConverter().toJson(instance.indraTodayCloseColor),
       'opacity': instance.opacity,
       'loading': instance.loading.toJson(),
       'mainMinSize': const SizeConverter().toJson(instance.mainMinSize),
       'subMinHeight': instance.subMinHeight,
+      'useCandleTicksAsZoomSlideBar': instance.useCandleTicksAsZoomSlideBar,
       'minPaintBlankRate': instance.minPaintBlankRate,
       'alwaysCalculateScreenOfCandlesIfEnough':
           instance.alwaysCalculateScreenOfCandlesIfEnough,
+      'candleMinWidth': instance.candleMinWidth,
       'candleMaxWidth': instance.candleMaxWidth,
       'candleWidth': instance.candleWidth,
       if (instance.candleFixedSpacing case final value?)
@@ -379,9 +309,6 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
       'candleHollowBarBorderWidth': instance.candleHollowBarBorderWidth,
       'candleLineWidth': instance.candleLineWidth,
       'firstCandleInitOffset': instance.firstCandleInitOffset,
-      'minCandleHeight': instance.minCandleHeight,
+      'allowPaintExtraOutsideMainRect': instance.allowPaintExtraOutsideMainRect,
       'showYAxisTick': instance.showYAxisTick,
-      'ticksText': instance.ticksText.toJson(),
-      'subChartMaxCount': instance.subChartMaxCount,
-      'tradeChartMaxCount': instance.tradeChartMaxCount,
     };

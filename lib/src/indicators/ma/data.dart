@@ -35,13 +35,10 @@ extension on CandleModel {
     return MinMax.getMinMaxByList(getMaList(dataIndex));
   }
 
-  void cleanMaData(int dataIndex) {
-    calcuData.setData(dataIndex, null);
-  }
 }
 
 mixin MaDataMixin<T extends MAIndicator> on PaintObjectBox<T> {
-  List<MaParam> get calcParam => indicator.calcParams;
+  MaParam get calcParam => indicator.calcParam;
 
   @override
   void precompute(Range range, {bool reset = false}) {
@@ -103,19 +100,23 @@ mixin MaDataMixin<T extends MAIndicator> on PaintObjectBox<T> {
   }
 
   void calcuAndCacheMa(
-    List<MaParam> calcParams, {
+    MaParam param, {
     required int start,
     required int end,
     bool reset = false,
   }) {
-    if (klineData.isEmpty || calcParams.isEmpty) return;
-    final paramLen = calcParams.length;
+    final enabledLines = param.enabledLines;
+    if (klineData.isEmpty || enabledLines.isEmpty) return;
+    final paramLen = enabledLines.length;
     for (int i = 0; i < paramLen; i++) {
+      final lineConfig = enabledLines[i];
+      if (lineConfig.period <= 0) continue; // 跳过无效周期
+      
       _calculateMa(
-        calcParams[i].count,
+        lineConfig.period,
         paramIndex: i,
         paramLen: paramLen,
-        start: math.max(0, start - calcParams[i].count), // 补起上一次未算数据
+        start: math.max(0, start - lineConfig.period), // 补起上一次未算数据
         end: end,
       );
     }
@@ -125,25 +126,26 @@ mixin MaDataMixin<T extends MAIndicator> on PaintObjectBox<T> {
   /// 如果[start]和[end]指定了, 只计算[start] ~ [end]区间内的MA值.
   /// 否则, 从当前可视区域的[start] ~ [end]开始计算.
   MinMax? calcuMaMinmax(
-    List<MaParam> calcParams, {
+    MaParam param, {
     int? start,
     int? end,
   }) {
     start ??= klineData.start;
     end ??= klineData.end;
-    if (calcParams.isEmpty || !klineData.checkStartAndEnd(start, end)) {
+    final enabledLines = param.enabledLines;
+    if (enabledLines.isEmpty || !klineData.checkStartAndEnd(start, end)) {
       return null;
     }
 
     final len = klineData.list.length;
 
-    int minCount = MaParam.getMinCountByList(calcParams)!;
-    if (len < minCount) return null; // 数据不足，直接返回
-    end = math.min(len - minCount, end - 1);
+    int? minPeriod = param.minPeriod;
+    if (minPeriod == null || len < minPeriod) return null; // 数据不足，直接返回
+    end = math.min(len - minPeriod, end - 1);
     if (end < start) return null; // 区间非法，直接返回
 
     if (!klineData.list[end].isValidMaList(dataIndex)) {
-      calcuAndCacheMa(calcParams, start: 0, end: len);
+      calcuAndCacheMa(param, start: 0, end: len);
     }
     MinMax? minmax;
     CandleModel m;

@@ -14,7 +14,7 @@
 
 import 'package:flutter/painting.dart';
 
-extension TextStyleExt on TextStyle {
+extension FlexiKlineTextStyleExt on TextStyle {
   double? get totalHeight {
     if (height != null && fontSize != null) {
       return fontSize! * height!;

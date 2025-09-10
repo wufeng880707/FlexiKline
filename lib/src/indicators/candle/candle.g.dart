@@ -27,6 +27,20 @@ abstract class _$CandleIndicatorCWProxy {
 
   CandleIndicator countDown(TextAreaConfig countDown);
 
+  CandleIndicator chartBarStyle(ChartBarStyle chartBarStyle);
+
+  CandleIndicator chartType(ChartType chartType);
+
+  CandleIndicator zoomToMinChartType(ChartType? zoomToMinChartType);
+
+  CandleIndicator secondsChartType(ChartType? secondsChartType);
+
+  CandleIndicator longColor(Color? longColor);
+
+  CandleIndicator shortColor(Color? shortColor);
+
+  CandleIndicator lineColor(Color? lineColor);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CandleIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -34,16 +48,23 @@ abstract class _$CandleIndicatorCWProxy {
   /// CandleIndicator(...).copyWith(id: 12, name: "My name")
   /// ````
   CandleIndicator call({
-    int? zIndex,
-    double? height,
-    EdgeInsets? padding,
-    MarkConfig? high,
-    MarkConfig? low,
-    MarkConfig? last,
-    MarkConfig? latest,
-    bool? useCandleColorAsLatestBg,
-    bool? showCountDown,
-    TextAreaConfig? countDown,
+    int zIndex,
+    double height,
+    EdgeInsets padding,
+    MarkConfig high,
+    MarkConfig low,
+    MarkConfig last,
+    MarkConfig latest,
+    bool useCandleColorAsLatestBg,
+    bool showCountDown,
+    TextAreaConfig countDown,
+    ChartBarStyle chartBarStyle,
+    ChartType chartType,
+    ChartType? zoomToMinChartType,
+    ChartType? secondsChartType,
+    Color? longColor,
+    Color? shortColor,
+    Color? lineColor,
   });
 }
 
@@ -87,6 +108,30 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
       this(countDown: countDown);
 
   @override
+  CandleIndicator chartBarStyle(ChartBarStyle chartBarStyle) =>
+      this(chartBarStyle: chartBarStyle);
+
+  @override
+  CandleIndicator chartType(ChartType chartType) => this(chartType: chartType);
+
+  @override
+  CandleIndicator zoomToMinChartType(ChartType? zoomToMinChartType) =>
+      this(zoomToMinChartType: zoomToMinChartType);
+
+  @override
+  CandleIndicator secondsChartType(ChartType? secondsChartType) =>
+      this(secondsChartType: secondsChartType);
+
+  @override
+  CandleIndicator longColor(Color? longColor) => this(longColor: longColor);
+
+  @override
+  CandleIndicator shortColor(Color? shortColor) => this(shortColor: shortColor);
+
+  @override
+  CandleIndicator lineColor(Color? lineColor) => this(lineColor: lineColor);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CandleIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -105,51 +150,84 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
     Object? useCandleColorAsLatestBg = const $CopyWithPlaceholder(),
     Object? showCountDown = const $CopyWithPlaceholder(),
     Object? countDown = const $CopyWithPlaceholder(),
+    Object? chartBarStyle = const $CopyWithPlaceholder(),
+    Object? chartType = const $CopyWithPlaceholder(),
+    Object? zoomToMinChartType = const $CopyWithPlaceholder(),
+    Object? secondsChartType = const $CopyWithPlaceholder(),
+    Object? longColor = const $CopyWithPlaceholder(),
+    Object? shortColor = const $CopyWithPlaceholder(),
+    Object? lineColor = const $CopyWithPlaceholder(),
   }) {
     return CandleIndicator(
-      zIndex: zIndex == const $CopyWithPlaceholder() || zIndex == null
+      zIndex: zIndex == const $CopyWithPlaceholder()
           ? _value.zIndex
           // ignore: cast_nullable_to_non_nullable
           : zIndex as int,
-      height: height == const $CopyWithPlaceholder() || height == null
+      height: height == const $CopyWithPlaceholder()
           ? _value.height
           // ignore: cast_nullable_to_non_nullable
           : height as double,
-      padding: padding == const $CopyWithPlaceholder() || padding == null
+      padding: padding == const $CopyWithPlaceholder()
           ? _value.padding
           // ignore: cast_nullable_to_non_nullable
           : padding as EdgeInsets,
-      high: high == const $CopyWithPlaceholder() || high == null
+      high: high == const $CopyWithPlaceholder()
           ? _value.high
           // ignore: cast_nullable_to_non_nullable
           : high as MarkConfig,
-      low: low == const $CopyWithPlaceholder() || low == null
+      low: low == const $CopyWithPlaceholder()
           ? _value.low
           // ignore: cast_nullable_to_non_nullable
           : low as MarkConfig,
-      last: last == const $CopyWithPlaceholder() || last == null
+      last: last == const $CopyWithPlaceholder()
           ? _value.last
           // ignore: cast_nullable_to_non_nullable
           : last as MarkConfig,
-      latest: latest == const $CopyWithPlaceholder() || latest == null
+      latest: latest == const $CopyWithPlaceholder()
           ? _value.latest
           // ignore: cast_nullable_to_non_nullable
           : latest as MarkConfig,
       useCandleColorAsLatestBg:
-          useCandleColorAsLatestBg == const $CopyWithPlaceholder() ||
-                  useCandleColorAsLatestBg == null
+          useCandleColorAsLatestBg == const $CopyWithPlaceholder()
               ? _value.useCandleColorAsLatestBg
               // ignore: cast_nullable_to_non_nullable
               : useCandleColorAsLatestBg as bool,
-      showCountDown:
-          showCountDown == const $CopyWithPlaceholder() || showCountDown == null
-              ? _value.showCountDown
-              // ignore: cast_nullable_to_non_nullable
-              : showCountDown as bool,
-      countDown: countDown == const $CopyWithPlaceholder() || countDown == null
+      showCountDown: showCountDown == const $CopyWithPlaceholder()
+          ? _value.showCountDown
+          // ignore: cast_nullable_to_non_nullable
+          : showCountDown as bool,
+      countDown: countDown == const $CopyWithPlaceholder()
           ? _value.countDown
           // ignore: cast_nullable_to_non_nullable
           : countDown as TextAreaConfig,
+      chartBarStyle: chartBarStyle == const $CopyWithPlaceholder()
+          ? _value.chartBarStyle
+          // ignore: cast_nullable_to_non_nullable
+          : chartBarStyle as ChartBarStyle,
+      chartType: chartType == const $CopyWithPlaceholder()
+          ? _value.chartType
+          // ignore: cast_nullable_to_non_nullable
+          : chartType as ChartType,
+      zoomToMinChartType: zoomToMinChartType == const $CopyWithPlaceholder()
+          ? _value.zoomToMinChartType
+          // ignore: cast_nullable_to_non_nullable
+          : zoomToMinChartType as ChartType?,
+      secondsChartType: secondsChartType == const $CopyWithPlaceholder()
+          ? _value.secondsChartType
+          // ignore: cast_nullable_to_non_nullable
+          : secondsChartType as ChartType?,
+      longColor: longColor == const $CopyWithPlaceholder()
+          ? _value.longColor
+          // ignore: cast_nullable_to_non_nullable
+          : longColor as Color?,
+      shortColor: shortColor == const $CopyWithPlaceholder()
+          ? _value.shortColor
+          // ignore: cast_nullable_to_non_nullable
+          : shortColor as Color?,
+      lineColor: lineColor == const $CopyWithPlaceholder()
+          ? _value.lineColor
+          // ignore: cast_nullable_to_non_nullable
+          : lineColor as Color?,
     );
   }
 }
@@ -181,6 +259,23 @@ CandleIndicator _$CandleIndicatorFromJson(Map<String, dynamic> json) =>
       showCountDown: json['showCountDown'] as bool? ?? true,
       countDown:
           TextAreaConfig.fromJson(json['countDown'] as Map<String, dynamic>),
+      chartBarStyle: json['chartBarStyle'] == null
+          ? ChartBarStyle.allSolid
+          : const ChartBarStyleConverter()
+              .fromJson(json['chartBarStyle'] as String),
+      chartType: json['chartType'] == null
+          ? ChartType.bar
+          : const ChartTypeConverter().fromJson(json['chartType'] as String),
+      zoomToMinChartType: _$JsonConverterFromJson<String, ChartType>(
+          json['zoomToMinChartType'], const ChartTypeConverter().fromJson),
+      secondsChartType: _$JsonConverterFromJson<String, ChartType>(
+          json['secondsChartType'], const ChartTypeConverter().fromJson),
+      longColor: _$JsonConverterFromJson<String, Color>(
+          json['longColor'], const ColorConverter().fromJson),
+      shortColor: _$JsonConverterFromJson<String, Color>(
+          json['shortColor'], const ColorConverter().fromJson),
+      lineColor: _$JsonConverterFromJson<String, Color>(
+          json['lineColor'], const ColorConverter().fromJson),
     );
 
 Map<String, dynamic> _$CandleIndicatorToJson(CandleIndicator instance) =>
@@ -195,4 +290,29 @@ Map<String, dynamic> _$CandleIndicatorToJson(CandleIndicator instance) =>
       'useCandleColorAsLatestBg': instance.useCandleColorAsLatestBg,
       'showCountDown': instance.showCountDown,
       'countDown': instance.countDown.toJson(),
+      'chartBarStyle':
+          const ChartBarStyleConverter().toJson(instance.chartBarStyle),
+      'chartType': const ChartTypeConverter().toJson(instance.chartType),
+      'zoomToMinChartType': _$JsonConverterToJson<String, ChartType>(
+          instance.zoomToMinChartType, const ChartTypeConverter().toJson),
+      'secondsChartType': _$JsonConverterToJson<String, ChartType>(
+          instance.secondsChartType, const ChartTypeConverter().toJson),
+      'longColor': _$JsonConverterToJson<String, Color>(
+          instance.longColor, const ColorConverter().toJson),
+      'shortColor': _$JsonConverterToJson<String, Color>(
+          instance.shortColor, const ColorConverter().toJson),
+      'lineColor': _$JsonConverterToJson<String, Color>(
+          instance.lineColor, const ColorConverter().toJson),
     };
+
+Value? _$JsonConverterFromJson<Json, Value>(
+  Object? json,
+  Value? Function(Json json) fromJson,
+) =>
+    json == null ? null : fromJson(json as Json);
+
+Json? _$JsonConverterToJson<Json, Value>(
+  Value? value,
+  Json? Function(Value value) toJson,
+) =>
+    value == null ? null : toJson(value);

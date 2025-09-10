@@ -15,33 +15,26 @@
 part of 'ema.dart';
 
 @CopyWith()
-@FlexiIndicatorSerializable
 class EMAIndicator extends PaintObjectIndicator implements IPrecomputable {
   EMAIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
-    required this.calcParams,
+    this.calcParam = const EmaParam(),
     required this.tipsPadding,
-    required this.lineWidth,
   }) : super(key: const FlexiIndicatorKey('ema'));
 
-  /// EMA参数列表
-  final List<MaParam> calcParams;
+  /// EMA 参数（包含所有配置）
+  @override
+  final EmaParam calcParam;
+  
+  /// Tips 相关参数（仅用于显示）
   final EdgeInsets tipsPadding;
-  final double lineWidth;
 
   @override
-  PaintObjectBox createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+  PaintObjectBox createPaintObject(IPaintContext context) {
     return EMAPaintObject(context: context, indicator: this);
   }
-
-  factory EMAIndicator.fromJson(Map<String, dynamic> json) => _$EMAIndicatorFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$EMAIndicatorToJson(this);
 }
 
 class EMAPaintObject<T extends EMAIndicator> extends PaintObjectBox<T> with EmaDataMixin<T> {
@@ -54,7 +47,7 @@ class EMAPaintObject<T extends EMAIndicator> extends PaintObjectBox<T> with EmaD
   MinMax? initState(int start, int end) {
     if (!klineData.canPaintChart) return null;
     return calcuEmaMinmax(
-      indicator.calcParams,
+      indicator.calcParam,
       start: start,
       end: end,
     );
@@ -68,28 +61,47 @@ class EMAPaintObject<T extends EMAIndicator> extends PaintObjectBox<T> with EmaD
   /// 绘制EMA线
   void paintEMALine(Canvas canvas, Size size) {
     if (!klineData.canPaintChart) return;
+    final enabledLines = indicator.calcParam.enabledLines;
+    if (enabledLines.isEmpty) return;
     final list = klineData.list;
     int start = klineData.start;
     int end = (klineData.end + 1).clamp(start, list.length); // 多绘制一根蜡烛
+
     final offset = startCandleDx - candleWidthHalf;
-    for (int j = 0; j < indicator.calcParams.length; j++) {
+    for (int j = 0; j < enabledLines.length; j++) {
+      final lineConfig = enabledLines[j];
+      if (lineConfig.period <= 0) continue; // 跳过无效周期
       BagNum? val;
       final List<Offset> points = [];
       for (int i = start; i < end; i++) {
         val = list[i].emaList?.getItem(j);
         if (val == null) continue;
-        points.add(Offset(
+        final point = Offset(
           offset - (i - start) * candleActualWidth,
           valueToDy(val, correct: false),
-        ));
+        );
+        points.add(point);
+        
+        // 📍 绘制节点（如果配置了 pointRadius > 0）
+        if (indicator.calcParam.display.pointRadius > 0) {
+          canvas.drawCircle(
+            point,
+            indicator.calcParam.display.pointRadius,
+            Paint()
+              ..color = lineConfig.color
+              ..style = PaintingStyle.fill,
+          );
+        }
       }
+
+      // 📈 绘制线条
       if (points.isNotEmpty) {
         canvas.drawPath(
           Path()..addPolygon(points, false),
           Paint()
-            ..color = indicator.calcParams[j].tips.color
+            ..color = lineConfig.color
             ..style = PaintingStyle.stroke
-            ..strokeWidth = indicator.lineWidth,
+            ..strokeWidth = lineConfig.width,
         );
       }
     }
@@ -104,38 +116,48 @@ class EMAPaintObject<T extends EMAIndicator> extends PaintObjectBox<T> with EmaD
   }) {
     model ??= offsetToCandle(offset);
     if (model == null || !model.isValidEmaList) return null;
+
     final children = <TextSpan>[];
-    BagNum? val;
-    for (int i = 0; i < model.emaList!.length; i++) {
-      val = model.emaList?.getItem(i);
+    final enabledLines = indicator.calcParam.enabledLines;
+    final emaList = model.emaList!;
+    
+    for (int i = 0; i < enabledLines.length && i < emaList.length; i++) {
+      final lineConfig = enabledLines[i];
+      if (lineConfig.period <= 0) continue; // 跳过无效周期
+      
+      final val = emaList.getItem(i);
       if (val == null) continue;
-      final param = indicator.calcParams.getItem(i);
-      if (param == null) continue;
+
+      // 📊 根据配置决定显示内容
+      final displayPeriod = indicator.calcParam.display.showPeriodInTips;
+      final prefix = displayPeriod ? 'EMA${lineConfig.period}:' : 'EMA:';
+      
       final text = formatNumber(
         val.toDecimal(),
-        precision: param.tips.getP(klineData.precision),
+        precision: indicator.calcParam.display.precision,
         cutInvalidZero: true,
-        prefix: param.tips.label,
+        prefix: prefix,
         suffix: '  ',
       );
       children.add(TextSpan(
         text: text,
-        style: param.tips.style,
+        style: TextStyle(color: lineConfig.color),
       ));
     }
-    if (children.isNotEmpty) {
-      tipsRect ??= drawableRect;
-      return canvas.drawText(
-        offset: tipsRect.topLeft,
-        textSpan: TextSpan(children: children),
-        drawDirection: DrawDirection.ltr,
-        drawableRect: tipsRect,
-        textAlign: TextAlign.left,
-        padding: indicator.tipsPadding,
-        maxLines: 1,
-      );
-    }
-    return null;
+    
+    // 📋 如果没有任何内容要显示，返回null
+    if (children.isEmpty) return null;
+    
+    tipsRect ??= drawableRect;
+    return canvas.drawText(
+      offset: tipsRect.topLeft,
+      textSpan: TextSpan(children: children),
+      drawDirection: DrawDirection.ltr,
+      drawableRect: tipsRect,
+      textAlign: TextAlign.left,
+      padding: indicator.tipsPadding,
+      maxLines: 1,
+    );
   }
 
   @override

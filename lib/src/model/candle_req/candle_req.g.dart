@@ -9,7 +9,7 @@ part of 'candle_req.dart';
 abstract class _$CandleReqCWProxy {
   CandleReq instId(String instId);
 
-  CandleReq timeBar(TimeBarConfig timeBar);
+  CandleReq bar(String bar);
 
   CandleReq limit(int limit);
 
@@ -30,13 +30,13 @@ abstract class _$CandleReqCWProxy {
   /// CandleReq(...).copyWith(id: 12, name: "My name")
   /// ````
   CandleReq call({
-    String? instId,
-    TimeBarConfig? timeBar,
-    int? limit,
-    int? precision,
+    String instId,
+    String bar,
+    int limit,
+    int precision,
     int? after,
     int? before,
-    RequestState? state,
+    RequestState state,
     String? displayName,
   });
 }
@@ -51,7 +51,7 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
   CandleReq instId(String instId) => this(instId: instId);
 
   @override
-  CandleReq timeBar(TimeBarConfig timeBar) => this(timeBar: timeBar);
+  CandleReq bar(String bar) => this(bar: bar);
 
   @override
   CandleReq limit(int limit) => this(limit: limit);
@@ -81,7 +81,7 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
   /// ````
   CandleReq call({
     Object? instId = const $CopyWithPlaceholder(),
-    Object? timeBar = const $CopyWithPlaceholder(),
+    Object? bar = const $CopyWithPlaceholder(),
     Object? limit = const $CopyWithPlaceholder(),
     Object? precision = const $CopyWithPlaceholder(),
     Object? after = const $CopyWithPlaceholder(),
@@ -90,19 +90,19 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
     Object? displayName = const $CopyWithPlaceholder(),
   }) {
     return CandleReq(
-      instId: instId == const $CopyWithPlaceholder() || instId == null
+      instId: instId == const $CopyWithPlaceholder()
           ? _value.instId
           // ignore: cast_nullable_to_non_nullable
           : instId as String,
-      timeBar: timeBar == const $CopyWithPlaceholder() || timeBar == null
-          ? _value.timeBar
+      bar: bar == const $CopyWithPlaceholder()
+          ? _value.bar
           // ignore: cast_nullable_to_non_nullable
-          : timeBar as TimeBarConfig,
-      limit: limit == const $CopyWithPlaceholder() || limit == null
+          : bar as String,
+      limit: limit == const $CopyWithPlaceholder()
           ? _value.limit
           // ignore: cast_nullable_to_non_nullable
           : limit as int,
-      precision: precision == const $CopyWithPlaceholder() || precision == null
+      precision: precision == const $CopyWithPlaceholder()
           ? _value.precision
           // ignore: cast_nullable_to_non_nullable
           : precision as int,
@@ -114,7 +114,7 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
           ? _value.before
           // ignore: cast_nullable_to_non_nullable
           : before as int?,
-      state: state == const $CopyWithPlaceholder() || state == null
+      state: state == const $CopyWithPlaceholder()
           ? _value.state
           // ignore: cast_nullable_to_non_nullable
           : state as RequestState,
@@ -138,7 +138,7 @@ extension $CandleReqCopyWith on CandleReq {
 
 CandleReq _$CandleReqFromJson(Map<String, dynamic> json) => CandleReq(
       instId: json['instId'] as String,
-      timeBar: TimeBarConfig.fromJson(json['timeBar'] as Map<String, dynamic>),
+      bar: json['bar'] as String? ?? '1m',
       limit: (json['limit'] as num?)?.toInt() ?? 100,
       after: (json['after'] as num?)?.toInt(),
       before: (json['before'] as num?)?.toInt(),
@@ -148,6 +148,6 @@ Map<String, dynamic> _$CandleReqToJson(CandleReq instance) => <String, dynamic>{
       'instId': instance.instId,
       if (instance.after case final value?) 'after': value,
       if (instance.before case final value?) 'before': value,
-      'timeBar': instance.timeBar.toJson(),
+      'bar': instance.bar,
       'limit': instance.limit,
     };

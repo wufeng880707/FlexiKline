@@ -91,11 +91,16 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
       }
     }
 
-    final s = param.s;
-    final l = param.l;
-    final m = param.m;
+    // 📊 从配置中获取计算参数
+    final s = param.s;  // 短周期 EMA (如: 12)
+    final l = param.l;  // 长周期 EMA (如: 26)  
+    final m = param.m;  // 信号周期 EMA (如: 9)
 
-    if (len < l) return;
+    // 📋 验证配置参数的有效性
+    if (!param.isValid(len)) {
+      // 参数无效时直接返回，避免无效计算
+      return;
+    }
 
     // klineData.list 是从新到旧的, 需要反转为从旧到新来计算.
     final closeValues = list.map((c) => c.close).toList().reversed.toList();
@@ -115,13 +120,15 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
     // 3. 计算DEA (DIF的EMA)
     final deaList = _ema(difList, m);
 
-    // 4. 计算MACD柱
+    // 4. 计算MACD柱 (根据配置决定是否启用柱状图)
     final macdList = List<BagNum?>.filled(len, null);
-    for (int i = 0; i < len; i++) {
-      final dif = difList[i];
-      final dea = deaList[i];
-      if (dif != null && dea != null) {
-        macdList[i] = (dif - dea) * BagNum.two;
+    if (param.histogramEnabled) {
+      for (int i = 0; i < len; i++) {
+        final dif = difList[i];
+        final dea = deaList[i];
+        if (dif != null && dea != null) {
+          macdList[i] = (dif - dea) * BagNum.two;
+        }
       }
     }
 
@@ -130,14 +137,26 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
     final finalDea = deaList.reversed.toList();
     final finalMacd = macdList.reversed.toList();
 
-    // 6. 赋值
+    // 6. 根据配置存储计算结果
     for (int i = 0; i < len; i++) {
-      if (finalDif[i] != null && finalDea[i] != null && finalMacd[i] != null) {
-        list[i].macdList = [finalDif[i], finalDea[i], finalMacd[i]];
-      } else {
-        if (reset) {
-          list[i].macdList = null;
-        }
+      final dif = finalDif[i];
+      final dea = finalDea[i];
+      final macd = finalMacd[i];
+      
+      // 📊 根据线条配置决定是否存储相应数据
+      final shouldStoreDif = param.difLine.enabled && dif != null;
+      final shouldStoreDea = param.deaLine.enabled && dea != null;
+      final shouldStoreMacd = param.histogramEnabled && macd != null;
+      
+      if (shouldStoreDif || shouldStoreDea || shouldStoreMacd) {
+        // 始终存储三个值，但可能为null（根据配置）
+        list[i].macdList = [
+          shouldStoreDif ? dif : null,
+          shouldStoreDea ? dea : null, 
+          shouldStoreMacd ? macd : null,
+        ];
+      } else if (reset) {
+        list[i].macdList = null;
       }
     }
   }
@@ -154,17 +173,36 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
     MinMax? minmax;
     for (int i = start; i < end; i++) {
       final m = klineData.list[i];
-      if (m.isValidMacdData) {
-        final dif = m.dif!;
-        final dea = m.dea!;
-        final macd = m.macd!;
-
-        if (minmax == null) {
-          minmax = MinMax(max: dif, min: dif);
+      if (m.macdList != null) {
+        // 📊 根据配置决定计算哪些指标的最值
+        if (param.difLine.enabled && m.dif != null) {
+          if (minmax == null) {
+            minmax = MinMax(max: m.dif!, min: m.dif!);
+          } else {
+            minmax.updateMinMaxBy(m.dif!);
+          }
         }
-        minmax.updateMinMaxBy(dif);
-        minmax.updateMinMaxBy(dea);
-        minmax.updateMinMaxBy(macd);
+        
+        if (param.deaLine.enabled && m.dea != null) {
+          if (minmax == null) {
+            minmax = MinMax(max: m.dea!, min: m.dea!);
+          } else {
+            minmax.updateMinMaxBy(m.dea!);
+          }
+        }
+        
+        if (param.histogramEnabled && m.macd != null) {
+          if (minmax == null) {
+            minmax = MinMax(max: m.macd!, min: m.macd!);
+          } else {
+            minmax.updateMinMaxBy(m.macd!);
+          }
+        }
+        
+        // 📏 如果启用零轴线，确保包含零点在范围内
+        if (param.showZeroLine && minmax != null) {
+          minmax.updateMinMaxBy(BagNum.zero);
+        }
       }
     }
     return minmax;

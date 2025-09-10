@@ -15,58 +15,34 @@
 part of 'kdj.dart';
 
 ///
-/// KDJ (9, 3, 3)
+/// KDJ 随机震荡指标
 /// 当日K值=2/3×前一日K值+1/3×当日RSV
 /// 当日D值=2/3×前一日D值+1/3×当日K值
 /// 若无前一日K 值与D值，则可分别用50来代替。
 /// J值=3*当日K值-2*当日D值
 @CopyWith()
-@FlexiIndicatorSerializable
 class KDJIndicator extends PaintObjectIndicator implements IPrecomputable {
   KDJIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultSubIndicatorPadding,
-
-    /// KDJ计算参数
-    this.calcParam = const KDJParam(n: 9, m1: 3, m2: 3),
-
-    /// 绘制相关参数
-    required this.ktips,
-    required this.dtips,
-    required this.jtips,
+    this.calcParam = const KDJParam(),
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-    required this.lineWidth,
-    this.precision = 2,
   }) : super(key: const FlexiIndicatorKey('kdj'));
 
-  /// KDJ计算参数
+  /// KDJ 参数（包含所有配置）
   @override
   final KDJParam calcParam;
 
-  /// 绘制相关参数
-  final TipsConfig ktips;
-  final TipsConfig dtips;
-  final TipsConfig jtips;
+  /// Tips 相关参数（仅用于显示）
   final EdgeInsets tipsPadding;
   final int tickCount;
-  final double lineWidth;
-  // 默认精度
-  final int precision;
 
   @override
-  PaintObjectBox createPaintObject(
-    IPaintContext context, {
-    KlineEventBus? eventBus,
-  }) {
+  PaintObjectBox createPaintObject(IPaintContext context) {
     return KDJPaintObject(context: context, indicator: this);
   }
-
-  factory KDJIndicator.fromJson(Map<String, dynamic> json) => _$KDJIndicatorFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() => _$KDJIndicatorToJson(this);
 }
 
 class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
@@ -98,19 +74,19 @@ class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
         canvas,
         size,
         tickCount: indicator.tickCount,
-        precision: indicator.precision,
+        precision: indicator.calcParam.display.precision,
       );
     }
+    
   }
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String fromatTicksValue(BagNum value, {required int precision}) {
-    return formatPrice(
+  String formatTicksValue(BagNum value, {required int precision}) {
+    return formatNumber(
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showThousands: true,
     );
   }
 
@@ -120,18 +96,17 @@ class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
     paintYAxisTicksOnCross(
       canvas,
       offset,
-      precision: indicator.precision,
+      precision: indicator.calcParam.display.precision,
     );
   }
 
   /// 在onCross时, 重写[paintYAxisTicksOnCross]中的格式化刻度值
   @override
   String formatTicksValueOnCross(BagNum value, {required int precision}) {
-    return formatPrice(
+    return formatNumber(
       value.toDecimal(),
       precision: precision,
       cutInvalidZero: false,
-      showThousands: true,
     );
   }
 
@@ -143,44 +118,77 @@ class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
     int start = klineData.start;
     int end = (klineData.end + 1).clamp(start, len); // 多绘制一根蜡烛
 
-    final List<Offset> kPoints = [];
-    final List<Offset> dPoints = [];
-    final List<Offset> jPoints = [];
+    final enabledLines = indicator.calcParam.enabledLines;
+    if (enabledLines.isEmpty) return;
+
     final offset = startCandleDx - candleWidthHalf;
 
-    CandleModel m;
-    for (int i = start; i < end; i++) {
-      m = list[i];
-      if (!m.isValidKdjData) continue;
-      final dx = offset - (i - start) * candleActualWidth;
-      kPoints.add(Offset(dx, valueToDy(m.k!, correct: false)));
-      dPoints.add(Offset(dx, valueToDy(m.d!, correct: false)));
-      jPoints.add(Offset(dx, valueToDy(m.j!, correct: false)));
+    // 分别绘制 K、D、J 线
+    for (final lineType in enabledLines) {
+      final List<Offset> points = [];
+      KDJLineConfig lineConfig;
+      
+      switch (lineType) {
+        case KDJLineType.k:
+          lineConfig = indicator.calcParam.lines.k;
+          break;
+        case KDJLineType.d:
+          lineConfig = indicator.calcParam.lines.d;
+          break;
+        case KDJLineType.j:
+          lineConfig = indicator.calcParam.lines.j;
+          break;
+      }
+
+      // 收集点位
+      for (int i = start; i < end; i++) {
+        final m = list[i];
+        if (!m.isValidKdjData) continue;
+        
+        BagNum? value;
+        switch (lineType) {
+          case KDJLineType.k:
+            value = m.k;
+            break;
+          case KDJLineType.d:
+            value = m.d;
+            break;
+          case KDJLineType.j:
+            value = m.j;
+            break;
+        }
+        
+        if (value != null) {
+          final point = Offset(
+            offset - (i - start) * candleActualWidth,
+            valueToDy(value, correct: false),
+          );
+          points.add(point);
+          
+          // 📍 绘制节点（如果配置了 pointRadius > 0）
+          if (indicator.calcParam.display.pointRadius > 0) {
+            canvas.drawCircle(
+              point,
+              indicator.calcParam.display.pointRadius,
+              Paint()
+                ..color = lineConfig.color
+                ..style = PaintingStyle.fill,
+            );
+          }
+        }
+      }
+
+      // 📈 绘制线条
+      if (points.isNotEmpty) {
+        canvas.drawPath(
+          Path()..addPolygon(points, false),
+          Paint()
+            ..color = lineConfig.color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = lineConfig.width,
+        );
+      }
     }
-
-    canvas.drawPath(
-      Path()..addPolygon(kPoints, false),
-      Paint()
-        ..color = indicator.ktips.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = indicator.lineWidth,
-    );
-
-    canvas.drawPath(
-      Path()..addPolygon(dPoints, false),
-      Paint()
-        ..color = indicator.dtips.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = indicator.lineWidth,
-    );
-
-    canvas.drawPath(
-      Path()..addPolygon(jPoints, false),
-      Paint()
-        ..color = indicator.jtips.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = indicator.lineWidth,
-    );
   }
 
   @override
@@ -193,41 +201,51 @@ class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
     model ??= offsetToCandle(offset);
     if (model == null || !model.isValidKdjData) return null;
 
-    final precision = indicator.precision;
     final children = <TextSpan>[];
-
-    children.add(TextSpan(
-      text: formatNumber(
-        model.k?.toDecimal(),
-        precision: indicator.ktips.getP(precision),
-        cutInvalidZero: true,
-        prefix: indicator.ktips.label,
-        suffix: ' ',
-      ),
-      style: indicator.ktips.style,
-    ));
-
-    children.add(TextSpan(
-      text: formatNumber(
-        model.d?.toDecimal(),
-        precision: indicator.dtips.getP(precision),
-        cutInvalidZero: true,
-        prefix: indicator.dtips.label,
-        suffix: ' ',
-      ),
-      style: indicator.dtips.style,
-    ));
-
-    children.add(TextSpan(
-      text: formatNumber(
-        model.j?.toDecimal(),
-        precision: indicator.jtips.getP(precision),
-        cutInvalidZero: true,
-        prefix: indicator.jtips.label,
-        suffix: ' ',
-      ),
-      style: indicator.jtips.style,
-    ));
+    final enabledLines = indicator.calcParam.enabledLines;
+    final precision = indicator.calcParam.display.precision;
+    final showPeriod = indicator.calcParam.display.showPeriodInTips;
+    
+    for (final lineType in enabledLines) {
+      BagNum? value;
+      KDJLineConfig lineConfig;
+      String label;
+      
+      switch (lineType) {
+        case KDJLineType.k:
+          value = model.k;
+          lineConfig = indicator.calcParam.lines.k;
+          label = showPeriod ? 'K(${indicator.calcParam.calculation.kPeriod})' : 'K';
+          break;
+        case KDJLineType.d:
+          value = model.d;
+          lineConfig = indicator.calcParam.lines.d;
+          label = showPeriod ? 'D(${indicator.calcParam.calculation.dPeriod})' : 'D';
+          break;
+        case KDJLineType.j:
+          value = model.j;
+          lineConfig = indicator.calcParam.lines.j;
+          label = showPeriod ? 'J(${indicator.calcParam.calculation.jPeriod})' : 'J';
+          break;
+      }
+      
+      if (value != null) {
+        final text = formatNumber(
+          value.toDecimal(),
+          precision: precision,
+          cutInvalidZero: true,
+          prefix: '$label:',
+          suffix: '  ',
+        );
+        children.add(TextSpan(
+          text: text,
+          style: TextStyle(color: lineConfig.color),
+        ));
+      }
+    }
+    
+    // 📋 如果没有任何内容要显示，返回null
+    if (children.isEmpty) return null;
 
     tipsRect ??= drawableRect;
     return canvas.drawText(
