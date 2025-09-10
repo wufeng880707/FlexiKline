@@ -15,13 +15,26 @@
 import 'dart:ui';
 
 import '../core/core.dart';
-import '../config/text_area_config/text_area_config.dart';
 import '../extension/export.dart';
 import '../framework/draw/overlay.dart';
 import '../utils/export.dart';
 
+class FibFansParams {
+  final List<double> params;
+  final Color gridColor;
+  const FibFansParams({required this.params, required this.gridColor});
+}
+
 class FibFansDrawObject extends DrawObject {
   FibFansDrawObject(super.overlay, super.config);
+
+  @override
+  FibFansParams getDrawParams(IDrawContext context) {
+    return FibFansParams(
+      params: const [0.382, 0.5, 0.618],
+      gridColor: line.paint.color.withValues(alpha: 0.3),
+    );
+  }
 
   Rect? getRectangleRect() {
     final points = allPoints;
@@ -83,16 +96,12 @@ class FibFansDrawObject extends DrawObject {
     Offset B,
   ) {
     final mainRect = context.mainRect;
-    final fibFansParams = drawParams.fibFansParams;
-    final fibText = drawParams.fibText;
-    final fibTextColor =
-        fibText.style.color != null && fibText.style.color!.alpha != 0
-            ? fibText.style.color
-            : null;
-    final fibGridColor = drawParams.fibFansGridColor;
-    final isDrawGrid = fibGridColor != null && fibGridColor.alpha != 0;
-    final fibColors = drawParams.fibFansColors;
-    final colors = fibColors.isNotEmpty ? fibColors : [line.paint.color];
+    final drawParams = getDrawParams(context);
+    final fibFansParams = drawParams.params;
+    final fibText = config.ticksText;
+    final fibGridColor = drawParams.gridColor;
+    final isDrawGrid = true;
+    final colors = [line.paint.color];
     int i = 0;
 
     final dxLen = B.dx - A.dx;
@@ -149,20 +158,16 @@ class FibFansDrawObject extends DrawObject {
 
       /// 画扇形参数值
       canvas.drawTextArea(
-        text: cutInvalidZero(rate),
+        text: rate.toString(),
         drawDirection: DrawDirection.center,
         offset: Offset(dx, A.dy - txtHeight),
-        textConfig: fibText.copyWith(
-          style: fibText.style.copyWith(color: fibTextColor ?? color),
-        ),
+        textConfig: fibText,
       );
       canvas.drawTextArea(
-        text: cutInvalidZero(rate),
+        text: rate.toString(),
         drawDirection: vertTxtDirection,
         offset: Offset(A.dx, dy - txtHalft),
-        textConfig: fibText.copyWith(
-          style: fibText.style.copyWith(color: fibTextColor ?? color),
-        ),
+        textConfig: fibText,
       );
     }
   }

@@ -18,8 +18,19 @@ import '../core/core.dart';
 import '../extension/export.dart';
 import '../framework/draw/overlay.dart';
 
+class ArrowParams {
+  final double length;
+  final double radians;
+  const ArrowParams({required this.length, required this.radians});
+}
+
 class ArrowLineDrawObject extends DrawObject {
   ArrowLineDrawObject(super.overlay, super.config);
+
+  @override
+  ArrowParams getDrawParams(IDrawContext context) {
+    return const ArrowParams(length: 15.0, radians: 0.5);
+  }
 
   @override
   bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
@@ -59,9 +70,10 @@ class ArrowLineDrawObject extends DrawObject {
     // 画箭头
     final drawRect = context.mainRect;
     if (drawRect.contains(second)) {
-      final vector = (first - second).normalized() * drawParams.arrowsLen;
-      final arrow1 = vector.rotate(drawParams.arrowsRadians) + second;
-      final arrow2 = vector.rotate(-drawParams.arrowsRadians) + second;
+      final params = getDrawParams(context);
+      final vector = (first - second).normalized() * params.length;
+      final arrow1 = vector.rotate(params.radians) + second;
+      final arrow2 = vector.rotate(-params.radians) + second;
 
       canvas.drawLineByConfig(
         Path()..addPolygon([second, arrow1], false),

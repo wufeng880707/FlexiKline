@@ -22,6 +22,11 @@ class TrendLineDrawObject extends DrawObject {
   TrendLineDrawObject(super.overlay, super.config);
 
   @override
+  void getDrawParams(IDrawContext context) {
+    // 简单线条不需要额外参数
+  }
+
+  @override
   bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 2,

@@ -18,8 +18,18 @@ import '../core/core.dart';
 import '../extension/export.dart';
 import '../framework/draw/overlay.dart';
 
+class RectangleParams {
+  final double bgOpacity;
+  const RectangleParams({required this.bgOpacity});
+}
+
 class RectangleDrawObject extends DrawObject {
   RectangleDrawObject(super.overlay, super.config);
+
+  @override
+  RectangleParams getDrawParams(IDrawContext context) {
+    return const RectangleParams(bgOpacity: 0.1);
+  }
 
   Rect? getRectangleRect() {
     final points = allPoints;
@@ -77,8 +87,8 @@ class RectangleDrawObject extends DrawObject {
     canvas.drawPath(
       Path()..addRect(rect),
       line.linePaint
-        ..color = line.paint.color.withOpacity(
-          drawParams.rectangleBgOpacity,
+        ..color = line.paint.color.withValues(
+          alpha: getDrawParams(context).bgOpacity,
         )
         ..style = PaintingStyle.fill,
     );

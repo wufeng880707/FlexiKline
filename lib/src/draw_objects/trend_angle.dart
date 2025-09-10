@@ -19,8 +19,19 @@ import '../core/core.dart';
 import '../extension/export.dart';
 import '../framework/draw/overlay.dart';
 
+class AngleParams {
+  final double radSize;
+  final double baseLineMinLen;
+  const AngleParams({required this.radSize, required this.baseLineMinLen});
+}
+
 class TrendAngleDrawObject extends DrawObject {
   TrendAngleDrawObject(super.overlay, super.config);
+
+  @override
+  AngleParams getDrawParams(IDrawContext context) {
+    return const AngleParams(radSize: 50.0, baseLineMinLen: 50.0);
+  }
 
   @override
   bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
@@ -45,10 +56,11 @@ class TrendAngleDrawObject extends DrawObject {
     final second = (points.secondOrNull ?? pointer)?.offset;
     if (first != null && second != null) {
       // 当指针2超出, 以指针1为中心和以弧度大小的矩形区域开始绘制.
+      final params = getDrawParams(context);
       final incircleRect = Rect.fromCenter(
         center: first,
-        width: drawParams.angleRadSize.width,
-        height: drawParams.angleRadSize.height,
+        width: params.radSize,
+        height: params.radSize,
       );
       if (!incircleRect.contains(second)) {
         _drawAngleLineAndRadVal(context, canvas, first, second);
@@ -91,8 +103,9 @@ class TrendAngleDrawObject extends DrawObject {
     Offset B,
   ) {
     final vAB = B - A;
+    final params = getDrawParams(context);
     final H = Offset(
-      A.dx + math.max(drawParams.angleBaseLineMinLen, vAB.length),
+      A.dx + math.max(params.baseLineMinLen, vAB.length),
       A.dy,
     );
     final vAH = H - A;
@@ -115,8 +128,8 @@ class TrendAngleDrawObject extends DrawObject {
         ..addArc(
           Rect.fromCenter(
             center: A,
-            width: drawParams.angleRadSize.width,
-            height: drawParams.angleRadSize.height,
+            width: params.radSize,
+            height: params.radSize,
           ),
           0,
           radians,
@@ -126,11 +139,11 @@ class TrendAngleDrawObject extends DrawObject {
     );
 
     // 画弧度值
-    final radText = drawParams.angleText ?? ticksTextConfig;
+    final radText = config.ticksText;
     final radVal = (radians * -180 / math.pi).toStringAsFixed(2);
     canvas.drawTextArea(
       offset: Offset(
-        A.dx + drawParams.angleBaseLineMinLen,
+        A.dx + params.baseLineMinLen,
         A.dy - radText.areaHeight / 2,
       ),
       text: '$radVal°',

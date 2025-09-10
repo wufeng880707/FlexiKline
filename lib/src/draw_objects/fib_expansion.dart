@@ -14,13 +14,26 @@
 
 import 'dart:ui';
 
-import '../config/text_area_config/text_area_config.dart';
 import '../core/core.dart';
 import '../extension/export.dart';
 import '../framework/draw/overlay.dart';
 
+class FibExpansionParams {
+  final List<double> rates;
+  final double bgOpacity;
+  const FibExpansionParams({required this.rates, required this.bgOpacity});
+}
+
 class FibExpansionDrawObject extends DrawObject {
   FibExpansionDrawObject(super.overlay, super.config);
+
+  @override
+  FibExpansionParams getDrawParams(IDrawContext context) {
+    return const FibExpansionParams(
+      rates: [0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0, 1.272, 1.618],
+      bgOpacity: 0.1,
+    );
+  }
 
   @override
   bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
@@ -99,13 +112,11 @@ class FibExpansionDrawObject extends DrawObject {
     double? dyLen,
   ) {
     final precision = context.curKlineData.precision;
-    final fibRates = drawParams.fibRates;
-    final fibText = drawParams.fibText;
-    final fibTextColor =
-        fibText.style.color != null && fibText.style.color!.alpha != 0 ? fibText.style.color : null;
-    final fibBgOpacity = drawParams.fibBgOpacity;
-    final fibColors = drawParams.fibColors;
-    final colors = fibColors.isNotEmpty ? fibColors : [line.paint.color];
+    final params = getDrawParams(context);
+    final fibRates = params.rates;
+    final fibText = config.ticksText;
+    final fibBgOpacity = params.bgOpacity;
+    final colors = [line.paint.color];
     int i = 0;
     List<Offset> linePoints = [];
 
@@ -127,7 +138,7 @@ class FibExpansionDrawObject extends DrawObject {
         canvas.drawPath(
           Path()..addPolygon([...linePoints, end, start], true),
           Paint()
-            ..color = color.withOpacity(fibBgOpacity)
+            ..color = color.withValues(alpha: fibBgOpacity)
             ..style = PaintingStyle.fill,
         );
       }
@@ -149,9 +160,7 @@ class FibExpansionDrawObject extends DrawObject {
           text: '$rate($text)',
           drawDirection: DrawDirection.rtl,
           offset: Offset(txtOffsetDx, dy - txtHeightOffset),
-          textConfig: fibText.copyWith(
-            style: fibText.style.copyWith(color: fibTextColor ?? color),
-          ),
+          textConfig: fibText,
         );
       }
     }

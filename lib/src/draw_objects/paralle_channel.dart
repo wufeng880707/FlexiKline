@@ -19,8 +19,18 @@ import '../extension/export.dart';
 import '../framework/draw/overlay.dart';
 import '../utils/vector_util.dart';
 
+class ChannelParams {
+  final double bgOpacity;
+  const ChannelParams({required this.bgOpacity});
+}
+
 class ParalleChannelDrawObject extends DrawObject {
   ParalleChannelDrawObject(super.overlay, super.config);
+
+  @override
+  ChannelParams getDrawParams(IDrawContext context) {
+    return const ChannelParams(bgOpacity: 0.1);
+  }
 
   Parallelogram? getParalleChannel() {
     final points = allPoints;
@@ -86,8 +96,8 @@ class ParalleChannelDrawObject extends DrawObject {
     canvas.drawPath(
       Path()..addPolygon(channel.points, true),
       line.linePaint
-        ..color = line.paint.color.withOpacity(
-          drawParams.paralleBgOpacity,
+        ..color = line.paint.color.withValues(
+          alpha: getDrawParams(context).bgOpacity,
         )
         ..style = PaintingStyle.fill,
     );

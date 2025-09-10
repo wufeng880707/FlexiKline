@@ -12,15 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:ui';
+import 'package:flutter/material.dart';
 
 import '../core/core.dart';
-import '../data/kline_data.dart';
 import '../extension/export.dart';
 import '../framework/draw/overlay.dart';
 
+class PriceParams {
+  final double margin;
+  const PriceParams({required this.margin});
+}
+
 class PriceLineDrawObject extends DrawObject {
   PriceLineDrawObject(super.overlay, super.config);
+
+  @override
+  PriceParams getDrawParams(IDrawContext context) {
+    return const PriceParams(margin: 4.0);
+  }
 
   @override
   bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
@@ -73,12 +82,12 @@ class PriceLineDrawObject extends DrawObject {
         precision: context.curKlineData.precision,
       );
 
-      final ticksText = drawParams.priceText ?? ticksTextConfig;
-      final margin = drawParams.priceTextMargin;
+      final params = getDrawParams(context);
+      final ticksText = config.ticksText;
       canvas.drawTextArea(
         offset: Offset(
-          first.dx + margin.left,
-          first.dy - ticksText.areaHeight - margin.bottom,
+          first.dx + params.margin,
+          first.dy - ticksText.areaHeight - params.margin,
         ),
         text: valTxt,
         textConfig: ticksText,
