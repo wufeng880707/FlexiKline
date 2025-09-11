@@ -42,13 +42,20 @@ extension CandleModelExt on CandleModel {
     return DateTime.fromMillisecondsSinceEpoch(ts);
   }
 
-  String formatDateTime(TimeBar? bar) {
-    return dateTime.formatByUnit(bar?.unit);
+  String formatDateTime(TimeBarConfig? bar) {
+    return dateTime.formatByUnit(bar?.timeUnit);
   }
 
-  DateTime? nextUpdateDateTime(String bar) {
-    final timeBar = TimeBar.convert(bar);
+  DateTime? nextUpdateDateTime(TimeBarConfig timeBar) {
     if (timeBar != null) {
+      final currentDateTime = DateTime.fromMillisecondsSinceEpoch(ts, isUtc: timeBar.isUtc);
+
+      // 如果有自定义计算器，优先使用
+      if (timeBar.nextUpdateCalculator != null) {
+        return timeBar.nextUpdateCalculator!(currentDateTime, timeBar.isUtc);
+      }
+
+      // 否则使用默认的毫秒数计算
       return DateTime.fromMillisecondsSinceEpoch(
         ts + timeBar.milliseconds,
         isUtc: timeBar.isUtc,

@@ -16,6 +16,7 @@ import 'dart:math' as math;
 
 import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flexi_kline/src/config/time_bar_config/time_bar_config.dart';
 
 /// 随机生成CandleModel列表
 /// [count] : 返回列表数量
@@ -32,7 +33,14 @@ Future<List<CandleModel>> genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-  TimeBar bar = TimeBar.D1,
+  TimeBarConfig bar = const TimeBarConfig(
+      key: 'D1',
+      bar: '1D',
+      milliseconds: 86400000,
+      multiplier: 1,
+      timeUnit: TimeUnit.day,
+      showName: '1D',
+      sortOrder: 9),
   DateTime? dateTime,
   bool isHistory = true,
 }) async {
@@ -67,9 +75,7 @@ Future<List<CandleModel>> genRandomCandleList({
     if (h < l) [h, l] = [l, h];
     v = genVal(v, rangeVol);
     m = CandleModel(
-      ts: dateTime
-          .add(Duration(milliseconds: flag * i * bar.milliseconds))
-          .millisecondsSinceEpoch,
+      ts: dateTime.add(Duration(milliseconds: flag * i * bar.milliseconds)).millisecondsSinceEpoch,
       h: h.d,
       o: o.d,
       c: c.d,

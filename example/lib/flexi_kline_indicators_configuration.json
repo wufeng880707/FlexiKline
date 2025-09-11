@@ -8,42 +8,9 @@
     "0xff9575cd", "0xffaed581", "0xffff8a65", "0xff42a5f5", "0xfff44336"
   ],
   "_comment_defaultColors": "默认颜色池，新增MA线时自动分配",
-
   
   "mainIndicators": {    
-    "volume": {
-      "_comment": "成交量指标配置",
-      "type": "volume", 
-      "displayName": "Vol",
-      "enabled": true,
-      "zIndex": 1,
-      "height": 100,
-      "config": {
-        "showInMain": true,
-        "_comment_showInMain": "是否显示在主图中",
-        "heightRatio": 0.3,
-        "_comment_heightRatio": "在主图中的高度比例",
-        "volume": {
-          "useTrendColor": true,
-          "_comment_useTrendColor": "是否使用固定涨跌色显示成交量柱",
-          "bullishColor": "0xff4caf50",
-          "_comment_bullishColor": "看涨成交量颜色（绿色）",
-          "bearishColor": "0xfff44336", 
-          "_comment_bearishColor": "看跌成交量颜色（红色）",
-          "opacity": 0.6,
-          "_comment_opacity": "成交量柱透明度 (0.0-1.0)"
-        },
-        "display": {
-          "precision": 0,
-          "_comment_precision": "数值显示精度，成交量通常不显示小数",
-          "showVolInTips": true,
-          "_comment_showVolInTips": "Tips中是否显示成交量数值",
-          "compactDisplay": true,
-          "_comment_compactDisplay": "是否使用紧凑显示格式（如1.2K、1.5M）"
-        }
-      }
-    },
-    
+
     "ma": {
       "_comment": "移动平均线指标配置",
       "type": "ma",
@@ -386,7 +353,39 @@
   
   "subIndicators": {
     "_comment": "副区指标配置 - 显示在独立副区域的技术指标",
-    
+    "volume": {
+      "_comment": "成交量指标配置",
+      "type": "volume",
+      "displayName": "Vol",
+      "enabled": true,
+      "zIndex": 1,
+      "height": 100,
+      "config": {
+        "showInMain": true,
+        "_comment_showInMain": "是否显示在主图中",
+        "heightRatio": 0.3,
+        "_comment_heightRatio": "在主图中的高度比例",
+        "volume": {
+          "useTrendColor": true,
+          "_comment_useTrendColor": "是否使用固定涨跌色显示成交量柱",
+          "bullishColor": "0xff4caf50",
+          "_comment_bullishColor": "看涨成交量颜色（绿色）",
+          "bearishColor": "0xfff44336",
+          "_comment_bearishColor": "看跌成交量颜色（红色）",
+          "opacity": 0.6,
+          "_comment_opacity": "成交量柱透明度 (0.0-1.0)"
+        },
+        "display": {
+          "precision": 0,
+          "_comment_precision": "数值显示精度，成交量通常不显示小数",
+          "showVolInTips": true,
+          "_comment_showVolInTips": "Tips中是否显示成交量数值",
+          "compactDisplay": true,
+          "_comment_compactDisplay": "是否使用紧凑显示格式（如1.2K、1.5M）"
+        }
+      }
+    },
+
     "macd": {
       "_comment": "MACD指标配置",
       "type": "macd",
@@ -764,6 +763,4 @@
       "icon": "bar_chart"
     }
   }
-
-  
 }

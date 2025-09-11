@@ -9,7 +9,7 @@ part of 'candle_req.dart';
 abstract class _$CandleReqCWProxy {
   CandleReq instId(String instId);
 
-  CandleReq bar(String bar);
+  CandleReq timeBar(TimeBarConfig timeBar);
 
   CandleReq limit(int limit);
 
@@ -21,8 +21,6 @@ abstract class _$CandleReqCWProxy {
 
   CandleReq state(RequestState state);
 
-  CandleReq displayName(String? displayName);
-
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CandleReq(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -31,13 +29,12 @@ abstract class _$CandleReqCWProxy {
   /// ````
   CandleReq call({
     String instId,
-    String bar,
+    TimeBarConfig timeBar,
     int limit,
     int precision,
     int? after,
     int? before,
     RequestState state,
-    String? displayName,
   });
 }
 
@@ -51,7 +48,7 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
   CandleReq instId(String instId) => this(instId: instId);
 
   @override
-  CandleReq bar(String bar) => this(bar: bar);
+  CandleReq timeBar(TimeBarConfig timeBar) => this(timeBar: timeBar);
 
   @override
   CandleReq limit(int limit) => this(limit: limit);
@@ -69,9 +66,6 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
   CandleReq state(RequestState state) => this(state: state);
 
   @override
-  CandleReq displayName(String? displayName) => this(displayName: displayName);
-
-  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CandleReq(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -81,23 +75,22 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
   /// ````
   CandleReq call({
     Object? instId = const $CopyWithPlaceholder(),
-    Object? bar = const $CopyWithPlaceholder(),
+    Object? timeBar = const $CopyWithPlaceholder(),
     Object? limit = const $CopyWithPlaceholder(),
     Object? precision = const $CopyWithPlaceholder(),
     Object? after = const $CopyWithPlaceholder(),
     Object? before = const $CopyWithPlaceholder(),
     Object? state = const $CopyWithPlaceholder(),
-    Object? displayName = const $CopyWithPlaceholder(),
   }) {
     return CandleReq(
       instId: instId == const $CopyWithPlaceholder()
           ? _value.instId
           // ignore: cast_nullable_to_non_nullable
           : instId as String,
-      bar: bar == const $CopyWithPlaceholder()
-          ? _value.bar
+      timeBar: timeBar == const $CopyWithPlaceholder()
+          ? _value.timeBar
           // ignore: cast_nullable_to_non_nullable
-          : bar as String,
+          : timeBar as TimeBarConfig,
       limit: limit == const $CopyWithPlaceholder()
           ? _value.limit
           // ignore: cast_nullable_to_non_nullable
@@ -118,10 +111,6 @@ class _$CandleReqCWProxyImpl implements _$CandleReqCWProxy {
           ? _value.state
           // ignore: cast_nullable_to_non_nullable
           : state as RequestState,
-      displayName: displayName == const $CopyWithPlaceholder()
-          ? _value.displayName
-          // ignore: cast_nullable_to_non_nullable
-          : displayName as String?,
     );
   }
 }
@@ -138,7 +127,7 @@ extension $CandleReqCopyWith on CandleReq {
 
 CandleReq _$CandleReqFromJson(Map<String, dynamic> json) => CandleReq(
       instId: json['instId'] as String,
-      bar: json['bar'] as String? ?? '1m',
+      timeBar: TimeBarConfig.fromJson(json['timeBar'] as Map<String, dynamic>),
       limit: (json['limit'] as num?)?.toInt() ?? 100,
       after: (json['after'] as num?)?.toInt(),
       before: (json['before'] as num?)?.toInt(),
@@ -148,6 +137,6 @@ Map<String, dynamic> _$CandleReqToJson(CandleReq instance) => <String, dynamic>{
       'instId': instance.instId,
       if (instance.after case final value?) 'after': value,
       if (instance.before case final value?) 'before': value,
-      'bar': instance.bar,
+      'timeBar': instance.timeBar.toJson(),
       'limit': instance.limit,
     };
