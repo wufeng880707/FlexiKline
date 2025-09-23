@@ -440,17 +440,21 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     if (newObj != null) {
       // 优化执行时机
       newObj.precompute(curKlineData.computableRange, reset: true);
-      markRepaintChart(reset: true);
-      markRepaintCross();
+      _updateMainIndicatorLayout();
     }
   }
 
   /// 删除主图中[key]指定的指标
   void removeMainIndicator(IIndicatorKey key) {
     if (_paintObjectManager.removeMainPaintObject(key)) {
-      markRepaintChart(reset: true);
-      markRepaintCross();
+      _updateMainIndicatorLayout();
     }
+  }
+
+  /// 优化的主图指标布局更新方法 - 合并重复刷新
+  void _updateMainIndicatorLayout() {
+    markRepaintChart(reset: true);
+    markRepaintCross();
   }
 
   /// 是否已添加主图[key]指定的指标
@@ -464,17 +468,23 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     if (newObj != null) {
       // 优化执行时机
       newObj.precompute(curKlineData.computableRange, reset: true);
-      _invokeSizeChanged();
-      _updateSubHeightList();
+      _updateSubIndicatorLayout();
     }
   }
 
   /// 删除副图[key]指定的指标
   void removeSubIndicator(IIndicatorKey key) {
     if (_paintObjectManager.removeSubPaintObject(key)) {
-      _invokeSizeChanged();
-      _updateSubHeightList();
+      _updateSubIndicatorLayout();
     }
+  }
+
+  /// 优化的副图指标布局更新方法 - 合并重复刷新
+  void _updateSubIndicatorLayout() {
+    // 先更新高度列表
+    _updateSubHeightList();
+    // 然后统一触发尺寸变化（内部已包含重绘逻辑）
+    _invokeSizeChanged();
   }
 
   /// 是否已添加副图[key]指定的指标

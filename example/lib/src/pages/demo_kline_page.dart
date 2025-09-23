@@ -73,7 +73,6 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
       instId: 'AAPL',
       timeBar: timeBar,
       precision: 2,
-      displayName: 'Apple Inc.',
       after: after,
       before: before,
     );
@@ -169,8 +168,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
     final theme = ref.watch(themeProvider);
     ref.listen(defaultKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        final config = configuration.getFlexiKlineConfig();
-        controller.updateFlexiKlineConfig(config);
+        controller.updateFlexiKlineConfig();
       }
     });
     return Scaffold(
@@ -185,12 +183,9 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Offstage(
-              offstage: req.displayName == null,
-              child: Text(
-                req.displayName ?? '',
-                style: theme.t1s18w700,
-              ),
+            Text(
+              'Apple Inc.',
+              style: theme.t1s18w700,
             ),
             Text(
               req.instId,
@@ -249,7 +244,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
           final newList = await genRandomCandleList(
             count: 3,
             dateTime: dateTime,
-            timeBar: controller.curKlineData.req.timeBar!,
+            timeBar: controller.curKlineData.req.timeBar,
             isHistory: false,
           );
 

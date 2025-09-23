@@ -17,9 +17,15 @@ import 'dart:math' as math;
 
 import 'package:decimal/decimal.dart';
 import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flutter/foundation.dart';
 
-/// 生成自定义的蜡烛数据.
+/// 生成自定义的蜡烛数据
+/// 
+/// [count] 生成数据的数量，默认7条
+/// [timeBar] 时间粒度配置，用于计算时间戳
+/// 
+/// 返回包含固定价格数据的K线数据列表，主要用于测试和演示
 Future<List<CandleModel>> genCustomCandleList({
   int count = 7,
   required TimeBarConfig timeBar,
@@ -210,8 +216,14 @@ Future<List<CandleModel>> _genRandomCandleList({
   return list;
 }
 
-/// 生成极小值的蜡烛数据.
-/// 生成超出dart中double类型能表示精度之外的数据.
+/// 生成极小值的蜡烛数据
+/// 
+/// 生成超出dart中double类型能表示精度之外的数据，主要用于测试高精度计算
+/// 
+/// [count] 生成数据的数量，如果为null则使用JSON数据的全部长度
+/// [exponent] 指数，用于生成极小的数值（除以10的exponent次方）
+/// 
+/// 返回包含极小数值的K线数据列表
 Future<List<CandleModel>> genLocalMinusculeCandleList({
   int? count,
   int exponent = 30,
@@ -225,7 +237,7 @@ Future<List<CandleModel>> genLocalMinusculeCandleList({
 
     // 将 decimalVal 除以 10 的 exponent 次方
     Decimal result = (decimalVal / multiplier).toDecimal(
-      scaleOnInfinitePrecision: defaultScaleOnInfinitePrecision,
+      scaleOnInfinitePrecision: FlexiFormatter.scaleOnInfinitePrecision,
     );
 
     return result;
@@ -605,7 +617,7 @@ List<CandleModel> genETHUSDT1DLimit100List() {
   return [];
 }
 
-final ethUsdt1DLimit100JsonString = '''
+const ethUsdt1DLimit100JsonString = '''
 [
         [
             "1729440000000",

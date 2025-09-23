@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flexi_formatter/flexi_formatter.dart';
 
 import 'vol_ma_param.dart';
+export 'vol_ma_param.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
 import '../../extension/export.dart';

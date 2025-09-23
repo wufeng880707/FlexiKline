@@ -26,7 +26,7 @@ class KlineStateNotifier extends ChangeNotifier {
   KlineStateNotifier(
     this.ref,
     this.controller,
-  );
+  ) : super();
 
   final Ref ref;
   final FlexiKlineController controller;
@@ -40,18 +40,18 @@ class KlineStateNotifier extends ChangeNotifier {
 
   void onTapMainIndicator(IIndicatorKey key) {
     if (controller.mainIndicatorKeys.contains(key)) {
-      controller.delIndicatorInMain(key);
+      controller.removeMainIndicator(key);
     } else {
-      controller.addIndicatorInMain(key);
+      controller.addMainIndicator(key);
     }
     notifyListeners();
   }
 
   void onTapSubIndicator(IIndicatorKey key) {
     if (controller.subIndicatorKeys.contains(key)) {
-      controller.delIndicatorInSub(key);
+      controller.removeSubIndicator(key);
     } else {
-      controller.addIndicatorInSub(key);
+      controller.addSubIndicator(key);
     }
     notifyListeners();
   }
@@ -181,8 +181,8 @@ class KlineStateNotifier extends ChangeNotifier {
         controller.gestureConfig = controller.gestureConfig.copyWith(
           isInertialPan: isEnable,
           tolerance: controller.gestureConfig.tolerance.copyWith(
-            maxDuration: maxDuration,
-            distanceFactor: distanceFactor,
+            maxDuration: maxDuration ?? controller.gestureConfig.tolerance.maxDuration,
+            distanceFactor: distanceFactor ?? controller.gestureConfig.tolerance.distanceFactor,
           ),
         );
         notifyListeners();

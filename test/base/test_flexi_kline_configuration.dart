@@ -101,13 +101,19 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   Color tooltipTextColor = const Color(0xFF949494);
 
   @override
-  Color get latestPriceTextBg => throw UnimplementedError();
+  Color get latestPriceTextBg => const Color(0xFF000000);
 
   @override
-  Color get dragBg => throw UnimplementedError();
+  Color get dragBg => const Color(0x33000000);
 
   @override
-  Color get lineChartColor => throw UnimplementedError();
+  Color get lineChartColor => const Color(0xFF2196F3);
+
+  @override
+  Color get indraTodayAvgColor => const Color(0xFFFF9800);
+
+  @override
+  Color get indraTodayCloseColor => const Color(0xFF4CAF50);
 }
 
 class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {

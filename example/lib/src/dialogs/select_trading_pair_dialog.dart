@@ -16,7 +16,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:example/generated/l10n.dart';
 import 'package:example/src/theme/flexi_theme.dart';
-import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -163,9 +162,7 @@ class SelectTradingPairDialog extends HookConsumerWidget {
                     final searchTxt = value.text.trim().toUpperCase();
                     List<MarketTicker> list = data;
                     if (searchTxt.isNotEmpty) {
-                      list = data
-                          .where((e) => e.instId.contains(searchTxt))
-                          .toList();
+                      list = data.where((e) => e.instId.contains(searchTxt)).toList();
                     }
                     return _buildTradingPairListView(ref, list);
                   },
@@ -259,51 +256,54 @@ class SelectTradingPairDialog extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                Text(
-                  formatNumber(
-                    ticker.volCcy24h.decimal,
-                    precision: 2,
-                    showCompact: true,
-                  ),
-                  style: theme.t2s10w400,
-                ),
+
+                /// TODO: 要放开
+
+                // Text(
+                //   formatNumber(
+                //     ticker.volCcy24h.decimal,
+                //     precision: 2,
+                //     showCompact: true,
+                //   ),
+                //   style: theme.t2s10w400,
+                // ),
               ],
             ),
           ),
-          Text(
-            formatNumber(
-              ticker.last.decimal,
-              precision: instrument?.precision ?? ticker.precision,
-              showThousands: true,
-              prefix: '\$',
-            ),
-            style: theme.t1s14w500,
-          ),
-          Container(
-            width: 80.r,
-            height: 32.r,
-            padding: EdgeInsetsDirectional.symmetric(
-              horizontal: 12.r,
-              vertical: 6.r,
-            ),
-            margin: EdgeInsetsDirectional.only(start: 12.r),
-            decoration: BoxDecoration(
-              color: ticker.changeRate >= 0
-                  ? long ?? theme.long
-                  : short ?? theme.short,
-              borderRadius: BorderRadius.circular(5.r),
-            ),
-            child: FittedBox(
-              child: Text(
-                formatPercentage(ticker.changeRate),
-                style: TextStyle(
-                  color: theme.white,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          )
+
+          /// TODO: 要放开
+          // Text(
+          //   formatNumber(
+          //     ticker.last.decimal,
+          //     precision: instrument?.precision ?? ticker.precision,
+          //     showThousands: true,
+          //     prefix: '\$',
+          //   ),
+          //   style: theme.t1s14w500,
+          // ),
+          // Container(
+          //   width: 80.r,
+          //   height: 32.r,
+          //   padding: EdgeInsetsDirectional.symmetric(
+          //     horizontal: 12.r,
+          //     vertical: 6.r,
+          //   ),
+          //   margin: EdgeInsetsDirectional.only(start: 12.r),
+          //   decoration: BoxDecoration(
+          //     color: ticker.changeRate >= 0 ? long ?? theme.long : short ?? theme.short,
+          //     borderRadius: BorderRadius.circular(5.r),
+          //   ),
+          //   child: FittedBox(
+          //     child: Text(
+          //       formatPercentage(ticker.changeRate),
+          //       style: TextStyle(
+          //         color: theme.white,
+          //         fontSize: 12.sp,
+          //         fontWeight: FontWeight.w500,
+          //       ),
+          //     ),
+          //   ),
+          // )
         ],
       ),
     );

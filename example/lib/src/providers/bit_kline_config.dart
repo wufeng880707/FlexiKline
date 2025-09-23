@@ -22,11 +22,35 @@ import 'package:example/src/theme/flexi_theme.dart';
 import 'package:example/src/utils/cache_util.dart';
 import 'package:flexi_kline/flexi_kline.dart' hide Overlay;
 import 'package:flexi_kline/src/framework/draw/overlay.dart' as flexi_overlay;
+import 'package:flexi_kline/src/indicators/vol_ma/vol_ma.dart';
+import 'package:flexi_kline/src/indicators/vol_ma/vol_ma_param.dart';
+import 'package:flexi_kline/src/indicators/volume/volume.dart';
+import 'package:flexi_kline/src/indicators/volume/volume_param.dart';
+import 'package:flexi_kline/src/indicators/ma/ma.dart';
+import 'package:flexi_kline/src/indicators/ma/ma_param.dart';
+import 'package:flexi_kline/src/indicators/boll/boll.dart';
+import 'package:flexi_kline/src/indicators/boll/boll_param.dart';
+import 'package:flexi_kline/src/indicators/ema/ema.dart';
+import 'package:flexi_kline/src/indicators/ema/ema_param.dart';
+import 'package:flexi_kline/src/indicators/sar/sar.dart';
+import 'package:flexi_kline/src/indicators/sar/sar_param.dart';
+import 'package:flexi_kline/src/indicators/avl/avl.dart';
+import 'package:flexi_kline/src/indicators/avl/avl_param.dart';
+import 'package:flexi_kline/src/indicators/rsi/rsi.dart';
+import 'package:flexi_kline/src/indicators/rsi/rsi_param.dart';
+import 'package:flexi_kline/src/indicators/kdj/kdj.dart';
+import 'package:flexi_kline/src/indicators/kdj/kdj_param.dart';
+import 'package:flexi_kline/src/indicators/macd/macd.dart';
+import 'package:flexi_kline/src/indicators/macd/macd_param.dart';
+import 'package:flexi_formatter/date_time.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 abstract class BaseBitFlexiKlineTheme with FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
+  abstract String key;
+  
   double? _scale;
   @override
   double get scale => _scale ??= math.min(
@@ -71,7 +95,7 @@ abstract class BaseBitFlexiKlineTheme with FlexiKlineThemeTextStyle implements I
 
 class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   @override
-  String get key => 'flexi_kline_config_key_bit-light';
+  String key = 'flexi_kline_config_key_bit-light';
 
   @override
   Color get chartBg => const Color(0xFFFBFDFF);
@@ -119,10 +143,18 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   Color get indraTodayAvgColor => const Color(0xffff9933);
   @override
   Color get indraTodayCloseColor => const Color(0xff4d78ff);
+  
+  @override
+  Color get dragBg => const Color(0x33000000);
 
   @override
-  // TODO: implement lastPriceTextBg
-  Color get lastPriceTextBg => throw UnimplementedError();
+  Color get latestPriceTextBg => const Color(0xFF000000);
+
+  @override
+  Color get lineChartColor => const Color(0xFF2196F3);
+
+  @override
+  Color get markLineColor => textColor;
 }
 
 class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
@@ -132,6 +164,16 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   Color get indraTodayAvgColor => const Color(0xffff9933);
   @override
   Color get indraTodayCloseColor => const Color(0xff4d78ff);
+  
+  @override
+  Color get dragBg => const Color(0x33FFFFFF);
+
+  @override
+  Color get lineChartColor => const Color(0xFF64B5F6);
+
+  @override
+  Color get markLineColor => markLine;
+
   @override
   Color chartBg = const Color(0xFF111111);
 
@@ -144,8 +186,6 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   @override
   Color crossTextBg = const Color(0xFF404040);
 
-  @override
-  Color lastPriceTextBg = Colors.black54;
 
   @override
   Color gridLine = const Color(0xFF222222);
@@ -173,6 +213,12 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
 
   @override
   Color get drawColor => Colors.lightBlue;
+
+  @override
+  Color get lastPriceTextBg => latestPriceTextBg;
+
+  @override
+  Color get lastPriceTextColor => crossTextColor;
 }
 
 final lightBitFlexiKlineTheme = BitFlexiKlineLightTheme();
@@ -189,16 +235,105 @@ final bitFlexiKlineThemeProvider = StateProvider<BaseBitFlexiKlineTheme>((ref) {
   }
 });
 
-class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
+class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implements IConfiguration {
   final WidgetRef ref;
 
   BitFlexiKlineConfiguration({required this.ref});
+
+  // 加载指标JSON配置
+  Future<Map<String, dynamic>?> _loadIndicatorJsonConfig() async {
+    try {
+      final String jsonString =
+          await rootBundle.loadString('lib/flexi_kline_indicators_configuration.json');
+      final Map<String, dynamic> config = jsonDecode(jsonString);
+      defLogger.d('Successfully loaded indicator JSON config for bit theme');
+      return config;
+    } catch (err, stack) {
+      defLogger.e('_loadIndicatorJsonConfig error: $err', stackTrace: stack);
+      return null;
+    }
+  }
+
+  // 加载主题JSON配置
+  Future<Map<String, dynamic>?> _loadThemeJsonConfig() async {
+    try {
+      final String jsonString =
+          await rootBundle.loadString('example/lib/default_flexi_kline_configuration.json');
+      final Map<String, dynamic> config = jsonDecode(jsonString);
+      defLogger.d('Successfully loaded theme JSON config for bit theme');
+      return config;
+    } catch (err, stack) {
+      defLogger.e('_loadThemeJsonConfig error: $err', stackTrace: stack);
+      return null;
+    }
+  }
 
   Size get initialMainSize {
     return Size(ScreenUtil().screenWidth, 300.r);
   }
 
   @override
+  String get configKey => 'bit';
+
+  @override
+  FlexiKlineConfig generateFlexiKlineConfig([Map<String, dynamic>? origin]) {
+    // 三级配置加载策略：缓存 → JSON → 代码默认值
+    
+    // 1. 优先使用原始配置（通常来自缓存）
+    if (origin != null && origin.isNotEmpty) {
+      try {
+        final config = FlexiKlineConfig.fromJson(origin);
+        defLogger.d('Generated FlexiKlineConfig from origin (cache) for bit theme');
+        return config;
+      } catch (e, stack) {
+        defLogger.e('Failed to generate FlexiKlineConfig from origin: $e', stackTrace: stack);
+      }
+    }
+
+    // 2. 尝试从JSON配置生成（异步，这里先返回默认值）
+    _generateConfigFromJsonAsync();
+
+    // 3. 最后使用代码默认配置作为fallback
+    defLogger.d('Generated FlexiKlineConfig from code defaults for bit theme');
+    return super.generateFlexiKlineConfig(origin);
+  }
+
+  // 异步从JSON生成配置并更新缓存
+  Future<void> _generateConfigFromJsonAsync() async {
+    try {
+      final themeJsonConfig = await _loadThemeJsonConfig();
+      if (themeJsonConfig != null) {
+        // 从JSON配置生成FlexiKlineConfig
+        final config = _generateConfigFromJson(themeJsonConfig);
+        if (config != null) {
+          // 保存到缓存以供下次使用
+          await setConfig('flexi_kline_config', config.toJson());
+          defLogger.d('Generated and cached FlexiKlineConfig from JSON for bit theme');
+        }
+      }
+    } catch (e, stack) {
+      defLogger.e('Error generating config from JSON for bit theme: $e', stackTrace: stack);
+    }
+  }
+
+  // 从JSON配置生成FlexiKlineConfig
+  FlexiKlineConfig? _generateConfigFromJson(Map<String, dynamic> jsonConfig) {
+    try {
+      return FlexiKlineConfig(
+        grid: _parseGridConfig(jsonConfig['grid']) ?? genGridConfig(),
+        setting: _parseSettingConfig(jsonConfig['setting']) ?? genSettingConfig(),
+        gesture: _parseGestureConfig(jsonConfig['gesture']) ?? genGestureConfig(),
+        cross: _parseCrossConfig(jsonConfig['cross']) ?? genCrossConfig(),
+        draw: _parseDrawConfig(jsonConfig['draw']) ?? genDrawConfig(),
+        mainIndicator: _parseMainIndicatorConfig(jsonConfig['mainIndicator']) ?? genMainIndicator(),
+        sub: <IIndicatorKey>{}, // 副指标通过单独的方法管理
+      );
+    } catch (e, stack) {
+      defLogger.e('Error parsing JSON config for bit theme: $e', stackTrace: stack);
+      return null;
+    }
+  }
+
   FlexiKlineConfig getFlexiKlineConfig() {
     final theme = ref.read(bitFlexiKlineThemeProvider);
     try {
@@ -213,13 +348,14 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       defLogger.e('getFlexiKlineConfig error:$err', stackTrace: stack);
     }
 
-    return genFlexiKlineConfig();
+    return generateFlexiKlineConfig();
   }
 
   @override
   void saveFlexiKlineConfig(FlexiKlineConfig config) {
     final jsonSrc = jsonEncode(config);
-    CacheUtil().setString(config.key, jsonSrc);
+    final theme = ref.read(bitFlexiKlineThemeProvider);
+    CacheUtil().setString(theme.key, jsonSrc);
   }
 
   @override
@@ -312,9 +448,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: 'intraDay',
         bar: '15m',
-        milliseconds: Duration.millisecondsPerMinute * 15,
         multiplier: 15,
-        timespan: Timespan.minute,
+        timeUnit: TimeUnit.minute,
         showName: 'Time',
         sortOrder: 0,
         intraDay: true,
@@ -322,144 +457,128 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: '1m',
         bar: '1m',
-        milliseconds: Duration.millisecondsPerMinute,
         multiplier: 1,
-        timespan: Timespan.minute,
+        timeUnit: TimeUnit.minute,
         showName: '1m',
         sortOrder: 1,
       ),
       const TimeBarConfig(
         key: '3m',
         bar: '3m',
-        milliseconds: Duration.millisecondsPerMinute * 3,
         multiplier: 3,
-        timespan: Timespan.minute,
+        timeUnit: TimeUnit.minute,
         showName: '3m',
         sortOrder: 2,
       ),
       const TimeBarConfig(
         key: '5m',
         bar: '5m',
-        milliseconds: Duration.millisecondsPerMinute * 5,
         multiplier: 5,
-        timespan: Timespan.minute,
+        timeUnit: TimeUnit.minute,
         showName: '5m',
         sortOrder: 3,
       ),
       const TimeBarConfig(
         key: '15m',
         bar: '15m',
-        milliseconds: Duration.millisecondsPerMinute * 15,
         multiplier: 15,
-        timespan: Timespan.minute,
+        timeUnit: TimeUnit.minute,
         showName: '15m',
         sortOrder: 4,
       ),
       const TimeBarConfig(
         key: '30m',
         bar: '30m',
-        milliseconds: Duration.millisecondsPerMinute * 30,
         multiplier: 30,
-        timespan: Timespan.minute,
+        timeUnit: TimeUnit.minute,
         showName: '30m',
         sortOrder: 5,
       ),
       const TimeBarConfig(
         key: '1H',
         bar: '1H',
-        milliseconds: Duration.millisecondsPerHour,
         multiplier: 1,
-        timespan: Timespan.hour,
+        timeUnit: TimeUnit.hour,
         showName: '1H',
         sortOrder: 6,
       ),
       const TimeBarConfig(
         key: '2H',
         bar: '2H',
-        milliseconds: Duration.millisecondsPerHour * 2,
         multiplier: 2,
-        timespan: Timespan.hour,
+        timeUnit: TimeUnit.hour,
         showName: '2H',
         sortOrder: 7,
       ),
       const TimeBarConfig(
         key: '4H',
         bar: '4H',
-        milliseconds: Duration.millisecondsPerHour * 4,
         multiplier: 4,
-        timespan: Timespan.hour,
+        timeUnit: TimeUnit.hour,
         showName: '4H',
         sortOrder: 8,
       ),
       const TimeBarConfig(
         key: '6H',
         bar: '6H',
-        milliseconds: Duration.millisecondsPerHour * 6,
         multiplier: 6,
-        timespan: Timespan.hour,
+        timeUnit: TimeUnit.hour,
         showName: '6H',
         sortOrder: 9,
       ),
       const TimeBarConfig(
         key: '12H',
         bar: '12H',
-        milliseconds: Duration.millisecondsPerHour * 12,
         multiplier: 12,
-        timespan: Timespan.hour,
+        timeUnit: TimeUnit.hour,
         showName: '12H',
         sortOrder: 10,
       ),
       const TimeBarConfig(
         key: '1D',
         bar: '1D',
-        milliseconds: Duration.millisecondsPerDay,
         multiplier: 1,
-        timespan: Timespan.day,
+        timeUnit: TimeUnit.day,
         showName: '1D',
         sortOrder: 11,
       ),
       const TimeBarConfig(
         key: '2D',
         bar: '2D',
-        milliseconds: Duration.millisecondsPerDay * 2,
         multiplier: 2,
-        timespan: Timespan.day,
+        timeUnit: TimeUnit.day,
         showName: '2D',
         sortOrder: 12,
       ),
       const TimeBarConfig(
         key: '3D',
         bar: '3D',
-        milliseconds: Duration.millisecondsPerDay * 3,
         multiplier: 3,
-        timespan: Timespan.day,
+        timeUnit: TimeUnit.day,
         showName: '3D',
         sortOrder: 13,
       ),
       const TimeBarConfig(
         key: '1W',
         bar: '1W',
-        milliseconds: Duration.millisecondsPerDay * 7,
         multiplier: 7,
-        timespan: Timespan.week,
+        timeUnit: TimeUnit.week,
         showName: '1W',
         sortOrder: 14,
       ),
       const TimeBarConfig(
         key: '1M',
         bar: '1M',
-        milliseconds: Duration.millisecondsPerDay * 30,
         multiplier: 1,
-        timespan: Timespan.month,
+        timeUnit: TimeUnit.month,
         showName: '1M',
         sortOrder: 15,
       ),
       const TimeBarConfig(
         key: '3M',
         bar: '3M',
-        milliseconds: Duration.millisecondsPerDay * 90,
         multiplier: 3,
-        timespan: Timespan.month,
+        timeUnit: TimeUnit.month,
         showName: '3M',
         sortOrder: 16,
       ),
@@ -467,9 +586,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: '6Hutc',
         bar: '6Hutc',
-        milliseconds: Duration.millisecondsPerHour * 6,
         multiplier: 6,
-        timespan: Timespan.hour,
+        timeUnit: TimeUnit.hour,
         showName: '6Hutc',
         isUtc: true,
         sortOrder: 17,
@@ -477,9 +595,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: '12Hutc',
         bar: '12Hutc',
-        milliseconds: Duration.millisecondsPerHour * 12,
         multiplier: 12,
-        timespan: Timespan.hour,
+        timeUnit: TimeUnit.hour,
         showName: '12Hutc',
         isUtc: true,
         sortOrder: 18,
@@ -487,9 +604,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: 'utc1D',
         bar: '1Dutc',
-        milliseconds: Duration.millisecondsPerDay,
         multiplier: 1,
-        timespan: Timespan.day,
+        timeUnit: TimeUnit.day,
         showName: '1Dutc',
         isUtc: true,
         sortOrder: 19,
@@ -497,9 +613,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: 'utc2D',
         bar: '2Dutc',
-        milliseconds: Duration.millisecondsPerDay * 2,
         multiplier: 2,
-        timespan: Timespan.day,
+        timeUnit: TimeUnit.day,
         showName: '2Dutc',
         isUtc: true,
         sortOrder: 20,
@@ -507,9 +622,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: 'utc3D',
         bar: '3Dutc',
-        milliseconds: Duration.millisecondsPerDay * 3,
         multiplier: 3,
-        timespan: Timespan.day,
+        timeUnit: TimeUnit.day,
         showName: '3Dutc',
         isUtc: true,
         sortOrder: 21,
@@ -517,9 +631,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: 'utc1W',
         bar: '1Wutc',
-        milliseconds: Duration.millisecondsPerDay * 7,
         multiplier: 7,
-        timespan: Timespan.week,
+        timeUnit: TimeUnit.week,
         showName: '1Wutc',
         isUtc: true,
         sortOrder: 22,
@@ -527,9 +640,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: 'utc1M',
         bar: '1Mutc',
-        milliseconds: Duration.millisecondsPerDay * 30,
         multiplier: 1,
-        timespan: Timespan.month,
+        timeUnit: TimeUnit.month,
         showName: '1Mutc',
         isUtc: true,
         sortOrder: 23,
@@ -537,9 +649,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       const TimeBarConfig(
         key: 'utc3M',
         bar: '3Mutc',
-        milliseconds: Duration.millisecondsPerDay * 90,
         multiplier: 3,
-        timespan: Timespan.month,
+        timeUnit: TimeUnit.month,
         showName: '3Mutc',
         isUtc: true,
         sortOrder: 24,
@@ -644,132 +755,115 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   @override
   Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders {
     if (_cachedMainIndicatorBuilders != null) {
-      return _cachedMainIndicatorBuilders!;
+      // 合并super指标并返回
+      final result = Map<IIndicatorKey, IndicatorBuilder>.from(_cachedMainIndicatorBuilders!);
+      final superBuilders = super.mainIndicatorBuilders;
+      result.addAll(superBuilders);
+      return result;
     }
 
-    // 从配置中读取主指标配置
-    final config = getConfig('mainIndicatorBuilders');
-    if (config != null) {
+    // 三级配置加载策略：缓存 → JSON → 代码默认值
+    
+    // 1. 优先从缓存读取
+    final cachedConfig = getConfig('mainIndicatorBuilders');
+    if (cachedConfig != null) {
       try {
-        _cachedMainIndicatorBuilders = _buildMainIndicatorsFromConfig(config);
-        return _cachedMainIndicatorBuilders!;
+        _cachedMainIndicatorBuilders = _buildMainIndicatorsFromConfig(cachedConfig);
+        defLogger.d('✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from cache (bit theme)');
       } catch (e) {
-        defLogger.e('Failed to build main indicators from config: $e');
+        defLogger.e('❌ Failed to build main indicators from cached config: $e');
+        _cachedMainIndicatorBuilders = null;
       }
     }
 
-    // 默认配置
-    _cachedMainIndicatorBuilders = _getDefaultMainIndicators();
+    // 2. 缓存没有或失败，尝试从JSON加载
+    if (_cachedMainIndicatorBuilders == null) {
+      try {
+        _cachedMainIndicatorBuilders = _loadMainIndicatorsFromJsonSync();
+        if (_cachedMainIndicatorBuilders != null) {
+          defLogger.d('✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
+          // 异步保存到缓存（不阻塞当前调用）
+          _saveMainIndicatorsToCache(_cachedMainIndicatorBuilders!);
+        }
+      } catch (e) {
+        defLogger.e('❌ Failed to load main indicators from JSON: $e');
+      }
+    }
 
-    // 调用super以满足@mustCallSuper要求
+    // 3. 最后使用代码默认配置
+    if (_cachedMainIndicatorBuilders == null) {
+      _cachedMainIndicatorBuilders = _getDefaultMainIndicators();
+      defLogger.d('✅ Using ${_cachedMainIndicatorBuilders!.length} default main indicators (bit theme)');
+    }
+
+    // 启动异步JSON加载（用于下次更新缓存）
+    _loadMainIndicatorsFromJsonAsync();
+
+    // 合并super指标并返回
+    final result = Map<IIndicatorKey, IndicatorBuilder>.from(_cachedMainIndicatorBuilders!);
     final superBuilders = super.mainIndicatorBuilders;
-    _cachedMainIndicatorBuilders!.addAll(superBuilders);
+    result.addAll(superBuilders);
+    return result;
+  }
 
-    return _cachedMainIndicatorBuilders!;
+  // 同步从JSON加载主指标配置（用于初始化）
+  Map<IIndicatorKey, IndicatorBuilder>? _loadMainIndicatorsFromJsonSync() {
+    // Flutter中无法真正同步加载assets，这里返回null
+    // 实际的JSON加载会在异步方法中完成
+    defLogger.w('⚠️ Sync JSON loading not available for bit theme, will load async');
+    return null;
+  }
+
+  // 异步保存主指标到缓存
+  void _saveMainIndicatorsToCache(Map<IIndicatorKey, IndicatorBuilder> builders) {
+    Future(() async {
+      try {
+        final configMap = <String, dynamic>{};
+        builders.forEach((key, builder) {
+          // 这里应该保存指标的配置参数，而不是空对象
+          // 暂时保存基本信息，具体实现需要根据指标类型来序列化参数
+          configMap[key.id] = {
+            'type': key.id,
+            'enabled': true,
+            // TODO: 添加具体的指标参数序列化
+          };
+        });
+        await setConfig('mainIndicatorBuilders', configMap);
+        defLogger.d('✅ Saved ${builders.length} main indicators to cache (bit theme)');
+      } catch (e) {
+        defLogger.e('❌ Failed to save main indicators to cache: $e');
+      }
+    });
+  }
+
+  // 异步从JSON加载主指标配置
+  Future<void> _loadMainIndicatorsFromJsonAsync() async {
+    try {
+      final jsonConfig = await _loadIndicatorJsonConfig();
+      if (jsonConfig != null && jsonConfig['mainIndicators'] != null) {
+        final mainIndicators = jsonConfig['mainIndicators'] as Map<String, dynamic>;
+        _cachedMainIndicatorBuilders = _buildMainIndicatorsFromConfig(mainIndicators);
+        
+        // 保存到缓存
+        await setConfig(
+            'mainIndicatorBuilders',
+            _cachedMainIndicatorBuilders!
+                .map((key, builder) => MapEntry(key.id, <String, dynamic>{})));
+
+        defLogger
+            .d('✅ Async loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
+      } else {
+        defLogger.w('⚠️ No mainIndicators found in JSON config (bit theme)');
+      }
+    } catch (e, stack) {
+      defLogger.e('❌ Error loading main indicators from JSON (bit theme): $e', stackTrace: stack);
+    }
   }
 
   Map<IIndicatorKey, IndicatorBuilder> _getDefaultMainIndicators() {
-    final theme = ref.read(bitFlexiKlineThemeProvider);
-    return {
-      // MA 移动平均线
-      const FlexiIndicatorKey('ma'): (setting) => MAIndicator(
-            height: theme.mainIndicatorHeight,
-            padding: theme.mainIndicatorPadding,
-            calcParams: [
-              MaParam(
-                count: 5,
-                tips: TipsConfig(
-                  label: 'MA5: ',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: theme.normalTextSize,
-                    height: defaultTextHeight,
-                  ),
-                ),
-              ),
-              MaParam(
-                count: 10,
-                tips: TipsConfig(
-                  label: 'MA10: ',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: theme.normalTextSize,
-                    height: defaultTextHeight,
-                  ),
-                ),
-              ),
-              MaParam(
-                count: 20,
-                tips: TipsConfig(
-                  label: 'MA20: ',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: theme.normalTextSize,
-                    height: defaultTextHeight,
-                  ),
-                ),
-              ),
-            ],
-            tipsPadding: theme.tipsPadding,
-            lineWidth: 1.r,
-          ),
-
-      // BOLL 布林带
-      const FlexiIndicatorKey('boll'): (setting) => BOLLIndicator(
-            height: theme.mainIndicatorHeight,
-            padding: theme.mainIndicatorPadding,
-            calcParam: const BOLLParam(
-              n: 20,
-              std: 2,
-            ),
-            mbTips: const TipsConfig(
-              label: 'BOLL: ',
-              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-            ),
-            upTips: const TipsConfig(
-              label: 'UB: ',
-              style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
-            ),
-            dnTips: const TipsConfig(
-              label: 'LB: ',
-              style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
-            ),
-            tipsPadding: theme.tipsPadding,
-            lineWidth: 1.r,
-          ),
-
-      // EMA 指数移动平均线
-      const FlexiIndicatorKey('ema'): (setting) => EMAIndicator(
-            height: theme.mainIndicatorHeight,
-            padding: theme.mainIndicatorPadding,
-            calcParams: [
-              MaParam(
-                count: 12,
-                tips: TipsConfig(
-                  label: 'EMA12: ',
-                  style: TextStyle(
-                    color: Colors.orange,
-                    fontSize: theme.normalTextSize,
-                    height: defaultTextHeight,
-                  ),
-                ),
-              ),
-              MaParam(
-                count: 26,
-                tips: TipsConfig(
-                  label: 'EMA26: ',
-                  style: TextStyle(
-                    color: Colors.purple,
-                    fontSize: theme.normalTextSize,
-                    height: defaultTextHeight,
-                  ),
-                ),
-              ),
-            ],
-            tipsPadding: theme.tipsPadding,
-            lineWidth: 1.r,
-          ),
-    };
+    // 返回空映射，主要依赖JSON配置和缓存
+    // 只保留已优化的指标作为fallback
+    return {};
   }
 
   // 副指标配置缓存
@@ -778,139 +872,176 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   @override
   Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders {
     if (_cachedSubIndicatorBuilders != null) {
-      return _cachedSubIndicatorBuilders!;
+      // 合并super指标并返回
+      final result = Map<IIndicatorKey, IndicatorBuilder>.from(_cachedSubIndicatorBuilders!);
+      final superBuilders = super.subIndicatorBuilders;
+      result.addAll(superBuilders);
+      return result;
     }
 
-    // 从配置中读取副指标配置
-    final config = getConfig('subIndicatorBuilders');
-    if (config != null) {
+    // 三级配置加载策略：缓存 → JSON → 代码默认值
+    
+    // 1. 优先从缓存读取
+    final cachedConfig = getConfig('subIndicatorBuilders');
+    if (cachedConfig != null) {
       try {
-        _cachedSubIndicatorBuilders = _buildSubIndicatorsFromConfig(config);
-        return _cachedSubIndicatorBuilders!;
+        _cachedSubIndicatorBuilders = _buildSubIndicatorsFromConfig(cachedConfig);
+        defLogger.d('✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from cache (bit theme)');
       } catch (e) {
-        defLogger.e('Failed to build sub indicators from config: $e');
+        defLogger.e('❌ Failed to build sub indicators from cached config: $e');
+        _cachedSubIndicatorBuilders = null;
       }
     }
 
-    // 默认配置
-    _cachedSubIndicatorBuilders = _getDefaultSubIndicators();
+    // 2. 缓存没有或失败，尝试从JSON加载
+    if (_cachedSubIndicatorBuilders == null) {
+      try {
+        _cachedSubIndicatorBuilders = _loadSubIndicatorsFromJsonSync();
+        if (_cachedSubIndicatorBuilders != null) {
+          defLogger.d('✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
+          // 异步保存到缓存（不阻塞当前调用）
+          _saveSubIndicatorsToCache(_cachedSubIndicatorBuilders!);
+        }
+      } catch (e) {
+        defLogger.e('❌ Failed to load sub indicators from JSON: $e');
+      }
+    }
 
-    // 调用super以满足@mustCallSuper要求
+    // 3. 最后使用代码默认配置
+    if (_cachedSubIndicatorBuilders == null) {
+      _cachedSubIndicatorBuilders = _getDefaultSubIndicators();
+      defLogger.d('✅ Using ${_cachedSubIndicatorBuilders!.length} default sub indicators (bit theme)');
+    }
+
+    // 启动异步JSON加载（用于下次更新缓存）
+    _loadSubIndicatorsFromJsonAsync();
+
+    // 合并super指标并返回
+    final result = Map<IIndicatorKey, IndicatorBuilder>.from(_cachedSubIndicatorBuilders!);
     final superBuilders = super.subIndicatorBuilders;
-    _cachedSubIndicatorBuilders!.addAll(superBuilders);
+    result.addAll(superBuilders);
+    return result;
+  }
 
-    return _cachedSubIndicatorBuilders!;
+  // 同步从JSON加载副指标配置（用于初始化）
+  Map<IIndicatorKey, IndicatorBuilder>? _loadSubIndicatorsFromJsonSync() {
+    // Flutter中无法真正同步加载assets，这里返回null
+    // 实际的JSON加载会在异步方法中完成
+    defLogger.w('⚠️ Sync JSON loading not available for bit theme, will load async');
+    return null;
+  }
+
+  // 异步保存副指标到缓存
+  void _saveSubIndicatorsToCache(Map<IIndicatorKey, IndicatorBuilder> builders) {
+    Future(() async {
+      try {
+        final configMap = <String, dynamic>{};
+        builders.forEach((key, builder) {
+          // 这里应该保存指标的配置参数，而不是空对象
+          // 暂时保存基本信息，具体实现需要根据指标类型来序列化参数
+          configMap[key.id] = {
+            'type': key.id,
+            'enabled': true,
+            // TODO: 添加具体的指标参数序列化
+          };
+        });
+        await setConfig('subIndicatorBuilders', configMap);
+        defLogger.d('✅ Saved ${builders.length} sub indicators to cache (bit theme)');
+      } catch (e) {
+        defLogger.e('❌ Failed to save sub indicators to cache: $e');
+      }
+    });
+  }
+
+  // 异步从JSON加载副指标配置
+  Future<void> _loadSubIndicatorsFromJsonAsync() async {
+    try {
+      final jsonConfig = await _loadIndicatorJsonConfig();
+      if (jsonConfig != null && jsonConfig['subIndicators'] != null) {
+        final subIndicators = jsonConfig['subIndicators'] as Map<String, dynamic>;
+        _cachedSubIndicatorBuilders = _buildSubIndicatorsFromConfig(subIndicators);
+        
+        // 保存到缓存
+        await setConfig(
+            'subIndicatorBuilders',
+            _cachedSubIndicatorBuilders!
+                .map((key, builder) => MapEntry(key.id, <String, dynamic>{})));
+
+        defLogger
+            .d('✅ Async loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
+      } else {
+        defLogger.w('⚠️ No subIndicators found in JSON config (bit theme)');
+      }
+    } catch (e, stack) {
+      defLogger.e('❌ Error loading sub indicators from JSON (bit theme): $e', stackTrace: stack);
+    }
   }
 
   Map<IIndicatorKey, IndicatorBuilder> _getDefaultSubIndicators() {
     final theme = ref.read(bitFlexiKlineThemeProvider);
     return {
-      // RSI 相对强弱指标
-      const FlexiIndicatorKey('rsi'): (setting) => RSIIndicator(
+      // VOL_MA 成交量移动平均线 - 基本配置作为fallback
+      const FlexiIndicatorKey('volMa'): (setting) => VolMaIndicator(
             height: 100.r,
-            calcParams: [
-              const RsiParam(
-                count: 6,
-                tips: TipsConfig(
-                  label: 'RSI6: ',
-                  style: TextStyle(
-                    color: Colors.orange,
-                    fontSize: 12,
-                    height: 1.2,
-                  ),
+            calcParam: const VolMaParam(
+              lines: [
+                VolMALineConfig(
+                  id: 'ma_1',
+                  enabled: true,
+                  period: 5,
+                  color: Colors.blue,
+                  width: 1.0,
+                  opacity: 0.8,
                 ),
-              ),
-              const RsiParam(
-                count: 12,
-                tips: TipsConfig(
-                  label: 'RSI12: ',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 12,
-                    height: 1.2,
-                  ),
+                VolMALineConfig(
+                  id: 'ma_2',
+                  enabled: true,
+                  period: 10,
+                  color: Colors.red,
+                  width: 1.0,
+                  opacity: 0.8,
                 ),
+              ],
+              volume: VolMAVolumeConfig(
+                useTrendColor: true,
+                bullishColor: Color(0xff4caf50),
+                bearishColor: Color(0xfff44336),
+                opacity: 0.6,
               ),
-              const RsiParam(
-                count: 24,
-                tips: TipsConfig(
-                  label: 'RSI24: ',
-                  style: TextStyle(
-                    color: Colors.purple,
-                    fontSize: 12,
-                    height: 1.2,
-                  ),
-                ),
+              display: VolMADisplayConfig(
+                precision: 2,
+                showVolInTips: true,
+                showPeriodInTips: true,
               ),
-            ],
-            tipsPadding: theme.tipsPadding,
-            lineWidth: 1.r,
-            precision: 2,
-          ),
-
-      // KDJ 随机指标
-      const FlexiIndicatorKey('kdj'): (setting) => KDJIndicator(
-            height: 100.r,
-            calcParam: const KDJParam(
-              n: 9,
-              m1: 3,
-              m2: 3,
-            ),
-            ktips: const TipsConfig(
-              label: 'K: ',
-              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-            ),
-            dtips: const TipsConfig(
-              label: 'D: ',
-              style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
-            ),
-            jtips: const TipsConfig(
-              label: 'J: ',
-              style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
             ),
             tipsPadding: theme.tipsPadding,
-            lineWidth: 1.r,
-            precision: 2,
           ),
 
-      // MACD 指数平滑异同移动平均线
-      const FlexiIndicatorKey('macd'): (setting) => MACDIndicator(
-            height: 120.r,
-            calcParam: const MACDParam(
-              s: 12,
-              l: 26,
-              m: 9,
-            ),
-            difTips: const TipsConfig(
-              label: 'DIF: ',
-              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-            ),
-            deaTips: const TipsConfig(
-              label: 'DEA: ',
-              style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
-            ),
-            macdTips: const TipsConfig(
-              label: 'MACD: ',
-              style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
-            ),
-            tipsPadding: theme.tipsPadding,
-            lineWidth: 1.r,
-            precision: 2,
-          ),
-
-      // VOLUME 成交量
+      // VOLUME 成交量 - 基本配置作为fallback
       const FlexiIndicatorKey('volume'): (setting) => VolumeIndicator(
-            height: 80.r,
-            padding: theme.subIndicatorPadding,
-            volTips: const TipsConfig(
-              label: 'VOL: ',
-              style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
+            height: 100.r,
+            calcParam: const VolumeParam(
+              showInMain: true,
+              heightRatio: 0.3,
+              volume: VolumeBarConfig(
+                useTrendColor: true,
+                bullishColor: Color(0xff4caf50),
+                bearishColor: Color(0xfff44336),
+                opacity: 0.6,
+              ),
+              display: VolumeDisplayConfig(
+                precision: 2,
+                showVolInTips: true,
+                compactDisplay: true,
+              ),
             ),
             tipsPadding: theme.tipsPadding,
-            precision: 2,
+            tickCount: 5,
           ),
     };
   }
+
+  // drawObjectBuilders 使用基类的默认实现
 
   @override
   Map<String, dynamic>? getConfig(String key) {
@@ -980,208 +1111,270 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     return builders;
   }
 
+  // JSON配置解析方法
+  GridConfig? _parseGridConfig(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return GridConfig.fromJson(config);
+      } catch (e) {
+        defLogger.e('Failed to parse GridConfig from JSON (bit theme): $e');
+      }
+    }
+    return null;
+  }
+
+  SettingConfig? _parseSettingConfig(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return SettingConfig.fromJson(config);
+      } catch (e) {
+        defLogger.e('Failed to parse SettingConfig from JSON (bit theme): $e');
+      }
+    }
+    return null;
+  }
+
+  GestureConfig? _parseGestureConfig(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return GestureConfig.fromJson(config);
+      } catch (e) {
+        defLogger.e('Failed to parse GestureConfig from JSON (bit theme): $e');
+      }
+    }
+    return null;
+  }
+
+  CrossConfig? _parseCrossConfig(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return CrossConfig.fromJson(config);
+      } catch (e) {
+        defLogger.e('Failed to parse CrossConfig from JSON (bit theme): $e');
+      }
+    }
+    return null;
+  }
+
+  DrawConfig? _parseDrawConfig(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return DrawConfig.fromJson(config);
+      } catch (e) {
+        defLogger.e('Failed to parse DrawConfig from JSON (bit theme): $e');
+      }
+    }
+    return null;
+  }
+
+  MainPaintObjectIndicator? _parseMainIndicatorConfig(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return MainPaintObjectIndicator.fromJson(config);
+      } catch (e) {
+        defLogger.e('Failed to parse MainPaintObjectIndicator from JSON (bit theme): $e');
+      }
+    }
+    return null;
+  }
+
   // 根据配置创建指标构建器
   IndicatorBuilder _createIndicatorBuilderFromConfig(
       Map<String, dynamic> config, BaseBitFlexiKlineTheme theme) {
     final type = config['type'] as String?;
 
     switch (type) {
+      // ✅ 已优化的指标类型
+      case 'volMa':
+        return (setting) => VolMaIndicator(
+              height: (config['height'] as num?)?.toDouble() ?? 100.r,
+              calcParam: _parseVolMaParam(config['config']) ?? const VolMaParam(lines: []),
+              tipsPadding: theme.tipsPadding,
+            );
+
+      case 'volume':
+        return (setting) => VolumeIndicator(
+              height: (config['height'] as num?)?.toDouble() ?? 100.r,
+              calcParam: _parseVolumeParam(config['config']) ?? const VolumeParam(),
+              tipsPadding: theme.tipsPadding,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
+            );
+
+      // 📈 主指标类型
       case 'ma':
         return (setting) => MAIndicator(
-              height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+              height: (config['height'] as num?)?.toDouble() ?? 300.r,
               padding: theme.mainIndicatorPadding,
-              calcParams: _parseMaParams(config['calcParams']),
+              calcParam: _parseMaParam(config['config']) ?? const MaParam(),
               tipsPadding: theme.tipsPadding,
-              lineWidth: 1.r,
             );
 
       case 'boll':
         return (setting) => BOLLIndicator(
-              height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+              height: (config['height'] as num?)?.toDouble() ?? 300.r,
               padding: theme.mainIndicatorPadding,
-              calcParam: _parseBOLLParam(config['calcParam']),
-              mbTips: _parseTipsConfig(config['mbTips']) ??
-                  const TipsConfig(
-                    label: 'BOLL: ',
-                    style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-                  ),
-              upTips: _parseTipsConfig(config['upTips']) ??
-                  const TipsConfig(
-                    label: 'UB: ',
-                    style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
-                  ),
-              dnTips: _parseTipsConfig(config['dnTips']) ??
-                  const TipsConfig(
-                    label: 'LB: ',
-                    style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
-                  ),
+              calcParam: _parseBOLLParam(config['config']) ?? const BOLLParam(),
               tipsPadding: theme.tipsPadding,
-              lineWidth: 1.r,
             );
 
       case 'ema':
         return (setting) => EMAIndicator(
-              height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+              height: (config['height'] as num?)?.toDouble() ?? 300.r,
               padding: theme.mainIndicatorPadding,
-              calcParams: _parseMaParams(config['calcParams']),
+              calcParam: _parseEMAParam(config['config']) ?? const EmaParam(),
               tipsPadding: theme.tipsPadding,
-              lineWidth: 1.r,
             );
 
+      case 'sar':
+        return (setting) => SARIndicator(
+              height: (config['height'] as num?)?.toDouble() ?? 300.r,
+              padding: theme.mainIndicatorPadding,
+              calcParam: _parseSARParam(config['config']) ?? const SARParam(),
+              tipsPadding: theme.tipsPadding,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
+            );
+
+      case 'avl':
+        return (setting) => AVLIndicator(
+              height: (config['height'] as num?)?.toDouble() ?? 300.r,
+              padding: theme.mainIndicatorPadding,
+              calcParam: _parseAVLParam(config['config']) ?? const AVLParam(),
+              tipsPadding: theme.tipsPadding,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
+            );
+
+      // 📊 副指标类型
       case 'rsi':
         return (setting) => RSIIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 100.r,
-              calcParams: _parseRsiParams(config['calcParams']),
+              calcParam: _parseRSIParam(config['config']) ?? const RsiParam(lines: []),
               tipsPadding: theme.tipsPadding,
-              lineWidth: 1.r,
-              precision: (config['precision'] as num?)?.toInt() ?? 2,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
             );
 
       case 'kdj':
         return (setting) => KDJIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 100.r,
-              calcParam: _parseKDJParam(config['calcParam']),
-              ktips: _parseTipsConfig(config['ktips']) ??
-                  const TipsConfig(
-                    label: 'K: ',
-                    style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-                  ),
-              dtips: _parseTipsConfig(config['dtips']) ??
-                  const TipsConfig(
-                    label: 'D: ',
-                    style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
-                  ),
-              jtips: _parseTipsConfig(config['jtips']) ??
-                  const TipsConfig(
-                    label: 'J: ',
-                    style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
-                  ),
+              calcParam: _parseKDJParam(config['config']) ?? const KDJParam(),
               tipsPadding: theme.tipsPadding,
-              lineWidth: 1.r,
-              precision: (config['precision'] as num?)?.toInt() ?? 2,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
             );
 
       case 'macd':
         return (setting) => MACDIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 120.r,
-              calcParam: _parseMACDParam(config['calcParam']),
-              difTips: _parseTipsConfig(config['difTips']) ??
-                  const TipsConfig(
-                    label: 'DIF: ',
-                    style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-                  ),
-              deaTips: _parseTipsConfig(config['deaTips']) ??
-                  const TipsConfig(
-                    label: 'DEA: ',
-                    style: TextStyle(color: Colors.red, fontSize: 12, height: 1.2),
-                  ),
-              macdTips: _parseTipsConfig(config['macdTips']) ??
-                  const TipsConfig(
-                    label: 'MACD: ',
-                    style: TextStyle(color: Colors.green, fontSize: 12, height: 1.2),
-                  ),
+              calcParam: _parseMACDParam(config['config']) ?? const MACDParam(s: 12, l: 26, m: 9),
+              difTips: _parseTipsConfig(config['difTips']) ?? TipsConfig(
+                label: 'DIF: ',
+                style: TextStyle(color: Colors.blue, fontSize: 12.sp, height: 1.2),
+              ),
+              deaTips: _parseTipsConfig(config['deaTips']) ?? TipsConfig(
+                label: 'DEA: ',
+                style: TextStyle(color: Colors.red, fontSize: 12.sp, height: 1.2),
+              ),
+              macdTips: _parseTipsConfig(config['macdTips']) ?? TipsConfig(
+                label: 'MACD: ',
+                style: TextStyle(color: Colors.green, fontSize: 12.sp, height: 1.2),
+              ),
               tipsPadding: theme.tipsPadding,
-              lineWidth: 1.r,
-              precision: (config['precision'] as num?)?.toInt() ?? 2,
-            );
-
-      case 'volume':
-        return (setting) => VolumeIndicator(
-              height: (config['height'] as num?)?.toDouble() ?? 80.r,
-              padding: theme.subIndicatorPadding,
-              volTips: _parseTipsConfig(config['volTips']) ??
-                  const TipsConfig(
-                    label: 'VOL: ',
-                    style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-                  ),
-              tipsPadding: theme.tipsPadding,
-              precision: (config['precision'] as num?)?.toInt() ?? 2,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
             );
 
       default:
-        throw ArgumentError('Unknown indicator type: $type');
+        // 对于不支持的指标类型，记录日志并返回一个默认的Volume指标
+        defLogger.w('Unsupported indicator type: $type, fallback to volume indicator (bit theme)');
+        return (setting) => VolumeIndicator(
+              height: 100.r,
+              calcParam: const VolumeParam(),
+              tipsPadding: theme.tipsPadding,
+              tickCount: 5,
+            );
     }
   }
 
-  // 解析参数的辅助方法
-  List<MaParam> _parseMaParams(dynamic params) {
-    if (params is! List) return [];
-    return params.map((p) {
-      if (p is Map<String, dynamic>) {
-        return MaParam(
-          count: (p['count'] as num?)?.toInt() ?? 5,
-          tips: _parseTipsConfig(p['tips']) ??
-              const TipsConfig(
-                label: 'MA: ',
-                style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-              ),
-        );
-      }
-      return const MaParam(
-        count: 5,
-        tips: TipsConfig(
-          label: 'MA: ',
-          style: TextStyle(color: Colors.blue, fontSize: 12, height: 1.2),
-        ),
-      );
-    }).toList();
-  }
+  // 解析参数的辅助方法 - 只保留已优化指标的解析方法
 
-  BOLLParam _parseBOLLParam(dynamic param) {
-    if (param is Map<String, dynamic>) {
-      return BOLLParam(
-        n: (param['n'] as num?)?.toInt() ?? 20,
-        std: (param['std'] as num?)?.toInt() ?? 2,
-      );
+  // 解析 VolMaParam
+  VolMaParam? _parseVolMaParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return VolMaParam.fromJsonConfig(config);
     }
-    return const BOLLParam(n: 20, std: 2);
+    return null;
   }
 
-  List<RsiParam> _parseRsiParams(dynamic params) {
-    if (params is! List) return [];
-    return params.map((p) {
-      if (p is Map<String, dynamic>) {
-        return RsiParam(
-          count: (p['count'] as num?)?.toInt() ?? 6,
-          tips: _parseTipsConfig(p['tips']) ??
-              const TipsConfig(
-                label: 'RSI: ',
-                style: TextStyle(color: Colors.orange, fontSize: 12, height: 1.2),
-              ),
-        );
-      }
-      return const RsiParam(
-        count: 6,
-        tips: TipsConfig(
-          label: 'RSI: ',
-          style: TextStyle(color: Colors.orange, fontSize: 12, height: 1.2),
-        ),
-      );
-    }).toList();
-  }
-
-  KDJParam _parseKDJParam(dynamic param) {
-    if (param is Map<String, dynamic>) {
-      return KDJParam(
-        n: (param['n'] as num?)?.toInt() ?? 9,
-        m1: (param['m1'] as num?)?.toInt() ?? 3,
-        m2: (param['m2'] as num?)?.toInt() ?? 3,
-      );
+  // 解析 VolumeParam
+  VolumeParam? _parseVolumeParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return VolumeParam.fromJsonConfig(config);
     }
-    return const KDJParam(n: 9, m1: 3, m2: 3);
+    return null;
   }
 
-  MACDParam _parseMACDParam(dynamic param) {
-    if (param is Map<String, dynamic>) {
-      return MACDParam(
-        s: (param['s'] as num?)?.toInt() ?? 12,
-        l: (param['l'] as num?)?.toInt() ?? 26,
-        m: (param['m'] as num?)?.toInt() ?? 9,
-      );
+  // 解析 MaParam
+  MaParam? _parseMaParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return MaParam.fromJsonConfig(config);
     }
-    return const MACDParam(s: 12, l: 26, m: 9);
+    return null;
   }
 
+  // 解析 BOLLParam
+  BOLLParam? _parseBOLLParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return BOLLParam.fromJsonConfig(config);
+    }
+    return null;
+  }
+
+  // 解析 EMAParam
+  EmaParam? _parseEMAParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return EmaParam.fromJsonConfig(config);
+    }
+    return null;
+  }
+
+  // 解析 SARParam
+  SARParam? _parseSARParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return SARParam.fromJsonConfig(config);
+    }
+    return null;
+  }
+
+  // 解析 AVLParam
+  AVLParam? _parseAVLParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return AVLParam.fromJsonConfig(config);
+    }
+    return null;
+  }
+
+  // 解析 RSIParam
+  RsiParam? _parseRSIParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return RsiParam.fromJsonConfig(config);
+    }
+    return null;
+  }
+
+  // 解析 KDJParam
+  KDJParam? _parseKDJParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return KDJParam.fromJsonConfig(config);
+    }
+    return null;
+  }
+
+  // 解析 MACDParam
+  MACDParam? _parseMACDParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      return MACDParam.fromJsonConfig(config);
+    }
+    return null;
+  }
+
+  // 解析 TipsConfig
   TipsConfig? _parseTipsConfig(dynamic tips) {
     if (tips is Map<String, dynamic>) {
       return TipsConfig(
@@ -1192,26 +1385,47 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     return null;
   }
 
+  // 解析 TextStyle
   TextStyle _parseTextStyle(dynamic style) {
     if (style is Map<String, dynamic>) {
       return TextStyle(
-        color: _parseColor(style['color']) ?? Colors.blue,
-        fontSize: (style['fontSize'] as num?)?.toDouble() ?? 12,
+        color: _parseColor(style['color']) ?? Colors.black,
+        fontSize: (style['fontSize'] as num?)?.toDouble() ?? 12.sp,
+        fontWeight: _parseFontWeight(style['fontWeight']),
         height: (style['height'] as num?)?.toDouble() ?? 1.2,
       );
     }
-    return const TextStyle(color: Colors.blue, fontSize: 12, height: 1.2);
+    return TextStyle(fontSize: 12.sp);
   }
 
+  // 解析 Color
   Color? _parseColor(dynamic color) {
     if (color is int) {
       return Color(color);
     } else if (color is String) {
-      // 解析颜色字符串，如 "#FF0000" 或 "0xFFFF0000"
-      if (color.startsWith('#')) {
-        return Color(int.parse(color.substring(1), radix: 16) + 0xFF000000);
-      } else if (color.startsWith('0x')) {
-        return Color(int.parse(color.substring(2), radix: 16));
+      return Color(int.parse(color.replaceFirst('#', '0xff')));
+    }
+    return null;
+  }
+
+  // 解析 FontWeight
+  FontWeight? _parseFontWeight(dynamic weight) {
+    if (weight is int) {
+      switch (weight) {
+        case 100: return FontWeight.w100;
+        case 200: return FontWeight.w200;
+        case 300: return FontWeight.w300;
+        case 400: return FontWeight.w400;
+        case 500: return FontWeight.w500;
+        case 600: return FontWeight.w600;
+        case 700: return FontWeight.w700;
+        case 800: return FontWeight.w800;
+        case 900: return FontWeight.w900;
+      }
+    } else if (weight is String) {
+      switch (weight.toLowerCase()) {
+        case 'normal': return FontWeight.normal;
+        case 'bold': return FontWeight.bold;
       }
     }
     return null;

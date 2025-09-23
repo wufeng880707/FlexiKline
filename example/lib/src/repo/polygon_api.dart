@@ -91,7 +91,7 @@ Future<ApiResult<List<CandleModel>>> getHistoryKlineData(
 }) {
   final stocksTicker = req.instId;
   final multiplier = req.timeBar?.multiplier;
-  final timespan = req.timeBar?.timespan.name;
+  final timespan = req.timeBar?.bar;
   final from = req.after;
   final to = req.before;
   return polygonHttpClient.request(

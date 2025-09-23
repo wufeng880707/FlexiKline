@@ -15,6 +15,7 @@
 import 'package:example/generated/l10n.dart';
 import 'package:example/src/theme/flexi_theme.dart';
 import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -99,7 +100,12 @@ class MarketTickerLandscapeView extends ConsumerWidget {
           ),
           child: FittedBox(
             child: Text(
-              formatPercentage(ticker?.changeRate),
+                formatNumber(
+                  ticker?.changeRate.d,
+                  precision: 2,
+                  showSign: true,
+                  suffix: '%',
+                ),
               style: TextStyle(
                 color: theme.white,
                 fontSize: 12.sp,
@@ -110,9 +116,9 @@ class MarketTickerLandscapeView extends ConsumerWidget {
         ),
         Text(
           formatNumber(
-            ticker?.last.decimal,
+            ticker?.last.d,
             precision: precision,
-            showThousands: true,
+            enableGrouping: true,
             cutInvalidZero: true,
             prefix: '\$',
           ),
@@ -131,7 +137,7 @@ class MarketTickerLandscapeView extends ConsumerWidget {
                 BasicInfoView(
                   title: s.h24_high,
                   value: formatNumber(
-                    ticker?.high24h.decimal,
+                    ticker?.high24h.d,
                     precision: precision,
                     cutInvalidZero: true,
                   ),
@@ -141,7 +147,7 @@ class MarketTickerLandscapeView extends ConsumerWidget {
                 BasicInfoView(
                   title: s.h24_low,
                   value: formatNumber(
-                    ticker?.low24h.decimal,
+                    ticker?.low24h.d,
                     precision: precision,
                     cutInvalidZero: true,
                   ),
@@ -151,9 +157,9 @@ class MarketTickerLandscapeView extends ConsumerWidget {
                 BasicInfoView(
                   title: s.h24_vol(base),
                   value: formatNumber(
-                    ticker?.vol24h.decimal,
+                    ticker?.vol24h.d,
                     precision: 2,
-                    showCompact: true,
+                    enableCompact: true,
                     cutInvalidZero: true,
                   ),
                   spacing: 4.r,
@@ -162,9 +168,9 @@ class MarketTickerLandscapeView extends ConsumerWidget {
                 BasicInfoView(
                   title: s.h24_turnover(quote),
                   value: formatNumber(
-                    ticker?.volCcy24h.decimal,
+                    ticker?.volCcy24h.d,
                     precision: 2,
-                    showCompact: true,
+                    enableCompact: true,
                     cutInvalidZero: true,
                   ),
                   spacing: 4.r,

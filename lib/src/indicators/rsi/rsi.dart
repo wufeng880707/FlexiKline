@@ -22,6 +22,7 @@ import 'package:flutter/painting.dart';
 import 'package:flexi_formatter/flexi_formatter.dart';
 
 import 'rsi_param.dart';
+export 'rsi_param.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
 import '../../extension/export.dart';

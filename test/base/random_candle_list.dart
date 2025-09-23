@@ -36,7 +36,7 @@ Future<List<CandleModel>> genRandomCandleList({
   TimeBarConfig bar = const TimeBarConfig(
       key: 'D1',
       bar: '1D',
-      milliseconds: 86400000,
+      // milliseconds: 86400000,
       multiplier: 1,
       timeUnit: TimeUnit.day,
       showName: '1D',

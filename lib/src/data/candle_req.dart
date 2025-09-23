@@ -19,10 +19,10 @@ mixin CandleReqData on BaseData {
   int get precision => req.precision;
   String get key => req.key;
   String get reqKey => req.reqKey;
-  TimeBar? get timeBar => req.timeBar;
+  TimeBarConfig? get timeBar => req.timeBar;
   bool get invalid => req.instId.isEmpty;
 
-  bool get isTimeChart => timeBar == TimeBar.s1;
+  bool get isTimeChart => timeBar?.intraDay ?? false;
 
   @override
   CandleReq updateState({RequestState state = RequestState.none}) {

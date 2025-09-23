@@ -18,6 +18,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flexi_formatter/flexi_formatter.dart';
+import 'package:flexi_kline/src/config/time_bar_config/time_bar_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/scheduler.dart';
@@ -32,9 +33,9 @@ import '../utils/platform_util.dart';
 
 part 'binding_base.dart';
 part 'chart.dart';
-part 'state.dart';
-part 'setting.dart';
-part 'cross.dart';
 part 'common.dart';
+part 'cross.dart';
 part 'draw.dart';
 part 'grid.dart';
+part 'setting.dart';
+part 'state.dart';

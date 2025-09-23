@@ -100,7 +100,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
     if (request.before == null || request.timeBar == null) return;
     request = request.copyWith(
       after: null,
-      before: request.before! - request.timeBar!.milliseconds,
+      before: request.before! - request.timeBar.milliseconds,
     );
     final resp = await api.getMarketCandles(
       request,

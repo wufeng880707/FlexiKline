@@ -27,7 +27,6 @@ class TimeBarConfig {
   const TimeBarConfig({
     required this.key,
     required this.bar,
-    required this.milliseconds,
     required this.multiplier,
     required this.timeUnit,
     required this.showName,
@@ -43,9 +42,6 @@ class TimeBarConfig {
 
   /// 请求参数（如 '1m', '5m', '1H'）
   final String bar;
-
-  /// 毫秒数
-  final int milliseconds;
 
   /// 倍数
   final int multiplier;
@@ -88,6 +84,8 @@ class TimeBarConfig {
 
   @override
   int get hashCode => key.hashCode;
+
+  int get milliseconds => timeUnit.microseconds ~/ 1000 * multiplier;
 
   factory TimeBarConfig.fromJson(Map<String, dynamic> json) => _$TimeBarConfigFromJson(json);
 

@@ -11,8 +11,6 @@ abstract class _$TimeBarConfigCWProxy {
 
   TimeBarConfig bar(String bar);
 
-  TimeBarConfig milliseconds(int milliseconds);
-
   TimeBarConfig multiplier(int multiplier);
 
   TimeBarConfig timeUnit(TimeUnit timeUnit);
@@ -39,7 +37,6 @@ abstract class _$TimeBarConfigCWProxy {
   TimeBarConfig call({
     String key,
     String bar,
-    int milliseconds,
     int multiplier,
     TimeUnit timeUnit,
     String showName,
@@ -62,10 +59,6 @@ class _$TimeBarConfigCWProxyImpl implements _$TimeBarConfigCWProxy {
 
   @override
   TimeBarConfig bar(String bar) => this(bar: bar);
-
-  @override
-  TimeBarConfig milliseconds(int milliseconds) =>
-      this(milliseconds: milliseconds);
 
   @override
   TimeBarConfig multiplier(int multiplier) => this(multiplier: multiplier);
@@ -104,7 +97,6 @@ class _$TimeBarConfigCWProxyImpl implements _$TimeBarConfigCWProxy {
   TimeBarConfig call({
     Object? key = const $CopyWithPlaceholder(),
     Object? bar = const $CopyWithPlaceholder(),
-    Object? milliseconds = const $CopyWithPlaceholder(),
     Object? multiplier = const $CopyWithPlaceholder(),
     Object? timeUnit = const $CopyWithPlaceholder(),
     Object? showName = const $CopyWithPlaceholder(),
@@ -123,10 +115,6 @@ class _$TimeBarConfigCWProxyImpl implements _$TimeBarConfigCWProxy {
           ? _value.bar
           // ignore: cast_nullable_to_non_nullable
           : bar as String,
-      milliseconds: milliseconds == const $CopyWithPlaceholder()
-          ? _value.milliseconds
-          // ignore: cast_nullable_to_non_nullable
-          : milliseconds as int,
       multiplier: multiplier == const $CopyWithPlaceholder()
           ? _value.multiplier
           // ignore: cast_nullable_to_non_nullable
@@ -177,7 +165,6 @@ TimeBarConfig _$TimeBarConfigFromJson(Map<String, dynamic> json) =>
     TimeBarConfig(
       key: json['key'] as String,
       bar: json['bar'] as String,
-      milliseconds: (json['milliseconds'] as num).toInt(),
       multiplier: (json['multiplier'] as num).toInt(),
       timeUnit: $enumDecode(_$TimeUnitEnumMap, json['timeUnit']),
       showName: json['showName'] as String,
@@ -191,7 +178,6 @@ Map<String, dynamic> _$TimeBarConfigToJson(TimeBarConfig instance) =>
     <String, dynamic>{
       'key': instance.key,
       'bar': instance.bar,
-      'milliseconds': instance.milliseconds,
       'multiplier': instance.multiplier,
       'timeUnit': _$TimeUnitEnumMap[instance.timeUnit]!,
       'showName': instance.showName,

@@ -20,8 +20,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-import '../providers/kline_controller_state_provider.dart';
 import '../pages/components/flexi_kline_size_slider.dart';
+import '../providers/kline_controller_state_provider.dart';
 import '../theme/flexi_theme.dart';
 import '../utils/device_util.dart';
 import '../utils/dialog_manager.dart';
@@ -36,8 +36,7 @@ class KlineSettingDialog extends ConsumerStatefulWidget {
   final FlexiKlineController controller;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _KlineSettingDialogState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _KlineSettingDialogState();
 }
 
 class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
@@ -64,8 +63,10 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
     );
     if (mounted && isUpdate == true) {
       widget.controller.logd('openLandscapePage return isUpdate> $isUpdate');
-      final landConfig = widget.controller.configuration.getFlexiKlineConfig();
-      widget.controller.updateFlexiKlineConfig(landConfig);
+
+      /// TODO: 要放开
+      // final landConfig = widget.controller.configuration.getFlexiKlineConfig();
+      // widget.controller.updateFlexiKlineConfig(landConfig);
     }
   }
 

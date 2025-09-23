@@ -19,15 +19,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:flutter_ume_kit_perf_plus/flutter_ume_kit_perf_plus.dart';
-import 'package:flutter_ume_kit_ui_plus/flutter_ume_kit_ui_plus.dart';
-import 'package:flutter_ume_plus/flutter_ume_plus.dart';
 
 import 'i18n.dart';
 import 'providers/instruments_provider.dart';
 import 'repo/okx_api.dart';
 import 'router.dart';
-import 'test/app_dio_inspector.dart';
 import 'theme/export.dart';
 import 'utils/device_util.dart';
 // import 'widgets/no_thumb_scroll_behavior.dart';
@@ -44,37 +40,12 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
     configDefaultRefresher();
-    if (kDebugMode) {
-      PluginManager.instance
-        ..register(AppDioInspector(
-          key: const ValueKey('OKX'),
-          dio: okxHttpClient.dio,
-          showName: 'OKX',
-        ))
-        ..register(AppDioInspector(
-          key: const ValueKey('Polygon'),
-          dio: polygonHttpClient.dio,
-          showName: 'Polygon',
-        ))
-        ..register(Performance())
-        ..register(const MemoryInfoPage())
-        ..register(const WidgetInfoInspector())
-        ..register(const WidgetDetailInspector())
-        ..register(const ColorSucker())
-        ..register(AlignRuler())
-        ..register(const ColorPicker()) // New feature
-        ..register(const TouchIndicator());
-    }
     ref.read(instrumentsMgrProvider.notifier).loadInstruments();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) {
-      return UMEWidget(child: buildApp(context));
-    } else {
-      return buildApp(context);
-    }
+    return buildApp(context);
   }
 
   Widget buildApp(BuildContext context) {

@@ -14,21 +14,14 @@
 
 library macd;
 
-import 'dart:ui';
-
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
 
-import '../../config/export.dart';
 import 'macd_param.dart';
-import '../../constant.dart';
-import '../../core/core.dart';
-import '../../extension/export.dart';
-import '../../framework/export.dart';
-import '../../model/export.dart';
+export 'macd_param.dart';
 
 part 'data.dart';
 part 'indicator.dart';
-part 'macd.g.dart'; 
+part 'macd.g.dart';

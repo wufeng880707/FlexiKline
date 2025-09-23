@@ -16,30 +16,13 @@ part of 'avl.dart';
 
 @visibleForTesting
 extension CandleAvlExt on CandleModel {
-  // AVL 数据索引
-  static const int _avlIndex = 10;
+  /// 直接计算AVL均价线：(开盘价 + 最高价 + 最低价 + 收盘价) / 4
+  /// 不使用缓存，每次都实时计算
+  BagNum get avl => (open + high + low + close).divNum(4);
 
-  List<BagNum?>? get _avlList => calcuData.getData(_avlIndex);
-  set _avlList(List<BagNum?>? value) => calcuData.setData(_avlIndex, value);
-
-  BagNum? get avl {
-    final list = _avlList;
-    if (list != null && list.isNotEmpty) return list[0];
-    return null;
-  }
-
-  set avl(BagNum? value) {
-    var list = _avlList;
-    if (list == null || list.isEmpty) list = [null];
-    list[0] = value;
-    _avlList = list;
-  }
-
-  bool get isValidAvlData => avl != null;
-  MinMax? get avlMinmax {
-    if (!isValidAvlData) return null;
-    return MinMax(max: avl!, min: avl!);
-  }
+  bool get isValidAvlData => true; // AVL总是可以计算的
+  
+  MinMax get avlMinmax => MinMax(max: avl, min: avl);
 }
 
 mixin AvlDataMixin<T extends AVLIndicator> on PaintObjectBox<T> {
@@ -55,25 +38,6 @@ mixin AvlDataMixin<T extends AVLIndicator> on PaintObjectBox<T> {
     );
   }
 
-  /// 计算AVL指标值
-  void _calculateAvl(
-    AVLParam param, {
-    required int start,
-    required int end,
-  }) {
-    final len = klineData.list.length;
-    if (!param.isValid(len) || !klineData.checkStartAndEnd(start, end)) return;
-    logd('calculateAvl [end:$end ~ start:$start]');
-
-    final safeEnd = end.clamp(0, len);
-    for (int i = start; i < safeEnd; i++) {
-      final m = klineData.list[i];
-      if (m.volCcy != null && !m.vol.isZero) {
-        // AVL = 总成交金额 / 总成交股数
-        m.avl = m.volCcy!.div(m.vol);
-      }
-    }
-  }
 
   void calcuAndCacheAvl(
     AVLParam calcParam, {
@@ -81,12 +45,8 @@ mixin AvlDataMixin<T extends AVLIndicator> on PaintObjectBox<T> {
     required int end,
     bool reset = false,
   }) {
-    if (klineData.isEmpty) return;
-    _calculateAvl(
-      calcParam,
-      start: start,
-      end: end,
-    );
+    // AVL现在是实时计算的，不需要预计算和缓存
+    logd('calcuAndCacheAvl: AVL使用实时计算，无需预处理');
   }
 
   /// 计算并缓存AVL数据.
@@ -103,13 +63,19 @@ mixin AvlDataMixin<T extends AVLIndicator> on PaintObjectBox<T> {
       return null;
     }
 
+    final len = klineData.list.length;
+    if (len == 0) return null;
+    
+    // 确保 start 和 end 在有效范围内
+    start = start.clamp(0, len - 1);
+    end = end.clamp(0, len - 1);
+    
     MinMax? minmax;
-    CandleModel m;
     for (int i = start; i <= end; i++) {
-      m = klineData.list[i];
+      final m = klineData.list[i];
       if (m.isValidAvlData) {
         minmax ??= m.avlMinmax;
-        minmax?.updateMinMax(m.avlMinmax);
+        minmax.updateMinMax(m.avlMinmax);
       }
     }
     return minmax;

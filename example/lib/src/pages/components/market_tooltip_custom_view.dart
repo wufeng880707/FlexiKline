@@ -15,6 +15,7 @@
 import 'package:example/generated/l10n.dart';
 import 'package:example/src/theme/flexi_theme.dart';
 import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -56,8 +57,8 @@ class MarketTooltipCustomView extends ConsumerWidget {
             confirm.isNotEmpty &&
             confirm != '1' &&
             confirm != '0'
-        ? formatPercentage(parseDouble(data?.confirm))
-        : formatPrice(data?.range, precision: p);
+        ? formatNumber(parseDouble(data?.confirm)?.d, precision: 2, showSign: true, suffix: '%')
+        : formatNumber(data?.range, precision: p);
     Color rateColor;
     Color? marketBg;
     if (changeRate == null || changeRate == 0) {
@@ -96,7 +97,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                       formatNumber(
                         data?.c,
                         precision: candleReq.precision,
-                        showThousands: true,
+                        enableGrouping: true,
                         cutInvalidZero: true,
                       ),
                       style: TextStyle(
@@ -113,7 +114,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      formatPercentage(changeRate),
+                      formatNumber(changeRate?.d, precision: 2, showSign: true, suffix: '%'),
                       style: TextStyle(
                         fontSize: 10.sp,
                         color: rateColor,
@@ -144,7 +145,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                   value: formatPrice(
                     data?.o,
                     precision: p,
-                    showThousands: true,
+                    enableGrouping: true,
                   ),
                 ),
                 KVItem(
@@ -152,7 +153,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                   value: formatPrice(
                     data?.h,
                     precision: p,
-                    showThousands: true,
+                    enableGrouping: true,
                   ),
                 ),
                 KVItem(
@@ -160,7 +161,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                   value: formatPrice(
                     data?.l,
                     precision: p,
-                    showThousands: true,
+                    enableGrouping: true,
                   ),
                 ),
                 KVItem(
@@ -168,7 +169,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                   value: formatPrice(
                     data?.v,
                     precision: p,
-                    showThousands: true,
+                    enableGrouping: true,
                   ),
                 ),
               ],

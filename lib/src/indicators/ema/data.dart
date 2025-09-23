@@ -149,8 +149,12 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
     final maxPeriod = param.maxPeriod;
     if (maxPeriod == null || len < maxPeriod) return null;
 
-    // 确保数据已计算
-    if (!klineData.list[end].isValidEmaList) {
+    // 确保 end 在有效范围内
+    end = end.clamp(0, len);
+    
+    // 确保数据已计算，使用安全的索引检查
+    final checkIndex = (end > 0 ? end - 1 : 0).clamp(0, len - 1);
+    if (!klineData.list[checkIndex].isValidEmaList) {
       calcuAndCacheEma(param, start: 0, end: len);
     }
 

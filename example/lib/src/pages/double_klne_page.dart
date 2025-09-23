@@ -94,9 +94,8 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
   Widget build(BuildContext context) {
     ref.listen(defaultKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        final config = configuration.getFlexiKlineConfig();
-        controller1.updateFlexiKlineConfig(config);
-        controller2.updateFlexiKlineConfig(config);
+        controller1.updateFlexiKlineConfig();
+        controller2.updateFlexiKlineConfig();
       }
     });
     return Container();

@@ -15,8 +15,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-import '../constant.dart';
 import '../config/export.dart';
+import '../constant.dart';
 import 'chart/indicator.dart';
 import 'draw/overlay.dart';
 import 'serializers.dart';
@@ -47,7 +47,8 @@ abstract interface class IFlexiKlineTheme {
   /// 涨跌颜色
   Color get long;
   Color get short;
-
+  Color get indraTodayAvgColor;
+  Color get indraTodayCloseColor;
   Color get transparent;
 
   /// 背景色

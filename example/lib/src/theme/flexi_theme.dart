@@ -74,7 +74,10 @@ class LightFKTheme extends FKTheme {
   Brightness get brightness => Brightness.light;
   @override
   ThemeData get themeData => lightTheme;
-
+  @override
+  Color get indraTodayAvgColor => const Color(0xffff9933);
+  @override
+  Color get indraTodayCloseColor => const Color(0xff4d78ff);
   @override
   Color get pageBg => const Color(0xFFFFFFFF);
   @override
@@ -279,13 +282,14 @@ extension ButtonStyleFKTheme on FKTheme {
 const materialTheme = MaterialTheme(TextTheme());
 
 final lightTheme = materialTheme.light().copyWith(
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         dividerColor: Colors.transparent,
         indicatorColor: fkLightTheme.t1,
       ),
     );
+
 final darkTheme = materialTheme.dark().copyWith(
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         dividerColor: Colors.transparent,
         indicatorColor: fkDarkTheme.t1,
       ),

@@ -14,9 +14,9 @@
 
 part of 'avl.dart';
 
-/// AVL 均价线指标
-/// 均价线(AVL)AVL = 某日总成交金额/某日总成交股数其计算结果就是每股平均的成交价格。
-/// AVL反映当日的真实股票价格情况，避免主力庄家的骗线图形。均价线是超级短线实战的一个重要研判工具。
+/// AVL 均价线指标  
+/// 均价线(AVL) = (开盘价 + 最高价 + 最低价 + 收盘价) / 4
+/// 适用于24小时连续交易的加密货币市场，使用四价平均提供更全面的价格信息
 @CopyWith()
 @FlexiIndicatorSerializable
 class AVLIndicator extends PaintObjectIndicator implements IPrecomputable {

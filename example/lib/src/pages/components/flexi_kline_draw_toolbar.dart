@@ -27,6 +27,14 @@ import '../../widgets/shrink_icon_button.dart';
 
 final drawToolbarInitPosition = Offset(60.r, 200.r);
 
+/// 移除数值的无效零（小数点后的尾随零）
+String cutInvalidZero(double value) {
+  if (value == value.toInt()) {
+    return value.toInt().toString();
+  }
+  return value.toString().replaceAll(RegExp(r'\.?0+$'), '');
+}
+
 const List<double> flexiKlineLineWeightList = [1, 2, 3, 4];
 const List<Color> flexiKlinePaintColors = [
   Colors.blueAccent,
@@ -39,7 +47,15 @@ const List<Color> flexiKlinePaintColors = [
   // Colors.indigoAccent,
 ];
 
-// 绘制工具条
+/// 绘制工具条组件
+/// 
+/// 提供绘制对象的样式配置功能：
+/// - 线条颜色选择
+/// - 线条粗细调整  
+/// - 线条类型选择
+/// - 图层顺序管理
+/// - 锁定/解锁状态
+/// - 删除绘制对象
 class FlexiKlineDrawToolbar extends ConsumerWidget {
   const FlexiKlineDrawToolbar({
     super.key,
@@ -63,22 +79,40 @@ class FlexiKlineDrawToolbar extends ConsumerWidget {
         builder: (context, state, child) {
           final object = state.object;
           if (object == null) return const SizedBox.shrink();
-          final lineStyle = object.line;
-          Color paintColor = flexiKlinePaintColors.first;
-          if (lineStyle.paint.color != paintColor &&
-              flexiKlinePaintColors.contains(lineStyle.paint.color)) {
-            paintColor = lineStyle.paint.color;
-          }
-          double strokeWidth = flexiKlineLineWeightList.first;
-          if (lineStyle.paint.strokeWidth != strokeWidth &&
-              flexiKlineLineWeightList.contains(lineStyle.paint.strokeWidth)) {
-            strokeWidth = lineStyle.paint.strokeWidth;
-          }
-          LineType lineType = lineStyle.type;
+          
+          return _DrawToolbarContent(
+            controller: controller,
+            object: object,
+            theme: theme,
+          );
+        },
+      ),
+    );
+  }
+}
 
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+/// 工具条内容组件
+class _DrawToolbarContent extends StatelessWidget {
+  const _DrawToolbarContent({
+    required this.controller,
+    required this.object,
+    required this.theme,
+  });
+
+  final FlexiKlineController controller;
+  final DrawObject object;
+  final FKTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final lineStyle = object.line;
+    final paintColor = _getCurrentPaintColor(lineStyle);
+    final strokeWidth = _getCurrentStrokeWidth(lineStyle);
+    final lineType = lineStyle.type;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
               Icon(
                 Icons.drag_indicator_rounded,
                 size: 20.r,
@@ -237,15 +271,7 @@ class FlexiKlineDrawToolbar extends ConsumerWidget {
               //     colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
               //   ),
               // ),
-              Builder(
-                builder: (context) => ShrinkIconButton(
-                  onPressed: () {
-                    debugPrint('zp::: draw onTap visual Order');
-                    showSetVisualOrderDialog(context, ref);
-                  },
-                  content: SvgRes.visualOrder,
-                ),
-              ),
+              _VisualOrderButton(controller: controller),
               ShrinkIconButton(
                 onPressed: () {
                   debugPrint('zp::: draw onTap Lock');
@@ -256,59 +282,97 @@ class FlexiKlineDrawToolbar extends ConsumerWidget {
               ShrinkIconButton(
                 onPressed: () {
                   debugPrint('zp::: draw onTap Delete');
-                  controller.deleteDrawObject();
+                  controller.removeDrawObject();
                 },
                 content: SvgRes.delete,
               ),
             ],
           );
-        },
-      ),
-    );
   }
 
-  void showSetVisualOrderDialog(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
-    const dialogTag = 'drawObjectVisualOrderDialog';
-    SmartDialog.showAttach(
-      tag: dialogTag,
-      targetContext: context,
-      maskColor: theme.transparent,
-      alignment: Alignment.topCenter,
-      builder: (context) {
-        return Container(
-          margin: EdgeInsets.only(bottom: 4.r),
-          padding: EdgeInsets.symmetric(
-            horizontal: 6.r,
-            vertical: 2.r,
-          ),
-          decoration: BoxDecoration(
-            color: theme.cardBg,
-            borderRadius: BorderRadius.circular(6.r),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ShrinkIconButton(
-                onPressed: () {
-                  controller.moveDrawStateObjectToTop();
-                  SmartDialog.dismiss(tag: dialogTag);
-                },
-                content: Icons.vertical_align_top_rounded,
-                color: controller.isDrawOnTop() ? theme.t1 : theme.t2,
-              ),
-              ShrinkIconButton(
-                onPressed: () {
-                  SmartDialog.dismiss(tag: dialogTag);
-                  controller.moveDrawStateObjectToBottom();
-                },
-                content: Icons.vertical_align_bottom_rounded,
-                color: controller.isDrawOnBottom() ? theme.t1 : theme.t2,
-              ),
-            ],
-          ),
-        );
+  /// 获取当前绘制颜色
+  Color _getCurrentPaintColor(LineConfig lineStyle) {
+    final currentColor = lineStyle.paint.color;
+    if (flexiKlinePaintColors.contains(currentColor)) {
+      return currentColor;
+    }
+    return flexiKlinePaintColors.first;
+  }
+
+  /// 获取当前线条粗细
+  double _getCurrentStrokeWidth(LineConfig lineStyle) {
+    final currentWidth = lineStyle.paint.strokeWidth;
+    if (flexiKlineLineWeightList.contains(currentWidth)) {
+      return currentWidth;
+    }
+    return flexiKlineLineWeightList.first;
+  }
+}
+
+/// 图层顺序按钮组件
+class _VisualOrderButton extends ConsumerWidget {
+  const _VisualOrderButton({required this.controller});
+
+  final FlexiKlineController controller;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ShrinkIconButton(
+      onPressed: () {
+        debugPrint('zp::: draw onTap visual Order');
+        showSetVisualOrderDialog(context, ref, controller);
       },
+      content: SvgRes.visualOrder,
     );
   }
+}
+
+/// 显示图层顺序设置对话框
+void showSetVisualOrderDialog(
+  BuildContext context, 
+  WidgetRef ref, 
+  FlexiKlineController controller,
+) {
+  final theme = ref.read(themeProvider);
+  const dialogTag = 'drawObjectVisualOrderDialog';
+  SmartDialog.showAttach(
+    tag: dialogTag,
+    targetContext: context,
+    maskColor: theme.transparent,
+    alignment: Alignment.topCenter,
+    builder: (context) {
+      return Container(
+        margin: EdgeInsets.only(bottom: 4.r),
+        padding: EdgeInsets.symmetric(
+          horizontal: 6.r,
+          vertical: 2.r,
+        ),
+        decoration: BoxDecoration(
+          color: theme.cardBg,
+          borderRadius: BorderRadius.circular(6.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ShrinkIconButton(
+              onPressed: () {
+                controller.moveDrawStateObjectToTop();
+                SmartDialog.dismiss(tag: dialogTag);
+              },
+              content: Icons.vertical_align_top_rounded,
+              color: controller.isDrawOnTop() ? theme.t1 : theme.t2,
+            ),
+            ShrinkIconButton(
+              onPressed: () {
+                SmartDialog.dismiss(tag: dialogTag);
+                controller.moveDrawStateObjectToBottom();
+              },
+              content: Icons.vertical_align_bottom_rounded,
+              color: controller.isDrawOnBottom() ? theme.t1 : theme.t2,
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }

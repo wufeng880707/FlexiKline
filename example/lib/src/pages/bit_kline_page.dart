@@ -15,6 +15,7 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:example/generated/l10n.dart';
 import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -112,8 +113,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     );
     if (mounted && isUpdate == true) {
       controller.logd('openLandscapePage return isUpdate> $isUpdate');
-      final landConfig = controller.configuration.getFlexiKlineConfig();
-      controller.updateFlexiKlineConfig(landConfig);
+      controller.updateFlexiKlineConfig();
     }
   }
 
@@ -122,8 +122,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     final klineTheme = ref.watch(bitFlexiKlineThemeProvider);
     ref.listen(bitFlexiKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        final config = configuration.getFlexiKlineConfig();
-        controller.updateFlexiKlineConfig(config);
+        controller.updateFlexiKlineConfig();
       }
     });
     return Scaffold(
@@ -285,51 +284,51 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
       TooltipInfo(
         label: s.tooltipOpen,
         labelStyle: lableStyle,
-        value: formatPrice(current.o, precision: p, showThousands: true),
+        value: formatNumber(current.o, precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipHigh,
         labelStyle: lableStyle,
-        value: formatPrice(current.h, precision: p, showThousands: true),
+        value: formatNumber(current.h, precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipLow,
         labelStyle: lableStyle,
-        value: formatPrice(current.l, precision: p, showThousands: true),
+        value: formatNumber(current.l, precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipClose,
         labelStyle: lableStyle,
-        value: formatPrice(current.c, precision: p, showThousands: true),
+        value: formatNumber(current.c, precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipAmount,
         labelStyle: lableStyle,
-        value: formatPrice(current.v, precision: p, showThousands: true),
+        value: formatNumber(current.v, precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipChg,
         labelStyle: lableStyle,
-        value: formatPrice(current.change, precision: p, showThousands: true),
+        value: formatNumber(current.change, precision: p, enableGrouping: true),
         valueStyle: valStyle,
       ),
       TooltipInfo(
         label: s.tooltipChgRate,
         labelStyle: lableStyle,
-        value: formatPercentage(current.changeRate),
+        value: formatNumber(current.changeRate.d, precision: 2, showSign: true, suffix: '%'),
         valueStyle: valStyle,
       ),
       TooltipInfo(
         label: s.tooltipRange,
         labelStyle: lableStyle,
         value: prev != null
-            ? formatPercentage(current.rangeRate(prev))
-            : formatPrice(current.range, precision: p),
+            ? formatNumber(current.rangeRate(prev).d, precision: 2, showSign: true, suffix: '%')
+            : formatNumber(current.range, precision: p),
         valueStyle: valStyle,
       ),
     ];

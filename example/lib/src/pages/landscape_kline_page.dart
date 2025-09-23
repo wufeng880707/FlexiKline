@@ -104,8 +104,8 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
           title: MarketTickerLandscapeView(
             instId: req.instId,
             precision: req.precision,
-            long: controller.settingConfig.longColor,
-            short: controller.settingConfig.shortColor,
+            long: controller.theme.long,
+            short: controller.theme.short,
           ),
           centerTitle: false,
           titleSpacing: 0,
@@ -166,11 +166,12 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
           child: LayoutBuilder(
             builder: (context, constraints) {
               controller.logd('zp::: LandscapeKlinePage:$constraints');
-              // controller.setFixedSize(
-              //   Size(constraints.maxWidth, constraints.maxHeight),
-              // );
+              // 设置固定布局模式以确保全屏时视图填满整个区域
+              controller.setFixedLayoutMode(Size(constraints.maxWidth, constraints.maxHeight));
+
               return FlexiKlineWidget(
                 controller: controller,
+                autoAdaptLayout: false,
                 mainBackgroundView: FlexiKlineMarkView(
                   margin: EdgeInsetsDirectional.only(
                     bottom: 10.r,

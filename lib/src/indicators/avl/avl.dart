@@ -21,6 +21,7 @@ import 'package:flutter/painting.dart';
 import 'package:flexi_formatter/flexi_formatter.dart';
 
 import 'avl_param.dart';
+export 'avl_param.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
 import '../../extension/export.dart';

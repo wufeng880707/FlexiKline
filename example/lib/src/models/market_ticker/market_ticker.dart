@@ -13,8 +13,10 @@
 // limitations under the License.
 
 import 'dart:math' as math;
+
 import 'package:decimal/decimal.dart';
 import 'package:example/src/utils/model_util.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -85,14 +87,13 @@ class MarketTicker with _$MarketTicker {
 
   static MarketTicker fromJson2(dynamic json) => _$MarketTickerFromJson(json);
 
-  factory MarketTicker.fromJson(Map<String, dynamic> json) =>
-      _$MarketTickerFromJson(json);
+  factory MarketTicker.fromJson(Map<String, dynamic> json) => _$MarketTickerFromJson(json);
 }
 
 extension MarketTickerExt on MarketTicker {
   double get changeRate {
     final open = open24h.d;
-    final change = last.d - open;
+    final change = last.d! - open!;
     if (change == Decimal.zero) return 0;
     return (change / open).toDouble();
   }

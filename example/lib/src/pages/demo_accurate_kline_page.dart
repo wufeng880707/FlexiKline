@@ -58,13 +58,11 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
       instId: 'SATS-USDT',
       timeBar: timeBar,
       precision: 33,
-      displayName: 'Sats',
     );
     req2 = CandleReq(
       instId: 'SATS-USDT',
       timeBar: timeBar,
       precision: 4,
-      displayName: 'Sats',
     );
     configuration = DefaultFlexiKlineConfiguration(ref: ref);
     controller1 = FlexiKlineController(
