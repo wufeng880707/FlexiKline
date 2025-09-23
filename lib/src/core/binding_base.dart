@@ -116,8 +116,8 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
   }
 }
 
-/// KlineController内部扩展
-extension on KlineBindingBase {
+/// KlineController扩展 - 提供对绘制对象的访问
+extension KlineBindingBaseExt on KlineBindingBase {
   FlexiKlineConfig get flexiKlineConfig {
     return _paintObjectManager.flexiKlineConfig;
   }

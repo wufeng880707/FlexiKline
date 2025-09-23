@@ -16,8 +16,8 @@ import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final klineStateProvider = ChangeNotifierProvider.autoDispose
-    .family<KlineStateNotifier, FlexiKlineController>(
+final klineStateProvider =
+    ChangeNotifierProvider.autoDispose.family<KlineStateNotifier, FlexiKlineController>(
   (ref, controller) => KlineStateNotifier(ref, controller),
   name: 'klineState',
 );
@@ -31,10 +31,8 @@ class KlineStateNotifier extends ChangeNotifier {
   final Ref ref;
   final FlexiKlineController controller;
 
-  Set<IIndicatorKey> get supportMainIndicatorKeys =>
-      controller.supportMainIndicatorKeys.toSet();
-  Set<IIndicatorKey> get supportSubIndicatorKeys =>
-      controller.supportSubIndicatorKeys.toSet();
+  Set<IIndicatorKey> get supportMainIndicatorKeys => controller.supportMainIndicatorKeys.toSet();
+  Set<IIndicatorKey> get supportSubIndicatorKeys => controller.supportSubIndicatorKeys.toSet();
   Set<IIndicatorKey> get mainIndicatorKeys => controller.mainIndicatorKeys.toSet();
   Set<IIndicatorKey> get subIndicatorKeys => controller.subIndicatorKeys.toSet();
 
@@ -56,57 +54,107 @@ class KlineStateNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 蜡烛图中是否展示最新价
+  /// 蜡烛图中是否展示最新价 - 使用直接访问方式
   bool get isShowLatestPrice {
-    // 注意：这里需要根据实际的API来获取配置
-    // 由于indicatorsConfig不存在，暂时返回默认值
-    return true;
+    try {
+      // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
+      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      return candleIndicator.latest.show;
+    } catch (e) {
+      return true;
+    }
   }
 
-  /// 设置蜡烛图中是否展示最新价
+  /// 设置蜡烛图中是否展示最新价 - 使用直接访问方式
   void setShowLatestPrice(bool isShow) {
-    // 注意：这里需要根据实际的API来设置配置
-    // 由于indicatorsConfig不存在，暂时不执行任何操作
+    try {
+      // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
+      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final updatedIndicator = candleIndicator.copyWith(
+        latest: candleIndicator.latest.copyWith(show: isShow),
+      );
+      // 使用controller的updateIndicator方法更新
+      controller.updateIndicator(updatedIndicator);
+    } catch (e) {
+      // 如果设置失败，忽略错误
+    }
     notifyListeners();
   }
 
-  /// 蜡烛图中是否展示倒计时
+  /// 蜡烛图中是否展示倒计时 - 使用直接访问方式
   bool get isShowCountDown {
-    // 注意：这里需要根据实际的API来获取配置
-    // 由于indicatorsConfig不存在，暂时返回默认值
-    return true;
+    try {
+      // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
+      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      return candleIndicator.showCountDown;
+    } catch (e) {
+      return true;
+    }
   }
 
-  /// 设置蜡烛图中是否展示倒计时
+  /// 设置蜡烛图中是否展示倒计时 - 使用直接访问方式
   void setShowCountDown(bool isShow) {
-    // 注意：这里需要根据实际的API来设置配置
-    // 由于indicatorsConfig不存在，暂时不执行任何操作
+    try {
+      // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
+      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final updatedIndicator = candleIndicator.copyWith(showCountDown: isShow);
+      // 使用controller的updateIndicator方法更新
+      controller.updateIndicator(updatedIndicator);
+    } catch (e) {
+      // 如果设置失败，忽略错误
+    }
     notifyListeners();
   }
 
-  /// 是否展示蜡烛图最高价
+  /// 是否展示蜡烛图最高价 - 使用直接访问方式
   bool get isShowCandleHighPrice {
-    // 注意：这里需要根据实际的API来获取配置
-    // 由于indicatorsConfig不存在，暂时返回默认值
-    return true;
+    try {
+      // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
+      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      return candleIndicator.high.show;
+    } catch (e) {
+      return true;
+    }
   }
 
   void setShowCandleHighPrice(bool isShow) {
-    // 注意：这里需要根据实际的API来设置配置
-    // 由于indicatorsConfig不存在，暂时不执行任何操作
+    try {
+      // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
+      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final updatedIndicator = candleIndicator.copyWith(
+        high: candleIndicator.high.copyWith(show: isShow),
+      );
+      // 使用controller的updateIndicator方法更新
+      controller.updateIndicator(updatedIndicator);
+    } catch (e) {
+      // 如果设置失败，忽略错误
+    }
     notifyListeners();
   }
 
-  /// 是否展示蜡烛图最低价
+  /// 是否展示蜡烛图最低价 - 使用直接访问方式
   bool get isShowCandleLowPrice {
-    // 注意：这里需要根据实际的API来获取配置
-    // 由于indicatorsConfig不存在，暂时返回默认值
-    return true;
+    try {
+      // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
+      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      return candleIndicator.low.show;
+    } catch (e) {
+      return true;
+    }
   }
 
   void setShowCandleLowPrice(bool isShow) {
-    // 注意：这里需要根据实际的API来设置配置
-    // 由于indicatorsConfig不存在，暂时不执行任何操作
+    try {
+      // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
+      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final updatedIndicator = candleIndicator.copyWith(
+        low: candleIndicator.low.copyWith(show: isShow),
+      );
+      // 使用controller的updateIndicator方法更新
+      controller.updateIndicator(updatedIndicator);
+    } catch (e) {
+      // 如果设置失败，忽略错误
+    }
     notifyListeners();
   }
 
