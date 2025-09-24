@@ -126,7 +126,9 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
+  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator(
+    MainPaintObjectIndicator<PaintObjectIndicator>? mainIndicator,
+  ) {
     throw UnimplementedError();
   }
 

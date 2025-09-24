@@ -73,8 +73,7 @@ class GridConfig {
   /// 全局默认的刻度值文本配置.
   final TextAreaConfig ticksText;
 
-  factory GridConfig.fromJson(Map<String, dynamic> json) =>
-      _$GridConfigFromJson(json);
+  factory GridConfig.fromJson(Map<String, dynamic> json) => _$GridConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$GridConfigToJson(this);
 }
@@ -96,8 +95,7 @@ class GridAxis {
   final int count;
   final LineConfig line;
 
-  factory GridAxis.fromJson(Map<String, dynamic> json) =>
-      _$GridAxisFromJson(json);
+  factory GridAxis.fromJson(Map<String, dynamic> json) => _$GridAxisFromJson(json);
 
   Map<String, dynamic> toJson() => _$GridAxisToJson(this);
 }

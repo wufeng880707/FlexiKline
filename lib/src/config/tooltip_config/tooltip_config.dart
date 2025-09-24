@@ -45,17 +45,16 @@ class TooltipConfig {
   /// 注: style的颜色由FKTheme.tooltipTextColor替换.
   final TextStyle style;
 
-  // TooltipConfig of({Color? textColor}) {
-  //   if (style.color == textColor) {
-  //     return this;
-  //   }
-  //   return copyWith(
-  //     style: style.copyWith(color: textColor),
-  //   );
-  // }
+  TooltipConfig of({Color? textColor}) {
+    if (style.color == textColor) {
+      return this;
+    }
+    return copyWith(
+      style: style.copyWith(color: textColor),
+    );
+  }
 
-  factory TooltipConfig.fromJson(Map<String, dynamic> json) =>
-      _$TooltipConfigFromJson(json);
+  factory TooltipConfig.fromJson(Map<String, dynamic> json) => _$TooltipConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$TooltipConfigToJson(this);
 }

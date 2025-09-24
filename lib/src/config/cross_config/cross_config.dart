@@ -66,11 +66,10 @@ class CrossConfig {
   /// onCross时, 当移动到空白区域时, Tips区域是否展示最新的蜡烛的Tips数据.
   final bool showLatestTipsInBlank;
 
-  ///  onCross时, 当移动到空白区域时, 是否继续按蜡烛宽度移动.
+  /// onCross时, 当移动到空白区域时, 是否继续按蜡烛宽度移动.
   final bool moveByCandleInBlank;
 
-  factory CrossConfig.fromJson(Map<String, dynamic> json) =>
-      _$CrossConfigFromJson(json);
+  factory CrossConfig.fromJson(Map<String, dynamic> json) => _$CrossConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$CrossConfigToJson(this);
 }

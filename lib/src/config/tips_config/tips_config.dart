@@ -82,6 +82,15 @@ class TipsConfig {
 
   double get textSize => style.fontSize ?? defaulTextSize;
 
+  TipsConfig of({Color? textColor}) {
+    if (style.color == textColor) {
+      return this;
+    }
+    return copyWith(
+      style: style.copyWith(color: textColor),
+    );
+  }
+
   factory TipsConfig.fromJson(Map<String, dynamic> json) => _$TipsConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$TipsConfigToJson(this);

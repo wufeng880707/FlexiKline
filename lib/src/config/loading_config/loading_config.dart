@@ -33,8 +33,17 @@ class LoadingConfig {
   final Color background;
   final Color valueColor;
 
-  factory LoadingConfig.fromJson(Map<String, dynamic> json) =>
-      _$LoadingConfigFromJson(json);
+  LoadingConfig of({Color? valueColor, Color? background}) {
+    if (valueColor == this.valueColor && background == this.background) {
+      return this;
+    }
+    return copyWith(
+      valueColor: valueColor ?? this.valueColor,
+      background: background ?? this.background,
+    );
+  }
+
+  factory LoadingConfig.fromJson(Map<String, dynamic> json) => _$LoadingConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$LoadingConfigToJson(this);
 }

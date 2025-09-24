@@ -166,15 +166,15 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   String getCacheKey(String key) => '$configKey-$key';
 
   @override
-  FlexiKlineConfig generateFlexiKlineConfig([Map<String, dynamic>? origin]) {
+  FlexiKlineConfig generateFlexiKlineConfig([FlexiKlineConfig? origin]) {
     return FlexiKlineConfig(
-      grid: genGridConfig(),
-      setting: genSettingConfig(),
-      gesture: genGestureConfig(),
-      cross: genCrossConfig(),
-      draw: genDrawConfig(),
-      mainIndicator: genMainIndicator(),
-      sub: {},
+      grid: genGridConfig(origin?.grid),
+      setting: genSettingConfig(origin?.setting),
+      gesture: genGestureConfig(origin?.gesture),
+      cross: genCrossConfig(origin?.cross),
+      draw: genDrawConfig(origin?.draw),
+      mainIndicator: genMainIndicator(origin?.mainIndicator),
+      sub: origin?.sub ?? {},
     );
   }
 
@@ -456,357 +456,524 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   }
 
   /// Grid配置
-  GridConfig genGridConfig() {
+  GridConfig genGridConfig([GridConfig? grid]) {
     return GridConfig(
-      show: true,
+      show: grid?.show ?? true,
       horizontal: GridAxis(
-        show: true,
-        count: 5,
-        line: LineConfig(
-          type: LineType.solid,
-          dashes: const [2, 2],
-          paint: PaintConfig(
-            color: theme.gridLine,
-            strokeWidth: theme.pixel,
+        show: grid?.horizontal.show ?? true,
+        count: grid?.horizontal.count ?? 5,
+        line: obtainConfig(
+          grid?.horizontal.line,
+          LineConfig(
+            type: LineType.solid,
+            dashes: const [2, 2],
+            paint: PaintConfig(
+              color: theme.gridLine,
+              strokeWidth: theme.pixel,
+            ),
           ),
+        ).of(
+          paintColor: theme.gridLine,
         ),
       ),
       vertical: GridAxis(
-        show: true,
-        count: 5,
-        line: LineConfig(
-          type: LineType.solid,
-          dashes: const [2, 2],
+        show: grid?.vertical.show ?? true,
+        count: grid?.vertical.count ?? 5,
+        line: obtainConfig(
+          grid?.vertical.line,
+          LineConfig(
+            type: LineType.solid,
+            dashes: const [2, 2],
+            paint: PaintConfig(
+              color: theme.gridLine,
+              strokeWidth: theme.pixel,
+            ),
+          ),
+        ).of(
+          paintColor: theme.gridLine,
+        ),
+      ),
+      isAllowDragIndicatorHeight: grid?.isAllowDragIndicatorHeight ?? true,
+      dragHitTestMinDistance: grid?.dragHitTestMinDistance ?? 10 * theme.scale,
+      draggingBgOpacity: grid?.draggingBgOpacity ?? 0.1,
+      dragBgOpacity: grid?.dragBgOpacity ?? 0,
+      dragLine: obtainConfig(
+        grid?.dragLine,
+        LineConfig(
+          type: LineType.dashed,
+          dashes: const [3, 5],
+          length: 20,
           paint: PaintConfig(
-            color: theme.gridLine,
-            strokeWidth: theme.pixel,
+            color: theme.markLineColor,
+            strokeWidth: theme.pixel * 5,
           ),
         ),
+      ).of(
+        paintColor: theme.markLineColor,
       ),
-      isAllowDragIndicatorHeight: true,
-      dragHitTestMinDistance: 10 * theme.scale,
-      dragLine: LineConfig(
-        type: LineType.dashed,
-        dashes: const [3, 5],
-        length: 20,
-        paint: PaintConfig(
-          color: theme.markLineColor,
-          strokeWidth: theme.pixel * 5,
-        ),
-      ),
-      dragLineOpacity: 0.1,
+      dragLineOpacity: grid?.dragLineOpacity ?? 0.1,
       // 全局默认的刻度值配置.
-      ticksText: TextAreaConfig(
-        style: TextStyle(
-          fontSize: theme.normalTextSize,
-          color: theme.ticksTextColor,
-          overflow: TextOverflow.ellipsis,
-          height: defaultTextHeight,
+      ticksText: obtainConfig(
+        grid?.ticksText,
+        TextAreaConfig(
+          style: TextStyle(
+            fontSize: theme.normalTextSize,
+            color: theme.ticksTextColor,
+            overflow: TextOverflow.ellipsis,
+            height: defaultTextHeight,
+          ),
+          textAlign: TextAlign.end,
+          padding: EdgeInsets.symmetric(horizontal: 2 * theme.scale),
         ),
-        textAlign: TextAlign.end,
-        padding: EdgeInsets.symmetric(horizontal: 2 * theme.scale),
+      ).of(
+        textColor: theme.ticksTextColor,
+        background: null,
+        borderColor: null,
       ),
     );
   }
 
   /// Gesture配置
-  GestureConfig genGestureConfig() {
+  GestureConfig genGestureConfig([GestureConfig? gesture]) {
     return GestureConfig(
-      isInertialPan: true,
-      tolerance: ToleranceConfig(),
-      loadMoreWhenNoEnoughDistance: null,
-      loadMoreWhenNoEnoughCandles: 60,
-      scalePosition: ScalePosition.auto,
-      scaleSpeed: 10,
-      zoomSpeed: 1,
+      supportLongPress: gesture?.supportLongPress ?? true,
+      isInertialPan: gesture?.isInertialPan ?? true,
+      tolerance: gesture?.tolerance ?? ToleranceConfig(),
+      loadMoreWhenNoEnoughDistance: gesture?.loadMoreWhenNoEnoughDistance,
+      loadMoreWhenNoEnoughCandles: gesture?.loadMoreWhenNoEnoughCandles ?? 60,
+      scalePosition: gesture?.scalePosition ?? ScalePosition.auto,
+      scaleSpeed: gesture?.scaleSpeed ?? 10,
+      supportKeyboardShortcuts: gesture?.supportKeyboardShortcuts ?? true,
+      zoomStartMinDistance: gesture?.zoomStartMinDistance ?? 5,
+      zoomSpeed: gesture?.zoomSpeed ?? 1,
     );
   }
 
-  SettingConfig genSettingConfig() {
+  SettingConfig genSettingConfig([SettingConfig? setting]) {
     return SettingConfig(
-      opacity: 0.5,
+      opacity: setting?.opacity ?? 0.5,
 
       /// 内置LoadingView样式配置
-      loading: genInnerLoadingConfig(),
+      loading: genInnerLoadingConfig(setting?.loading),
 
       /// 主区域最小Size
-      mainMinSize: Size(120 * theme.scale, 80 * theme.scale),
-      subMinHeight: 30 * theme.scale,
-      useCandleTicksAsZoomSlideBar: true,
+      mainMinSize: setting?.mainMinSize ?? Size(120 * theme.scale, 80 * theme.scale),
+      subMinHeight: setting?.subMinHeight ?? 30 * theme.scale,
+      useCandleTicksAsZoomSlideBar: setting?.useCandleTicksAsZoomSlideBar ?? true,
 
       /// 主/副图绘制参数
-      minPaintBlankRate: 0.5,
-      alwaysCalculateScreenOfCandlesIfEnough: false,
-      candleMinWidth: theme.pixel,
-      candleMaxWidth: 40 * theme.scale,
-      candleWidth: 7 * theme.scale,
-      candleSpacingParts: 7,
-      candleFixedSpacing: 1 * theme.scale,
-      candleHollowBarBorderWidth: 1 * theme.scale,
-      candleLineWidth: 1 * theme.scale,
-      firstCandleInitOffset: 80 * theme.scale,
+      minPaintBlankRate: setting?.minPaintBlankRate ?? 0.5,
+      alwaysCalculateScreenOfCandlesIfEnough:
+          setting?.alwaysCalculateScreenOfCandlesIfEnough ?? false,
+      candleMinWidth: setting?.candleMinWidth ?? 1 * theme.pixel,
+      candleMaxWidth: setting?.candleMaxWidth ?? 40 * theme.scale,
+      candleWidth: setting?.candleWidth ?? 7 * theme.scale,
+      candleSpacingParts: setting?.candleSpacingParts ?? 7,
+      candleFixedSpacing: setting?.candleFixedSpacing ?? 1 * theme.scale,
+      candleHollowBarBorderWidth: setting?.candleHollowBarBorderWidth ?? 1 * theme.scale,
+      candleLineWidth: setting?.candleLineWidth ?? 1 * theme.scale,
+      firstCandleInitOffset: setting?.firstCandleInitOffset ?? 80 * theme.scale,
 
       /// 绘制额外内容是否在允许在主图绘制区域之外
-      allowPaintExtraOutsideMainRect: true,
+      allowPaintExtraOutsideMainRect: setting?.allowPaintExtraOutsideMainRect ?? true,
 
       /// 是否展示Y轴刻度.
-      showYAxisTick: true,
+      showYAxisTick: setting?.showYAxisTick ?? true,
     );
   }
 
-  LoadingConfig genInnerLoadingConfig() {
-    return LoadingConfig(
-      size: 24 * theme.scale,
-      strokeWidth: 4 * theme.scale,
-      background: theme.tooltipBg,
-      valueColor: theme.textColor,
-    );
-  }
-
-  CrossConfig genCrossConfig() {
-    return CrossConfig(
-      enable: true,
-      crosshair: LineConfig(
-        paint: PaintConfig(
-          color: theme.crossColor,
-          strokeWidth: 0.5 * theme.scale,
-        ),
-        type: LineType.dashed,
-        dashes: const [3, 3],
+  LoadingConfig genInnerLoadingConfig([LoadingConfig? loading]) {
+    return obtainConfig(
+      loading,
+      LoadingConfig(
+        size: 24 * theme.scale,
+        strokeWidth: 4 * theme.scale,
+        background: theme.tooltipBg,
+        valueColor: theme.textColor,
       ),
-      crosspoint: PointConfig(
-        radius: 2 * theme.scale,
-        width: 0 * theme.scale,
+    ).of(
+      valueColor: theme.textColor,
+      background: theme.tooltipBg,
+    );
+  }
+
+  CrossConfig genCrossConfig([CrossConfig? cross]) {
+    return CrossConfig(
+      enable: cross?.enable ?? true,
+
+      /// 十字线
+      crosshair: obtainConfig(
+        cross?.crosshair,
+        LineConfig(
+          paint: PaintConfig(
+            color: theme.crossColor,
+            strokeWidth: 0.5 * theme.scale,
+          ),
+          type: LineType.dashed,
+          dashes: const [3, 3],
+        ),
+      ).of(
+        paintColor: theme.crossColor,
+      ),
+
+      /// 十字线坐标点配置
+      crosspoint: obtainConfig(
+        cross?.crosspoint,
+        PointConfig(
+          radius: 2 * theme.scale,
+          width: 0 * theme.scale,
+          color: theme.crossColor,
+          borderWidth: 3 * theme.scale,
+          borderColor: theme.crossColor.withAlpha(0.2.alpha),
+        ),
+      ).of(
         color: theme.crossColor,
-        borderWidth: 3 * theme.scale,
         borderColor: theme.crossColor.withAlpha(0.2.alpha),
       ),
-      ticksText: TextAreaConfig(
-        style: TextStyle(
-          color: theme.crossTextColor,
-          fontSize: theme.normalTextSize,
-          fontWeight: FontWeight.normal,
-          height: defaultTextHeight,
+
+      /// 十字线实时Tips的样式配置.
+      ticksText: obtainConfig(
+        cross?.ticksText,
+        TextAreaConfig(
+          style: TextStyle(
+            color: theme.crossTextColor,
+            fontSize: theme.normalTextSize,
+            fontWeight: FontWeight.normal,
+            height: defaultTextHeight,
+          ),
+          background: theme.crossTextBg,
+          padding: EdgeInsets.all(2 * theme.scale),
+          border: BorderSide.none,
+          borderRadius: BorderRadius.all(
+            Radius.circular(2 * theme.scale),
+          ),
         ),
+      ).of(
+        textColor: theme.crossTextColor,
         background: theme.crossTextBg,
-        padding: EdgeInsets.all(2 * theme.scale),
-        border: BorderSide.none,
-        borderRadius: BorderRadius.all(
-          Radius.circular(2 * theme.scale),
-        ),
+        borderColor: null,
       ),
-      spacing: 1 * theme.scale,
-      // onCross时, 当移动到空白区域时, Tips区域是否展示最新的蜡烛的Tips数据.
-      showLatestTipsInBlank: true,
-      tooltipConfig: TooltipConfig(
-        show: true,
 
-        /// tooltip 区域设置
-        margin: EdgeInsets.only(
-          left: 15 * theme.scale,
-          right: 65 * theme.scale,
-          top: 10 * theme.scale,
-        ),
-        padding: EdgeInsets.symmetric(
-          horizontal: 4 * theme.scale,
-          vertical: 4 * theme.scale,
-        ),
-        radius: BorderRadius.all(Radius.circular(4 * theme.scale)),
+      /// onCross时, 刻度[ticksText]与绘制边界的间距.
+      spacing: cross?.spacing ?? 1 * theme.scale,
 
-        /// tooltip 文本设置
-        style: TextStyle(
-          fontSize: theme.normalTextSize,
-          color: theme.tooltipTextColor,
-          overflow: TextOverflow.ellipsis,
-          height: defaultMultiTextHeight,
+      /// onCross时, 当移动到空白区域时, Tips区域是否展示最新的蜡烛的Tips数据.
+      showLatestTipsInBlank: cross?.showLatestTipsInBlank ?? true,
+
+      /// onCross时, 当移动到空白区域时, 是否继续按蜡烛宽度移动.
+      moveByCandleInBlank: cross?.moveByCandleInBlank ?? false,
+
+      /// tooltip 区域样式设置
+      tooltipConfig: obtainConfig(
+        cross?.tooltipConfig,
+        TooltipConfig(
+          show: true,
+          // tooltip 区域设置
+          margin: EdgeInsets.only(
+            left: 15 * theme.scale,
+            right: 65 * theme.scale,
+            top: 10 * theme.scale,
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: 4 * theme.scale,
+            vertical: 4 * theme.scale,
+          ),
+          radius: BorderRadius.all(Radius.circular(4 * theme.scale)),
+
+          /// tooltip 文本设置
+          style: TextStyle(
+            fontSize: theme.normalTextSize,
+            color: theme.tooltipTextColor,
+            overflow: TextOverflow.ellipsis,
+            height: defaultMultiTextHeight,
+          ),
         ),
+      ).of(
+        textColor: theme.tooltipTextColor,
       ),
     );
   }
 
-  DrawConfig genDrawConfig() {
+  DrawConfig genDrawConfig([DrawConfig? draw]) {
     return DrawConfig(
-      enable: true,
-      crosshair: LineConfig(
-        paint: PaintConfig(
-          strokeWidth: 0.5 * theme.scale,
-          color: theme.drawColor,
+      enable: draw?.enable ?? true,
+
+      /// 当绘制状态是退出时, 是否允许选择已绘制的Overlay.
+      allowSelectWhenExit: draw?.allowSelectWhenExit ?? true,
+
+      /// 绘制指针十字线配置
+      crosshair: obtainConfig(
+        draw?.crosshair,
+        LineConfig(
+          paint: PaintConfig(
+            strokeWidth: 0.5 * theme.scale,
+            color: theme.drawColor,
+          ),
+          type: LineType.dashed,
+          dashes: const [5, 3],
         ),
-        type: LineType.dashed,
-        dashes: const [5, 3],
+      ).of(
+        paintColor: theme.drawColor,
       ),
-      crosspoint: PointConfig(
-        radius: 2 * theme.scale,
-        width: 0 * theme.scale,
+
+      /// 指针点配置
+      crosspoint: obtainConfig(
+        draw?.crosspoint,
+        PointConfig(
+          radius: 2 * theme.scale,
+          width: 0 * theme.scale,
+          color: theme.drawColor,
+          borderWidth: 2 * theme.scale,
+          borderColor: theme.drawColor.withAlpha(0.5.alpha),
+        ),
+      ).of(
         color: theme.drawColor,
-        borderWidth: 2 * theme.scale,
         borderColor: theme.drawColor.withAlpha(0.5.alpha),
       ),
-      drawLine: LineConfig(
-        paint: PaintConfig(
-          strokeWidth: 1 * theme.scale,
-          color: theme.drawColor, // 必须指定
+
+      /// 默认绘制线的样式配置
+      drawLine: obtainConfig(
+        draw?.drawLine,
+        LineConfig(
+          paint: PaintConfig(
+            strokeWidth: 1 * theme.scale,
+            color: theme.drawColor, // 必须指定
+          ),
+          type: LineType.solid,
+          dashes: [5, 3],
         ),
-        type: LineType.solid,
-        dashes: [5, 3],
+      ).of(
+        paintColor: theme.drawColor,
       ),
-      drawPoint: PointConfig(
-        radius: 9 * theme.scale,
-        width: 0 * theme.scale,
-        color: const Color(0xFFFFFFFF), // 必须指定
-        borderWidth: 1 * theme.scale,
+
+      /// 选择绘制点配置
+      drawPoint: obtainConfig(
+        draw?.drawPoint,
+        PointConfig(
+          radius: 9 * theme.scale,
+          width: 0 * theme.scale,
+          color: const Color(0xFFFFFFFF), // 必须指定
+          borderWidth: 1 * theme.scale,
+          borderColor: theme.drawColor,
+        ),
+      ).of(
+        color: const Color(0xFFFFFFFF),
         borderColor: theme.drawColor,
       ),
-      ticksText: TextAreaConfig(
-        style: TextStyle(
-          color: const Color(0xFFFFFFFF), // 必须指定
-          fontSize: theme.normalTextSize,
-          fontWeight: FontWeight.normal,
-          height: defaultTextHeight,
+
+      /// 刻度文案配置
+      ticksText: obtainConfig(
+        draw?.ticksText,
+        TextAreaConfig(
+          style: TextStyle(
+            color: const Color(0xFFFFFFFF), // 必须指定
+            fontSize: theme.normalTextSize,
+            fontWeight: FontWeight.normal,
+            height: defaultTextHeight,
+          ),
+          padding: EdgeInsets.all(2 * theme.scale),
+          border: null, // BorderSide.none,
+          borderRadius: BorderRadius.all(
+            Radius.circular(2 * theme.scale),
+          ),
         ),
-        padding: EdgeInsets.all(2 * theme.scale),
-        border: BorderSide.none,
-        borderRadius: BorderRadius.all(
-          Radius.circular(2 * theme.scale),
-        ),
+      ).of(
+        textColor: const Color(0xFFFFFFFF),
+        background: null,
+        borderColor: null,
       ),
-      spacing: 1 * theme.scale,
-      ticksGapBgOpacity: 0.1,
-      hitTestMinDistance: 10 * theme.scale,
-      magnetMinDistance: 10 * theme.scale,
-      magnifier: MagnifierConfig(
-        enable: true,
-        magnificationScale: 2,
-        margin: EdgeInsets.all(1 * theme.scale),
-        size: Size(80 * theme.scale, 80 * theme.scale),
-        decorationOpactity: 1.0,
-        decorationShadows: [
-          BoxShadow(
-            offset: const Offset(0.1, 0.1),
-            blurRadius: 2,
-            spreadRadius: 3,
-            color: theme.themeColor.withAlpha(0.1.alpha), // 此处不适配Theme
-          )
-        ],
-        shapeSide: BorderSide(
-          color: theme.gridLine,
-          width: 1 * theme.scale,
+      spacing: draw?.spacing ?? 1 * theme.scale,
+      ticksGapBgOpacity: draw?.ticksGapBgOpacity ?? 0.1,
+      hitTestMinDistance: draw?.hitTestMinDistance ?? 10 * theme.scale,
+      magnetMinDistance: draw?.magnetMinDistance ?? 10 * theme.scale,
+      magnifier: obtainConfig(
+        draw?.magnifier,
+        MagnifierConfig(
+          enable: true,
+          magnificationScale: 2,
+          margin: EdgeInsets.all(1 * theme.scale),
+          size: Size(80 * theme.scale, 80 * theme.scale),
+          decorationOpactity: 1.0,
+          decorationShadows: [
+            BoxShadow(
+              offset: const Offset(0.1, 0.1),
+              blurRadius: 2,
+              spreadRadius: 3,
+              color: theme.themeColor.withAlpha(0.1.alpha), // 此处不适配Theme
+            )
+          ],
+          shapeSide: BorderSide(
+            color: theme.gridLine,
+            width: 1 * theme.scale,
+          ),
         ),
+      ).of(
+        sideColor: theme.gridLine,
       ),
     );
   }
 
-  MainPaintObjectIndicator genMainIndicator();
+  MainPaintObjectIndicator genMainIndicator(
+    MainPaintObjectIndicator<PaintObjectIndicator>? mainIndicator,
+  );
 
   CandleIndicator genCandleIndicator(CandleIndicator? instance) {
     return CandleIndicator(
-      zIndex: -1,
-      height: theme.mainIndicatorHeight,
-      padding: theme.mainIndicatorPadding,
-      high: MarkConfig(
-        spacing: 2 * theme.scale,
-        line: LineConfig(
-          type: LineType.solid,
-          length: 20 * theme.scale,
-          paint: PaintConfig(
-            // color: theme.markLine,
-            strokeWidth: 0.5 * theme.scale,
+      zIndex: instance?.zIndex ?? -1,
+      height: instance?.height ?? theme.mainIndicatorHeight,
+      padding: instance?.padding ?? theme.mainIndicatorPadding,
+      high: obtainConfig(
+        instance?.high,
+        MarkConfig(
+          spacing: 2 * theme.scale,
+          line: LineConfig(
+            type: LineType.solid,
+            length: 20 * theme.scale,
+            paint: PaintConfig(
+              color: theme.markLineColor,
+              strokeWidth: 0.5 * theme.scale,
+            ),
+          ),
+          text: TextAreaConfig(
+            style: TextStyle(
+              fontSize: theme.normalTextSize,
+              color: theme.textColor,
+              overflow: TextOverflow.ellipsis,
+              height: defaultTextHeight,
+            ),
           ),
         ),
-        text: TextAreaConfig(
-          style: TextStyle(
-            fontSize: theme.normalTextSize,
-            // color: theme.textColor,
-            overflow: TextOverflow.ellipsis,
-            height: defaultTextHeight,
-          ),
-        ),
+      ).of(
+        paintColor: theme.markLineColor,
+        textColor: theme.textColor,
+        background: instance?.high.text.style.color,
+        borderColor: instance?.high.text.border?.color,
       ),
-      low: MarkConfig(
-        spacing: 2 * theme.scale,
-        line: LineConfig(
-          type: LineType.solid,
-          length: 20 * theme.scale,
-          paint: PaintConfig(
-            // color: theme.markLine,
-            strokeWidth: 0.5 * theme.scale,
+      low: obtainConfig(
+        instance?.low,
+        MarkConfig(
+          spacing: 2 * theme.scale,
+          line: LineConfig(
+            type: LineType.solid,
+            length: 20 * theme.scale,
+            paint: PaintConfig(
+              color: theme.markLineColor,
+              strokeWidth: 0.5 * theme.scale,
+            ),
+          ),
+          text: TextAreaConfig(
+            style: TextStyle(
+              fontSize: theme.normalTextSize,
+              color: theme.textColor,
+              overflow: TextOverflow.ellipsis,
+              height: defaultTextHeight,
+            ),
           ),
         ),
-        text: TextAreaConfig(
-          style: TextStyle(
-            fontSize: theme.normalTextSize,
-            // color: theme.textColor,
-            overflow: TextOverflow.ellipsis,
-            height: defaultTextHeight,
-          ),
-        ),
+      ).of(
+        paintColor: theme.markLineColor,
+        textColor: theme.textColor,
+        background: instance?.high.text.style.color,
+        borderColor: instance?.high.text.border?.color,
       ),
-      last: MarkConfig(
-        show: true,
-        spacing: 1 * theme.scale,
-        line: LineConfig(
-          type: LineType.dashed,
-          dashes: [3, 3],
-          paint: PaintConfig(
-            // color: theme.markLine,
-            strokeWidth: 0.5 * theme.scale,
+      last: obtainConfig(
+        instance?.last,
+        MarkConfig(
+          show: true,
+          spacing: 1 * theme.scale,
+          line: LineConfig(
+            type: LineType.dashed,
+            dashes: [3, 3],
+            paint: PaintConfig(
+              color: theme.markLineColor,
+              strokeWidth: 0.5 * theme.scale,
+            ),
+          ),
+          hitTestMargin: 4,
+          text: TextAreaConfig(
+            style: TextStyle(
+              fontSize: theme.normalTextSize,
+              color: theme.lastPriceTextColor,
+              overflow: TextOverflow.ellipsis,
+              height: defaultTextHeight,
+              textBaseline: TextBaseline.alphabetic,
+            ),
+            background: theme.lastPriceTextBg,
+            padding: EdgeInsets.symmetric(
+              horizontal: 4 * theme.scale,
+              vertical: 2 * theme.scale,
+            ),
+            // border: BorderSide(color: theme.transparent),
+            borderRadius: BorderRadius.all(Radius.circular(10 * theme.scale)),
           ),
         ),
-        hitTestMargin: 4,
-        text: TextAreaConfig(
-          style: TextStyle(
-            fontSize: theme.normalTextSize,
-            // color: theme.lastPriceTextColor,
-            overflow: TextOverflow.ellipsis,
-            height: defaultTextHeight,
-            textBaseline: TextBaseline.alphabetic,
-          ),
-          // background: theme.lastPriceTextBg,
-          padding: EdgeInsets.symmetric(
-            horizontal: 4 * theme.scale,
-            vertical: 2 * theme.scale,
-          ),
-          // border: BorderSide(color: theme.transparent),
-          borderRadius: BorderRadius.all(Radius.circular(10 * theme.scale)),
-        ),
+      ).of(
+        paintColor: theme.markLineColor,
+        textColor: theme.lastPriceTextColor,
+        background: theme.lastPriceTextBg,
+        borderColor: instance?.high.text.border?.color,
       ),
-      latest: MarkConfig(
-        show: true,
-        spacing: 1 * theme.scale,
-        line: LineConfig(
-          type: LineType.dashed,
-          dashes: [3, 3],
-          paint: PaintConfig(
-            // color: theme.markLine,
-            strokeWidth: 0.5 * theme.scale,
+      latest: obtainConfig(
+        instance?.latest,
+        MarkConfig(
+          show: true,
+          spacing: 1 * theme.scale,
+          line: LineConfig(
+            type: LineType.dashed,
+            dashes: [3, 3],
+            paint: PaintConfig(
+              color: theme.markLineColor,
+              strokeWidth: 0.5 * theme.scale,
+            ),
+          ),
+          text: TextAreaConfig(
+            style: TextStyle(
+              fontSize: theme.normalTextSize,
+              color: Colors.white,
+              overflow: TextOverflow.ellipsis,
+              height: defaultTextHeight,
+            ),
+            minWidth: 45 * theme.scale,
+            textAlign: TextAlign.center,
+            padding: theme.textPading,
+            background: theme.latestPriceTextBg,
+            border: BorderSide(
+              color: theme.markLineColor,
+              width: 0.5 * theme.scale,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(2 * theme.scale)),
           ),
         ),
-        text: TextAreaConfig(
+      ).of(
+        paintColor: theme.markLineColor,
+        textColor: theme.textColor,
+        background: theme.latestPriceTextBg,
+        borderColor: theme.markLineColor,
+      ),
+      useCandleColorAsLatestBg: instance?.useCandleColorAsLatestBg ?? true,
+      showCountDown: instance?.showCountDown ?? true,
+      countDown: obtainConfig(
+        instance?.countDown,
+        TextAreaConfig(
           style: TextStyle(
             fontSize: theme.normalTextSize,
-            color: Colors.white,
+            color: theme.textColor,
             overflow: TextOverflow.ellipsis,
             height: defaultTextHeight,
           ),
-          minWidth: 45 * theme.scale,
           textAlign: TextAlign.center,
           padding: theme.textPading,
+          background: theme.countDownTextBg,
+          border: BorderSide(
+            color: theme.markLineColor,
+            width: 0.5 * theme.scale,
+          ),
           borderRadius: BorderRadius.all(Radius.circular(2 * theme.scale)),
         ),
-      ),
-      useCandleColorAsLatestBg: true,
-      showCountDown: true,
-      countDown: TextAreaConfig(
-        style: TextStyle(
-          fontSize: theme.normalTextSize,
-          // color: theme.textColor,
-          overflow: TextOverflow.ellipsis,
-          height: defaultTextHeight,
-        ),
-        textAlign: TextAlign.center,
-        // background: theme.countDownTextBg,
-        padding: theme.textPading,
-        borderRadius: BorderRadius.all(Radius.circular(2 * theme.scale)),
+      ).of(
+        textColor: theme.textColor,
+        background: theme.countDownTextBg,
+        borderColor: theme.markLineColor,
       ),
       chartBarStyle: instance?.chartBarStyle ?? ChartBarStyle.allSolid,
       chartType: instance?.chartType ?? ChartType.bar,
@@ -820,19 +987,26 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
   TimeIndicator genTimeIndicator(TimeIndicator? instance) {
     return TimeIndicator(
-      height: theme.timeIndicatorHeight,
-      padding: EdgeInsets.zero,
+      height: instance?.height ?? theme.timeIndicatorHeight,
+      padding: instance?.padding ?? EdgeInsets.zero,
       position: instance?.position ?? DrawPosition.middle,
       // 时间刻度.
-      timeTick: TextAreaConfig(
-        style: TextStyle(
-          fontSize: theme.normalTextSize,
-          // color: theme.ticksTextColor,
-          overflow: TextOverflow.ellipsis,
-          height: defaultTextHeight,
+      timeTick: obtainConfig(
+        instance?.timeTick,
+        TextAreaConfig(
+          style: TextStyle(
+            fontSize: theme.normalTextSize,
+            color: theme.ticksTextColor,
+            overflow: TextOverflow.ellipsis,
+            height: defaultTextHeight,
+          ),
+          textWidth: 80 * theme.scale,
+          textAlign: TextAlign.center,
         ),
-        textWidth: 80 * theme.scale,
-        textAlign: TextAlign.center,
+      ).of(
+        textColor: theme.ticksTextColor,
+        background: null,
+        borderColor: null,
       ),
     );
   }

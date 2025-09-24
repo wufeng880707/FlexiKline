@@ -48,8 +48,7 @@ class PaintConfig {
     ..isAntiAlias = isAntiAlias
     ..strokeWidth = strokeWidth;
 
-  factory PaintConfig.fromJson(Map<String, dynamic> json) =>
-      _$PaintConfigFromJson(json);
+  factory PaintConfig.fromJson(Map<String, dynamic> json) => _$PaintConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$PaintConfigToJson(this);
 }

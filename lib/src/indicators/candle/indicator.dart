@@ -478,6 +478,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
           countDown = indicator.countDown.of(
             textColor: theme.textColor,
             background: theme.countDownTextBg,
+            borderColor: theme.transparent,
           );
         } else {
           countDown = indicator.countDown.of(

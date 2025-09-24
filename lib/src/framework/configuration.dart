@@ -165,7 +165,7 @@ abstract interface class IConfiguration implements IStorage {
   /// 调用场景:
   /// 1. 首次加载(无缓存)情况下, 生成默认的FlexiKlineConfig
   /// 2. 从缓存中反序列化实现时调用, [origin]即是原始缓存配置, 这可能出现在后续追加/删除/修改配置时, 原有配置无法反序列化.
-  FlexiKlineConfig generateFlexiKlineConfig([Map<String, dynamic>? origin]);
+  FlexiKlineConfig generateFlexiKlineConfig([FlexiKlineConfig? origin]);
 
   /// 蜡烛指标配置构造器(主区)
   IndicatorBuilder<CandleBaseIndicator> get candleIndicatorBuilder;
@@ -204,18 +204,20 @@ T? jsonToInstance<T>(Map<String, dynamic>? json, FromJson<T> fromJson) {
 }
 
 extension IConfigurationExt on IConfiguration {
+  T obtainConfig<T>(T? config, T newConfig) => config ?? newConfig;
+
   FlexiKlineConfig getFlexiKlineConfig() {
-    Map<String, dynamic>? json;
+    FlexiKlineConfig? config;
     try {
-      json = getConfig(flexiKlineConfigKey);
+      final json = getConfig(flexiKlineConfigKey);
       if (json is Map<String, dynamic>) {
-        return FlexiKlineConfig.fromJson(json);
+        config = FlexiKlineConfig.fromJson(json);
       }
     } catch (error, stack) {
       debugPrintStack(stackTrace: stack, label: 'getFlexiKlineConfig$error');
     }
 
-    return generateFlexiKlineConfig(json);
+    return generateFlexiKlineConfig(config);
   }
 
   void saveFlexiKlineConfig(FlexiKlineConfig config) {

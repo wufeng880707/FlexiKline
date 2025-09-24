@@ -85,8 +85,15 @@ class MagnifierConfig {
   /// 放大镜默认圆形边框样式
   final BorderSide shapeSide;
 
-  factory MagnifierConfig.fromJson(Map<String, dynamic> json) =>
-      _$MagnifierConfigFromJson(json);
+  MagnifierConfig of({
+    Color? sideColor,
+  }) {
+    return copyWith(
+      shapeSide: shapeSide.copyWith(color: sideColor ?? shapeSide.color),
+    );
+  }
+
+  factory MagnifierConfig.fromJson(Map<String, dynamic> json) => _$MagnifierConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$MagnifierConfigToJson(this);
 }

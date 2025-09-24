@@ -39,8 +39,7 @@ class PointConfig {
   final Color? borderColor;
 
   PointConfig of({Color? color, Color? borderColor}) {
-    if ((color == null || this.color == color) &&
-        (borderColor == null || this.borderColor == borderColor)) {
+    if ((color == null || this.color == color) && this.borderColor == borderColor) {
       return this;
     }
     return copyWith(color: color ?? this.color, borderColor: borderColor);

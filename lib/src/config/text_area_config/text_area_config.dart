@@ -70,9 +70,7 @@ class TextAreaConfig {
   double get textSize => style.fontSize ?? defaulTextSize;
 
   TextAreaConfig of({Color? textColor, Color? background, Color? borderColor}) {
-    if ((textColor == null || style.color == textColor) &&
-        (background == null || this.background == background) &&
-        (borderColor == null || border?.color == borderColor)) {
+    if (style.color == textColor && this.background == background && border?.color == borderColor) {
       return this;
     }
     return copyWith(
@@ -82,8 +80,7 @@ class TextAreaConfig {
     );
   }
 
-  factory TextAreaConfig.fromJson(Map<String, dynamic> json) =>
-      _$TextAreaConfigFromJson(json);
+  factory TextAreaConfig.fromJson(Map<String, dynamic> json) => _$TextAreaConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$TextAreaConfigToJson(this);
 }

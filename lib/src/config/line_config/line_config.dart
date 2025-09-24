@@ -50,8 +50,7 @@ class LineConfig {
 
   Paint get linePaint => paint.paint;
 
-  factory LineConfig.fromJson(Map<String, dynamic> json) =>
-      _$LineConfigFromJson(json);
+  factory LineConfig.fromJson(Map<String, dynamic> json) => _$LineConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$LineConfigToJson(this);
 }

@@ -70,8 +70,7 @@ class MarkConfig {
     );
   }
 
-  factory MarkConfig.fromJson(Map<String, dynamic> json) =>
-      _$MarkConfigFromJson(json);
+  factory MarkConfig.fromJson(Map<String, dynamic> json) => _$MarkConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$MarkConfigToJson(this);
 }
