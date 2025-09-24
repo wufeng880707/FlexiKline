@@ -18,6 +18,7 @@ import 'package:flutter/painting.dart';
 import '../../constant.dart';
 import '../../extension/export.dart';
 import '../../framework/serializers.dart';
+import '../../framework/configuration.dart';
 
 part 'text_area_config.g.dart';
 
@@ -69,14 +70,18 @@ class TextAreaConfig {
 
   double get textSize => style.fontSize ?? defaulTextSize;
 
-  TextAreaConfig of({Color? textColor, Color? background, Color? borderColor}) {
+  TextAreaConfig of({
+    Color? textColor,
+    Color? background,
+    Color? borderColor,
+  }) {
     if (style.color == textColor && this.background == background && border?.color == borderColor) {
       return this;
     }
     return copyWith(
-      style: style.copyWith(color: textColor),
+      style: style.of(color: textColor),
       background: background,
-      border: border?.copyWith(color: borderColor),
+      border: border?.of(color: borderColor),
     );
   }
 

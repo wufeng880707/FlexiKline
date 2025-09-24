@@ -16,6 +16,7 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/painting.dart';
 
 import '../../constant.dart';
+import '../../framework/configuration.dart';
 import '../../framework/serializers.dart';
 
 part 'tips_config.g.dart';
@@ -83,11 +84,9 @@ class TipsConfig {
   double get textSize => style.fontSize ?? defaulTextSize;
 
   TipsConfig of({Color? textColor}) {
-    if (style.color == textColor) {
-      return this;
-    }
+    if (textColor == null || style.color == textColor) return this;
     return copyWith(
-      style: style.copyWith(color: textColor),
+      style: style.of(color: textColor),
     );
   }
 

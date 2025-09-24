@@ -230,6 +230,52 @@ final class IndicatorPaintObjectManager with KlineLog {
     }
   }
 
+  /// 刷新FlexiKline配置与指标配置.
+  void refreshFlexiKlineConfig(
+    IPaintContext context, {
+    bool refreshIndicator = true,
+  }) {
+    _flexiKlineConfig = configuration.getFlexiKlineConfig();
+    if (!refreshIndicator) return;
+
+    /// 配置默认指标蜡烛图指标和时间指标
+    try {
+      final candle = configuration.candleIndicatorBuilder.call(
+        configuration.getConfig(candleIndicatorKey.id),
+      );
+      candlePaintObject.doDidUpdateIndicator(candle);
+
+      final time = configuration.timeIndicatorBuilder.call(
+        configuration.getConfig(timeIndicatorKey.id),
+      );
+      timePaintObject.doDidUpdateIndicator(time);
+    } catch (error, stack) {
+      loge(
+        'updateFlexiKlineConfig catch an exception!',
+        error: error,
+        stackTrace: stack,
+      );
+    }
+
+    final mainKeys = mainIndicatorKeys.toSet();
+    for (final key in supportMainIndicatorKeys) {
+      if (mainKeys.contains(key)) {
+        addMainPaintObject(key, context, reset: true);
+      } else {
+        removeMainPaintObject(key);
+      }
+    }
+
+    final subKeys = subIndicatorKeys.toSet();
+    for (final key in supportSubIndicatorKeys) {
+      if (subKeys.contains(key)) {
+        addSubPaintObject(key, context, reset: true);
+      } else {
+        removeSubPaintObject(key);
+      }
+    }
+  }
+
   /// 主区指标操作 ///
   /// 在主区中添加[key]指定的指标
   PaintObject? addMainPaintObject(

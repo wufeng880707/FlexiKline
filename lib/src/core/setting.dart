@@ -518,7 +518,10 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     bool updateIndicators = true,
     bool updateDrawOverlays = true,
   }) {
-    _paintObjectManager.updateFlexiKlineConfig(this);
+    _paintObjectManager.updateFlexiKlineConfig(
+      this,
+      updateIndicator: updateIndicators,
+    );
     _invokeSizeChanged(force: updateIndicators);
     _updateSubHeightList();
     if (updateDrawOverlays) {

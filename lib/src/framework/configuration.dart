@@ -300,3 +300,17 @@ extension IConfigurationExt on IConfiguration {
     setConfig(drawToolbarPositionKey, json);
   }
 }
+
+extension TextStyleExt on TextStyle {
+  TextStyle of({Color? color}) {
+    if (color == null || color == this.color) return this;
+    return copyWith(color: color);
+  }
+}
+
+extension BorderSideExt on BorderSide {
+  BorderSide of({Color? color}) {
+    if (color == null || color == this.color) return this;
+    return copyWith(color: color);
+  }
+}

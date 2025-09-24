@@ -75,7 +75,7 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
   @mustCallSuper
   void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
     logd("onThemeChanged base");
-    _paintObjectManager.updateFlexiKlineConfig(this, updateIndicator: false);
+    _paintObjectManager.refreshFlexiKlineConfig(this);
   }
 
   @protected

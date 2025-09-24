@@ -23,7 +23,7 @@ import '../text_area_config/text_area_config.dart';
 part 'mark_config.g.dart';
 
 @CopyWith()
-// 标记(最高价/最低价/最新价)
+// 标记(最高价/最低价/最新价/最后价)
 @FlexiConfigSerializable
 class MarkConfig {
   const MarkConfig({
@@ -51,6 +51,8 @@ class MarkConfig {
 
   /// 用于扩大点击测试的区域, 如[MarkConfig]无需点击事件, 不用配置.
   final double hitTestMargin;
+
+  Color get lineColor => line.paint.color;
 
   double get lineLength => line.length ?? 0;
 

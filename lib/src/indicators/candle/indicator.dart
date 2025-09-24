@@ -26,12 +26,19 @@ class CandleIndicator extends CandleBaseIndicator {
     required this.high,
     // 最低价
     required this.low,
-    // 最后价: 当最新蜡烛不在可视区域时使用.
+
+    /// 最后价: 当最新蜡烛不在可视区域时使用.
+    /// 注: 如果其中线的配置颜色透明度为0(默认为0) 且useCandleColorAsLatestBg为true,则会采用涨跌色
     required this.last,
-    // 最新价: 当最新蜡烛在可视区域时使用.
+
+    /// 最新价: 当最新蜡烛在可视区域时使用.
+    /// 注: 如果其中线的配置颜色透明度为0(默认为0) 且useCandleColorAsLatestBg为true,则会采用涨跌色
     required this.latest,
+
+    /// 使用蜡烛颜色做为Latest的背景
     this.useCandleColorAsLatestBg = true,
-    // 倒计时, 在latest最新价之下展示
+
+    /// 倒计时, 在latest最新价之下展示
     this.showCountDown = true,
     required this.countDown,
     this.chartBarStyle = ChartBarStyle.allSolid,
@@ -43,17 +50,24 @@ class CandleIndicator extends CandleBaseIndicator {
     this.lineColor,
   });
 
-  // 最高价
+  /// 最高价
   final MarkConfig high;
-  // 最低价
+
+  /// 最低价
   final MarkConfig low;
-  // 最后价: 当最新蜡烛不在可视区域时使用.
+
+  /// 最后价: 当最新蜡烛不在可视区域时使用.
+  /// 注: 如果其中线的配置颜色透明度为0(默认为0) 且useCandleColorAsLatestBg为true,则会采用涨跌色
   final MarkConfig last;
-  // 最新价: 当最新蜡烛在可视区域时使用.
+
+  /// 最新价: 当最新蜡烛在可视区域时使用.
+  /// 注: 如果其中线的配置颜色透明度为0(默认为0) 且useCandleColorAsLatestBg为true,则会采用涨跌色
   final MarkConfig latest;
-  // 使用蜡烛颜色做为Latest的背景
+
+  /// 使用蜡烛颜色做为Latest的背景
   final bool useCandleColorAsLatestBg;
-  // 倒计时, 在latest最新价之下展示
+
+  /// 倒计时, 在latest最新价之下展示
   final bool showCountDown;
   final TextAreaConfig countDown;
 
@@ -391,26 +405,29 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     if (paintDxOffset < _latestTextOffset) {
       _lastTextSize = null;
       // 绘制最新价和倒计时
-      final latest = indicator.latest;
+      MarkConfig latest = indicator.latest;
       if (!latest.show) return;
 
       ldx = startCandleDx;
 
-      TextAreaConfig textConfig;
       if (indicator.useCandleColorAsLatestBg) {
-        textConfig = latest.text.copyWith(
-          style: latest.text.style.copyWith(color: const Color(0xFFFFFFFF)),
-          background: model.close >= model.open ? longColor : shortColor,
-          border: BorderSide.none,
+        final updownColor = model.close >= model.open ? longColor : shortColor;
+        latest = latest.of(
+          paintColor: latest.lineColor.a == 0 ? updownColor : null,
+          textColor: const Color(0xFFFFFFFF),
+          background: updownColor,
+          borderColor: theme.transparent,
         );
       } else {
-        textConfig = latest.text.of(
+        latest = latest.of(
+          paintColor: latest.lineColor.a == 0 ? theme.markLineColor : null,
           textColor: theme.textColor,
           background: theme.latestPriceTextBg,
           borderColor: theme.markLineColor,
         );
       }
 
+      TextAreaConfig textConfig = latest.text;
       Color? background = textConfig.background;
       BorderRadius? borderRadius = textConfig.borderRadius;
 
@@ -427,7 +444,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
       latestPath.lineTo(ldx, dy);
       canvas.drawLineByConfig(
         latestPath,
-        latest.line.of(paintColor: theme.markLineColor),
+        latest.line,
       );
 
       /// 最新价文本和样式配置

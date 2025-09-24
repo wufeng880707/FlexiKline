@@ -885,7 +885,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
             type: LineType.dashed,
             dashes: [3, 3],
             paint: PaintConfig(
-              color: theme.markLineColor,
+              color: theme.markLineColor, // 如果指定颜色透明度为0 且useCandleColorAsLatestBg为true,则会采用涨跌色
               strokeWidth: 0.5 * theme.scale,
             ),
           ),
@@ -922,7 +922,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
             type: LineType.dashed,
             dashes: [3, 3],
             paint: PaintConfig(
-              color: theme.markLineColor,
+              // color: theme.markLineColor, // 如果指定颜色透明度为0 且useCandleColorAsLatestBg为true,则会采用涨跌色
               strokeWidth: 0.5 * theme.scale,
             ),
           ),
@@ -945,7 +945,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           ),
         ),
       ).of(
-        paintColor: theme.markLineColor,
+        // paintColor: theme.markLineColor,
         textColor: theme.textColor,
         background: theme.latestPriceTextBg,
         borderColor: theme.markLineColor,

@@ -15,6 +15,7 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/painting.dart';
 
+import '../../framework/configuration.dart';
 import '../../framework/serializers.dart';
 
 part 'tooltip_config.g.dart';
@@ -46,11 +47,9 @@ class TooltipConfig {
   final TextStyle style;
 
   TooltipConfig of({Color? textColor}) {
-    if (style.color == textColor) {
-      return this;
-    }
+    if (textColor == null || style.color == textColor) return this;
     return copyWith(
-      style: style.copyWith(color: textColor),
+      style: style.of(color: textColor),
     );
   }
 
