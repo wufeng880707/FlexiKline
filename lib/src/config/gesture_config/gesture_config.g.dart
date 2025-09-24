@@ -158,15 +158,24 @@ GestureConfig _$GestureConfigFromJson(Map<String, dynamic> json) =>
       scaleSpeed: (json['scaleSpeed'] as num?)?.toDouble() ?? 10,
     );
 
-Map<String, dynamic> _$GestureConfigToJson(GestureConfig instance) =>
-    <String, dynamic>{
-      'supportLongPress': instance.supportLongPress,
-      'isInertialPan': instance.isInertialPan,
-      'tolerance': instance.tolerance.toJson(),
-      if (instance.loadMoreWhenNoEnoughDistance case final value?)
-        'loadMoreWhenNoEnoughDistance': value,
-      'loadMoreWhenNoEnoughCandles': instance.loadMoreWhenNoEnoughCandles,
-      'scalePosition':
-          const ScalePositionConverter().toJson(instance.scalePosition),
-      'scaleSpeed': instance.scaleSpeed,
-    };
+Map<String, dynamic> _$GestureConfigToJson(GestureConfig instance) {
+  final val = <String, dynamic>{
+    'supportLongPress': instance.supportLongPress,
+    'isInertialPan': instance.isInertialPan,
+    'tolerance': instance.tolerance.toJson(),
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull(
+      'loadMoreWhenNoEnoughDistance', instance.loadMoreWhenNoEnoughDistance);
+  val['loadMoreWhenNoEnoughCandles'] = instance.loadMoreWhenNoEnoughCandles;
+  val['scalePosition'] =
+      const ScalePositionConverter().toJson(instance.scalePosition);
+  val['scaleSpeed'] = instance.scaleSpeed;
+  return val;
+}

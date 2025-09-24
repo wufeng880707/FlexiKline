@@ -106,10 +106,19 @@ LineConfig _$LineConfigFromJson(Map<String, dynamic> json) => LineConfig(
           : PaintConfig.fromJson(json['paint'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$LineConfigToJson(LineConfig instance) =>
-    <String, dynamic>{
-      'type': const LineTypeConverter().toJson(instance.type),
-      if (instance.length case final value?) 'length': value,
-      'dashes': instance.dashes,
-      'paint': instance.paint.toJson(),
-    };
+Map<String, dynamic> _$LineConfigToJson(LineConfig instance) {
+  final val = <String, dynamic>{
+    'type': const LineTypeConverter().toJson(instance.type),
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('length', instance.length);
+  val['dashes'] = instance.dashes;
+  val['paint'] = instance.paint.toJson();
+  return val;
+}

@@ -306,31 +306,40 @@ DrawParams _$DrawParamsFromJson(Map<String, dynamic> json) => DrawParams(
           json['fibFansGridColor'], const ColorConverter().fromJson),
     );
 
-Map<String, dynamic> _$DrawParamsToJson(DrawParams instance) =>
-    <String, dynamic>{
-      'arrowsRadians': instance.arrowsRadians,
-      'arrowsLen': instance.arrowsLen,
-      if (instance.priceText?.toJson() case final value?) 'priceText': value,
-      'priceTextMargin':
-          const EdgeInsetsConverter().toJson(instance.priceTextMargin),
-      if (instance.angleText?.toJson() case final value?) 'angleText': value,
-      'angleBaseLineMinLen': instance.angleBaseLineMinLen,
-      'angleRadSize': const SizeConverter().toJson(instance.angleRadSize),
-      'paralleBgOpacity': instance.paralleBgOpacity,
-      'rectangleBgOpacity': instance.rectangleBgOpacity,
-      'fibRates': instance.fibRates,
-      'fibColors':
-          instance.fibColors.map(const ColorConverter().toJson).toList(),
-      'fibBgOpacity': instance.fibBgOpacity,
-      'fibText': instance.fibText.toJson(),
-      'fibFansParams': instance.fibFansParams,
-      'fibFansColors':
-          instance.fibFansColors.map(const ColorConverter().toJson).toList(),
-      if (_$JsonConverterToJson<String, Color>(
-              instance.fibFansGridColor, const ColorConverter().toJson)
-          case final value?)
-        'fibFansGridColor': value,
-    };
+Map<String, dynamic> _$DrawParamsToJson(DrawParams instance) {
+  final val = <String, dynamic>{
+    'arrowsRadians': instance.arrowsRadians,
+    'arrowsLen': instance.arrowsLen,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('priceText', instance.priceText?.toJson());
+  val['priceTextMargin'] =
+      const EdgeInsetsConverter().toJson(instance.priceTextMargin);
+  writeNotNull('angleText', instance.angleText?.toJson());
+  val['angleBaseLineMinLen'] = instance.angleBaseLineMinLen;
+  val['angleRadSize'] = const SizeConverter().toJson(instance.angleRadSize);
+  val['paralleBgOpacity'] = instance.paralleBgOpacity;
+  val['rectangleBgOpacity'] = instance.rectangleBgOpacity;
+  val['fibRates'] = instance.fibRates;
+  val['fibColors'] =
+      instance.fibColors.map(const ColorConverter().toJson).toList();
+  val['fibBgOpacity'] = instance.fibBgOpacity;
+  val['fibText'] = instance.fibText.toJson();
+  val['fibFansParams'] = instance.fibFansParams;
+  val['fibFansColors'] =
+      instance.fibFansColors.map(const ColorConverter().toJson).toList();
+  writeNotNull(
+      'fibFansGridColor',
+      _$JsonConverterToJson<String, Color>(
+          instance.fibFansGridColor, const ColorConverter().toJson));
+  return val;
+}
 
 Value? _$JsonConverterFromJson<Json, Value>(
   Object? json,

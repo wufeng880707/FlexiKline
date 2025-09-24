@@ -115,17 +115,26 @@ PointConfig _$PointConfigFromJson(Map<String, dynamic> json) => PointConfig(
           json['borderColor'], const ColorConverter().fromJson),
     );
 
-Map<String, dynamic> _$PointConfigToJson(PointConfig instance) =>
-    <String, dynamic>{
-      'radius': instance.radius,
-      'width': instance.width,
-      'color': const ColorConverter().toJson(instance.color),
-      if (instance.borderWidth case final value?) 'borderWidth': value,
-      if (_$JsonConverterToJson<String, Color>(
-              instance.borderColor, const ColorConverter().toJson)
-          case final value?)
-        'borderColor': value,
-    };
+Map<String, dynamic> _$PointConfigToJson(PointConfig instance) {
+  final val = <String, dynamic>{
+    'radius': instance.radius,
+    'width': instance.width,
+    'color': const ColorConverter().toJson(instance.color),
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('borderWidth', instance.borderWidth);
+  writeNotNull(
+      'borderColor',
+      _$JsonConverterToJson<String, Color>(
+          instance.borderColor, const ColorConverter().toJson));
+  return val;
+}
 
 Value? _$JsonConverterFromJson<Json, Value>(
   Object? json,

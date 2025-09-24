@@ -133,10 +133,20 @@ CandleReq _$CandleReqFromJson(Map<String, dynamic> json) => CandleReq(
       before: (json['before'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$CandleReqToJson(CandleReq instance) => <String, dynamic>{
-      'instId': instance.instId,
-      if (instance.after case final value?) 'after': value,
-      if (instance.before case final value?) 'before': value,
-      'timeBar': instance.timeBar.toJson(),
-      'limit': instance.limit,
-    };
+Map<String, dynamic> _$CandleReqToJson(CandleReq instance) {
+  final val = <String, dynamic>{
+    'instId': instance.instId,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('after', instance.after);
+  writeNotNull('before', instance.before);
+  val['timeBar'] = instance.timeBar.toJson();
+  val['limit'] = instance.limit;
+  return val;
+}

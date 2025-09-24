@@ -94,9 +94,18 @@ TipsConfig _$TipsConfigFromJson(Map<String, dynamic> json) => TipsConfig(
               .fromJson(json['style'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$TipsConfigToJson(TipsConfig instance) =>
-    <String, dynamic>{
-      'label': instance.label,
-      if (instance.precision case final value?) 'precision': value,
-      'style': const TextStyleConverter().toJson(instance.style),
-    };
+Map<String, dynamic> _$TipsConfigToJson(TipsConfig instance) {
+  final val = <String, dynamic>{
+    'label': instance.label,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('precision', instance.precision);
+  val['style'] = const TextStyleConverter().toJson(instance.style);
+  return val;
+}
