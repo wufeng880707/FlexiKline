@@ -9,9 +9,7 @@ part of 'overlay.dart';
 Point _$PointFromJson(Map<String, dynamic> json) => Point(
       index: (json['index'] as num?)?.toInt() ?? -1,
       ts: (json['ts'] as num?)?.toInt() ?? -1,
-      value: json['value'] == null
-          ? BagNum.zero
-          : const BagNumConverter().fromJson(json['value']),
+      value: const BagNumConverter().fromJson(json['value']),
     );
 
 Map<String, dynamic> _$PointToJson(Point instance) => <String, dynamic>{
