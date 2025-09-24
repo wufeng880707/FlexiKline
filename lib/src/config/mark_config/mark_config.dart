@@ -49,7 +49,7 @@ class MarkConfig {
   final LineConfig line;
   final TextAreaConfig text;
 
-  /// 用于扩大点击测试的区域, 如[MarkConfig]无需点击事件, 不用配置.
+  /// 用于扩大点击测试的区域, 如[MarkConfig]无需点击事件, 则不用配置.
   final double hitTestMargin;
 
   Color get lineColor => line.paint.color;

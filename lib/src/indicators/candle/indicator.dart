@@ -359,14 +359,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     final model = klineData.latest;
     if (model == null) return null;
     // 计算最新价YAxis位置.
-    double dy;
-    if (model.close >= minMax.max) {
-      dy = drawableRect.top; // 画板顶部展示.
-    } else if (model.close <= minMax.min) {
-      dy = drawableRect.bottom; // 画板底部展示.
-    } else {
-      dy = clampDyInChart(valueToDy(model.close));
-    }
+    double dy = clampDyInChart(valueToDy(model.close));
     return Rect.fromLTWH(
       chartRect.right + _latestTextOffset - indicator.last.spacing - _lastTextSize!.width,
       dy,
@@ -390,13 +383,6 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
 
     // 计算最新价YAxis位置.
     double dy = clampDyInChart(valueToDy(model.close));
-    // if (model.close >= minMax.max) {
-    //   dy = chartRect.top; // 画板顶部展示.
-    // } else if (model.close <= minMax.min) {
-    //   dy = chartRect.bottom; // 画板底部展示.
-    // } else {
-    //   dy = clampDyInChart(valueToDy(model.close));
-    // }
 
     // 计算最新价XAxis位置.
     final rdx = chartRect.right;
@@ -458,7 +444,8 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
       String? countDownText;
       if (indicator.showCountDown && !klineData.isTimeChart) {
         final nextUpdateDateTime = model.nextUpdateDateTime(klineData.req.timeBar);
-        if (nextUpdateDateTime != null) {
+        if (nextUpdateDateTime != null &&
+            nextUpdateDateTime.millisecondsSinceEpoch > DateTime.now().millisecondsSinceEpoch) {
           countDownText = nextUpdateDateTime.diffAsCountdown();
         }
       }
