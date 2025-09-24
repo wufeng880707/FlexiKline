@@ -22,20 +22,23 @@ import '../../widgets/no_thumb_scroll_behavior.dart';
 import '../../widgets/shrink_icon_button.dart';
 
 /// 绘制工具菜单栏组件
-/// 
+///
 /// 提供绘制工具选择、连续绘制开关、磁吸模式切换、
 /// 显示/隐藏绘制对象、清空所有绘制对象等功能
 class FlexiKlineDrawMenubar extends ConsumerStatefulWidget {
   const FlexiKlineDrawMenubar({
     super.key,
     required this.controller,
+    required this.onHide,
   });
 
   final FlexiKlineController controller;
+  
+  /// 隐藏菜单栏的回调
+  final VoidCallback onHide;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _FlexiKlineDrawMenubarState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _FlexiKlineDrawMenubarState();
 }
 
 class _FlexiKlineDrawMenubarState extends ConsumerState<FlexiKlineDrawMenubar> {
@@ -55,7 +58,7 @@ class _FlexiKlineDrawMenubarState extends ConsumerState<FlexiKlineDrawMenubar> {
           _MagnetModeToggle(controller: widget.controller, theme: theme),
           _VisibilityToggle(controller: widget.controller),
           _ClearAllButton(controller: widget.controller),
-          const _SaveButton(),
+          _SaveButton(controller: widget.controller,onHide: widget.onHide),
         ],
       ),
     );
@@ -71,7 +74,7 @@ class _DrawToolsScrollableSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-    
+
     return ScrollConfiguration(
       behavior: NoThumbScrollBehavior().copyWith(scrollbars: false),
       child: SingleChildScrollView(
@@ -173,9 +176,7 @@ class _VisibilityToggle extends StatelessWidget {
       valueListenable: controller.drawVisibilityListener,
       builder: (context, isShow, child) => ShrinkIconButton(
         onPressed: () => controller.setDrawVisibility(!isShow),
-        content: isShow
-            ? Icons.visibility_outlined
-            : Icons.visibility_off_outlined,
+        content: isShow ? Icons.visibility_outlined : Icons.visibility_off_outlined,
       ),
     );
   }
@@ -198,15 +199,22 @@ class _ClearAllButton extends StatelessWidget {
 
 /// 保存按钮（暂时未实现功能）
 class _SaveButton extends StatelessWidget {
-  const _SaveButton();
+  const _SaveButton({required this.controller,required this.onHide});
+
+  final FlexiKlineController controller;
+  final VoidCallback onHide;
 
   @override
   Widget build(BuildContext context) {
     return ShrinkIconButton(
       onPressed: () {
+      
         // TODO: 实现保存绘制对象到文件的功能
+        controller.storeFlexiKlineConfig();
+        onHide();
       },
       content: Icons.login_rounded,
     );
   }
 }
+

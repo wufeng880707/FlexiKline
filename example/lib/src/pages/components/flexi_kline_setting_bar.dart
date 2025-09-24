@@ -92,8 +92,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
 
   bool isPreferTimeBar(TimeBarConfig timeBar) => preferTimeBarList.contains(timeBar);
 
-  List<TimeBarConfig> get showTimeBarList =>
-      wideScreen ? _getTimeBarConfigs() : preferTimeBarList;
+  List<TimeBarConfig> get showTimeBarList => wideScreen ? _getTimeBarConfigs() : preferTimeBarList;
 
   final timeBarSettingBtnStatus = ValueNotifier(false);
   Future<void> onTapTimeBarSetting() async {
@@ -152,6 +151,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
           visible: _showDarwTool,
           child: FlexiKlineDrawMenubar(
             controller: widget.controller,
+            onHide: onTapDrawTool,
           ),
         )
       ],

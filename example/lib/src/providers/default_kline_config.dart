@@ -19,7 +19,6 @@ import 'dart:ui';
 import 'package:example/generated/l10n.dart';
 import 'package:flexi_formatter/date_time.dart';
 import 'package:flexi_kline/flexi_kline.dart' hide Overlay;
-import 'package:flexi_kline/src/framework/draw/overlay.dart' as flexi_overlay show Overlay;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -369,71 +368,6 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     }
   }
 
-  // /// 获取默认副指标配置（作为fallback）
-  // Map<IIndicatorKey, IndicatorBuilder> _getDefaultSubIndicators() {
-  //   final theme = ref.read(defaultKlineThemeProvider);
-  //   return {
-  //     // VOL_MA 成交量移动平均线 - 基本配置作为fallback
-  //     const FlexiIndicatorKey('volMa'): (setting) => VolMaIndicator(
-  //           height: 100.r,
-  //           calcParam: const VolMaParam(
-  //             lines: [
-  //               VolMALineConfig(
-  //                 id: 'ma_1',
-  //                 enabled: true,
-  //                 period: 5,
-  //                 color: Colors.blue,
-  //                 width: 1.0,
-  //                 opacity: 0.8,
-  //               ),
-  //               VolMALineConfig(
-  //                 id: 'ma_2',
-  //                 enabled: true,
-  //                 period: 10,
-  //                 color: Colors.red,
-  //                 width: 1.0,
-  //                 opacity: 0.8,
-  //               ),
-  //             ],
-  //             volume: VolMAVolumeConfig(
-  //               useTrendColor: true,
-  //               bullishColor: Color(0xff4caf50),
-  //               bearishColor: Color(0xfff44336),
-  //               opacity: 0.6,
-  //             ),
-  //             display: VolMADisplayConfig(
-  //               precision: 2,
-  //               showVolInTips: true,
-  //               showPeriodInTips: true,
-  //             ),
-  //           ),
-  //           tipsPadding: theme.tipsPadding,
-  //         ),
-  //
-  //     // VOLUME 成交量 - 基本配置作为fallback
-  //     const FlexiIndicatorKey('volume'): (setting) => VolumeIndicator(
-  //           height: 100.r,
-  //           calcParam: const VolumeParam(
-  //             showInMain: true,
-  //             heightRatio: 0.3,
-  //             volume: VolumeBarConfig(
-  //               useTrendColor: true,
-  //               bullishColor: Color(0xff4caf50),
-  //               bearishColor: Color(0xfff44336),
-  //               opacity: 0.6,
-  //             ),
-  //             display: VolumeDisplayConfig(
-  //               precision: 2,
-  //               showVolInTips: true,
-  //               compactDisplay: true,
-  //             ),
-  //           ),
-  //           tipsPadding: theme.tipsPadding,
-  //           tickCount: 5,
-  //         ),
-  //   };
-  // }
-
   @override
   MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
     final theme = ref.read(defaultKlineThemeProvider);
@@ -689,35 +623,6 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         sortOrder: 24,
       ),
     ];
-  }
-
-  // ========== 绘制相关方法 ==========
-
-  Iterable<flexi_overlay.Overlay> getDrawOverlayList(String instId) {
-    try {
-      final String? jsonStr = CacheUtil().get('draw_overlay_$instId');
-      if (jsonStr != null && jsonStr.isNotEmpty) {
-        final json = jsonDecode(jsonStr);
-        if (json is List) {
-          return json
-              .map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>))
-              .toList();
-        }
-      }
-    } catch (err, stack) {
-      defLogger.e('getDrawOverlayList error:$err', stackTrace: stack);
-    }
-    return [];
-  }
-
-  void saveDrawOverlayList(String instId, Iterable<flexi_overlay.Overlay> list) {
-    try {
-      final jsonList = list.map((overlay) => overlay.toJson()).toList();
-      final jsonSrc = jsonEncode(jsonList);
-      CacheUtil().setString('draw_overlay_$instId', jsonSrc);
-    } catch (err, stack) {
-      defLogger.e('saveDrawOverlayList error:$err', stackTrace: stack);
-    }
   }
 
   // ========== 指标构建器创建 ==========
