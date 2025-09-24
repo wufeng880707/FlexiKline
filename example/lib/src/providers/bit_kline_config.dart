@@ -22,26 +22,6 @@ import 'package:example/src/theme/flexi_theme.dart';
 import 'package:example/src/utils/cache_util.dart';
 import 'package:flexi_kline/flexi_kline.dart' hide Overlay;
 import 'package:flexi_kline/src/framework/draw/overlay.dart' as flexi_overlay;
-import 'package:flexi_kline/src/indicators/vol_ma/vol_ma.dart';
-import 'package:flexi_kline/src/indicators/vol_ma/vol_ma_param.dart';
-import 'package:flexi_kline/src/indicators/volume/volume.dart';
-import 'package:flexi_kline/src/indicators/volume/volume_param.dart';
-import 'package:flexi_kline/src/indicators/ma/ma.dart';
-import 'package:flexi_kline/src/indicators/ma/ma_param.dart';
-import 'package:flexi_kline/src/indicators/boll/boll.dart';
-import 'package:flexi_kline/src/indicators/boll/boll_param.dart';
-import 'package:flexi_kline/src/indicators/ema/ema.dart';
-import 'package:flexi_kline/src/indicators/ema/ema_param.dart';
-import 'package:flexi_kline/src/indicators/sar/sar.dart';
-import 'package:flexi_kline/src/indicators/sar/sar_param.dart';
-import 'package:flexi_kline/src/indicators/avl/avl.dart';
-import 'package:flexi_kline/src/indicators/avl/avl_param.dart';
-import 'package:flexi_kline/src/indicators/rsi/rsi.dart';
-import 'package:flexi_kline/src/indicators/rsi/rsi_param.dart';
-import 'package:flexi_kline/src/indicators/kdj/kdj.dart';
-import 'package:flexi_kline/src/indicators/kdj/kdj_param.dart';
-import 'package:flexi_kline/src/indicators/macd/macd.dart';
-import 'package:flexi_kline/src/indicators/macd/macd_param.dart';
 import 'package:flexi_formatter/date_time.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -89,7 +69,6 @@ abstract class BaseBitFlexiKlineTheme with FlexiKlineThemeTextStyle implements I
   @override
   Color get drawColor => Colors.blueAccent;
 
-  @override
   Color get drawTextBg => Colors.blue;
 }
 
@@ -115,7 +94,6 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   @override
   Color get gridLine => textColor;
 
-  @override
   Color get markLine => textColor;
 
   @override
@@ -160,6 +138,7 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
 class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   @override
   String key = 'flexi_kline_config_key_bit-dark';
+  
   @override
   Color get indraTodayAvgColor => const Color(0xffff9933);
   @override
@@ -175,41 +154,40 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   Color get markLineColor => markLine;
 
   @override
-  Color chartBg = const Color(0xFF111111);
+  Color get chartBg => const Color(0xFF111111);
 
   @override
-  Color tooltipBg = const Color(0xFF16181A);
+  Color get tooltipBg => const Color(0xFF16181A);
 
   @override
-  Color countDownTextBg = const Color(0xFF333333);
+  Color get countDownTextBg => const Color(0xFF333333);
 
   @override
-  Color crossTextBg = const Color(0xFF404040);
+  Color get crossTextBg => const Color(0xFF404040);
 
 
   @override
-  Color gridLine = const Color(0xFF222222);
+  Color get gridLine => const Color(0xFF222222);
 
-  @override
-  Color markLine = const Color(0xFFA0A0A0);
+  Color get markLine => const Color(0xFFA0A0A0);
 
   @override
   Color get themeColor => Colors.black;
 
   @override
-  Color textColor = const Color(0xFFA0A0A0);
+  Color get textColor => const Color(0xFFA0A0A0);
 
   @override
-  Color ticksTextColor = const Color(0xFF949494);
+  Color get ticksTextColor => const Color(0xFF949494);
 
   @override
-  Color latestPriceTextBg = const Color(0xFF5F5F5F);
+  Color get latestPriceTextBg => const Color(0xFF5F5F5F);
 
   @override
-  Color crossTextColor = const Color(0xFFFFFFFF);
+  Color get crossTextColor => const Color(0xFFFFFFFF);
 
   @override
-  Color tooltipTextColor = const Color(0xFF9D9DA1);
+  Color get tooltipTextColor => const Color(0xFF9D9DA1);
 
   @override
   Color get drawColor => Colors.lightBlue;
@@ -276,18 +254,13 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   String get configKey => 'bit';
 
   @override
-  FlexiKlineConfig generateFlexiKlineConfig([Map<String, dynamic>? origin]) {
+  FlexiKlineConfig generateFlexiKlineConfig([FlexiKlineConfig? origin]) {
     // 三级配置加载策略：缓存 → JSON → 代码默认值
     
     // 1. 优先使用原始配置（通常来自缓存）
-    if (origin != null && origin.isNotEmpty) {
-      try {
-        final config = FlexiKlineConfig.fromJson(origin);
-        defLogger.d('Generated FlexiKlineConfig from origin (cache) for bit theme');
-        return config;
-      } catch (e, stack) {
-        defLogger.e('Failed to generate FlexiKlineConfig from origin: $e', stackTrace: stack);
-      }
+    if (origin != null) {
+      defLogger.d('Generated FlexiKlineConfig from origin (cache) for bit theme');
+      return origin;
     }
 
     // 2. 尝试从JSON配置生成（异步，这里先返回默认值）
@@ -295,7 +268,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
 
     // 3. 最后使用代码默认配置作为fallback
     defLogger.d('Generated FlexiKlineConfig from code defaults for bit theme');
-    return super.generateFlexiKlineConfig(origin);
+    return super.generateFlexiKlineConfig();
   }
 
   // 异步从JSON生成配置并更新缓存
@@ -351,7 +324,6 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     return generateFlexiKlineConfig();
   }
 
-  @override
   void saveFlexiKlineConfig(FlexiKlineConfig config) {
     final jsonSrc = jsonEncode(config);
     final theme = ref.read(bitFlexiKlineThemeProvider);
@@ -359,31 +331,31 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   }
 
   @override
-  LoadingConfig genInnerLoadingConfig() {
+  LoadingConfig genInnerLoadingConfig([LoadingConfig? loading]) {
     final theme = ref.read(bitFlexiKlineThemeProvider);
-    return super.genInnerLoadingConfig().copyWith(
+    return super.genInnerLoadingConfig(loading).copyWith(
           background: theme.countDownTextBg,
           valueColor: theme.crossColor,
         );
   }
 
   @override
-  CrossConfig genCrossConfig() {
-    return super.genCrossConfig().copyWith(
+  CrossConfig genCrossConfig([CrossConfig? cross]) {
+    return super.genCrossConfig(cross).copyWith(
           moveByCandleInBlank: true,
         );
   }
 
   @override
-  GestureConfig genGestureConfig() {
-    return super.genGestureConfig().copyWith(
+  GestureConfig genGestureConfig([GestureConfig? gesture]) {
+    return super.genGestureConfig(gesture).copyWith(
           tolerance: ToleranceConfig(distanceFactor: 0.5),
         );
   }
 
   @override
-  SettingConfig genSettingConfig() {
-    return super.genSettingConfig().copyWith(
+  SettingConfig genSettingConfig([SettingConfig? setting]) {
+    return super.genSettingConfig(setting).copyWith(
           candleFixedSpacing: null,
           candleSpacingParts: 7,
         );
@@ -438,7 +410,6 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     return _cachedTimeBarConfigs!;
   }
 
-  @override
   List<TimeBarConfig> timeBarBuilders() {
     return getTimeBarConfigs();
   }
@@ -740,7 +711,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   }
 
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
+  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator([MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
     final theme = ref.read(bitFlexiKlineThemeProvider);
     return MainPaintObjectIndicator<PaintObjectIndicator>(
       size: Size(ScreenUtil().screenWidth, 300.r),

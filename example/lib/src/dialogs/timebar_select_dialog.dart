@@ -14,7 +14,9 @@
 
 import 'package:example/generated/l10n.dart';
 import 'package:example/src/providers/bit_kline_config.dart';
+import 'package:example/src/providers/default_kline_config.dart';
 import 'package:example/src/theme/flexi_theme.dart';
+import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +30,43 @@ class TimerBarSelectDialog extends ConsumerWidget {
     required this.onTapTimeBar,
     required this.preferTimeBarList,
   });
+
+  /// 获取时间周期配置列表（兼容不同配置类型）
+  List<TimeBarConfig> _getTimeBarConfigs(IConfiguration configuration) {
+    if (configuration is BitFlexiKlineConfiguration) {
+      return configuration.getTimeBarConfigs();
+    } else if (configuration is DefaultFlexiKlineConfiguration) {
+      return configuration.getTimeBarConfigs();
+    } else {
+      // 默认配置
+      return const [
+        TimeBarConfig(
+          key: '15m',
+          bar: '15m',
+          multiplier: 15,
+          timeUnit: TimeUnit.minute,
+          showName: '15m',
+          sortOrder: 0,
+        ),
+        TimeBarConfig(
+          key: '1H',
+          bar: '1H',
+          multiplier: 1,
+          timeUnit: TimeUnit.hour,
+          showName: '1H',
+          sortOrder: 1,
+        ),
+        TimeBarConfig(
+          key: '1D',
+          bar: '1D',
+          multiplier: 1,
+          timeUnit: TimeUnit.day,
+          showName: '1D',
+          sortOrder: 2,
+        ),
+      ];
+    }
+  }
 
   final FlexiKlineController controller;
   final ValueChanged<TimeBarConfig> onTapTimeBar;
@@ -118,7 +157,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
           alignment: WrapAlignment.start,
           spacing: 12.r,
           runSpacing: 8.r,
-          children: (controller.configuration as BitFlexiKlineConfiguration).getTimeBarConfigs().map((timeBar) {
+          children: _getTimeBarConfigs(controller.configuration).map((timeBar) {
             final selected = value == timeBar;
             return SizedBox(
               width: barWidth,

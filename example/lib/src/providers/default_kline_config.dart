@@ -369,7 +369,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator() {
+  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator([MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
     final theme = ref.read(defaultKlineThemeProvider);
     return MainPaintObjectIndicator<PaintObjectIndicator>(
       size: Size(ScreenUtil().screenWidth, 300.r),
@@ -409,6 +409,11 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   // ========== 时间周期配置 ==========
+
+  /// 获取时间周期配置列表
+  List<TimeBarConfig> getTimeBarConfigs() {
+    return timeBarBuilders();
+  }
 
   List<TimeBarConfig> timeBarBuilders() {
     return [
@@ -856,7 +861,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         fontWeight: _parseFontWeight(style['fontWeight']),
       );
     }
-    return TextStyle(
+    return const TextStyle(
       color: Colors.blue,
       fontSize: 12,
       height: defaultTextHeight,
