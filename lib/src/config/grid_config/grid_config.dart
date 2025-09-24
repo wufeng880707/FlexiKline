@@ -61,7 +61,7 @@ class GridConfig {
   /// 移动指标图表高度时的拖拽线配置, 颜色会用[theme.dragBg]替换
   final LineConfig? dragLine;
 
-  ///
+  /// 拖拽时, 被选中的区域顶部与底部线条的颜色不透明度
   final double dragLineOpacity;
 
   /// 拖拽中区域背景颜色[theme.dragBg]不透明度

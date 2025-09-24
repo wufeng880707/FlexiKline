@@ -65,16 +65,6 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
     }
   }
 
-  LineConfig? _crosshair;
-  PointConfig? _crosspoint;
-
-  @override
-  void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
-    super.onThemeChanged(oldTheme);
-    _crosshair = null;
-    _crosspoint = null;
-  }
-
   @override
   void onLanguageChanged() {
     super.onLanguageChanged();
@@ -204,27 +194,16 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       ..moveTo(offset.dx, 0)
       ..lineTo(offset.dx, canvasHeight);
 
-    _crosshair ??= crossConfig.crosshair.of(paintColor: theme.crossColor);
+    canvas.drawLineByConfig(path, crossConfig.crosshair);
 
-    canvas.drawLineByConfig(
-      path,
-      _crosshair!,
-    );
-
-    _crosspoint ??= crossConfig.crosspoint.of(color: theme.crossColor);
-    canvas.drawCirclePoint(
-      offset,
-      _crosspoint!,
-    );
+    canvas.drawCirclePoint(offset, crossConfig.crosspoint);
   }
 
   /// 绘制 Tooltip
   void paintTooltip(Canvas canvas, Offset offset, {CandleModel? model}) {
     final tooltipConfig = crossConfig.tooltipConfig;
     if (!tooltipConfig.show) return;
-    final tooltipTextStyle = tooltipConfig.style.copyWith(
-      color: theme.tooltipTextColor,
-    );
+    final tooltipTextStyle = tooltipConfig.style;
 
     int? index = dxToIndex(offset.dx);
     if (index == null) return;

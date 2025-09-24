@@ -48,7 +48,8 @@ extension type BagNum._(Object _value) {
 
   factory BagNum.fromDecimal(Decimal value) => BagNum._(value);
   factory BagNum.fromNum(num value) => BagNum._(value);
-  factory BagNum.fromInt(num value) => BagNum._(value);
+  factory BagNum.fromInt(int value) => BagNum._(value);
+  factory BagNum.fromBigInt(BigInt value) => BagNum._(value.toDecimal());
 
   Decimal toDecimal() {
     if (_value is Decimal) return _value;

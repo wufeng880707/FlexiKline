@@ -463,10 +463,10 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
                 shadows: config.decorationShadows,
                 shape: widget.magnifierDecorationShapeBuilder?.call(
                       context,
-                      config.shapeSide.copyWith(color: theme.gridLine),
+                      config.shapeSide,
                     ) ??
                     CircleBorder(
-                      side: config.shapeSide.copyWith(color: theme.gridLine),
+                      side: config.shapeSide,
                     ),
               ),
               size: config.size,

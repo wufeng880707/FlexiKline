@@ -22,7 +22,8 @@ class Point {
     this.ts = -1,
     BagNum? value,
     Offset? offset,
-  }) : _offset = offset ?? Offset.infinite, value = value ?? BagNum.zero;
+  })  : _offset = offset ?? Offset.infinite,
+        value = value ?? BagNum.zero;
 
   factory Point.pointer(int index, Offset offset) {
     assert(index >= 0, 'invalid index($index)');
@@ -164,8 +165,7 @@ class Overlay implements Comparable<Overlay> {
 
   @override
   int get hashCode {
-    int hash =
-        runtimeType.hashCode ^ id.hashCode ^ key.hashCode ^ type.hashCode;
+    int hash = runtimeType.hashCode ^ id.hashCode ^ key.hashCode ^ type.hashCode;
     // combine其他属性?
     return hash;
   }
@@ -175,7 +175,6 @@ class Overlay implements Comparable<Overlay> {
     return "Overlay(id:$id, key:$key, type:$type) > points:$points";
   }
 
-  factory Overlay.fromJson(Map<String, dynamic> json) =>
-      _$OverlayFromJson(json);
+  factory Overlay.fromJson(Map<String, dynamic> json) => _$OverlayFromJson(json);
   Map<String, dynamic> toJson() => _$OverlayToJson(this);
 }

@@ -43,11 +43,6 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     _subHeightListListener.dispose();
   }
 
-  @override
-  void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
-    super.onThemeChanged(oldTheme);
-  }
-
   /// 蜡烛宽度
   late double _candleWidth;
   double? _candleSpacing;

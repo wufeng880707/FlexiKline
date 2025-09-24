@@ -26,11 +26,6 @@ mixin DrawConfigMixin on OverlayObject {
   LineConfig get crosshairConfig {
     if (_crosshair != null) return _crosshair!;
     _crosshair = config.crosshair.of(paintColor: lineColor);
-    // if (config.useDrawLineColor) {
-    //   _crosshair = config.crosshair.copyWith(
-    //     paint: _crosshair!.paint.copyWith(color: lineColor),
-    //   );
-    // }
     return _crosshair!;
   }
 
@@ -42,14 +37,6 @@ mixin DrawConfigMixin on OverlayObject {
         alpha: config.crosspoint.borderColor?.a ?? 0,
       ),
     );
-    // if (config.useDrawLineColor) {
-    //   _crosspoint = config.crosspoint.copyWith(
-    //     color: lineColor,
-    //     borderColor: lineColor.withOpacity(
-    //       _crosspoint!.borderColor?.opacity ?? 0,
-    //     ),
-    //   );
-    // }
     return _crosspoint!;
   }
 
@@ -60,34 +47,18 @@ mixin DrawConfigMixin on OverlayObject {
     _ticksGapBgPaint = Paint()
       ..color = lineColor.withAlpha(opacity.alpha)
       ..style = PaintingStyle.fill;
-    // if (config.useDrawLineColor) {
-    //   _ticksGapBgPaint = Paint()
-    //     ..color = lineColor.withOpacity(opacity)
-    //     ..style = PaintingStyle.fill;
-    // } else if (config.ticksText.background != null &&
-    //     config.ticksText.background!.alpha != 0) {
-    //   _ticksGapBgPaint = Paint()
-    //     ..color = config.ticksText.background!.withOpacity(opacity)
-    //     ..style = PaintingStyle.fill;
-    // }
     return _ticksGapBgPaint;
   }
 
   TextAreaConfig get ticksTextConfig {
     if (_ticksText != null) return _ticksText!;
     _ticksText = config.ticksText.of(background: lineColor);
-    // if (config.useDrawLineColor) {
-    //   _ticksText = _ticksText!.copyWith(background: lineColor);
-    // }
     return _ticksText!;
   }
 
   PointConfig get drawPointConfig {
     if (_drawPoint != null) return _drawPoint!;
     _drawPoint = config.drawPoint.of(borderColor: lineColor);
-    // if (config.useDrawLineColor) {
-    //   _drawPoint = _drawPoint!.copyWith(borderColor: lineColor);
-    // }
     return _drawPoint!;
   }
 

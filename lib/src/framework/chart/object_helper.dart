@@ -50,9 +50,7 @@ extension IndicatorObjectExt on IndicatorObject {
   IFlexiKlineTheme get theme => _context.theme;
 
   /// 全局默认的刻度值文本配置.
-  TextAreaConfig get defTicksTextConfig => gridConfig.ticksText.of(
-        textColor: theme.ticksTextColor,
-      );
+  TextAreaConfig get defTicksTextConfig => gridConfig.ticksText;
 
   /// 指标图 涨跌 bar/line 配置
   /// 涨跌浅色
@@ -333,10 +331,7 @@ mixin PaintYAxisTicksOnCrossMixin<T extends Indicator> on PaintObject<T> {
 
     final text = formatTicksValueOnCross(value, precision: precision);
 
-    final ticksText = crossConfig.ticksText.of(
-      textColor: theme.crossTextColor,
-      background: theme.crossTextBg,
-    );
+    final ticksText = crossConfig.ticksText;
 
     canvas.drawTextArea(
       offset: Offset(

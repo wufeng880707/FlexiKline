@@ -35,8 +35,7 @@ class TimeIndicator extends TimeBaseIndicator {
     return TimePaintObject(context: context, indicator: this);
   }
 
-  factory TimeIndicator.fromJson(Map<String, dynamic> json) =>
-      _$TimeIndicatorFromJson(json);
+  factory TimeIndicator.fromJson(Map<String, dynamic> json) => _$TimeIndicatorFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$TimeIndicatorToJson(this);
 }
@@ -49,9 +48,7 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
 
   /// 两个时间刻度间隔的蜡烛数
   int get timeTickIntervalCount {
-    return ((math.max(60, indicator.timeTick.textWidth ?? 0)) /
-            candleActualWidth)
-        .round();
+    return ((math.max(60, indicator.timeTick.textWidth ?? 0)) / candleActualWidth).round();
   }
 
   @override
@@ -101,10 +98,7 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
     final time = model.formatDateTime(timeBar);
     // final time = formatyyMMddHHMMss(model.dateTime);
 
-    final ticksText = crossConfig.ticksText.of(
-      textColor: theme.crossTextColor,
-      background: theme.crossTextBg,
-    );
+    final ticksText = crossConfig.ticksText;
 
     final dyCenterOffset = (height - ticksText.areaHeight) / 2;
     canvas.drawTextArea(

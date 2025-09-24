@@ -52,10 +52,7 @@ class PointConfig {
     ..style = PaintingStyle.fill;
 
   Paint? get borderPaint {
-    if (borderWidth != null &&
-        borderWidth! > 0 &&
-        borderColor != null &&
-        borderColor!.alpha != 0) {
+    if (borderWidth != null && borderWidth! > 0 && borderColor != null && borderColor!.a != 0) {
       return Paint()
         ..color = borderColor!
         ..strokeWidth = borderWidth!
@@ -64,8 +61,7 @@ class PointConfig {
     return null;
   }
 
-  factory PointConfig.fromJson(Map<String, dynamic> json) =>
-      _$PointConfigFromJson(json);
+  factory PointConfig.fromJson(Map<String, dynamic> json) => _$PointConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$PointConfigToJson(this);
 }
