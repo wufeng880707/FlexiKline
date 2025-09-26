@@ -18,13 +18,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/flexi_theme.dart';
 import '../widgets/right_arrow.dart';
+import 'settings/main_indicators/avl_setting_page.dart';
+import 'settings/main_indicators/ma_setting_page.dart';
+import 'settings/sub_indicators/macd_setting_page.dart';
+import 'settings/sub_indicators/vol_ma_setting_page.dart';
 
 class IndicatorSettingPage extends ConsumerStatefulWidget {
   const IndicatorSettingPage({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _IndicatorSettingPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _IndicatorSettingPageState();
 }
 
 class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
@@ -65,7 +68,13 @@ class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
               trailing: const RightArrow(),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const MASettingPage(),
+                  ),
+                );
+              },
               title: Text(
                 'MA(移动平均线)',
                 style: theme.t1s16w400,
@@ -96,6 +105,20 @@ class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
               ),
               trailing: const RightArrow(),
             ),
+            ListTile(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AVLSettingPage(),
+                  ),
+                );
+              },
+              title: Text(
+                'AVL(均价线指标)',
+                style: theme.t1s16w400,
+              ),
+              trailing: const RightArrow(),
+            ),
             Container(height: 0.5.r, color: theme.dividerLine),
             Padding(
               padding: EdgeInsetsDirectional.symmetric(
@@ -108,15 +131,27 @@ class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
               ),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const VolMASettingPage(),
+                  ),
+                );
+              },
               title: Text(
-                'VOLMA(成交量)',
+                'VOLMA(成交量移动平均线)',
                 style: theme.t1s16w400,
               ),
               trailing: const RightArrow(),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const MACDSettingPage(),
+                  ),
+                );
+              },
               title: Text(
                 'MACD(指数平滑异同移动平均线)',
                 style: theme.t1s16w400,
@@ -143,14 +178,6 @@ class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
               onTap: () {},
               title: Text(
                 'SAR(抛物线转向指标)',
-                style: theme.t1s16w400,
-              ),
-              trailing: const RightArrow(),
-            ),
-            ListTile(
-              onTap: () {},
-              title: Text(
-                'RSI(相对强弱指标)',
                 style: theme.t1s16w400,
               ),
               trailing: const RightArrow(),
