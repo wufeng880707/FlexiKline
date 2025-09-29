@@ -197,21 +197,36 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         return cachedIndicators;
       }
 
-      // 2. 尝试从JSON同步加载
-      final jsonIndicators = _loadSubIndicatorsFromJsonSync();
-      if (jsonIndicators.isNotEmpty) {
-        defLogger.d('Loaded ${jsonIndicators.length} sub indicators from JSON');
-        // 异步保存到缓存
-        _saveSubIndicatorsToCache(jsonIndicators);
-        return jsonIndicators;
-      }
     } catch (err, stack) {
       defLogger.e('Error loading sub indicators: $err', stackTrace: stack);
     }
 
-    // 3. 返回代码默认值
+    // 2. 返回默认配置（包含JSON同步加载逻辑）
     defLogger.d('Using default sub indicators');
-    return super.subIndicatorBuilders; // _getDefaultSubIndicators();
+    return getDefaultSubIndicatorBuilders();
+  }
+
+  /// 获取默认副指标配置的方法，用于重置操作
+  /// 优先从JSON同步加载，如果没有则使用代码默认值
+  Map<IIndicatorKey, IndicatorBuilder> getDefaultSubIndicatorBuilders() {
+    try {
+      // 1. 尝试从JSON同步加载
+      final jsonIndicators = _loadSubIndicatorsFromJsonSync();
+      if (jsonIndicators.isNotEmpty) {
+        defLogger.d('Loaded ${jsonIndicators.length} default sub indicators from JSON');
+        // 异步保存到缓存
+        _saveSubIndicatorsToCache(jsonIndicators);
+        return jsonIndicators;
+      }
+
+      // 2. 使用代码默认值
+      defLogger.d('Using code default sub indicators');
+      return super.subIndicatorBuilders;
+    } catch (err, stack) {
+      defLogger.e('Error loading default sub indicators: $err', stackTrace: stack);
+      // 3. 出错时返回代码默认值
+      return super.subIndicatorBuilders;
+    }
   }
 
   // ========== 指标加载和缓存方法 ==========
@@ -369,7 +384,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator([MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
+  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator(
+      [MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
     final theme = ref.read(defaultKlineThemeProvider);
     return MainPaintObjectIndicator<PaintObjectIndicator>(
       size: Size(ScreenUtil().screenWidth, 300.r),

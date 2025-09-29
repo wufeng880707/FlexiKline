@@ -109,7 +109,7 @@ class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const AVLSettingPage(),
+                    builder: (context) =>  AVLSettingPage(controller: ,),
                   ),
                 );
               },

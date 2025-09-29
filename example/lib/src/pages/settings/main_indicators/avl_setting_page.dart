@@ -19,40 +19,86 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../providers/kline_controller_state_provider.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
-import '../common/style_selector_row.dart';
 
 class AVLSettingPage extends BaseIndicatorSettingPage {
-  const AVLSettingPage({super.key});
+  const AVLSettingPage({
+    super.key,
+    required this.controller,
+  });
+
+  final FlexiKlineController controller;
 
   @override
   ConsumerState<AVLSettingPage> createState() => _AVLSettingPageState();
 }
 
 class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage> {
-  late AVLParam avlParam;
-
-  // AVL线条设置
+  // AVL参数
+  late AVLParam _originalParam;
+  late AVLParam _currentParam;
+  
+  // UI状态
   late bool enabled;
   late Color lineColor;
   late double lineWidth;
-  late LineStyle lineStyle;
 
   @override
   void initState() {
     super.initState();
-    _initializeSettings();
+    _loadCurrentSettings();
   }
 
-  void _initializeSettings() {
-    // 初始化AVL参数
-    enabled = true;
-    lineColor = const Color(0xFFFFEB3B); // 黄色
-    lineWidth = 1.5;
-    lineStyle = LineStyle.solid;
+  /// 从当前K线控制器加载AVL指标设置
+  void _loadCurrentSettings() {
+    final klineState = ref.read(klineStateProvider(widget.controller));
+    final controller = klineState.controller;
+    
+    try {
+      // 检查AVL指标是否存在
+      const avlKey = FlexiIndicatorKey('avl');
+      enabled = controller.mainIndicatorKeys.contains(avlKey);
+      
+      if (enabled) {
+        // 获取当前AVL指标配置
+        final avlIndicator = controller.getIndicator<AVLIndicator>(avlKey);
+        if (avlIndicator != null) {
+          _originalParam = avlIndicator.calcParam;
+          _currentParam = _originalParam;
+          
+          // 从参数中提取UI状态
+          lineColor = _currentParam.appearance.color;
+          lineWidth = _currentParam.appearance.lineWidth;
+        } else {
+          throw StateError('AVL indicator not found');
+        }
+      } else {
+        // 使用默认参数
+        _originalParam = const AVLParam();
+        _currentParam = _originalParam;
+        lineColor = _currentParam.appearance.color;
+        lineWidth = _currentParam.appearance.lineWidth;
+      }
+    } catch (e) {
+      debugPrint('获取AVL配置失败: $e');
+      // 使用默认配置
+      _originalParam = const AVLParam();
+      _currentParam = _originalParam;
+      lineColor = _currentParam.appearance.color;
+      lineWidth = _currentParam.appearance.lineWidth;
+      enabled = false;
+    }
+  }
 
-    avlParam = const AVLParam();
+  /// 重置为初始设置
+  void _resetToInitialSettings() {
+    setState(() {
+      _currentParam = _originalParam;
+      lineColor = _currentParam.appearance.color;
+      lineWidth = _currentParam.appearance.lineWidth;
+    });
   }
 
   @override
@@ -64,24 +110,8 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
   @override
   List<Widget> buildSettingItems(FKTheme theme) {
     return [
-      // 基础设置
-      buildSectionTitle('基础设置', theme),
-      buildSwitchItem(
-        title: '显示AVL指标',
-        subtitle: '显示或隐藏均价线指标',
-        value: enabled,
-        onChanged: (value) {
-          setState(() {
-            enabled = value;
-          });
-        },
-        theme: theme,
-      ),
 
-      SizedBox(height: 16.r),
-
-      if (enabled) ...[
-        // 均价线设置
+      // 均价线设置
         buildSectionTitle('均价线样式', theme),
 
         Container(
@@ -102,13 +132,19 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               // 线宽选择器
               LineWidthSelector(
                 value: lineWidth,
                 onChanged: (width) {
                   setState(() {
                     lineWidth = width;
+                    // 更新当前参数
+                    _currentParam = _currentParam.copyWith(
+                      appearance: _currentParam.appearance.copyWith(
+                        lineWidth: width,
+                      ),
+                    );
                   });
                 },
                 color: lineColor,
@@ -124,6 +160,12 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
                 onChanged: (color) {
                   setState(() {
                     lineColor = color;
+                    // 更新当前参数
+                    _currentParam = _currentParam.copyWith(
+                      appearance: _currentParam.appearance.copyWith(
+                        color: color,
+                      ),
+                    );
                   });
                 },
                 width: 80,
@@ -163,27 +205,60 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
             ],
           ),
         ),
-      ],
 
-      SizedBox(height: 16.r),
     ];
   }
 
   @override
   Future<void> saveSettings() async {
     debugPrint('保存AVL设置:');
-    debugPrint('  启用: $enabled');
-    if (enabled) {
-      debugPrint('  线条颜色: ${lineColor.toString()}');
-      debugPrint('  线条宽度: $lineWidth');
-      debugPrint('  线条样式: $lineStyle');
+    debugPrint('  线条颜色: ${lineColor.toString()}');
+    debugPrint('  线条宽度: $lineWidth');
+    debugPrint('  当前参数: $_currentParam');
+    
+    try {
+      final klineState = ref.read(klineStateProvider(widget.controller));
+      final controller = klineState.controller;
+      const avlKey = FlexiIndicatorKey('avl');
+      
+      if (enabled && controller.mainIndicatorKeys.contains(avlKey)) {
+        // 更新现有的AVL指标
+        final oldIndicator = controller.getIndicator<AVLIndicator>(avlKey);
+        if (oldIndicator != null) {
+          final newIndicator = AVLIndicator(
+            height: oldIndicator.height,
+            padding: oldIndicator.padding,
+            calcParam: _currentParam,
+            tipsPadding: oldIndicator.tipsPadding,
+            tickCount: oldIndicator.tickCount,
+          );
+          
+          // 使用controller的updateIndicator方法更新
+          controller.updateIndicator(newIndicator);
+          
+          debugPrint('AVL指标参数已更新');
+        } else {
+          debugPrint('AVL指标未找到，无法更新');
+        }
+      } else if (enabled) {
+        // 添加AVL指标（如果还没有的话）
+        controller.addMainIndicator(avlKey);
+        debugPrint('AVL指标已启用');
+      }
+      
+      // 保存原始参数为新的参考值
+      _originalParam = _currentParam;
+      
+    } catch (e) {
+      debugPrint('保存AVL设置失败: $e');
     }
   }
 
   @override
   Future<void> resetToDefault() async {
+    debugPrint('重置AVL设置为默认值');
     setState(() {
-      _initializeSettings();
+      _resetToInitialSettings();
     });
   }
 }

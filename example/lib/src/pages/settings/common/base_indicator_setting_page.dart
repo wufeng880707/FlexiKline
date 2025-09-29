@@ -54,20 +54,13 @@ abstract class BaseIndicatorSettingPageState<T extends BaseIndicatorSettingPage>
           style: theme.t1s18w600,
         ),
         centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: resetToDefault,
-            child: Text(
-              '重置',
-              style: theme.t1s14w400,
-            ),
-          ),
-        ],
+        actions: const [],
       ),
       body: Column(
         children: [
           Expanded(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,28 +71,59 @@ abstract class BaseIndicatorSettingPageState<T extends BaseIndicatorSettingPage>
           Container(
             width: double.infinity,
             padding: EdgeInsetsDirectional.all(16.r),
-            child: ElevatedButton(
-              onPressed: () async {
-                await saveSettings();
-                if (mounted) {
-                  Navigator.of(context).pop();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.long,
-                foregroundColor: Colors.white,
-                minimumSize: Size(double.infinity, 48.r),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+            child: Row(
+              children: [
+                // 重置按钮
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: resetToDefault,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.cardBg,
+                      foregroundColor: theme.t1,
+                      minimumSize: Size(double.infinity, 48.r),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        side: BorderSide(color: theme.dividerLine),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      '重置',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                '保存设置',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
+                SizedBox(width: 16.r),
+                // 确认按钮
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await saveSettings();
+                      if (mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.long,
+                      foregroundColor: Colors.white,
+                      minimumSize: Size(double.infinity, 48.r),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    ),
+                    child: Text(
+                      '确认',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
@@ -111,8 +135,6 @@ abstract class BaseIndicatorSettingPageState<T extends BaseIndicatorSettingPage>
   Widget buildSectionTitle(String title, FKTheme theme) {
     return Padding(
       padding: EdgeInsetsDirectional.only(
-        start: 16.r,
-        end: 16.r,
         top: 16.r,
         bottom: 8.r,
       ),
@@ -245,13 +267,28 @@ abstract class BaseIndicatorSettingPageState<T extends BaseIndicatorSettingPage>
   void _showColorPicker(Color currentColor, ValueChanged<Color> onChanged) {
     // 简单的颜色选择器实现
     final colors = [
-      Colors.red, Colors.pink, Colors.purple, Colors.deepPurple,
-      Colors.indigo, Colors.blue, Colors.lightBlue, Colors.cyan,
-      Colors.teal, Colors.green, Colors.lightGreen, Colors.lime,
-      Colors.yellow, Colors.amber, Colors.orange, Colors.deepOrange,
-      Colors.brown, Colors.grey, Colors.blueGrey, Colors.black,
+      Colors.red,
+      Colors.pink,
+      Colors.purple,
+      Colors.deepPurple,
+      Colors.indigo,
+      Colors.blue,
+      Colors.lightBlue,
+      Colors.cyan,
+      Colors.teal,
+      Colors.green,
+      Colors.lightGreen,
+      Colors.lime,
+      Colors.yellow,
+      Colors.amber,
+      Colors.orange,
+      Colors.deepOrange,
+      Colors.brown,
+      Colors.grey,
+      Colors.blueGrey,
+      Colors.black,
     ];
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -305,7 +342,7 @@ abstract class BaseIndicatorSettingPageState<T extends BaseIndicatorSettingPage>
       },
     );
   }
-  
+
   /// 获取对比色
   Color _getContrastColor(Color backgroundColor) {
     final brightness = backgroundColor.computeLuminance();
