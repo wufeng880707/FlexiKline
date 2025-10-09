@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -24,7 +25,12 @@ import 'settings/sub_indicators/macd_setting_page.dart';
 import 'settings/sub_indicators/vol_ma_setting_page.dart';
 
 class IndicatorSettingPage extends ConsumerStatefulWidget {
-  const IndicatorSettingPage({super.key});
+  const IndicatorSettingPage({
+    super.key,
+    required this.controller,
+  });
+
+  final FlexiKlineController controller;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _IndicatorSettingPageState();
@@ -109,7 +115,7 @@ class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) =>  AVLSettingPage(controller: ,),
+                    builder: (context) => AVLSettingPage(controller: widget.controller),
                   ),
                 );
               },

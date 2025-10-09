@@ -175,7 +175,10 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
               TextButton(
                 style: theme.roundBtnStyle,
                 onPressed: () {
-                  ref.read(routerProvider).pushNamed('indicatorSetting');
+                  ref.read(routerProvider).pushNamed(
+                    'indicatorSetting',
+                    extra: widget.controller,
+                  );
                 },
                 child: Column(
                   children: [

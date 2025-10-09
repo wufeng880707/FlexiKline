@@ -186,6 +186,29 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     return super.mainIndicatorBuilders;
   }
 
+  /// 获取默认主指标配置的方法，用于重置操作
+  /// 优先从JSON同步加载，如果没有则使用代码默认值
+  Map<IIndicatorKey, IndicatorBuilder> getDefaultMainIndicatorBuilders() {
+    try {
+      // 1. 尝试从JSON同步加载
+      final jsonIndicators = _loadMainIndicatorsFromJsonSync();
+      if (jsonIndicators.isNotEmpty) {
+        defLogger.d('Loaded ${jsonIndicators.length} default main indicators from JSON');
+        // 异步保存到缓存
+        _saveMainIndicatorsToCache(jsonIndicators);
+        return jsonIndicators;
+      }
+
+      // 2. 使用代码默认值
+      defLogger.d('Using code default main indicators');
+      return super.mainIndicatorBuilders;
+    } catch (err, stack) {
+      defLogger.e('Error loading default main indicators: $err', stackTrace: stack);
+      // 3. 出错时返回代码默认值
+      return super.mainIndicatorBuilders;
+    }
+  }
+
   @override
   Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders {
     // 三层配置加载策略: 缓存 -> JSON -> 代码默认值
@@ -196,7 +219,6 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         defLogger.d('Loaded ${cachedIndicators.length} sub indicators from cache');
         return cachedIndicators;
       }
-
     } catch (err, stack) {
       defLogger.e('Error loading sub indicators: $err', stackTrace: stack);
     }
@@ -208,6 +230,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   /// 获取默认副指标配置的方法，用于重置操作
   /// 优先从JSON同步加载，如果没有则使用代码默认值
+  @override
   Map<IIndicatorKey, IndicatorBuilder> getDefaultSubIndicatorBuilders() {
     try {
       // 1. 尝试从JSON同步加载

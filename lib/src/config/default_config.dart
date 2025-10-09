@@ -1010,4 +1010,16 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       ),
     );
   }
+
+  @override
+  Map<IIndicatorKey, IndicatorBuilder> getDefaultMainIndicatorBuilders() {
+    // 默认实现：直接返回 mainIndicatorBuilders
+    return mainIndicatorBuilders;
+  }
+
+  @override
+  Map<IIndicatorKey, IndicatorBuilder> getDefaultSubIndicatorBuilders() {
+    // 默认实现：直接返回 subIndicatorBuilders
+    return subIndicatorBuilders;
+  }
 }

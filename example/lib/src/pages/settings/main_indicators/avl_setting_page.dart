@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../providers/default_kline_config.dart';
 import '../../../providers/kline_controller_state_provider.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
@@ -90,15 +91,6 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
       lineWidth = _currentParam.appearance.lineWidth;
       enabled = false;
     }
-  }
-
-  /// 重置为初始设置
-  void _resetToInitialSettings() {
-    setState(() {
-      _currentParam = _originalParam;
-      lineColor = _currentParam.appearance.color;
-      lineWidth = _currentParam.appearance.lineWidth;
-    });
   }
 
   @override
@@ -257,8 +249,45 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
   @override
   Future<void> resetToDefault() async {
     debugPrint('重置AVL设置为默认值');
-    setState(() {
-      _resetToInitialSettings();
-    });
+    
+    try {
+      
+       
+      // 从默认主指标配置中获取AVL指标
+      const avlKey = FlexiIndicatorKey('avl');
+      final defaultMainIndicators = widget.controller.configuration.getDefaultMainIndicatorBuilders();
+      final avlBuilder = defaultMainIndicators[avlKey];
+      
+      if (avlBuilder != null) {
+        // 创建默认的AVL指标实例
+        final defaultIndicator = avlBuilder(null) as AVLIndicator;
+        final defaultParam = defaultIndicator.calcParam;
+        
+        setState(() {
+          _currentParam = defaultParam;
+          lineColor = _currentParam.appearance.color;
+          lineWidth = _currentParam.appearance.lineWidth;
+        });
+        
+        debugPrint('AVL指标已重置为默认配置: $_currentParam');
+      } else {
+        // 如果没有找到默认配置，使用硬编码的默认值
+        setState(() {
+          _currentParam = const AVLParam();
+          lineColor = _currentParam.appearance.color;
+          lineWidth = _currentParam.appearance.lineWidth;
+        });
+        
+        debugPrint('使用硬编码默认值重置AVL指标');
+      }
+    } catch (e) {
+      debugPrint('重置AVL设置失败: $e');
+      // 出错时使用硬编码的默认值
+      setState(() {
+        _currentParam = const AVLParam();
+        lineColor = _currentParam.appearance.color;
+        lineWidth = _currentParam.appearance.lineWidth;
+      });
+    }
   }
 }

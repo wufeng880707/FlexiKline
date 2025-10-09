@@ -179,6 +179,14 @@ abstract interface class IConfiguration implements IStorage {
   /// 副区指标配置定制
   Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders;
 
+  /// 获取默认主指标配置的方法，用于重置操作
+  /// 优先从JSON同步加载，如果没有则使用代码默认值
+  Map<IIndicatorKey, IndicatorBuilder> getDefaultMainIndicatorBuilders();
+
+  /// 获取默认副指标配置的方法，用于重置操作
+  /// 优先从JSON同步加载，如果没有则使用代码默认值
+  Map<IIndicatorKey, IndicatorBuilder> getDefaultSubIndicatorBuilders();
+
   /// 绘制工具定制
   Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders;
 }

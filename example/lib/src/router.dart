@@ -157,9 +157,12 @@ final List<RouteBase> routeList = <RouteBase>[
     name: 'indicatorSetting',
     path: '/indicator_setting',
     pageBuilder: (context, state) {
-      return const MaterialPage<void>(
+      final controller = state.extra as FlexiKlineController;
+      return MaterialPage<void>(
         restorationId: 'indicatorSetting',
-        child: IndicatorSettingPage(),
+        child: IndicatorSettingPage(
+          controller: controller,
+        ),
       );
     },
   ),
