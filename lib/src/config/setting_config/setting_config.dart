@@ -59,6 +59,7 @@ class SettingConfig {
 
     /// 是否自动加载更多数据
     this.autoLoadMoreData = true,
+    this.expandRatiosOfSameMinmax = const [0.1, 0.05],
   });
 
   /// Long/Short 浅色不透明度 [longTintColor] 和 [shortTintColor]
@@ -109,6 +110,13 @@ class SettingConfig {
 
   /// 是否自动加载更多数据
   final bool autoLoadMoreData;
+
+  /// 当前绘制区域内如果行情无波动时, 用于增加的绘制区域宽度.
+  /// 取值范围: >=0;
+  /// first: 最高价增加(1+first)倍.
+  /// second: 最低价减少(1-second)倍.
+  /// 如果为0或null, 则不增加最高价或最低价
+  final List<double> expandRatiosOfSameMinmax;
 
   bool get isFixedCandleSpacing {
     return candleFixedSpacing != null && candleFixedSpacing! > candleMinWidth;

@@ -29,7 +29,9 @@ mixin PaintDrawData on BaseData {
 
   Range get computableRange => Range(0, length);
 
-  Range? get drawTimeRange {
+  Range get paintIndexRange => Range(start, end);
+
+  Range? get paintTimeRange {
     if (checkStartAndEnd(start, end)) {
       return Range(list[start].ts, list[end].ts);
     }

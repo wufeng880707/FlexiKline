@@ -46,6 +46,8 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig autoLoadMoreData(bool autoLoadMoreData);
 
+  SettingConfig expandRatiosOfSameMinmax(List<double> expandRatiosOfSameMinmax);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SettingConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -71,6 +73,7 @@ abstract class _$SettingConfigCWProxy {
     bool showYAxisTick,
     bool autoStartLastPriceCountDownTimer,
     bool autoLoadMoreData,
+    List<double> expandRatiosOfSameMinmax,
   });
 }
 
@@ -155,6 +158,11 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
       this(autoLoadMoreData: autoLoadMoreData);
 
   @override
+  SettingConfig expandRatiosOfSameMinmax(
+          List<double> expandRatiosOfSameMinmax) =>
+      this(expandRatiosOfSameMinmax: expandRatiosOfSameMinmax);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SettingConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -182,6 +190,7 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
     Object? showYAxisTick = const $CopyWithPlaceholder(),
     Object? autoStartLastPriceCountDownTimer = const $CopyWithPlaceholder(),
     Object? autoLoadMoreData = const $CopyWithPlaceholder(),
+    Object? expandRatiosOfSameMinmax = const $CopyWithPlaceholder(),
   }) {
     return SettingConfig(
       opacity: opacity == const $CopyWithPlaceholder()
@@ -261,6 +270,11 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
           ? _value.autoLoadMoreData
           // ignore: cast_nullable_to_non_nullable
           : autoLoadMoreData as bool,
+      expandRatiosOfSameMinmax:
+          expandRatiosOfSameMinmax == const $CopyWithPlaceholder()
+              ? _value.expandRatiosOfSameMinmax
+              // ignore: cast_nullable_to_non_nullable
+              : expandRatiosOfSameMinmax as List<double>,
     );
   }
 }
@@ -302,6 +316,11 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
       autoStartLastPriceCountDownTimer:
           json['autoStartLastPriceCountDownTimer'] as bool? ?? true,
       autoLoadMoreData: json['autoLoadMoreData'] as bool? ?? true,
+      expandRatiosOfSameMinmax:
+          (json['expandRatiosOfSameMinmax'] as List<dynamic>?)
+                  ?.map((e) => (e as num).toDouble())
+                  .toList() ??
+              const [0.1, 0.05],
     );
 
 Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
@@ -327,4 +346,5 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
       'autoStartLastPriceCountDownTimer':
           instance.autoStartLastPriceCountDownTimer,
       'autoLoadMoreData': instance.autoLoadMoreData,
+      'expandRatiosOfSameMinmax': instance.expandRatiosOfSameMinmax,
     };

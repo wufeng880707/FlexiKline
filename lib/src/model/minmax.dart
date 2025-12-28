@@ -15,6 +15,7 @@
 import 'package:decimal/decimal.dart';
 
 import 'bag_num.dart';
+import '../extension/collections_ext.dart';
 
 class MinMax {
   static final MinMax zero = MinMax(max: BagNum.zero, min: BagNum.zero);
@@ -61,6 +62,18 @@ class MinMax {
     }
   }
 
+  void expandByRatios(List<double> ratios) {
+    if (ratios.isEmpty) return;
+    final maxRatio = ratios.firstOrNull;
+    final minRatio = ratios.secondOrNull;
+    if (maxRatio != null && maxRatio > 0) {
+      max = max.mulNum(1 + maxRatio);
+    }
+    if (minRatio != null && minRatio > 0) {
+      min = min.mulNum(1 - minRatio);
+    }
+  }
+
   void minToZero() {
     min = min > BagNum.zero ? BagNum.zero : min;
   }
@@ -73,6 +86,8 @@ class MinMax {
   BagNum get diffDivisor => max == min ? BagNum.one : max - min;
 
   bool get isZero => max == BagNum.zero && min == BagNum.zero;
+
+  bool get isSame => max == min;
 
   /// 计算给定集合[list]中的所有[BagNum]的最大最小值
   static MinMax? getMinMaxByList(List<BagNum?>? list) {

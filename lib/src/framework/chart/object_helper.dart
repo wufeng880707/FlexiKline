@@ -218,6 +218,7 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
 
   @override
   void setMinMax(MinMax val) {
+    if (val.isSame) val.expandByRatios(settingConfig.expandRatiosOfSameMinmax);
     _minMax = val;
     _dyFactor = null;
   }

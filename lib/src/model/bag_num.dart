@@ -232,7 +232,7 @@ extension type BagNum._(Object _value) {
   }
 
   BagNum abs() {
-    if (_value is double) {
+    if (_value is num) {
       return BagNum._(_value.abs());
     } else if (_value is Decimal) {
       return BagNum._(_value.abs());

@@ -41,7 +41,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     _candleRequestListener.dispose();
     _isFirstCandleMoveOffScreenListener.dispose();
     _timeBarListener.dispose();
-    // _candleDrawIndexListener.dispose();
+    _paintRangeListener.dispose();
     _klineDataCache.forEach((key, data) {
       data.dispose();
     });
@@ -75,11 +75,11 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   }
 
   /// 当前KlineData绘制范围监听器
-  // final _candleDrawIndexListener = ValueNotifier<Range?>(null);
-  // @override
-  // ValueListenable<Range?> get candleDrawIndexListener {
-  //   return _candleDrawIndexListener;
-  // }
+  final _paintRangeListener = ValueNotifier<Range?>(null);
+
+  ValueListenable<Range?> get paintRangeListener {
+    return _paintRangeListener;
+  }
 
   void _updateCandleRequestListener(CandleReq request) {
     logd('updateCandleRequestListener $curDataKey, request:$request');
@@ -279,7 +279,9 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
       );
     }
 
-    // _candleDrawIndexListener.value = curKlineData.drawTimeRange;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _paintRangeListener.value = curKlineData.paintIndexRange;
+    });
   }
 
   /// 切换[request]请求指定的蜡烛数据
