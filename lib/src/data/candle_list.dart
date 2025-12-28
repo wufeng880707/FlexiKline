@@ -27,6 +27,11 @@ mixin CandleListData on BaseData {
   /// 获取index位置的蜡烛数据.
   CandleModel? get(int? index) => index != null && checkIndex(index) ? _list[index] : null;
 
+  int? tsToIndex(int ts) {
+    final index = list.indexWhere((m) => m.ts == ts);
+    return checkIndex(index) ? index : null;
+  }
+
   @override
   void initData() {
     super.initData();

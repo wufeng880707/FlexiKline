@@ -163,13 +163,23 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   }
 
   @override
-  double? valueToDy(BagNum value, {bool correct = false}) {
+  double valueToDy(BagNum value, {bool correct = false}) {
     return mainPaintObject.valueToDy(value, correct: correct);
   }
 
   @override
   BagNum? dyToValue(double dy, {bool check = false}) {
     return mainPaintObject.dyToValue(dy, check: check);
+  }
+
+  @override
+  double valueToDyOnCandle(BagNum value, {bool correct = false}) {
+    return candlePaintObject.valueToDy(value, correct: correct);
+  }
+
+  @override
+  BagNum? dyToValueOnCandle(double dy, {bool check = false}) {
+    return candlePaintObject.dyToValue(dy, check: check);
   }
 
   /// 当前canvas绘制区域起始蜡烛右部dx值.

@@ -218,6 +218,12 @@ abstract interface class IPaintContext implements IStorage, ILogger {
 
   double get candleWidthHalf;
 
+  /// 将value转换为蜡烛图中dy坐标值
+  double valueToDyOnCandle(BagNum value, {bool correct = false});
+
+  /// 将dy坐标值转换为蜡烛图中value
+  BagNum? dyToValueOnCandle(double dy, {bool check = false});
+
   /// 画板Size = [mainRect] + [subRect]
   Rect get canvasRect;
 
@@ -243,6 +249,9 @@ abstract interface class IPaintContext implements IStorage, ILogger {
 
   /// 获取指标数量
   int get indicatorCount;
+
+  /// 重绘
+  void requestRepaint();
 }
 
 /// DrawContext 绘制Overlay功能集合

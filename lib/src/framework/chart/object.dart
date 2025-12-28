@@ -17,7 +17,11 @@ part of 'indicator.dart';
 /// IndicatorObject: 保存Indicator配置
 /// 提供[Indicator]的所有属性
 abstract class IndicatorObject<T extends Indicator>
-    implements Comparable<IndicatorObject<T>>, IPaintBoundingBox, IPaintDataInit, IPaintObject {
+    implements
+        Comparable<IndicatorObject<T>>,
+        IPaintBoundingBox,
+        IPaintDataInit,
+        IPaintObject {
   IndicatorObject(this._indicator, this._context);
 
   // ignore: prefer_final_fields
@@ -49,7 +53,8 @@ abstract class IndicatorObject<T extends Indicator>
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) || (other is IndicatorObject && key == other.key);
+    return identical(this, other) ||
+        (other is IndicatorObject && key == other.key);
   }
 
   @override
@@ -86,7 +91,8 @@ abstract class PaintObject<T extends Indicator> extends IndicatorObject
 
   @protected
   bool shouldPrecompute(covariant T oldIndicator) {
-    return oldIndicator.calcParam != indicator.calcParam && indicator.calcParam != null;
+    return oldIndicator.calcParam != indicator.calcParam &&
+        indicator.calcParam != null;
   }
 
   // 指标配置发生变改
@@ -118,12 +124,38 @@ abstract class PaintObject<T extends Indicator> extends IndicatorObject
   /// 注: 自行处理[position]位置的点击事件
   bool handleTap(Offset position) => false;
 
+  /// 触发重新绘制
+  void setState([VoidCallback? fn]) {
+    final Object? result = fn?.call() as dynamic;
+    assert(() {
+      if (result is Future) {
+        throw FlutterError.fromParts(<DiagnosticsNode>[
+          ErrorSummary('setState() callback argument returned a Future.'),
+          ErrorDescription(
+            'The setState() method on $this was called with a closure or method that '
+            'returned a Future. Maybe it is marked as "async".',
+          ),
+          ErrorHint(
+            'Instead of performing asynchronous work inside a call to setState(), first '
+            'execute the work (without updating the widget state), and then synchronously '
+            'update the state inside a call to setState().',
+          ),
+        ]);
+      }
+      // We ignore other types of return values so that you can do things like:
+      //   setState(() => x = 3);
+      return true;
+    }());
+    _context.requestRepaint();
+  }
+
   @override
   String get logTag => '${super.logTag}\t${indicator.key.toString()}';
 }
 
 /// PaintObjectBox
-abstract class PaintObjectBox<T extends PaintObjectIndicator> extends PaintObject {
+abstract class PaintObjectBox<T extends PaintObjectIndicator>
+    extends PaintObject {
   PaintObjectBox({
     required super.context,
     required T super.indicator,
@@ -134,7 +166,8 @@ abstract class PaintObjectBox<T extends PaintObjectIndicator> extends PaintObjec
 }
 
 /// 蜡烛图绘制对象
-abstract class CandleBasePaintObject<T extends CandleBaseIndicator> extends PaintObject {
+abstract class CandleBasePaintObject<T extends CandleBaseIndicator>
+    extends PaintObject {
   CandleBasePaintObject({
     required super.context,
     required T super.indicator,
@@ -157,7 +190,8 @@ abstract class CandleBasePaintObject<T extends CandleBaseIndicator> extends Pain
 }
 
 /// 时间轴指标绘制对象
-abstract class TimeBasePaintObject<T extends TimeBaseIndicator> extends PaintObject {
+abstract class TimeBasePaintObject<T extends TimeBaseIndicator>
+    extends PaintObject {
   TimeBasePaintObject({
     required super.context,
     required T super.indicator,
@@ -170,11 +204,13 @@ abstract class TimeBasePaintObject<T extends TimeBaseIndicator> extends PaintObj
 }
 
 /// 主区绘制对象
-final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObject {
+final class MainPaintObject<T extends MainPaintObjectIndicator>
+    extends PaintObject {
   MainPaintObject({
     required super.context,
     required T super.indicator,
-  }) : children = SortableHashSet<PaintObject>.from(<PaintObject>[], (a, b) => a.compareTo(b));
+  }) : children = SortableHashSet<PaintObject>.from(
+            <PaintObject>[], (a, b) => a.compareTo(b));
 
   final SortableHashSet<PaintObject> children;
 

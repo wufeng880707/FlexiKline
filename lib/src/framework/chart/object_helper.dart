@@ -219,6 +219,7 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
   @override
   void setMinMax(MinMax val) {
     _minMax = val;
+    _dyFactor = null;
   }
 
   double? _dyFactor;
@@ -245,6 +246,12 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
     return chartRect.includeDx(dx) ? dx : null;
   }
 
+  double? tsToDx(int ts, {bool check = true}) {
+    final index = klineData.tsToIndex(ts);
+    if (index == null) return null;
+    return indexToDx(index, check: check);
+  }
+
   double dxToIndex(double dx) {
     final dxPaintOffset = chartRect.right + paintDxOffset - dx;
     return dxPaintOffset / candleActualWidth;
@@ -258,6 +265,14 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
   CandleModel? offsetToCandle(Offset? offset) {
     if (offset != null) return dxToCandle(offset.dx);
     return null;
+  }
+
+  double valueToDyOnCandle(BagNum value, {bool correct = false}) {
+    return _context.valueToDyOnCandle(value, correct: correct);
+  }
+
+  BagNum? dyToValueOnCandle(double dy, {bool check = false}) {
+    return _context.dyToValueOnCandle(dy, check: check);
   }
 }
 

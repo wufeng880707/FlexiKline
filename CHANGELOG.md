@@ -1,7 +1,8 @@
-## 1.0.1
+## 1.1.0
 * Optimize the TimeBar and support flexible customization.
 * Support image drawing.
 * Support image and text drawing.
+* Add more painting methods.
 * bugfix.
 
 ## 1.0.0

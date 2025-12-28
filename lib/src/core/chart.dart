@@ -90,6 +90,10 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     _markRepaintChart();
   }
 
+  @override
+  @protected
+  void requestRepaint() => markRepaintChart();
+
   @protected
   void startLastPriceCountDownTimer() {
     _lastPriceCountDownTimer?.cancel();
@@ -143,10 +147,6 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
       canvas.restore();
     }
 
-    if (allowPaintExtraOutsideMainRect) {
-      mainPaintObject.doPaintExtraAboveChart(canvas, size);
-    }
-
     for (var paintObject in subPaintObjects) {
       /// 初始化副区指标数据.
       paintObject.doInitState(
@@ -160,6 +160,10 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
       paintObject.doPaintChart(canvas, size);
 
       paintObject.doPaintExtraAboveChart(canvas, size);
+    }
+
+    if (allowPaintExtraOutsideMainRect) {
+      mainPaintObject.doPaintExtraAboveChart(canvas, size);
     }
 
     if (_reset) _reset = false;
