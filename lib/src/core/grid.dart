@@ -297,6 +297,7 @@ mixin GridBinding on KlineBindingBase, SettingBinding implements IGrid, IChart {
           _upObject?.doUpdateLayout(height: upHeight);
           _downObject?.doUpdateLayout(height: height);
           markRepaintChart();
+          markRepaintGrid();
         }
       } else {
         if (isMainIndicator) {
@@ -307,8 +308,6 @@ mixin GridBinding on KlineBindingBase, SettingBinding implements IGrid, IChart {
           _invokeSizeChanged(force: true);
         }
       }
-
-      markRepaintGrid();
     }
   }
 

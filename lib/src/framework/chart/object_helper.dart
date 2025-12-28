@@ -321,19 +321,19 @@ mixin PaintYAxisTicksMixin<T extends Indicator> on PaintObject<T> {
 mixin PaintYAxisTicksOnCrossMixin<T extends Indicator> on PaintObject<T> {
   /// onCross时, 绘制Y轴上的刻度值
   @protected
-  void paintYAxisTicksOnCross(
+  Size? paintYAxisTicksOnCross(
     Canvas canvas,
     Offset offset, {
     required int precision,
   }) {
     final value = dyToValue(offset.dy);
-    if (value == null) return;
+    if (value == null) return null;
 
     final text = formatTicksValueOnCross(value, precision: precision);
 
     final ticksText = crossConfig.ticksText;
 
-    canvas.drawTextArea(
+    return canvas.drawTextArea(
       offset: Offset(
         chartRect.right - crossConfig.spacing,
         offset.dy - ticksText.areaHeight / 2,

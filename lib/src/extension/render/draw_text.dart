@@ -60,8 +60,7 @@ extension FlexiDrawTextExt on Canvas {
     @Deprecated('废弃的, 请使用borderRadius') double radius = 0,
     BorderRadius? borderRadius,
     EdgeInsets? padding,
-    @Deprecated('废弃的, 请使用borderSide')
-    Color borderColor = const Color(0x00000000),
+    @Deprecated('废弃的, 请使用borderSide') Color borderColor = const Color(0x00000000),
     @Deprecated('废弃的, 请使用borderSide') double borderWidth = 0,
     BorderSide? borderSide,
   }) {
@@ -174,9 +173,7 @@ extension FlexiDrawTextExt on Canvas {
 
     final isDrawBg = backgroundColor != null && backgroundColor.a != 0;
     final isDrawBorder = (borderColor.a != 0 && borderWidth > 0) ||
-        (borderSide != null &&
-            borderSide.color.a != 0 &&
-            borderSide.width > 0);
+        (borderSide != null && borderSide.color.a != 0 && borderSide.width > 0);
     if (hasPadding || isDrawBg || isDrawBorder) {
       // if (margin != null && margin.isNonNegative) {
       //   final x = drawDirection.isltr ? -margin.right : margin.left;
@@ -264,7 +261,7 @@ extension FlexiDrawTextExt on Canvas {
     /// 文本区域配置
     required TextAreaConfig textConfig,
     // 如textConfig未指定, 备选
-    int maxLines = 1,
+    int? maxLines,
     double minWidth = 0,
     double maxWidth = double.infinity,
     // 如指定, 首先使用
@@ -283,7 +280,7 @@ extension FlexiDrawTextExt on Canvas {
       style: textConfig.style,
       strutStyle: textConfig.strutStyle,
       textAlign: textConfig.textAlign,
-      maxLines: textConfig.maxLines ?? 1,
+      maxLines: textConfig.maxLines,
       textWidth: textConfig.textWidth,
       minWidth: textConfig.minWidth ?? minWidth,
       maxWidth: textConfig.maxWidth ?? maxWidth,

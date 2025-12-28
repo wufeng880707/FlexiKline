@@ -168,6 +168,7 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     if (force) _canvasSizeChangeListener.notifyListeners();
     markRepaintChart(reset: force);
     markRepaintCross();
+    markRepaintGrid();
   }
 
   /// 设置绘制区域大小.
