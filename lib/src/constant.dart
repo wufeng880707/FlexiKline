@@ -79,6 +79,9 @@ enum ComputeMode {
   accurate,
 }
 
+/// 按[timeBar]格式化时间[dateTime]
+typedef DateTimeFormatter = String Function(DateTime dateTime, [ITimeBar? timeBar]);
+
 abstract interface class ITimeBar {
   String get bar;
 

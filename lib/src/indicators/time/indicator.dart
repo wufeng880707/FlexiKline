@@ -26,6 +26,7 @@ class TimeIndicator extends TimeBaseIndicator {
     // 时间刻度.
     required this.timeTick,
     this.ensurePaintInDrawableRect = false,
+    this.tickFormatter,
   });
 
   /// 时间刻度.
@@ -33,6 +34,9 @@ class TimeIndicator extends TimeBaseIndicator {
 
   /// 确保在时间刻度绘制区域内画图: 启用会启用裁切
   final bool ensurePaintInDrawableRect;
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final DateTimeFormatter? tickFormatter;
 
   @override
   TimePaintObject createPaintObject(IPaintContext context) {
@@ -97,11 +101,18 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
             offset.dy + dyCenterOffset,
           ),
           drawDirection: DrawDirection.center,
-          text: model.formatDateTime(timeBar),
+          text: formatDateTime(model, timeBar),
           textConfig: timeTick,
         );
       }
     }
+  }
+
+  String formatDateTime(CandleModel model, ITimeBar timeBar) {
+    if (indicator.tickFormatter != null) {
+      return indicator.tickFormatter!.call(model.dateTime, timeBar);
+    }
+    return model.formatDateTime(timeBar);
   }
 
   @override
@@ -110,7 +121,7 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
     final timeBar = klineData.timeBar;
     if (model == null || !timeBar.isValid) return;
 
-    final time = model.formatDateTime(timeBar);
+    final time = formatDateTime(model, timeBar);
     // final time = formatyyMMddHHMMss(model.dateTime);
 
     final ticksText = crossConfig.ticksText;

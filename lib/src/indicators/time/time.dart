@@ -18,6 +18,7 @@ import 'dart:math' as math;
 
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/painting.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import '../../config/export.dart';
 import '../../constant.dart';

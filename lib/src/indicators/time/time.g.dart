@@ -19,6 +19,9 @@ abstract class _$TimeIndicatorCWProxy {
 
   TimeIndicator ensurePaintInDrawableRect(bool ensurePaintInDrawableRect);
 
+  TimeIndicator tickFormatter(
+      String Function(DateTime, [ITimeBar?])? tickFormatter);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TimeIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -32,6 +35,7 @@ abstract class _$TimeIndicatorCWProxy {
     DrawPosition position,
     TextAreaConfig timeTick,
     bool ensurePaintInDrawableRect,
+    String Function(DateTime, [ITimeBar?])? tickFormatter,
   });
 }
 
@@ -61,6 +65,11 @@ class _$TimeIndicatorCWProxyImpl implements _$TimeIndicatorCWProxy {
       this(ensurePaintInDrawableRect: ensurePaintInDrawableRect);
 
   @override
+  TimeIndicator tickFormatter(
+          String Function(DateTime, [ITimeBar?])? tickFormatter) =>
+      this(tickFormatter: tickFormatter);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TimeIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -75,6 +84,7 @@ class _$TimeIndicatorCWProxyImpl implements _$TimeIndicatorCWProxy {
     Object? position = const $CopyWithPlaceholder(),
     Object? timeTick = const $CopyWithPlaceholder(),
     Object? ensurePaintInDrawableRect = const $CopyWithPlaceholder(),
+    Object? tickFormatter = const $CopyWithPlaceholder(),
   }) {
     return TimeIndicator(
       zIndex: zIndex == const $CopyWithPlaceholder()
@@ -102,6 +112,10 @@ class _$TimeIndicatorCWProxyImpl implements _$TimeIndicatorCWProxy {
               ? _value.ensurePaintInDrawableRect
               // ignore: cast_nullable_to_non_nullable
               : ensurePaintInDrawableRect as bool,
+      tickFormatter: tickFormatter == const $CopyWithPlaceholder()
+          ? _value.tickFormatter
+          // ignore: cast_nullable_to_non_nullable
+          : tickFormatter as String Function(DateTime, [ITimeBar?])?,
     );
   }
 }
