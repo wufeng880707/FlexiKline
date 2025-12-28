@@ -31,3 +31,22 @@ enum LineType {
   dashed, // 虚线
   dotted; // 点线
 }
+
+enum YAxisAlign {
+  top,
+  center,
+  bottom;
+
+  double distributeOffset(double top, double bottom, double height) {
+    assert(
+      top < bottom && height <= bottom - top,
+      'distributeOffset invalid parameter! $top, $bottom, $height',
+    );
+
+    return switch (this) {
+      YAxisAlign.top => top,
+      YAxisAlign.bottom => bottom - height,
+      YAxisAlign.center => top + (bottom - top - height) / 2,
+    };
+  }
+}

@@ -1,8 +1,30 @@
+## 1.0.1
+* Optimize the TimeBar and support flexible customization.
+* Support image drawing.
+* Support image and text drawing.
+* bugfix.
+
+## 1.0.0
+* Optimize the calculation performance of indicators
+* Optimize gesture detector performance.
+* Optimize configuration management: load, store, update.
+* Optimize KlineData structure.
+* Added multiple chart types and styles for candlestick charts.
+* Provide FlexiKlinePage mixin to assist development.
+* Optimize indicator chart painting performance and configuration.
+* Optimize scrolling animation.
+* bugfix.
+
+## 0.9.1
+* Rearrange layout mode And bugfix.
+* Optimize web gestures.
+
 ## 0.9.0
 * Configuration management refactoring
 * Optimization indicator framework
 * Add keyboard event handling on non-touch devices
-* Optimize indicator calculation performance
+* Add layout mode: normal, adapt, fixed
+* Add zoom chart feature
 * bugfix
 
 ## 0.8.0

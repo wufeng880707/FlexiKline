@@ -13,28 +13,36 @@
 // limitations under the License.
 
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/painting.dart';
 
-import '../../config/text_area_config/text_area_config.dart';
 import '../geometry_ext.dart';
+import './draw_image.dart';
+
 import 'common.dart';
 
-extension FlexiDrawTextExt on Canvas {
-  /// 绘制文本
-  Size drawText({
+extension FlexiDrawImageText on Canvas {
+  /// 绘制图片区域.
+  /// 返回[image]在canvas中的实际绘制区域.
+  Rect drawImageText({
     ///绘制启始坐标位置
     required Offset offset,
 
-    /// X轴上的绘制方向: 以offset为原点, 向左向右绘制; 以及居中绘制
-    DrawDirection drawDirection = DrawDirection.ltr,
+    /// 绘制图片配置
+    required ui.Image image,
+    required Size imgSize,
+    // 针对[image]的裁剪区域
+    Rect? srcRect,
+    // 是否裁切: 仅在[borderRadius]有效时, 按[borderRadius]裁切.
+    bool isClip = true,
+    Paint? imagePaint,
 
-    /// 可绘制区域大小
-    /// 主要用于边界矫正, 当绘制超出边界区域时, 会主动反向调整, 以保证内容区域完全展示. 如为null: 则不做边界矫正.
-    /// 1. 当绘制方向DrawDirection.ltr, 检测超出drawableSize右边界, 会主动向左调整offset xAxis偏移量, 且不超过左边界, 以保证内容区域完全展示.
-    /// 2. 当绘制方向DrawDirection.rtl, 检测超出drawableSize左边界, 会主动向右调整offset xAxis偏移量, 且不超过右边界, 以保证内容区域完全展示.
-    /// 3. 当绘制高度超出drawableSize规定高度时, 会主动向上调整offset yAxis轴偏移量, 且不超过上边界, 以保证内容区域完全展示.
-    Rect? drawableRect,
+    /// 图文绘制顺序: true: 图在前; false: 文在前.
+    bool drawImageFirst = true,
+
+    /// 图片与文本在垂直对齐方式: 居中对齐, 上对齐, 下对齐.
+    YAxisAlign yAxisAlign = YAxisAlign.center,
 
     /// 文本,样式设置. (注: text与textSpan必须设置一个, 否则不绘制)
     String? text,
@@ -50,15 +58,48 @@ extension FlexiDrawTextExt on Canvas {
     double minWidth = 0.0,
     double maxWidth = double.infinity,
 
-    /// 文本内容的背景区域设置
+    /// X轴上的绘制方向: 以offset为原点, 向左向右绘制; 以及居中绘制
+    DrawDirection drawDirection = DrawDirection.ltr,
+
+    /// 可绘制区域大小
+    /// 主要用于边界矫正, 当绘制超出边界区域时, 会主动反向调整, 以保证内容区域完全展示. 如为null: 则不做边界矫正.
+    /// 1. 当绘制方向DrawDirection.ltr, 检测超出drawableSize右边界, 会主动向左调整offset xAxis偏移量, 且不超过左边界, 以保证内容区域完全展示.
+    /// 2. 当绘制方向DrawDirection.rtl, 检测超出drawableSize左边界, 会主动向右调整offset xAxis偏移量, 且不超过右边界, 以保证内容区域完全展示.
+    /// 3. 当绘制高度超出drawableSize规定高度时, 会主动向上调整offset yAxis轴偏移量, 且不超过上边界, 以保证内容区域完全展示.
+    Rect? drawableRect,
+
+    /// 图文间距
+    double spacing = 0,
+
+    /// 图文内容的背景区域设置
     Color? backgroundColor,
     BorderRadius? borderRadius,
     BorderSide? borderSide,
-    EdgeInsets? padding,
+    EdgeInsets padding = EdgeInsets.zero,
   }) {
     if (text?.isNotEmpty != true && textSpan == null) {
-      return Size.zero;
+      return drawImageView(
+        offset: offset,
+        image: image,
+        imgSize: imgSize,
+        srcRect: srcRect,
+        isClip: isClip,
+        imagePaint: imagePaint,
+        drawDirection: drawDirection,
+        drawableRect: drawableRect,
+        backgroundColor: backgroundColor,
+        borderRadius: borderRadius,
+        padding: padding,
+        borderSide: borderSide,
+      );
     }
+
+    // 最终在[canvas]中所绘制区域的坐标与大小
+    Rect? result;
+
+    final originImgSize = Size(image.width.toDouble(), image.height.toDouble());
+    final isDrawImage = !(originImgSize.isEmpty || imgSize.isEmpty);
+    Size containerSize = isDrawImage ? imgSize : Size.zero;
 
     TextPainter textPainter = TextPainter(
       text: textSpan ??
@@ -78,10 +119,15 @@ extension FlexiDrawTextExt on Canvas {
       minWidth: textWidth ?? minWidth,
       maxWidth: textWidth ?? maxWidth,
     );
+    final textSize = textPainter.size;
 
-    Size containerSize = textPainter.size;
+    spacing = spacing > 0 ? spacing : 0;
+    containerSize = Size(
+      containerSize.width + spacing + textSize.width,
+      math.max(containerSize.height, textSize.height),
+    );
 
-    final hasPadding = padding != null && padding.collapsedSize.nonzero;
+    final hasPadding = padding.collapsedSize.nonzero;
     if (hasPadding) {
       containerSize += Offset(padding.horizontal, padding.vertical);
     }
@@ -175,57 +221,52 @@ extension FlexiDrawTextExt on Canvas {
             ..strokeWidth = borderSide.width,
         );
       }
-
-      if (hasPadding) offset += Offset(padding.left, padding.top);
     }
 
-    textPainter.paint(this, offset);
+    result = offset & containerSize;
+    if (hasPadding) offset += Offset(padding.left, padding.top);
+    isClip = isClip && borderRadius != null && borderRadius.isValid;
 
-    return containerSize;
-  }
+    if (isClip) {
+      save();
+      clipRRect(RRect.fromRectAndCorners(
+        result,
+        topLeft: borderRadius.topLeft,
+        topRight: borderRadius.topRight,
+        bottomRight: borderRadius.bottomRight,
+        bottomLeft: borderRadius.bottomLeft,
+      ));
+    }
 
-  Size drawTextArea({
-    ///绘制启始坐标位置
-    required Offset offset,
-
-    /// X轴上的绘制方向: 以offset为原点, 向左向右绘制; 以及居中绘制
-    DrawDirection drawDirection = DrawDirection.ltr,
-
-    /// 可绘制区域大小
-    Rect? drawableRect,
-
-    /// 文本,样式设置. (注: text与textSpan必须设置一个, 否则不绘制)
-    String? text,
-    InlineSpan? textSpan,
-
-    /// 文本区域配置
-    required TextAreaConfig textConfig,
-
-    /// 文本内容的背景区域设置
-    Color? backgroundColor,
-    BorderRadius? borderRadius,
-    BorderSide? borderSide,
-    EdgeInsets? padding,
-  }) {
-    return drawText(
-      offset: offset,
-      drawDirection: drawDirection,
-      drawableRect: drawableRect,
-      text: text,
-      textSpan: textSpan,
-      // 文本
-      style: textConfig.style,
-      strutStyle: textConfig.strutStyle,
-      textAlign: textConfig.textAlign,
-      maxLines: textConfig.maxLines,
-      textWidth: textConfig.textWidth,
-      minWidth: textConfig.minWidth ?? 0.0,
-      maxWidth: textConfig.maxWidth ?? double.infinity,
-      // 文本区域
-      backgroundColor: backgroundColor ?? textConfig.background,
-      borderRadius: borderRadius ?? textConfig.borderRadius,
-      borderSide: borderSide ?? textConfig.border,
-      padding: padding ?? textConfig.padding,
+    final imageSrc = srcRect ?? (Offset.zero & originImgSize);
+    imagePaint ??= Paint()..isAntiAlias = true;
+    final txtDy = yAxisAlign.distributeOffset(
+      result.top + padding.top,
+      result.bottom - padding.bottom,
+      textSize.height,
     );
+    final imgDy = yAxisAlign.distributeOffset(
+      result.top + padding.top,
+      result.bottom - padding.bottom,
+      imgSize.height,
+    );
+
+    if (drawImageFirst) {
+      final dst = Offset(offset.dx, imgDy) & imgSize;
+      drawImageRect(image, imageSrc, dst, imagePaint);
+      final textOffset = Offset(offset.dx + dst.width + spacing, txtDy);
+      textPainter.paint(this, textOffset);
+    } else {
+      textPainter.paint(this, Offset(offset.dx, txtDy));
+      final imgOffset = Offset(offset.dx + textSize.width + spacing, imgDy);
+      final dst = imgOffset & imgSize;
+      drawImageRect(image, imageSrc, dst, imagePaint);
+    }
+
+    if (isClip) {
+      restore();
+    }
+
+    return result;
   }
 }

@@ -18,6 +18,8 @@ export 'functions_ext.dart';
 export 'basic_type_ext.dart';
 export 'render/common.dart';
 export 'render/draw_circle.dart';
+export 'render/draw_image.dart';
+export 'render/draw_image_text.dart';
 export 'render/draw_path.dart';
 export 'render/draw_rect.dart';
 export 'render/draw_text.dart';

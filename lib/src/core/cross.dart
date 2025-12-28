@@ -151,7 +151,7 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
 
   /// 绘制最新价与十字线
   void paintCross(Canvas canvas, Size size) {
-    if (crossConfig.enable != true) return;
+    if (!crossConfig.enable) return;
 
     if (isCrossing) {
       final offset = _offset;

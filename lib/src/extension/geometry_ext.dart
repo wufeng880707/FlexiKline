@@ -203,3 +203,15 @@ extension FlexiPaddingExt on EdgeInsets {
     return top + bottom;
   }
 }
+
+extension FlexiRadiusExt on Radius {
+  bool get isValid {
+    return x.isFinite && y.isFinite;
+  }
+}
+
+extension FlexiBorderRadiusExt on BorderRadius {
+  bool get isValid {
+    return topLeft.isValid && topRight.isValid && bottomLeft.isValid && bottomRight.isValid;
+  }
+}

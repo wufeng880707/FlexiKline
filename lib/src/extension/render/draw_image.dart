@@ -13,20 +13,30 @@
 // limitations under the License.
 
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/painting.dart';
-
-import '../../config/text_area_config/text_area_config.dart';
 import '../geometry_ext.dart';
+
 import 'common.dart';
 
-extension FlexiDrawTextExt on Canvas {
-  /// 绘制文本
-  Size drawText({
-    ///绘制启始坐标位置
+extension FlexiDrawImage on Canvas {
+  /// 绘制图片区域.
+  /// 返回[image]在canvas中的实际绘制区域.
+  Rect drawImageView({
+    /// 绘制启始坐标位置
     required Offset offset,
 
-    /// X轴上的绘制方向: 以offset为原点, 向左向右绘制; 以及居中绘制
+    /// 绘制图片配置
+    required ui.Image image,
+    required Size imgSize,
+    // 针对[image]的裁剪区域
+    Rect? srcRect,
+    // 是否裁切: 仅在[borderRadius]有效时, 按[borderRadius]裁切.
+    bool isClip = true,
+    Paint? imagePaint,
+
+    /// X轴上的绘制方向: 以offset为原点, 向左向右绘制.
     DrawDirection drawDirection = DrawDirection.ltr,
 
     /// 可绘制区域大小
@@ -36,56 +46,30 @@ extension FlexiDrawTextExt on Canvas {
     /// 3. 当绘制高度超出drawableSize规定高度时, 会主动向上调整offset yAxis轴偏移量, 且不超过上边界, 以保证内容区域完全展示.
     Rect? drawableRect,
 
-    /// 文本,样式设置. (注: text与textSpan必须设置一个, 否则不绘制)
-    String? text,
-    InlineSpan? textSpan,
-    TextStyle? style,
-    StrutStyle? strutStyle,
-    TextAlign textAlign = TextAlign.start,
-    TextDirection textDirection = TextDirection.ltr,
-    int? maxLines,
-    TextScaler textScaler = TextScaler.noScaling,
-    TextWidthBasis textWidthBasis = TextWidthBasis.parent,
-    double? textWidth, // 文本所占的固定宽度, 不指定, 由minWidth与maxWidth来决定.
-    double minWidth = 0.0,
-    double maxWidth = double.infinity,
-
-    /// 文本内容的背景区域设置
+    /// [image]的背景区域设置
     Color? backgroundColor,
     BorderRadius? borderRadius,
-    BorderSide? borderSide,
     EdgeInsets? padding,
+    BorderSide? borderSide,
   }) {
-    if (text?.isNotEmpty != true && textSpan == null) {
-      return Size.zero;
+    final originImgSize = Size(image.width.toDouble(), image.height.toDouble());
+    if (originImgSize.isEmpty || imgSize.isEmpty) {
+      return offset & Size.zero;
     }
 
-    TextPainter textPainter = TextPainter(
-      text: textSpan ??
-          TextSpan(
-            text: text,
-            style: style,
-          ),
-      textAlign: textAlign,
-      textDirection: textDirection,
-      maxLines: maxLines,
-      textScaler: textScaler,
-      textWidthBasis: textWidthBasis,
-      strutStyle: strutStyle,
-    );
+    // 最终在[canvas]中所绘制区域的坐标与大小
+    Rect? result;
 
-    textPainter.layout(
-      minWidth: textWidth ?? minWidth,
-      maxWidth: textWidth ?? maxWidth,
-    );
-
-    Size containerSize = textPainter.size;
-
+    Size viewSize = imgSize;
     final hasPadding = padding != null && padding.collapsedSize.nonzero;
     if (hasPadding) {
-      containerSize += Offset(padding.horizontal, padding.vertical);
+      viewSize += Offset(
+        padding.horizontal,
+        padding.vertical,
+      );
     }
 
+    // 矫正边界.
     if (drawableRect != null) {
       double dy = math.max(
         drawableRect.top,
@@ -96,36 +80,35 @@ extension FlexiDrawTextExt on Canvas {
         case DrawDirection.ltr:
           dx = math.max(
             drawableRect.left,
-            math.min(offset.dx, drawableRect.right - containerSize.width),
+            math.min(offset.dx, drawableRect.right - viewSize.width),
           );
           break;
         case DrawDirection.center:
           dx = math.max(
             drawableRect.left,
-            math.min(offset.dx, drawableRect.right - containerSize.width / 2),
+            math.min(offset.dx, drawableRect.right - viewSize.width / 2),
           );
           break;
         case DrawDirection.rtl:
           dx = math.max(
             drawableRect.left,
             math.min(
-              drawableRect.right - containerSize.width,
-              offset.dx - containerSize.width,
+              drawableRect.right - viewSize.width,
+              offset.dx - viewSize.width,
             ),
           );
           break;
       }
-
       offset = Offset(dx, dy);
     } else {
       if (drawDirection.isrtl) {
         offset = Offset(
-          offset.dx - containerSize.width,
+          offset.dx - viewSize.width,
           offset.dy,
         );
       } else if (drawDirection.isCenter) {
         offset = Offset(
-          offset.dx - containerSize.width / 2,
+          offset.dx - viewSize.width / 2,
           offset.dy,
         );
       }
@@ -139,8 +122,8 @@ extension FlexiDrawTextExt on Canvas {
         path.addRRect(RRect.fromLTRBAndCorners(
           offset.dx,
           offset.dy,
-          offset.dx + containerSize.width,
-          offset.dy + containerSize.height,
+          offset.dx + viewSize.width,
+          offset.dy + viewSize.height,
           topLeft: borderRadius.topLeft,
           topRight: borderRadius.topRight,
           bottomLeft: borderRadius.bottomLeft,
@@ -150,8 +133,8 @@ extension FlexiDrawTextExt on Canvas {
         path.addRRect(RRect.fromLTRBR(
           offset.dx,
           offset.dy,
-          offset.dx + containerSize.width,
-          offset.dy + containerSize.height,
+          offset.dx + viewSize.width,
+          offset.dy + viewSize.height,
           Radius.circular(0),
         ));
       }
@@ -176,56 +159,30 @@ extension FlexiDrawTextExt on Canvas {
         );
       }
 
+      result = offset & viewSize;
       if (hasPadding) offset += Offset(padding.left, padding.top);
     }
 
-    textPainter.paint(this, offset);
+    final src = srcRect ?? (Offset.zero & originImgSize);
+    final dst = offset & imgSize;
+    imagePaint ??= Paint()..isAntiAlias = true;
+    result ??= dst;
 
-    return containerSize;
-  }
+    if (isClip && borderRadius != null && borderRadius.isValid) {
+      save();
+      clipRRect(RRect.fromRectAndCorners(
+        result,
+        topLeft: borderRadius.topLeft,
+        topRight: borderRadius.topRight,
+        bottomRight: borderRadius.bottomRight,
+        bottomLeft: borderRadius.bottomLeft,
+      ));
+      drawImageRect(image, src, dst, imagePaint);
+      restore();
+    } else {
+      drawImageRect(image, src, dst, imagePaint);
+    }
 
-  Size drawTextArea({
-    ///绘制启始坐标位置
-    required Offset offset,
-
-    /// X轴上的绘制方向: 以offset为原点, 向左向右绘制; 以及居中绘制
-    DrawDirection drawDirection = DrawDirection.ltr,
-
-    /// 可绘制区域大小
-    Rect? drawableRect,
-
-    /// 文本,样式设置. (注: text与textSpan必须设置一个, 否则不绘制)
-    String? text,
-    InlineSpan? textSpan,
-
-    /// 文本区域配置
-    required TextAreaConfig textConfig,
-
-    /// 文本内容的背景区域设置
-    Color? backgroundColor,
-    BorderRadius? borderRadius,
-    BorderSide? borderSide,
-    EdgeInsets? padding,
-  }) {
-    return drawText(
-      offset: offset,
-      drawDirection: drawDirection,
-      drawableRect: drawableRect,
-      text: text,
-      textSpan: textSpan,
-      // 文本
-      style: textConfig.style,
-      strutStyle: textConfig.strutStyle,
-      textAlign: textConfig.textAlign,
-      maxLines: textConfig.maxLines,
-      textWidth: textConfig.textWidth,
-      minWidth: textConfig.minWidth ?? 0.0,
-      maxWidth: textConfig.maxWidth ?? double.infinity,
-      // 文本区域
-      backgroundColor: backgroundColor ?? textConfig.background,
-      borderRadius: borderRadius ?? textConfig.borderRadius,
-      borderSide: borderSide ?? textConfig.border,
-      padding: padding ?? textConfig.padding,
-    );
+    return result;
   }
 }
