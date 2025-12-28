@@ -28,7 +28,7 @@ import 'package:flutter/foundation.dart';
 /// 返回包含固定价格数据的K线数据列表，主要用于测试和演示
 Future<List<CandleModel>> genCustomCandleList({
   int count = 7,
-  required TimeBarConfig timeBar,
+  required ITimeBar timeBar,
 }) async {
   DateTime dateTime = DateTime.now();
   return <CandleModel>[
@@ -114,7 +114,7 @@ Future<List<CandleModel>> genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-  required TimeBarConfig timeBar,
+  required ITimeBar timeBar,
   DateTime? dateTime,
   bool isHistory = true,
 }) async {
@@ -162,7 +162,7 @@ Future<List<CandleModel>> _genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-  required TimeBarConfig timeBar,
+  required ITimeBar timeBar,
   DateTime? dateTime,
   bool isHistory = true,
 }) async {

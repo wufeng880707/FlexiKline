@@ -17,7 +17,6 @@ library;
 import 'dart:collection';
 
 import 'package:flexi_formatter/flexi_formatter.dart';
-import 'package:flexi_kline/src/config/time_bar_config/time_bar_config.dart';
 import 'package:flutter/widgets.dart';
 import 'package:json_annotation/json_annotation.dart';
 

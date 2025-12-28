@@ -18,7 +18,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flexi_formatter/flexi_formatter.dart';
-import 'package:flexi_kline/src/config/time_bar_config/time_bar_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/scheduler.dart';

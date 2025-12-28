@@ -65,7 +65,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
       logger: logger,
     );
 
-    final timeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == '15m');
+    final timeBar = TimeBar.m15;
     final now = DateTime.now().millisecondsSinceEpoch;
     final before = now - (now % timeBar.milliseconds);
     final after = before - count * timeBar.milliseconds;
@@ -155,7 +155,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
     }
   }
 
-  void onTapTimeBar(TimeBarConfig bar) {
+  void onTapTimeBar(TimeBar bar) {
     if (bar != req.timeBar) {
       req = req.copyWith(timeBar: bar);
       setState(() {});

@@ -29,7 +29,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
   });
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBarConfig> onTapTimeBar;
+  final ValueChanged<TimeBar> onTapTimeBar;
   final VoidCallback? onTapDraw;
 
   @override
@@ -66,7 +66,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
   }
 
   /// 获取时间周期配置列表
-  List<TimeBarConfig> _getTimeBarConfigs() {
+  List<TimeBar> _getTimeBarConfigs() {
     final config = controller.configuration;
     if (config is BitFlexiKlineConfiguration) {
       return config.getTimeBarConfigs();
@@ -74,7 +74,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
       return config.timeBarBuilders();
     } else {
       // 回退到空列表，避免调用不存在的方法
-      return <TimeBarConfig>[];
+      return <TimeBar>[];
     }
   }
 

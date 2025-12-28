@@ -21,26 +21,26 @@ import 'package:example/src/providers/default_kline_config.dart';
 
 ### 2. 创建通用的获取方法
 
-在每个组件中添加了 `_getTimeBarConfigs()` 方法来处理不同类型的配置：
+在每个组件中添加了 `_getTimeBars()` 方法来处理不同类型的配置：
 
 ```dart
 /// 获取时间周期配置列表
-List<TimeBarConfig> _getTimeBarConfigs() {
+List<TimeBar> _getTimeBars() {
   final config = widget.controller.configuration; // 或 controller.configuration
   if (config is BitFlexiKlineConfiguration) {
-    return config.getTimeBarConfigs();
+    return config.getTimeBars();
   } else if (config is DefaultFlexiKlineConfiguration) {
     return config.timeBarBuilders();
   } else {
     // 回退到空列表，避免调用不存在的方法
-    return <TimeBarConfig>[];
+    return <TimeBar>[];
   }
 }
 ```
 
 ### 3. 替换所有调用
 
-将所有的 `controller.configuration.timeBarBuilders()` 调用替换为 `_getTimeBarConfigs()` 调用。
+将所有的 `controller.configuration.timeBarBuilders()` 调用替换为 `_getTimeBars()` 调用。
 
 ## 修复详情
 
@@ -53,44 +53,44 @@ children: controller.configuration.timeBarBuilders().map((timeBar) {
 
 **修复后**：
 ```dart
-children: _getTimeBarConfigs().map((timeBar) {
+children: _getTimeBars().map((timeBar) {
 ```
 
 ### flexi_kline_setting_bar.dart
 
 **修复前**：
 ```dart
-List<TimeBarConfig> get preferTimeBarList => [
+List<TimeBar> get preferTimeBarList => [
   ...widget.controller.configuration.timeBarBuilders().where((e) =>
       e.key == 'intraDay' || /* ... */),
 ];
 
-List<TimeBarConfig> get showTimeBarList =>
+List<TimeBar> get showTimeBarList =>
     wideScreen ? widget.controller.configuration.timeBarBuilders() : preferTimeBarList;
 ```
 
 **修复后**：
 ```dart
-List<TimeBarConfig> get preferTimeBarList => [
-  ..._getTimeBarConfigs().where((e) =>
+List<TimeBar> get preferTimeBarList => [
+  ..._getTimeBars().where((e) =>
       e.key == 'intraDay' || /* ... */),
 ];
 
-List<TimeBarConfig> get showTimeBarList =>
-    wideScreen ? _getTimeBarConfigs() : preferTimeBarList;
+List<TimeBar> get showTimeBarList =>
+    wideScreen ? _getTimeBars() : preferTimeBarList;
 ```
 
 ## 兼容性处理
 
 ### 支持的配置类型
 
-1. **BitFlexiKlineConfiguration**：调用 `getTimeBarConfigs()` 方法
+1. **BitFlexiKlineConfiguration**：调用 `getTimeBars()` 方法
 2. **DefaultFlexiKlineConfiguration**：调用 `timeBarBuilders()` 方法
 3. **其他配置类型**：返回空列表，避免崩溃
 
 ### 回退策略
 
-当遇到不支持的配置类型时，方法会返回一个空的 `TimeBarConfig` 列表，确保应用不会崩溃，只是不显示时间周期选项。
+当遇到不支持的配置类型时，方法会返回一个空的 `TimeBar` 列表，确保应用不会崩溃，只是不显示时间周期选项。
 
 ## 验证结果
 

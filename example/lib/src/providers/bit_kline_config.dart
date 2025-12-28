@@ -386,10 +386,10 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   }
 
   // 时间周期配置缓存
-  List<TimeBarConfig>? _cachedTimeBarConfigs;
+  List<TimeBar>? _cachedTimeBarConfigs;
 
   /// 获取时间周期配置列表
-  List<TimeBarConfig> getTimeBarConfigs() {
+  List<TimeBar> getTimeBarConfigs() {
     if (_cachedTimeBarConfigs != null) {
       return _cachedTimeBarConfigs!;
     }
@@ -410,252 +410,65 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     return _cachedTimeBarConfigs!;
   }
 
-  List<TimeBarConfig> timeBarBuilders() {
+  List<TimeBar> timeBarBuilders() {
     return getTimeBarConfigs();
   }
 
-  List<TimeBarConfig> _getDefaultTimeBarConfigs() {
+  List<TimeBar> _getDefaultTimeBarConfigs() {
     return [
-      const TimeBarConfig(
-        key: 'intraDay',
-        bar: '15m',
-        multiplier: 15,
-        timeUnit: TimeUnit.minute,
-        showName: 'Time',
-        sortOrder: 0,
-        intraDay: true,
-      ),
-      const TimeBarConfig(
-        key: '1m',
-        bar: '1m',
-        multiplier: 1,
-        timeUnit: TimeUnit.minute,
-        showName: '1m',
-        sortOrder: 1,
-      ),
-      const TimeBarConfig(
-        key: '3m',
-        bar: '3m',
-        multiplier: 3,
-        timeUnit: TimeUnit.minute,
-        showName: '3m',
-        sortOrder: 2,
-      ),
-      const TimeBarConfig(
-        key: '5m',
-        bar: '5m',
-        multiplier: 5,
-        timeUnit: TimeUnit.minute,
-        showName: '5m',
-        sortOrder: 3,
-      ),
-      const TimeBarConfig(
-        key: '15m',
-        bar: '15m',
-        multiplier: 15,
-        timeUnit: TimeUnit.minute,
-        showName: '15m',
-        sortOrder: 4,
-      ),
-      const TimeBarConfig(
-        key: '30m',
-        bar: '30m',
-        multiplier: 30,
-        timeUnit: TimeUnit.minute,
-        showName: '30m',
-        sortOrder: 5,
-      ),
-      const TimeBarConfig(
-        key: '1H',
-        bar: '1H',
-        multiplier: 1,
-        timeUnit: TimeUnit.hour,
-        showName: '1H',
-        sortOrder: 6,
-      ),
-      const TimeBarConfig(
-        key: '2H',
-        bar: '2H',
-        multiplier: 2,
-        timeUnit: TimeUnit.hour,
-        showName: '2H',
-        sortOrder: 7,
-      ),
-      const TimeBarConfig(
-        key: '4H',
-        bar: '4H',
-        multiplier: 4,
-        timeUnit: TimeUnit.hour,
-        showName: '4H',
-        sortOrder: 8,
-      ),
-      const TimeBarConfig(
-        key: '6H',
-        bar: '6H',
-        multiplier: 6,
-        timeUnit: TimeUnit.hour,
-        showName: '6H',
-        sortOrder: 9,
-      ),
-      const TimeBarConfig(
-        key: '12H',
-        bar: '12H',
-        multiplier: 12,
-        timeUnit: TimeUnit.hour,
-        showName: '12H',
-        sortOrder: 10,
-      ),
-      const TimeBarConfig(
-        key: '1D',
-        bar: '1D',
-        multiplier: 1,
-        timeUnit: TimeUnit.day,
-        showName: '1D',
-        sortOrder: 11,
-      ),
-      const TimeBarConfig(
-        key: '2D',
-        bar: '2D',
-        multiplier: 2,
-        timeUnit: TimeUnit.day,
-        showName: '2D',
-        sortOrder: 12,
-      ),
-      const TimeBarConfig(
-        key: '3D',
-        bar: '3D',
-        multiplier: 3,
-        timeUnit: TimeUnit.day,
-        showName: '3D',
-        sortOrder: 13,
-      ),
-      const TimeBarConfig(
-        key: '1W',
-        bar: '1W',
-        multiplier: 7,
-        timeUnit: TimeUnit.week,
-        showName: '1W',
-        sortOrder: 14,
-      ),
-      const TimeBarConfig(
-        key: '1M',
-        bar: '1M',
-        multiplier: 1,
-        timeUnit: TimeUnit.month,
-        showName: '1M',
-        sortOrder: 15,
-      ),
-      const TimeBarConfig(
-        key: '3M',
-        bar: '3M',
-        multiplier: 3,
-        timeUnit: TimeUnit.month,
-        showName: '3M',
-        sortOrder: 16,
-      ),
-      // UTC时间配置
-      const TimeBarConfig(
-        key: '6Hutc',
-        bar: '6Hutc',
-        multiplier: 6,
-        timeUnit: TimeUnit.hour,
-        showName: '6Hutc',
-        isUtc: true,
-        sortOrder: 17,
-      ),
-      const TimeBarConfig(
-        key: '12Hutc',
-        bar: '12Hutc',
-        multiplier: 12,
-        timeUnit: TimeUnit.hour,
-        showName: '12Hutc',
-        isUtc: true,
-        sortOrder: 18,
-      ),
-      const TimeBarConfig(
-        key: 'utc1D',
-        bar: '1Dutc',
-        multiplier: 1,
-        timeUnit: TimeUnit.day,
-        showName: '1Dutc',
-        isUtc: true,
-        sortOrder: 19,
-      ),
-      const TimeBarConfig(
-        key: 'utc2D',
-        bar: '2Dutc',
-        multiplier: 2,
-        timeUnit: TimeUnit.day,
-        showName: '2Dutc',
-        isUtc: true,
-        sortOrder: 20,
-      ),
-      const TimeBarConfig(
-        key: 'utc3D',
-        bar: '3Dutc',
-        multiplier: 3,
-        timeUnit: TimeUnit.day,
-        showName: '3Dutc',
-        isUtc: true,
-        sortOrder: 21,
-      ),
-      const TimeBarConfig(
-        key: 'utc1W',
-        bar: '1Wutc',
-        multiplier: 7,
-        timeUnit: TimeUnit.week,
-        showName: '1Wutc',
-        isUtc: true,
-        sortOrder: 22,
-      ),
-      const TimeBarConfig(
-        key: 'utc1M',
-        bar: '1Mutc',
-        multiplier: 1,
-        timeUnit: TimeUnit.month,
-        showName: '1Mutc',
-        isUtc: true,
-        sortOrder: 23,
-      ),
-      const TimeBarConfig(
-        key: 'utc3M',
-        bar: '3Mutc',
-        multiplier: 3,
-        timeUnit: TimeUnit.month,
-        showName: '3Mutc',
-        isUtc: true,
-        sortOrder: 24,
-      ),
+      TimeBar.m1,
+      TimeBar.m3,
+      TimeBar.m5,
+      TimeBar.m15,
+      TimeBar.m30,
+      TimeBar.H1,
+      TimeBar.H2,
+      TimeBar.H4,
+      TimeBar.H6,
+      TimeBar.H12,
+      TimeBar.D1,
+      TimeBar.D2,
+      TimeBar.D3,
+      TimeBar.W1,
+      TimeBar.M1,
+      TimeBar.M3,
+      // UTC
+      TimeBar.utc6H,
+      TimeBar.utc12H,
+      TimeBar.utc1D,
+      TimeBar.utc2D,
+      TimeBar.utc3D,
+      TimeBar.utc1W,
+      TimeBar.utc1M,
+      TimeBar.utc3M,
     ];
   }
 
   /// 从配置构建时间周期配置列表
-  List<TimeBarConfig> _buildTimeBarConfigsFromConfig(Map<String, dynamic> config) {
-    final List<TimeBarConfig> configs = [];
+  List<TimeBar> _buildTimeBarConfigsFromConfig(Map<String, dynamic> config) {
+    final List<TimeBar> configs = [];
 
     if (config['timeBarConfigs'] is List) {
       for (final item in config['timeBarConfigs']) {
-        if (item is Map<String, dynamic>) {
+        if (item is String) {
           try {
-            final timeBarConfig = TimeBarConfig.fromJson(item);
-            configs.add(timeBarConfig);
+            final timeBar = TimeBar.values.firstWhereOrNull((e) => e.bar == item || e.key == item);
+            if (timeBar != null) configs.add(timeBar);
           } catch (e) {
-            defLogger.e('Failed to parse TimeBarConfig: $e');
+            defLogger.e('Failed to parse TimeBar: $e');
           }
         }
       }
     }
 
-    // 按照sortOrder排序
-    configs.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     return configs;
   }
 
   /// 设置时间周期配置
-  Future<bool> setTimeBarConfigs(List<TimeBarConfig> configs) async {
+  Future<bool> setTimeBarConfigs(List<TimeBar> configs) async {
     try {
       final configData = {
-        'timeBarConfigs': configs.map((config) => config.toJson()).toList(),
+        'timeBarConfigs': configs.map((config) => config.bar).toList(),
       };
 
       final success = await setConfig('timeBarConfigs', configData);

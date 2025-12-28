@@ -15,7 +15,6 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flexi_formatter/date_time.dart';
-import 'package:flexi_kline/src/config/time_bar_config/time_bar_config.dart';
 
 import '../../constant.dart';
 import '../../extension/export.dart';

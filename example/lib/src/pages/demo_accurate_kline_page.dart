@@ -102,7 +102,7 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
     SmartDialog.showToast('This is a simulation operation!');
   }
 
-  void onTapTimeBar1(TimeBarConfig timeBar) {
+  void onTapTimeBar1(TimeBar timeBar) {
     if (timeBar != req1.timeBar) {
       req1 = req1.copyWith(timeBar: timeBar);
       setState(() {});
@@ -110,7 +110,7 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
     }
   }
 
-  void onTapTimeBar2(TimeBarConfig timeBar) {
+  void onTapTimeBar2(TimeBar timeBar) {
     if (timeBar != req2.timeBar) {
       req2 = req2.copyWith(timeBar: timeBar);
       setState(() {});

@@ -32,7 +32,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
   });
 
   /// 获取时间周期配置列表（兼容不同配置类型）
-  List<TimeBarConfig> _getTimeBarConfigs(IConfiguration configuration) {
+  List<TimeBar> _getTimeBarConfigs(IConfiguration configuration) {
     if (configuration is BitFlexiKlineConfiguration) {
       return configuration.getTimeBarConfigs();
     } else if (configuration is DefaultFlexiKlineConfiguration) {
@@ -40,37 +40,16 @@ class TimerBarSelectDialog extends ConsumerWidget {
     } else {
       // 默认配置
       return const [
-        TimeBarConfig(
-          key: '15m',
-          bar: '15m',
-          multiplier: 15,
-          timeUnit: TimeUnit.minute,
-          showName: '15m',
-          sortOrder: 0,
-        ),
-        TimeBarConfig(
-          key: '1H',
-          bar: '1H',
-          multiplier: 1,
-          timeUnit: TimeUnit.hour,
-          showName: '1H',
-          sortOrder: 1,
-        ),
-        TimeBarConfig(
-          key: '1D',
-          bar: '1D',
-          multiplier: 1,
-          timeUnit: TimeUnit.day,
-          showName: '1D',
-          sortOrder: 2,
-        ),
+        TimeBar.m15,
+        TimeBar.H1,
+        TimeBar.D1,
       ];
     }
   }
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBarConfig> onTapTimeBar;
-  final List<TimeBarConfig> preferTimeBarList;
+  final ValueChanged<TimeBar> onTapTimeBar;
+  final List<TimeBar> preferTimeBarList;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

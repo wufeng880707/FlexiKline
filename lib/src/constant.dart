@@ -180,6 +180,9 @@ enum TimeBar implements ITimeBar {
     return name.containsIgnoreCase('utc') || bar.containsIgnoreCase('utc');
   }
 
+  String get key => bar;
+  String get showName => bar;
+
   @override
   String toString() => '$bar:$milliseconds';
 
