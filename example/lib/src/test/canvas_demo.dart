@@ -103,10 +103,9 @@ class PathCustomPainter extends CustomPainter {
       maxWidth: 100,
       padding: EdgeInsets.all(10),
       backgroundColor: Colors.yellowAccent,
-      radius: 10,
-      borderWidth: 1,
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(width: 1, color: Colors.red),
       maxLines: 1,
-      borderColor: Colors.red,
     );
 
     Offset endOffset = offset;
@@ -147,10 +146,9 @@ class PathCustomPainter extends CustomPainter {
       // maxWidth: 100,
       padding: EdgeInsets.all(10),
       backgroundColor: Colors.yellowAccent,
-      radius: 10,
-      borderWidth: 1,
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(width: 1, color: Colors.red),
       // maxLines: 1,
-      borderColor: Colors.red,
     );
 
     canvas.drawPoints(
@@ -167,11 +165,11 @@ class PathCustomPainter extends CustomPainter {
 
   void drawText(Canvas canvas) {
     Offset offset = Offset(ScreenUtil().screenWidth - 100, 150);
-    final size = canvas.drawText(
+    canvas.drawText(
       offset: offset,
       drawDirection: DrawDirection.ltr,
       // margin: EdgeInsets.symmetric(horizontal: 0),
-      drawableSize: drawableSize,
+      drawableRect: drawableRect,
       text: '你好123456',
       style: TextStyle(
         fontSize: 20,
@@ -195,10 +193,9 @@ class PathCustomPainter extends CustomPainter {
       textWidth: 80,
       padding: EdgeInsets.all(10),
       backgroundColor: Colors.yellowAccent,
-      radius: 10,
-      borderWidth: 1,
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(width: 1, color: Colors.red),
       maxLines: 1,
-      borderColor: Colors.red,
     );
 
     canvas.drawPoints(
@@ -241,7 +238,6 @@ class PathCustomPainter extends CustomPainter {
 
   /// 绘制Candle
   void drawCandle(Canvas canvas) {
-    final path = Path();
     final paint = Paint()
       ..color = Colors.red
       ..style = PaintingStyle.fill
@@ -249,7 +245,7 @@ class PathCustomPainter extends CustomPainter {
     final start = Offset(100, 100);
     final width = 10;
     final height = 40;
-    final lineW = 2;
+    // final lineW = 2;
     // path.moveTo(start.dx + (width - lineW) / 2, start.dy - 10);
     // path.lineTo(start.dx + (width - lineW) / 2, start.dy);
     // path.moveTo(start.dx, start.dy);
