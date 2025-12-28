@@ -41,6 +41,11 @@ abstract class _$SettingConfigCWProxy {
 
   SettingConfig showYAxisTick(bool showYAxisTick);
 
+  SettingConfig autoStartLastPriceCountDownTimer(
+      bool autoStartLastPriceCountDownTimer);
+
+  SettingConfig autoLoadMoreData(bool autoLoadMoreData);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SettingConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -64,6 +69,8 @@ abstract class _$SettingConfigCWProxy {
     double firstCandleInitOffset,
     bool allowPaintExtraOutsideMainRect,
     bool showYAxisTick,
+    bool autoStartLastPriceCountDownTimer,
+    bool autoLoadMoreData,
   });
 }
 
@@ -139,6 +146,15 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
       this(showYAxisTick: showYAxisTick);
 
   @override
+  SettingConfig autoStartLastPriceCountDownTimer(
+          bool autoStartLastPriceCountDownTimer) =>
+      this(autoStartLastPriceCountDownTimer: autoStartLastPriceCountDownTimer);
+
+  @override
+  SettingConfig autoLoadMoreData(bool autoLoadMoreData) =>
+      this(autoLoadMoreData: autoLoadMoreData);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `SettingConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -164,6 +180,8 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
     Object? firstCandleInitOffset = const $CopyWithPlaceholder(),
     Object? allowPaintExtraOutsideMainRect = const $CopyWithPlaceholder(),
     Object? showYAxisTick = const $CopyWithPlaceholder(),
+    Object? autoStartLastPriceCountDownTimer = const $CopyWithPlaceholder(),
+    Object? autoLoadMoreData = const $CopyWithPlaceholder(),
   }) {
     return SettingConfig(
       opacity: opacity == const $CopyWithPlaceholder()
@@ -234,6 +252,15 @@ class _$SettingConfigCWProxyImpl implements _$SettingConfigCWProxy {
           ? _value.showYAxisTick
           // ignore: cast_nullable_to_non_nullable
           : showYAxisTick as bool,
+      autoStartLastPriceCountDownTimer:
+          autoStartLastPriceCountDownTimer == const $CopyWithPlaceholder()
+              ? _value.autoStartLastPriceCountDownTimer
+              // ignore: cast_nullable_to_non_nullable
+              : autoStartLastPriceCountDownTimer as bool,
+      autoLoadMoreData: autoLoadMoreData == const $CopyWithPlaceholder()
+          ? _value.autoLoadMoreData
+          // ignore: cast_nullable_to_non_nullable
+          : autoLoadMoreData as bool,
     );
   }
 }
@@ -272,6 +299,9 @@ SettingConfig _$SettingConfigFromJson(Map<String, dynamic> json) =>
       allowPaintExtraOutsideMainRect:
           json['allowPaintExtraOutsideMainRect'] as bool? ?? true,
       showYAxisTick: json['showYAxisTick'] as bool? ?? true,
+      autoStartLastPriceCountDownTimer:
+          json['autoStartLastPriceCountDownTimer'] as bool? ?? true,
+      autoLoadMoreData: json['autoLoadMoreData'] as bool? ?? true,
     );
 
 Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
@@ -294,4 +324,7 @@ Map<String, dynamic> _$SettingConfigToJson(SettingConfig instance) =>
       'firstCandleInitOffset': instance.firstCandleInitOffset,
       'allowPaintExtraOutsideMainRect': instance.allowPaintExtraOutsideMainRect,
       'showYAxisTick': instance.showYAxisTick,
+      'autoStartLastPriceCountDownTimer':
+          instance.autoStartLastPriceCountDownTimer,
+      'autoLoadMoreData': instance.autoLoadMoreData,
     };

@@ -26,7 +26,9 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   void initState() {
     super.initState();
     logd('initState indicator');
-    startLastPriceCountDownTimer();
+    if (settingConfig.autoStartLastPriceCountDownTimer) {
+      startLastPriceCountDownTimer();
+    }
   }
 
   @override
@@ -220,7 +222,9 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     }
 
     if (!oldState.isLoadMore && newState.isLoadMore) {
-      onLoadMoreCandles?.call(request);
+      if (settingConfig.autoLoadMoreData) {
+        onLoadMoreCandles?.call(request);
+      }
     }
   }
 

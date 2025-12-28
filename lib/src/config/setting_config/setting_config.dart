@@ -53,6 +53,12 @@ class SettingConfig {
 
     /// 是否展示Y轴刻度.
     this.showYAxisTick = true,
+
+    /// 是否自动启动最后一根蜡烛的价格倒计时定时器.
+    this.autoStartLastPriceCountDownTimer = true,
+
+    /// 是否自动加载更多数据
+    this.autoLoadMoreData = true,
   });
 
   /// Long/Short 浅色不透明度 [longTintColor] 和 [shortTintColor]
@@ -97,6 +103,12 @@ class SettingConfig {
 
   /// 是否展示Y轴刻度.
   final bool showYAxisTick;
+
+  /// 是否自动启动最后一根蜡烛的价格倒计时定时器.
+  final bool autoStartLastPriceCountDownTimer;
+
+  /// 是否自动加载更多数据
+  final bool autoLoadMoreData;
 
   bool get isFixedCandleSpacing {
     return candleFixedSpacing != null && candleFixedSpacing! > candleMinWidth;
