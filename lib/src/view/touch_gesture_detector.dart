@@ -87,27 +87,30 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         onLongPressEnd: onLongPressEnd,
 
         /// 子组件
-        child: ValueListenableBuilder(
-          valueListenable: controller.canvasSizeChangeListener,
-          builder: (context, canvasSize, child) => SizedBox(
-            width: canvasSize.width,
-            height: canvasSize.height,
-            child: Stack(children: [
-              ValueListenableBuilder(
-                valueListenable: controller.chartZoomSlideBarRectListener,
-                builder: (context, rect, child) => Positioned.fromRect(
-                  rect: rect,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onVerticalDragDown: onVerticalDragDown,
-                    onVerticalDragStart: onVerticalDragStart,
-                    onVerticalDragUpdate: onVerticalDragUpdate.throttleOnFps,
-                    onVerticalDragEnd: onVerticalDragEnd,
-                    onVerticalDragCancel: onVerticalDragEnd,
+        child: IgnorePointer(
+          ignoring: !gestureConfig.enableZoom,
+          child: ValueListenableBuilder(
+            valueListenable: controller.canvasSizeChangeListener,
+            builder: (context, canvasSize, child) => SizedBox(
+              width: canvasSize.width,
+              height: canvasSize.height,
+              child: Stack(children: [
+                ValueListenableBuilder(
+                  valueListenable: controller.chartZoomSlideBarRectListener,
+                  builder: (context, rect, child) => Positioned.fromRect(
+                    rect: rect,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onVerticalDragDown: onVerticalDragDown,
+                      onVerticalDragStart: onVerticalDragStart,
+                      onVerticalDragUpdate: onVerticalDragUpdate.throttleOnFps,
+                      onVerticalDragEnd: onVerticalDragEnd,
+                      onVerticalDragCancel: onVerticalDragEnd,
+                    ),
                   ),
                 ),
-              ),
-            ]),
+              ]),
+            ),
           ),
         ),
       ),

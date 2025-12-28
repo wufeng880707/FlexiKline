@@ -218,7 +218,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         // 说明可能是(鼠标滚轴或触控板双指)向上向下进行缩放
 
         /// 纵向缩放图表(zoom)
-        if (controller.chartZoomSlideBarRect.include(offset)) {
+        if (gestureConfig.enableZoom && controller.chartZoomSlideBarRect.include(offset)) {
           // 如果命中ZommSlideBar区域, 即代表要进行缩放图表
           if (!controller.isStartZoomChart && controller.onChartZoomStart(offset, false)) {
             Future.delayed(const Duration(milliseconds: 1000), () {
@@ -348,7 +348,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         controller.onDrawUpdate(_hoverData!);
         return;
       }
-    } else if (controller.chartZoomSlideBarRect.include(offset)) {
+    } else if (gestureConfig.enableZoom && controller.chartZoomSlideBarRect.include(offset)) {
       controller.cancelCross();
       setCursorToZoom();
       return;

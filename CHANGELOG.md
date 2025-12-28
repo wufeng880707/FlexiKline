@@ -1,3 +1,9 @@
+## 1.1.1
+* Add listening for the painting range changes.
+* Optimize the minmax of chart when no market fluctuation.
+* Optimize the details of the zoom operation; Add listening to the zoom slide bar area.
+* bugfix.
+
 ## 1.1.0
 * Optimize the TimeBar and support flexible customization.
 * Support image drawing.

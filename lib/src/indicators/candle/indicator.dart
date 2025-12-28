@@ -228,7 +228,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
             maxHihgOffset = Offset(dx, hight);
             maxHigh = _maxHigh!;
           }
-        } else if (dx > 0) {
+        } else {
           // 如果当前绘制不足一屏, 最大最小绘制仅限可见区域.
           if (m.high >= maxHigh) {
             maxHihgOffset = Offset(dx, hight);
@@ -300,7 +300,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
   }
 
   /// 缓存价钱刻度文本区域大小, 用于定位缩放拖拽条区域
-  Size? _zoomSlideBarize;
+  Size? _zoomSlideBarSize;
 
   /// 绘制蜡烛图右侧价钱刻度
   /// 根据Grid horizontal配置来绘制, 保证在grid.horizontal线之上.
@@ -308,6 +308,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     final dyStep = drawableRect.height / gridConfig.horizontal.count;
     final dx = chartRect.right;
     double dy = 0;
+    double maxTickWidth = 0.0;
     for (int i = 1; i <= gridConfig.horizontal.count; i++) {
       dy = i * dyStep;
       final price = dyToValue(dy);
@@ -332,18 +333,20 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
         text: text,
         textConfig: ticksText,
       );
-      if (gestureConfig.enableZoom) {
-        final newSize = Size(size.width, drawableRect.height);
-        if (newSize != _zoomSlideBarize) {
-          _zoomSlideBarize = newSize;
-          updateZoomSlideBarRect(Rect.fromLTWH(
-            drawableRect.right - newSize.width,
-            drawableRect.top,
-            newSize.width,
-            newSize.height,
-          ));
-        }
-      }
+
+      if (size.width > maxTickWidth) maxTickWidth = size.width;
+    }
+
+    if (!gestureConfig.isManualSetZoomRect &&
+        (_zoomSlideBarSize == null || _zoomSlideBarSize!.width != maxTickWidth)) {
+      final barSize = Size(maxTickWidth, drawableRect.height);
+      _zoomSlideBarSize = barSize;
+      updateZoomSlideBarRect(Rect.fromLTWH(
+        drawableRect.right - barSize.width,
+        drawableRect.top,
+        barSize.width,
+        barSize.height,
+      ));
     }
   }
 

@@ -1,11 +1,11 @@
 name: flexi_kline
 description: "A flexible Kline framework package project."
-version: 1.1.0
+version: 1.1.1
 homepage: https://flexikline.github.io
 repository: https://github.com/FlexiKline/FlexiKline
 issue_tracker: https://github.com/FlexiKline/FlexiKline/issues
 documentation: https://pub.dev/documentation/flexi_kline/latest
-topics: 
+topics:
   - chart
   - kline
   - candlestick

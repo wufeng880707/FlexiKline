@@ -343,15 +343,17 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   /// 设置指标图中用于缩放操作的滑竿区域
   /// 注: 此区域是相对于mainRect
   void setChartZoomSlideBarRect(Rect rect) {
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _chartZoomSlideBarRect.value = rect;
-    });
+    if (!rect.isEmpty && !rect.isInfinite) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _chartZoomSlideBarRect.value = rect.clampRect(canvasRect);
+      });
+    }
   }
 
   /// 检测是否开始指标图缩放
   /// [isConvert] 是否转换为canvas区域坐标
   bool onChartZoomStart(Offset position, [bool isConvert = true]) {
-    if (chartZoomSlideBarRect.isEmpty) return false;
+    if (!gestureConfig.enableZoom || chartZoomSlideBarRect.isEmpty) return false;
     if (isConvert) position += chartZoomSlideBarRect.topLeft;
     return _isChartStartZoom.value = chartZoomSlideBarRect.include(position);
   }

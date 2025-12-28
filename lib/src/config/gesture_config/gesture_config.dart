@@ -42,6 +42,7 @@ class GestureConfig {
     this.enableZoom = false,
     this.zoomStartMinDistance = 5,
     this.zoomSpeed = 1,
+    this.isManualSetZoomRect = false,
   })  : tolerance = tolerance ?? ToleranceConfig(),
         scaleSpeed = scaleSpeed.clamp(1, 30);
 
@@ -69,6 +70,7 @@ class GestureConfig {
   /// 是否支持键盘操作
   final bool supportKeyboardShortcuts;
 
+  /// 是否启用Zoom缩放操作
   final bool enableZoom;
 
   /// Zoom缩放操作启动最小距离. 默认5. 注: 仅支持触摸设备.
@@ -76,6 +78,9 @@ class GestureConfig {
 
   /// Zoom缩放速度主区图表速度. 默认1.
   final int zoomSpeed;
+
+  /// 是否手动设置缩放区域
+  final bool isManualSetZoomRect;
 
   factory GestureConfig.fromJson(Map<String, dynamic> json) => _$GestureConfigFromJson(json);
 

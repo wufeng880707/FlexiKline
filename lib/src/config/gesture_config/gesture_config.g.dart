@@ -30,6 +30,8 @@ abstract class _$GestureConfigCWProxy {
 
   GestureConfig zoomSpeed(int zoomSpeed);
 
+  GestureConfig isManualSetZoomRect(bool isManualSetZoomRect);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GestureConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -48,6 +50,7 @@ abstract class _$GestureConfigCWProxy {
     bool enableZoom,
     int zoomStartMinDistance,
     int zoomSpeed,
+    bool isManualSetZoomRect,
   });
 }
 
@@ -100,6 +103,10 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
   GestureConfig zoomSpeed(int zoomSpeed) => this(zoomSpeed: zoomSpeed);
 
   @override
+  GestureConfig isManualSetZoomRect(bool isManualSetZoomRect) =>
+      this(isManualSetZoomRect: isManualSetZoomRect);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GestureConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -119,6 +126,7 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
     Object? enableZoom = const $CopyWithPlaceholder(),
     Object? zoomStartMinDistance = const $CopyWithPlaceholder(),
     Object? zoomSpeed = const $CopyWithPlaceholder(),
+    Object? isManualSetZoomRect = const $CopyWithPlaceholder(),
   }) {
     return GestureConfig(
       supportLongPress: supportLongPress == const $CopyWithPlaceholder()
@@ -168,6 +176,10 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
           ? _value.zoomSpeed
           // ignore: cast_nullable_to_non_nullable
           : zoomSpeed as int,
+      isManualSetZoomRect: isManualSetZoomRect == const $CopyWithPlaceholder()
+          ? _value.isManualSetZoomRect
+          // ignore: cast_nullable_to_non_nullable
+          : isManualSetZoomRect as bool,
     );
   }
 }
@@ -204,6 +216,7 @@ GestureConfig _$GestureConfigFromJson(Map<String, dynamic> json) =>
       zoomStartMinDistance:
           (json['zoomStartMinDistance'] as num?)?.toInt() ?? 5,
       zoomSpeed: (json['zoomSpeed'] as num?)?.toInt() ?? 1,
+      isManualSetZoomRect: json['isManualSetZoomRect'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$GestureConfigToJson(GestureConfig instance) =>
@@ -221,4 +234,5 @@ Map<String, dynamic> _$GestureConfigToJson(GestureConfig instance) =>
       'enableZoom': instance.enableZoom,
       'zoomStartMinDistance': instance.zoomStartMinDistance,
       'zoomSpeed': instance.zoomSpeed,
+      'isManualSetZoomRect': instance.isManualSetZoomRect,
     };
