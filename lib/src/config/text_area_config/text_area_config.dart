@@ -79,8 +79,8 @@ class TextAreaConfig {
       return this;
     }
     return copyWith(
-      style: style.of(color: textColor),
-      background: background,
+      style: style.of(color: textColor ),
+      background: background ?? this.background,
       border: border?.of(color: borderColor),
     );
   }

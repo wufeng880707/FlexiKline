@@ -88,8 +88,9 @@ class MagnifierConfig {
   MagnifierConfig of({
     Color? sideColor,
   }) {
+    if (shapeSide.color == sideColor) return this;
     return copyWith(
-      shapeSide: shapeSide.copyWith(color: sideColor ?? shapeSide.color),
+      shapeSide: shapeSide.copyWith(color: sideColor),
     );
   }
 

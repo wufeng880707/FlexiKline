@@ -84,7 +84,7 @@ class TipsConfig {
   double get textSize => style.fontSize ?? defaulTextSize;
 
   TipsConfig of({Color? textColor}) {
-    if (textColor == null || style.color == textColor) return this;
+    if (style.color == textColor) return this;
     return copyWith(
       style: style.of(color: textColor),
     );
