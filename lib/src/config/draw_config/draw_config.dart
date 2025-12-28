@@ -26,7 +26,7 @@ part 'draw_config.g.dart';
 @FlexiConfigSerializable
 class DrawConfig {
   const DrawConfig({
-    this.enable = true,
+    this.enable = false,
     this.allowSelectWhenExit = true,
     required this.crosspoint,
     required this.crosshair,

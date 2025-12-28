@@ -493,7 +493,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           paintColor: theme.gridLine,
         ),
       ),
-      isAllowDragIndicatorHeight: grid?.isAllowDragIndicatorHeight ?? true,
+      isAllowDragIndicatorHeight: grid?.isAllowDragIndicatorHeight ?? false,
       dragHitTestMinDistance: grid?.dragHitTestMinDistance ?? 10 * theme.scale,
       draggingBgOpacity: grid?.draggingBgOpacity ?? 0.1,
       dragBgOpacity: grid?.dragBgOpacity ?? 0,
@@ -697,7 +697,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
   DrawConfig genDrawConfig([DrawConfig? draw]) {
     return DrawConfig(
-      enable: draw?.enable ?? true,
+      enable: draw?.enable ?? false,
 
       /// 当绘制状态是退出时, 是否允许选择已绘制的Overlay.
       allowSelectWhenExit: draw?.allowSelectWhenExit ?? true,

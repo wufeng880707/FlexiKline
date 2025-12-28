@@ -38,7 +38,7 @@ class GridConfig {
     this.show = true,
     this.horizontal = const GridAxis(),
     this.vertical = const GridAxis(),
-    this.isAllowDragIndicatorHeight = true,
+    this.isAllowDragIndicatorHeight = false,
     this.dragHitTestMinDistance = 10,
     this.draggingBgOpacity = 0.1,
     this.dragBgOpacity = 0,

@@ -185,7 +185,7 @@ extension $DrawConfigCopyWith on DrawConfig {
 // **************************************************************************
 
 DrawConfig _$DrawConfigFromJson(Map<String, dynamic> json) => DrawConfig(
-      enable: json['enable'] as bool? ?? true,
+      enable: json['enable'] as bool? ?? false,
       allowSelectWhenExit: json['allowSelectWhenExit'] as bool? ?? true,
       crosspoint:
           PointConfig.fromJson(json['crosspoint'] as Map<String, dynamic>),

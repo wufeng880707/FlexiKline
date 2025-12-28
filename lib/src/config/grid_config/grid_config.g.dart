@@ -245,7 +245,7 @@ GridConfig _$GridConfigFromJson(Map<String, dynamic> json) => GridConfig(
           ? const GridAxis()
           : GridAxis.fromJson(json['vertical'] as Map<String, dynamic>),
       isAllowDragIndicatorHeight:
-          json['isAllowDragIndicatorHeight'] as bool? ?? true,
+          json['isAllowDragIndicatorHeight'] as bool? ?? false,
       dragHitTestMinDistance:
           (json['dragHitTestMinDistance'] as num?)?.toDouble() ?? 10,
       draggingBgOpacity: (json['draggingBgOpacity'] as num?)?.toDouble() ?? 0.1,

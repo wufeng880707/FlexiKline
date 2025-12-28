@@ -374,7 +374,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
   ///    且展示在指定价钱区间内, 如超出边界, 则停靠在最高最低线上.
   /// 3. 最新价向左移动后, 刻度线根据最新价蜡烛线平行移动.
   void paintLatestPriceMark(Canvas canvas, Size size) {
-    if (!indicator.latest.show || !indicator.last.show) return;
+    if (!indicator.latest.show && !indicator.last.show) return;
     final model = klineData.latest;
     if (model == null) {
       logd('paintLatestPriceMark > on data!');

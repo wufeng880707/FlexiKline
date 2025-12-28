@@ -16,7 +16,7 @@ part of 'kline_data.dart';
 
 mixin PaintDrawData on BaseData {
   bool get canPaintChart {
-    return isNotEmpty && list.checkIndex(start); // TODO && list.checkIndex(end);
+    return isNotEmpty && list.checkIndex(start); // && list.checkIndex(end);
   }
 
   void ensureStartAndEndIndex(
@@ -39,9 +39,9 @@ mixin PaintDrawData on BaseData {
   /// 将[ts]转换为当前KlineData数据列表的下标和剩余偏移率
   /// 如果ts > 最新价, 将为负
   double? timestampToIndex(int ts) {
-    if (list.isEmpty || req.timeBar == null) return null;
-    int latestIndex = 0; // TODO: 后续性能优化考虑数据方向
-    final timespans = req.timeBar!.milliseconds;
+    if (list.isEmpty || !req.timeBar.isValid) return null;
+    int latestIndex = 0; // 后续性能优化考虑数据方向
+    final timespans = req.timeBar.milliseconds;
     final first = list.first;
     final last = list.last;
     if (ts > first.ts) {
@@ -73,8 +73,8 @@ mixin PaintDrawData on BaseData {
 
   /// 将[indexValue]转换为以当前KlineData数据范围为基础的timestamp
   int? indexToTimestamp(double indexValue) {
-    if (list.isEmpty || req.timeBar == null) return null;
-    final timespans = req.timeBar!.milliseconds;
+    if (list.isEmpty || !req.timeBar.isValid) return null;
+    final timespans = req.timeBar.milliseconds;
     final index = indexValue.toInt();
     final patchTs = ((indexValue - index) * timespans).truncate();
     if (index < 0) {
