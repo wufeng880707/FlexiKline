@@ -24,6 +24,8 @@ abstract class _$GestureConfigCWProxy {
 
   GestureConfig supportKeyboardShortcuts(bool supportKeyboardShortcuts);
 
+  GestureConfig enableZoom(bool enableZoom);
+
   GestureConfig zoomStartMinDistance(int zoomStartMinDistance);
 
   GestureConfig zoomSpeed(int zoomSpeed);
@@ -43,6 +45,7 @@ abstract class _$GestureConfigCWProxy {
     ScalePosition scalePosition,
     double scaleSpeed,
     bool supportKeyboardShortcuts,
+    bool enableZoom,
     int zoomStartMinDistance,
     int zoomSpeed,
   });
@@ -87,6 +90,9 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
       this(supportKeyboardShortcuts: supportKeyboardShortcuts);
 
   @override
+  GestureConfig enableZoom(bool enableZoom) => this(enableZoom: enableZoom);
+
+  @override
   GestureConfig zoomStartMinDistance(int zoomStartMinDistance) =>
       this(zoomStartMinDistance: zoomStartMinDistance);
 
@@ -110,6 +116,7 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
     Object? scalePosition = const $CopyWithPlaceholder(),
     Object? scaleSpeed = const $CopyWithPlaceholder(),
     Object? supportKeyboardShortcuts = const $CopyWithPlaceholder(),
+    Object? enableZoom = const $CopyWithPlaceholder(),
     Object? zoomStartMinDistance = const $CopyWithPlaceholder(),
     Object? zoomSpeed = const $CopyWithPlaceholder(),
   }) {
@@ -149,6 +156,10 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
               ? _value.supportKeyboardShortcuts
               // ignore: cast_nullable_to_non_nullable
               : supportKeyboardShortcuts as bool,
+      enableZoom: enableZoom == const $CopyWithPlaceholder()
+          ? _value.enableZoom
+          // ignore: cast_nullable_to_non_nullable
+          : enableZoom as bool,
       zoomStartMinDistance: zoomStartMinDistance == const $CopyWithPlaceholder()
           ? _value.zoomStartMinDistance
           // ignore: cast_nullable_to_non_nullable
@@ -189,6 +200,7 @@ GestureConfig _$GestureConfigFromJson(Map<String, dynamic> json) =>
       scaleSpeed: (json['scaleSpeed'] as num?)?.toDouble() ?? 10,
       supportKeyboardShortcuts:
           json['supportKeyboardShortcuts'] as bool? ?? true,
+      enableZoom: json['enableZoom'] as bool? ?? false,
       zoomStartMinDistance:
           (json['zoomStartMinDistance'] as num?)?.toInt() ?? 5,
       zoomSpeed: (json['zoomSpeed'] as num?)?.toInt() ?? 1,
@@ -206,6 +218,7 @@ Map<String, dynamic> _$GestureConfigToJson(GestureConfig instance) =>
           const ScalePositionConverter().toJson(instance.scalePosition),
       'scaleSpeed': instance.scaleSpeed,
       'supportKeyboardShortcuts': instance.supportKeyboardShortcuts,
+      'enableZoom': instance.enableZoom,
       'zoomStartMinDistance': instance.zoomStartMinDistance,
       'zoomSpeed': instance.zoomSpeed,
     };

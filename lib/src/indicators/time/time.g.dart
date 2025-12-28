@@ -17,6 +17,8 @@ abstract class _$TimeIndicatorCWProxy {
 
   TimeIndicator timeTick(TextAreaConfig timeTick);
 
+  TimeIndicator ensurePaintInDrawableRect(bool ensurePaintInDrawableRect);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TimeIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -29,6 +31,7 @@ abstract class _$TimeIndicatorCWProxy {
     EdgeInsets padding,
     DrawPosition position,
     TextAreaConfig timeTick,
+    bool ensurePaintInDrawableRect,
   });
 }
 
@@ -54,6 +57,10 @@ class _$TimeIndicatorCWProxyImpl implements _$TimeIndicatorCWProxy {
   TimeIndicator timeTick(TextAreaConfig timeTick) => this(timeTick: timeTick);
 
   @override
+  TimeIndicator ensurePaintInDrawableRect(bool ensurePaintInDrawableRect) =>
+      this(ensurePaintInDrawableRect: ensurePaintInDrawableRect);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TimeIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -67,6 +74,7 @@ class _$TimeIndicatorCWProxyImpl implements _$TimeIndicatorCWProxy {
     Object? padding = const $CopyWithPlaceholder(),
     Object? position = const $CopyWithPlaceholder(),
     Object? timeTick = const $CopyWithPlaceholder(),
+    Object? ensurePaintInDrawableRect = const $CopyWithPlaceholder(),
   }) {
     return TimeIndicator(
       zIndex: zIndex == const $CopyWithPlaceholder()
@@ -89,6 +97,11 @@ class _$TimeIndicatorCWProxyImpl implements _$TimeIndicatorCWProxy {
           ? _value.timeTick
           // ignore: cast_nullable_to_non_nullable
           : timeTick as TextAreaConfig,
+      ensurePaintInDrawableRect:
+          ensurePaintInDrawableRect == const $CopyWithPlaceholder()
+              ? _value.ensurePaintInDrawableRect
+              // ignore: cast_nullable_to_non_nullable
+              : ensurePaintInDrawableRect as bool,
     );
   }
 }
@@ -117,6 +130,8 @@ TimeIndicator _$TimeIndicatorFromJson(Map<String, dynamic> json) =>
           : const DrawPositionConverter().fromJson(json['position'] as String),
       timeTick:
           TextAreaConfig.fromJson(json['timeTick'] as Map<String, dynamic>),
+      ensurePaintInDrawableRect:
+          json['ensurePaintInDrawableRect'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$TimeIndicatorToJson(TimeIndicator instance) =>
@@ -126,4 +141,5 @@ Map<String, dynamic> _$TimeIndicatorToJson(TimeIndicator instance) =>
       'zIndex': instance.zIndex,
       'position': const DrawPositionConverter().toJson(instance.position),
       'timeTick': instance.timeTick.toJson(),
+      'ensurePaintInDrawableRect': instance.ensurePaintInDrawableRect,
     };

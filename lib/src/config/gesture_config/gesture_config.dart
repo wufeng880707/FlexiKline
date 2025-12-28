@@ -39,6 +39,7 @@ class GestureConfig {
     this.scalePosition = ScalePosition.auto,
     double scaleSpeed = 10,
     this.supportKeyboardShortcuts = true,
+    this.enableZoom = false,
     this.zoomStartMinDistance = 5,
     this.zoomSpeed = 1,
   })  : tolerance = tolerance ?? ToleranceConfig(),
@@ -67,6 +68,8 @@ class GestureConfig {
 
   /// 是否支持键盘操作
   final bool supportKeyboardShortcuts;
+
+  final bool enableZoom;
 
   /// Zoom缩放操作启动最小距离. 默认5. 注: 仅支持触摸设备.
   final int zoomStartMinDistance;

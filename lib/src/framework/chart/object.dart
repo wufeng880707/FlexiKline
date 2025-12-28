@@ -147,7 +147,7 @@ abstract class CandleBasePaintObject<T extends CandleBaseIndicator> extends Pain
 
   @nonVirtual
   void updateZoomSlideBarRect(Rect rect) {
-    if (settingConfig.useCandleTicksAsZoomSlideBar) {
+    if (gestureConfig.enableZoom) {
       (_context as ChartBinding).setChartZoomSlideBarRect(rect);
     }
   }

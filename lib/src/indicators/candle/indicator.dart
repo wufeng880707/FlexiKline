@@ -332,7 +332,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
         text: text,
         textConfig: ticksText,
       );
-      if (settingConfig.useCandleTicksAsZoomSlideBar) {
+      if (gestureConfig.enableZoom) {
         final newSize = Size(size.width, drawableRect.height);
         if (newSize != _zoomSlideBarize) {
           _zoomSlideBarize = newSize;

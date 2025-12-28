@@ -25,10 +25,14 @@ class TimeIndicator extends TimeBaseIndicator {
     super.position = DrawPosition.middle,
     // 时间刻度.
     required this.timeTick,
+    this.ensurePaintInDrawableRect = false,
   });
 
-  // 时间刻度.
+  /// 时间刻度.
   final TextAreaConfig timeTick;
+
+  /// 确保在时间刻度绘制区域内画图: 启用会启用裁切
+  final bool ensurePaintInDrawableRect;
 
   @override
   TimePaintObject createPaintObject(IPaintContext context) {
@@ -58,6 +62,17 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
 
   @override
   void paintChart(Canvas canvas, Size size) {
+    if (indicator.ensurePaintInDrawableRect) {
+      canvas.save();
+      canvas.clipRect(drawableRect);
+      paintTimeChart(canvas, size);
+      canvas.restore();
+    } else {
+      paintTimeChart(canvas, size);
+    }
+  }
+
+  void paintTimeChart(Canvas canvas, Size size) {
     final data = klineData;
     if (data.list.isEmpty) return;
     int start = data.start;

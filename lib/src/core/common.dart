@@ -207,6 +207,9 @@ abstract interface class IPaintContext implements IStorage, ILogger {
   /// CrossConfig
   CrossConfig get crossConfig;
 
+  /// GestureConfig
+  GestureConfig get gestureConfig;
+
   double get candleWidth;
 
   double get candleSpacing;

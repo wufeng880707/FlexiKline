@@ -544,6 +544,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       scalePosition: gesture?.scalePosition ?? ScalePosition.auto,
       scaleSpeed: gesture?.scaleSpeed ?? 10,
       supportKeyboardShortcuts: gesture?.supportKeyboardShortcuts ?? true,
+      enableZoom: gesture?.enableZoom ?? false,
       zoomStartMinDistance: gesture?.zoomStartMinDistance ?? 5,
       zoomSpeed: gesture?.zoomSpeed ?? 1,
     );
@@ -559,7 +560,6 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       /// 主区域最小Size
       mainMinSize: setting?.mainMinSize ?? Size(120 * theme.scale, 80 * theme.scale),
       subMinHeight: setting?.subMinHeight ?? 30 * theme.scale,
-      useCandleTicksAsZoomSlideBar: setting?.useCandleTicksAsZoomSlideBar ?? true,
 
       /// 主/副图绘制参数
       minPaintBlankRate: setting?.minPaintBlankRate ?? 0.5,

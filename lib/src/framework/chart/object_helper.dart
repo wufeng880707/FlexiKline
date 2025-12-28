@@ -28,6 +28,8 @@ extension IndicatorObjectExt on IndicatorObject {
 
   CrossConfig get crossConfig => _context.crossConfig;
 
+  GestureConfig get gestureConfig => _context.gestureConfig;
+
   KlineData get klineData => _context.curKlineData;
 
   bool get isCrossing => _context.isCrossing;
