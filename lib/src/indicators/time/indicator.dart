@@ -64,11 +64,11 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
     int end = data.end;
 
     final offset = startCandleDx - candleWidthHalf;
-    final bar = data.timeBar;
+    final timeBar = data.timeBar;
     for (var i = start; i < end; i++) {
       final model = data.list[i];
       final dx = offset - (i - start) * candleActualWidth;
-      if (bar != null && i % timeTickIntervalCount == 0) {
+      if (timeBar.isValid && i % timeTickIntervalCount == 0) {
         final offset = Offset(dx, chartRect.top);
 
         // 绘制时间刻度.
@@ -82,7 +82,7 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
             offset.dy + dyCenterOffset,
           ),
           drawDirection: DrawDirection.center,
-          text: model.formatDateTime(bar),
+          text: model.formatDateTime(timeBar),
           textConfig: timeTick,
         );
       }
@@ -93,7 +93,7 @@ class TimePaintObject<T extends TimeIndicator> extends TimeBasePaintObject<T> {
   void onCross(Canvas canvas, Offset offset) {
     final model = offsetToCandle(offset);
     final timeBar = klineData.timeBar;
-    if (model == null || timeBar == null) return;
+    if (model == null || !timeBar.isValid) return;
 
     final time = model.formatDateTime(timeBar);
     // final time = formatyyMMddHHMMss(model.dateTime);

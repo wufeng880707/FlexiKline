@@ -14,8 +14,6 @@
 
 library;
 
-import 'package:flexi_formatter/date_time.dart';
-import 'package:flexi_kline/src/config/time_bar_config/time_bar_config.dart';
 import 'package:flutter/foundation.dart';
 
 import '../constant.dart';
@@ -25,10 +23,10 @@ import '../framework/logger.dart';
 import '../model/export.dart';
 
 part 'base_data.dart';
-part 'candle_list.dart';
 part 'candle_req.dart';
-part 'indicator.dart';
+part 'candle_list.dart';
 part 'paint_draw.dart';
+part 'indicator.dart';
 
 class KlineData extends BaseData with CandleReqData, CandleListData, PaintDrawData, IndicatorData {
   KlineData(
@@ -42,10 +40,7 @@ class KlineData extends BaseData with CandleReqData, CandleListData, PaintDrawDa
   final FlexiStopwatch stopwatch = FlexiStopwatch();
 
   static final KlineData empty = KlineData(
-    const CandleReq(
-        instId: "",
-        timeBar: TimeBarConfig(
-            key: '', bar: '', multiplier: 0, timeUnit: TimeUnit.minute, showName: '')),
+    const CandleReq(instId: "", timeBar: invalidTimeBar),
     0,
     list: List.empty(growable: false),
   );

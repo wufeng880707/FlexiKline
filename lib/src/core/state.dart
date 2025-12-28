@@ -64,8 +64,8 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   }
 
   /// 当KlineData的TimeBar的监听器
-  final _timeBarListener = ValueNotifier<TimeBarConfig?>(null);
-  ValueListenable<TimeBarConfig?> get timeBarListener => _timeBarListener;
+  final _timeBarListener = ValueNotifier<ITimeBar?>(null);
+  ValueListenable<ITimeBar?> get timeBarListener => _timeBarListener;
 
   /// CandleReq变化监听器
   final _candleRequestListener = ValueNotifier(KlineData.empty.req);

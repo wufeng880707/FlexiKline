@@ -13,9 +13,11 @@
 // limitations under the License.
 
 import 'package:decimal/decimal.dart';
+import 'package:flexi_formatter/date_time.dart';
 import 'package:flutter/painting.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../constant.dart';
 import '../extension/export.dart';
 import '../model/bag_num.dart';
 import '../utils/convert_util.dart';
@@ -37,6 +39,32 @@ class IIndicatorKeyConvert implements JsonConverter<IIndicatorKey, String> {
   @override
   String toJson(IIndicatorKey key) {
     return "${key.id}:${key.label}";
+  }
+}
+
+class ITimeBarConvert implements JsonConverter<ITimeBar, Map<String, dynamic>> {
+  const ITimeBarConvert();
+
+  @override
+  ITimeBar fromJson(Map<String, dynamic> json) {
+    final bar = json['bar']?.toString().trim() ?? '';
+    final multiplier = parseInt(json['multiplier']) ?? 0;
+    final unitName = json['unit']?.toString().trim();
+    TimeUnit? unit;
+    if (unitName != null && unitName.isNotEmpty) {
+      unit = TimeUnit.values.firstWhereOrNull((e) => e.name == unitName);
+    }
+    unit ??= TimeUnit.microsecond;
+    return TimeBar.from(bar, multiplier, unit) ?? FlexiTimeBar(bar, multiplier, unit);
+  }
+
+  @override
+  Map<String, dynamic> toJson(ITimeBar timeBar) {
+    return {
+      'bar': timeBar.bar,
+      'multiplier': timeBar.multiplier,
+      'unit': timeBar.unit.name,
+    };
   }
 }
 
@@ -636,6 +664,7 @@ const _basicConverterList = <JsonConverter>[
   BagNumConverter(),
   ChartTypeConverter(),
   ChartBarStyleConverter(),
+  ITimeBarConvert(),
 ];
 
 // ignore: constant_identifier_names
