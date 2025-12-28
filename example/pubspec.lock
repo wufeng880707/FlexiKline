@@ -308,17 +308,18 @@ packages:
   flexi_formatter:
     dependency: "direct main"
     description:
-      path: "../packages/flexi_formatter"
-      relative: true
-    source: path
-    version: "1.7.2"
+      name: flexi_formatter
+      sha256: f6e39fccb76ffc82672ac4bc9d3ca4013192602996d2989d0ad9839a12b20c01
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.0.0"
   flexi_kline:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.1.1"
   flutter:
     dependency: "direct main"
     description: flutter
