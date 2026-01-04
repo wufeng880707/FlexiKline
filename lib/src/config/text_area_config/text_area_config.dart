@@ -28,7 +28,7 @@ class TextAreaConfig {
   const TextAreaConfig({
     /// 文本样式
     this.style = const TextStyle(
-      fontSize: defaulTextSize,
+      fontSize: defaultTextSize,
       // color: Color(0xFF000000),
       overflow: TextOverflow.ellipsis,
       height: defaultTextHeight,
@@ -68,7 +68,7 @@ class TextAreaConfig {
 
   double get textHeight => textSize * (style.height ?? defaultTextHeight);
 
-  double get textSize => style.fontSize ?? defaulTextSize;
+  double get textSize => style.fontSize ?? defaultTextSize;
 
   TextAreaConfig of({
     Color? textColor,

@@ -22,7 +22,6 @@ import 'package:example/src/theme/flexi_theme.dart';
 import 'package:example/src/utils/cache_util.dart';
 import 'package:flexi_kline/flexi_kline.dart' hide Overlay;
 import 'package:flexi_kline/src/framework/draw/overlay.dart' as flexi_overlay;
-import 'package:flexi_formatter/date_time.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,7 +29,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 abstract class BaseBitFlexiKlineTheme with FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
   abstract String key;
-  
+
   double? _scale;
   @override
   double get scale => _scale ??= math.min(
@@ -121,7 +120,7 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   Color get indraTodayAvgColor => const Color(0xffff9933);
   @override
   Color get indraTodayCloseColor => const Color(0xff4d78ff);
-  
+
   @override
   Color get dragBg => const Color(0x33000000);
 
@@ -138,12 +137,12 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
 class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   @override
   String key = 'flexi_kline_config_key_bit-dark';
-  
+
   @override
   Color get indraTodayAvgColor => const Color(0xffff9933);
   @override
   Color get indraTodayCloseColor => const Color(0xff4d78ff);
-  
+
   @override
   Color get dragBg => const Color(0x33FFFFFF);
 
@@ -164,7 +163,6 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
 
   @override
   Color get crossTextBg => const Color(0xFF404040);
-
 
   @override
   Color get gridLine => const Color(0xFF222222);
@@ -222,7 +220,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   Future<Map<String, dynamic>?> _loadIndicatorJsonConfig() async {
     try {
       final String jsonString =
-          await rootBundle.loadString('lib/flexi_kline_indicators_configuration.json');
+          await rootBundle.loadString('example/lib/flexi_kline_indicators_configuration.json');
       final Map<String, dynamic> config = jsonDecode(jsonString);
       defLogger.d('Successfully loaded indicator JSON config for bit theme');
       return config;
@@ -256,7 +254,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   @override
   FlexiKlineConfig generateFlexiKlineConfig([FlexiKlineConfig? origin]) {
     // 三级配置加载策略：缓存 → JSON → 代码默认值
-    
+
     // 1. 优先使用原始配置（通常来自缓存）
     if (origin != null) {
       defLogger.d('Generated FlexiKlineConfig from origin (cache) for bit theme');
@@ -386,10 +384,11 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   }
 
   // 时间周期配置缓存
-  List<TimeBar>? _cachedTimeBarConfigs;
+  List<ITimeBar>? _cachedTimeBarConfigs;
 
   /// 获取时间周期配置列表
-  List<TimeBar> getTimeBarConfigs() {
+  @override
+  List<ITimeBar> getTimeBarConfigs() {
     if (_cachedTimeBarConfigs != null) {
       return _cachedTimeBarConfigs!;
     }
@@ -410,76 +409,45 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     return _cachedTimeBarConfigs!;
   }
 
-  List<TimeBar> timeBarBuilders() {
-    return getTimeBarConfigs();
-  }
-
-  List<TimeBar> _getDefaultTimeBarConfigs() {
+  List<ITimeBar> _getDefaultTimeBarConfigs() {
+    // 返回常用的时间周期列表
     return [
-      TimeBar.m1,
-      TimeBar.m3,
-      TimeBar.m5,
-      TimeBar.m15,
-      TimeBar.m30,
-      TimeBar.H1,
-      TimeBar.H2,
-      TimeBar.H4,
-      TimeBar.H6,
-      TimeBar.H12,
-      TimeBar.D1,
-      TimeBar.D2,
-      TimeBar.D3,
-      TimeBar.W1,
-      TimeBar.M1,
-      TimeBar.M3,
-      // UTC
-      TimeBar.utc6H,
-      TimeBar.utc12H,
-      TimeBar.utc1D,
-      TimeBar.utc2D,
-      TimeBar.utc3D,
-      TimeBar.utc1W,
-      TimeBar.utc1M,
-      TimeBar.utc3M,
+      TimeBar.m1, // 1m
+      TimeBar.m3, // 3m
+      TimeBar.m5, // 5m
+      TimeBar.m15, // 15m
+      TimeBar.m30, // 30m
+      TimeBar.H1, // 1H
+      TimeBar.H2, // 2H
+      TimeBar.H4, // 4H
+      TimeBar.H6, // 6H
+      TimeBar.H12, // 12H
+      TimeBar.D1, // 1D
+      TimeBar.D2, // 2D
+      TimeBar.D3, // 3D
+      TimeBar.W1, // 1W
+      TimeBar.M1, // 1M
+      TimeBar.M3, // 3M
+      // UTC 时间周期
+      TimeBar.utc6H, // 6Hutc
+      TimeBar.utc12H, // 12Hutc
+      TimeBar.utc1D, // 1Dutc
+      TimeBar.utc1W, // 1Wutc
+      TimeBar.utc1M, // 1Mutc
     ];
   }
 
-  /// 从配置构建时间周期配置列表
-  List<TimeBar> _buildTimeBarConfigsFromConfig(Map<String, dynamic> config) {
-    final List<TimeBar> configs = [];
-
-    if (config['timeBarConfigs'] is List) {
-      for (final item in config['timeBarConfigs']) {
-        if (item is String) {
-          try {
-            final timeBar = TimeBar.values.firstWhereOrNull((e) => e.bar == item || e.key == item);
-            if (timeBar != null) configs.add(timeBar);
-          } catch (e) {
-            defLogger.e('Failed to parse TimeBar: $e');
-          }
-        }
-      }
-    }
-
-    return configs;
+  /// @deprecated 已废弃，TimeBar 枚举已不需要从配置构建
+  List<ITimeBar> _buildTimeBarConfigsFromConfig(Map<String, dynamic> config) {
+    // 返回默认配置
+    return _getDefaultTimeBarConfigs();
   }
 
-  /// 设置时间周期配置
-  Future<bool> setTimeBarConfigs(List<TimeBar> configs) async {
-    try {
-      final configData = {
-        'timeBarConfigs': configs.map((config) => config.bar).toList(),
-      };
-
-      final success = await setConfig('timeBarConfigs', configData);
-      if (success) {
-        _cachedTimeBarConfigs = null; // 清除缓存
-      }
-      return success;
-    } catch (e) {
-      defLogger.e('Failed to set time bar configs: $e');
-      return false;
-    }
+  /// @deprecated 已废弃，TimeBar 枚举配置无需持久化
+  Future<bool> setTimeBarConfigs(List<ITimeBar> configs) async {
+    // TimeBar 枚举不需要持久化配置
+    _cachedTimeBarConfigs = configs;
+    return true;
   }
 
   // @override
@@ -524,7 +492,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   }
 
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator([MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
+  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator(
+      [MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
     final theme = ref.read(bitFlexiKlineThemeProvider);
     return MainPaintObjectIndicator<PaintObjectIndicator>(
       size: Size(ScreenUtil().screenWidth, 300.r),
@@ -547,13 +516,14 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     }
 
     // 三级配置加载策略：缓存 → JSON → 代码默认值
-    
+
     // 1. 优先从缓存读取
     final cachedConfig = getConfig('mainIndicatorBuilders');
     if (cachedConfig != null) {
       try {
         _cachedMainIndicatorBuilders = _buildMainIndicatorsFromConfig(cachedConfig);
-        defLogger.d('✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from cache (bit theme)');
+        defLogger.d(
+            '✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from cache (bit theme)');
       } catch (e) {
         defLogger.e('❌ Failed to build main indicators from cached config: $e');
         _cachedMainIndicatorBuilders = null;
@@ -565,7 +535,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
       try {
         _cachedMainIndicatorBuilders = _loadMainIndicatorsFromJsonSync();
         if (_cachedMainIndicatorBuilders != null) {
-          defLogger.d('✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
+          defLogger.d(
+              '✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
           // 异步保存到缓存（不阻塞当前调用）
           _saveMainIndicatorsToCache(_cachedMainIndicatorBuilders!);
         }
@@ -577,7 +548,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     // 3. 最后使用代码默认配置
     if (_cachedMainIndicatorBuilders == null) {
       _cachedMainIndicatorBuilders = _getDefaultMainIndicators();
-      defLogger.d('✅ Using ${_cachedMainIndicatorBuilders!.length} default main indicators (bit theme)');
+      defLogger
+          .d('✅ Using ${_cachedMainIndicatorBuilders!.length} default main indicators (bit theme)');
     }
 
     // 启动异步JSON加载（用于下次更新缓存）
@@ -627,15 +599,15 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
       if (jsonConfig != null && jsonConfig['mainIndicators'] != null) {
         final mainIndicators = jsonConfig['mainIndicators'] as Map<String, dynamic>;
         _cachedMainIndicatorBuilders = _buildMainIndicatorsFromConfig(mainIndicators);
-        
+
         // 保存到缓存
         await setConfig(
             'mainIndicatorBuilders',
             _cachedMainIndicatorBuilders!
                 .map((key, builder) => MapEntry(key.id, <String, dynamic>{})));
 
-        defLogger
-            .d('✅ Async loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
+        defLogger.d(
+            '✅ Async loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
       } else {
         defLogger.w('⚠️ No mainIndicators found in JSON config (bit theme)');
       }
@@ -664,13 +636,14 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     }
 
     // 三级配置加载策略：缓存 → JSON → 代码默认值
-    
+
     // 1. 优先从缓存读取
     final cachedConfig = getConfig('subIndicatorBuilders');
     if (cachedConfig != null) {
       try {
         _cachedSubIndicatorBuilders = _buildSubIndicatorsFromConfig(cachedConfig);
-        defLogger.d('✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from cache (bit theme)');
+        defLogger.d(
+            '✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from cache (bit theme)');
       } catch (e) {
         defLogger.e('❌ Failed to build sub indicators from cached config: $e');
         _cachedSubIndicatorBuilders = null;
@@ -682,7 +655,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
       try {
         _cachedSubIndicatorBuilders = _loadSubIndicatorsFromJsonSync();
         if (_cachedSubIndicatorBuilders != null) {
-          defLogger.d('✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
+          defLogger.d(
+              '✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
           // 异步保存到缓存（不阻塞当前调用）
           _saveSubIndicatorsToCache(_cachedSubIndicatorBuilders!);
         }
@@ -694,7 +668,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     // 3. 最后使用代码默认配置
     if (_cachedSubIndicatorBuilders == null) {
       _cachedSubIndicatorBuilders = _getDefaultSubIndicators();
-      defLogger.d('✅ Using ${_cachedSubIndicatorBuilders!.length} default sub indicators (bit theme)');
+      defLogger
+          .d('✅ Using ${_cachedSubIndicatorBuilders!.length} default sub indicators (bit theme)');
     }
 
     // 启动异步JSON加载（用于下次更新缓存）
@@ -744,15 +719,15 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
       if (jsonConfig != null && jsonConfig['subIndicators'] != null) {
         final subIndicators = jsonConfig['subIndicators'] as Map<String, dynamic>;
         _cachedSubIndicatorBuilders = _buildSubIndicatorsFromConfig(subIndicators);
-        
+
         // 保存到缓存
         await setConfig(
             'subIndicatorBuilders',
             _cachedSubIndicatorBuilders!
                 .map((key, builder) => MapEntry(key.id, <String, dynamic>{})));
 
-        defLogger
-            .d('✅ Async loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
+        defLogger.d(
+            '✅ Async loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
       } else {
         defLogger.w('⚠️ No subIndicators found in JSON config (bit theme)');
       }
@@ -1048,18 +1023,21 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
         return (setting) => MACDIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 120.r,
               calcParam: _parseMACDParam(config['config']) ?? const MACDParam(s: 12, l: 26, m: 9),
-              difTips: _parseTipsConfig(config['difTips']) ?? TipsConfig(
-                label: 'DIF: ',
-                style: TextStyle(color: Colors.blue, fontSize: 12.sp, height: 1.2),
-              ),
-              deaTips: _parseTipsConfig(config['deaTips']) ?? TipsConfig(
-                label: 'DEA: ',
-                style: TextStyle(color: Colors.red, fontSize: 12.sp, height: 1.2),
-              ),
-              macdTips: _parseTipsConfig(config['macdTips']) ?? TipsConfig(
-                label: 'MACD: ',
-                style: TextStyle(color: Colors.green, fontSize: 12.sp, height: 1.2),
-              ),
+              difTips: _parseTipsConfig(config['difTips']) ??
+                  TipsConfig(
+                    label: 'DIF: ',
+                    style: TextStyle(color: Colors.blue, fontSize: 12.sp, height: 1.2),
+                  ),
+              deaTips: _parseTipsConfig(config['deaTips']) ??
+                  TipsConfig(
+                    label: 'DEA: ',
+                    style: TextStyle(color: Colors.red, fontSize: 12.sp, height: 1.2),
+                  ),
+              macdTips: _parseTipsConfig(config['macdTips']) ??
+                  TipsConfig(
+                    label: 'MACD: ',
+                    style: TextStyle(color: Colors.green, fontSize: 12.sp, height: 1.2),
+                  ),
               tipsPadding: theme.tipsPadding,
               tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
             );
@@ -1196,20 +1174,31 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   FontWeight? _parseFontWeight(dynamic weight) {
     if (weight is int) {
       switch (weight) {
-        case 100: return FontWeight.w100;
-        case 200: return FontWeight.w200;
-        case 300: return FontWeight.w300;
-        case 400: return FontWeight.w400;
-        case 500: return FontWeight.w500;
-        case 600: return FontWeight.w600;
-        case 700: return FontWeight.w700;
-        case 800: return FontWeight.w800;
-        case 900: return FontWeight.w900;
+        case 100:
+          return FontWeight.w100;
+        case 200:
+          return FontWeight.w200;
+        case 300:
+          return FontWeight.w300;
+        case 400:
+          return FontWeight.w400;
+        case 500:
+          return FontWeight.w500;
+        case 600:
+          return FontWeight.w600;
+        case 700:
+          return FontWeight.w700;
+        case 800:
+          return FontWeight.w800;
+        case 900:
+          return FontWeight.w900;
       }
     } else if (weight is String) {
       switch (weight.toLowerCase()) {
-        case 'normal': return FontWeight.normal;
-        case 'bold': return FontWeight.bold;
+        case 'normal':
+          return FontWeight.normal;
+        case 'bold':
+          return FontWeight.bold;
       }
     }
     return null;

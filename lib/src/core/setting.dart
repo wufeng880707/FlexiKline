@@ -19,7 +19,7 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
   @override
   void init() {
     super.init();
-    logd("init setting");
+    logd('init setting');
     _candleWidth = settingConfig.candleWidth;
     _layoutMode = NormalLayoutMode(flexiKlineConfig.mainIndicator.size);
     _paintObjectManager.init(this);
@@ -32,13 +32,13 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
   @override
   void initState() {
     super.initState();
-    logd("initState setting");
+    logd('initState setting');
   }
 
   @override
   void dispose() {
     super.dispose();
-    logd("dispose setting");
+    logd('dispose setting');
     _canvasSizeChangeListener.dispose();
     _subHeightListListener.dispose();
   }
@@ -436,21 +436,17 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     if (newObj != null) {
       // 优化执行时机
       newObj.precompute(curKlineData.computableRange, reset: true);
-      _updateMainIndicatorLayout();
+      markRepaintChart(reset: true);
+      markRepaintCross();
     }
   }
 
   /// 删除主图中[key]指定的指标
   void removeMainIndicator(IIndicatorKey key) {
     if (_paintObjectManager.removeMainPaintObject(key)) {
-      _updateMainIndicatorLayout();
-    }
-  }
-
-  /// 优化的主图指标布局更新方法 - 合并重复刷新
-  void _updateMainIndicatorLayout() {
     markRepaintChart(reset: true);
     markRepaintCross();
+  }
   }
 
   /// 是否已添加主图[key]指定的指标
@@ -464,23 +460,17 @@ mixin SettingBinding on KlineBindingBase implements ISetting, IGrid, IChart, ICr
     if (newObj != null) {
       // 优化执行时机
       newObj.precompute(curKlineData.computableRange, reset: true);
-      _updateSubIndicatorLayout();
+      _invokeSizeChanged();
+      _updateSubHeightList();
     }
   }
 
   /// 删除副图[key]指定的指标
   void removeSubIndicator(IIndicatorKey key) {
     if (_paintObjectManager.removeSubPaintObject(key)) {
-      _updateSubIndicatorLayout();
-    }
-  }
-
-  /// 优化的副图指标布局更新方法 - 合并重复刷新
-  void _updateSubIndicatorLayout() {
-    // 先更新高度列表
-    _updateSubHeightList();
-    // 然后统一触发尺寸变化（内部已包含重绘逻辑）
     _invokeSizeChanged();
+      _updateSubHeightList();
+    }
   }
 
   /// 是否已添加副图[key]指定的指标

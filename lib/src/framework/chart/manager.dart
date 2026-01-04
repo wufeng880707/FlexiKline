@@ -171,10 +171,10 @@ final class IndicatorPaintObjectManager with KlineLog {
     }
 
     /// 加载历史选中过的指标
-    for (var key in mainIndicator.children) {
+    for (final key in mainIndicator.children) {
       addMainPaintObject(key, context);
     }
-    for (var key in flexiKlineConfig.sub) {
+    for (final key in flexiKlineConfig.sub) {
       addSubPaintObject(key, context);
     }
   }
@@ -418,7 +418,7 @@ final class IndicatorPaintObjectManager with KlineLog {
 
   bool restoreAllIndicator() {
     bool result = false;
-    for (var key in [...supportMainIndicatorKeys, ...supportSubIndicatorKeys]) {
+    for (final key in [...supportMainIndicatorKeys, ...supportSubIndicatorKeys]) {
       result = restoreIndicator(key) && result;
     }
     return result;
@@ -439,7 +439,7 @@ final class IndicatorPaintObjectManager with KlineLog {
 
   void restoreHeight() {
     mainPaintObject.restoreSize();
-    for (var object in subPaintObjects) {
+    for (final object in subPaintObjects) {
       object.restoreHeight();
     }
   }
@@ -463,7 +463,7 @@ final class IndicatorPaintObjectManager with KlineLog {
     configuration.saveFlexiKlineConfig(_flexiKlineConfig);
     if (storeIndicators) {
       mainPaintObject.doStoreConfig();
-      for (var object in subPaintObjects) {
+      for (final object in subPaintObjects) {
         object.doStoreConfig();
       }
     }
@@ -471,7 +471,7 @@ final class IndicatorPaintObjectManager with KlineLog {
 
   void dispose() {
     mainPaintObject.dispose();
-    for (var object in subPaintObjects) {
+    for (final object in subPaintObjects) {
       object.dispose();
     }
     _subPaintObjectQueue.clear();

@@ -227,7 +227,7 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
   double get dyFactor {
     if (_dyFactor != null) return _dyFactor!;
     if (chartRect.height == 0) return _dyFactor = 1;
-    return _dyFactor = chartRect.height / (minMax.diffDivisor).toDouble();
+    return _dyFactor = chartRect.height / minMax.diffDivisor.toDouble();
   }
 
   double valueToDy(BagNum value, {bool correct = true}) {
@@ -242,7 +242,7 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
 
   double? indexToDx(num index, {bool check = true}) {
     final indexDx = index * candleActualWidth;
-    double dx = chartRect.right + paintDxOffset - indexDx;
+    final dx = chartRect.right + paintDxOffset - indexDx;
     if (!check) return dx;
     return chartRect.includeDx(dx) ? dx : null;
   }
@@ -479,20 +479,21 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
     }
   }
 
-  /// 绘线类型的制蜡烛图
-  void paintLineTypeCandleChart(
+  /// 绘制基于蜡烛数据的普通折线图
+  void paintCandleLineChart(
     Canvas canvas, {
     int? start,
     int? end,
     double? startOffset, // 起始偏移量.
-    Paint? linePaint, // 蜡烛线图画笔.
+    required Paint linePaint, // 蜡烛线图画笔.
+    LinearGradient? gradient, // 线图渐变.
   }) {
     if (!klineData.canPaintChart) return;
     start ??= klineData.start;
     end ??= (klineData.end + 1).clamp(start, klineData.length); // 多绘制一根蜡烛;
     startOffset ??= startCandleDx - candleWidthHalf;
 
-    List<Offset> points = [];
+    final points = <Offset>[];
     CandleModel m;
     for (var i = start; i < end; i++) {
       m = klineData[i];
@@ -502,23 +503,14 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
       ));
     }
 
-    linePaint ??= getLinePaint();
+    // 默认策略：填充到底部
     paintLineChart(
       canvas,
       points: points,
       boundEnd: Offset(points.last.dx, chartRect.bottom),
       boundStart: Offset(points.first.dx, chartRect.bottom),
       linePaint: linePaint,
-      shader: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: <Color>[
-          linePaint.color.withAlpha(0.5.alpha),
-          theme.transparent,
-        ],
-        stops: [0, 1],
-        tileMode: TileMode.decal,
-      ),
+      shader: gradient,
     );
   }
 
@@ -546,12 +538,16 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
     }
   }
 
-  /// 绘制涨跌线类型的蜡烛图
-  void paintUpDownLineTypeCandleChart(
+  /// 绘制基于蜡烛数据的涨跌线图
+  void paintCandleUpDownLineChart(
     Canvas canvas, {
     int? start,
     int? end,
     double? startOffset, // 起始偏移量.
+    required Paint longLinePaint, // 上涨线图画笔.
+    required Paint shortLinePaint, // 下跌线图画笔.
+    LinearGradient? longGradient, // 上涨渐变.
+    LinearGradient? shortGradient, // 下跌渐变.
   }) {
     if (!klineData.canPaintChart) return;
     start ??= klineData.start;
@@ -559,6 +555,8 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
     startOffset ??= startCandleDx - candleWidthHalf;
 
     final latestDy = valueToDy(klineData.latest!.close, correct: false);
+
+    // 默认策略：使用最新价作为基准线
     Offset boundStart, boundEnd, prev, point;
     boundStart = Offset(startOffset.clamp(chartRect.left, chartRect.right), latestDy);
     prev = point = Offset(startOffset, valueToDy(klineData[start].close, correct: false));
@@ -585,18 +583,9 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
             canvas,
             points: points,
             boundEnd: boundEnd,
-            boundStart: boundStart, //Offset(points.first.dx, latestDy),
-            linePaint: getLinePaint(color: longColor),
-            shader: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: <Color>[
-                longColor.withAlpha(0.5.alpha),
-                theme.transparent,
-              ],
-              stops: [0, 1],
-              tileMode: TileMode.decal,
-            ),
+            boundStart: boundStart,
+            linePaint: longLinePaint,
+            shader: longGradient,
           );
         } else {
           // 绘制下跌区间的线图
@@ -604,18 +593,9 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
             canvas,
             points: points,
             boundEnd: boundEnd,
-            boundStart: boundStart, //Offset(points.first.dx, latestDy),
-            linePaint: getLinePaint(color: shortColor),
-            shader: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: <Color>[
-                shortColor.withAlpha(0.5.alpha),
-                theme.transparent,
-              ],
-              stops: [0, 1],
-              tileMode: TileMode.decal,
-            ),
+            boundStart: boundStart,
+            linePaint: shortLinePaint,
+            shader: shortGradient,
           );
         }
         isLong = !isLong;
@@ -643,7 +623,7 @@ extension MultiPaintObjectExt on MainPaintObject {
   /// 收集[MainPaintObject]中子指标的计算参数
   Map<IIndicatorKey, dynamic> getCalcParams() {
     final params = <IIndicatorKey, dynamic>{};
-    for (var object in children) {
+    for (final object in children) {
       if (object.calcParams != null) {
         params[object.key] = object.calcParams;
       }

@@ -72,7 +72,7 @@ mixin GridBinding on KlineBindingBase, SettingBinding implements IGrid, IChart {
 
     final list = subPaintObjects.where((obj) => obj.key != timeIndicatorKey);
     final lastObj = list.lastOrNull;
-    for (var object in [mainPaintObject, ...list]) {
+    for (final object in [mainPaintObject, ...list]) {
       if (isFixedLayoutMode && object == lastObj) {
         // 如果是固定布局模式, 最后一个指标图不能拖动
         return;
@@ -245,7 +245,7 @@ mixin GridBinding on KlineBindingBase, SettingBinding implements IGrid, IChart {
     final minDistanceHalf = minDistance / 2;
     final list = subPaintObjects.where((obj) => obj.key != timeIndicatorKey);
     final lastObj = list.lastOrNull;
-    for (var object in [mainPaintObject, ...list]) {
+    for (final object in [mainPaintObject, ...list]) {
       if (object.drawableRect.hitTestBottom(
         dy - (object == lastObj ? minDistanceHalf : 0),
         minDistance: minDistance,

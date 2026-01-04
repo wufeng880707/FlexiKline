@@ -114,21 +114,24 @@ Color? parseHexColor(String? hexStr, {Color? def}) {
   }
 
   if (hexStr.startsWith('0x')) {
-    int? colorInt = int.tryParse(hexStr);
+    final colorInt = int.tryParse(hexStr);
     if (colorInt == null) return def;
     return Color(colorInt);
   }
 
-  hexStr = hexStr.toUpperCase().replaceAll("#", "");
+  hexStr = hexStr.toUpperCase().replaceAll('#', '');
   if (hexStr.length == 6) {
-    hexStr = "FF$hexStr";
+    hexStr = 'FF$hexStr';
   }
-  int colorInt = int.parse(hexStr, radix: 16);
+  final colorInt = int.parse(hexStr, radix: 16);
   return Color(colorInt);
 }
 
 String? convertHexColor(Color? color, {String? def}) {
   if (color == null) return def;
+  // Use color.value instead of color.toARGB32() for compatibility with Flutter < 3.29
+  // toARGB32() was introduced in Flutter 3.29, but we need to support Flutter 3.24.0+
+  // ignore: deprecated_member_use
   return '0x${color.value.toRadixString(16).padLeft(8, '0')}';
 }
 
@@ -254,16 +257,16 @@ TextDecoration parseTextDecoration(
 }) {
   TextDecoration textDecoration = def;
   switch (decoration) {
-    case "lineThrough":
+    case 'lineThrough':
       textDecoration = TextDecoration.lineThrough;
       break;
-    case "overline":
+    case 'overline':
       textDecoration = TextDecoration.overline;
       break;
-    case "underline":
+    case 'underline':
       textDecoration = TextDecoration.underline;
       break;
-    case "none":
+    case 'none':
   }
   return textDecoration;
 }
@@ -297,8 +300,7 @@ TextDecorationStyle parseTextDecorationStyle(
   );
 }
 
-TextLeadingDistribution? parseTextLeadingDistribution(String? distribution,
-    {TextLeadingDistribution? def}) {
+TextLeadingDistribution? parseTextLeadingDistribution(String? distribution, {TextLeadingDistribution? def}) {
   if (distribution == null) return def;
   if (distribution == TextLeadingDistribution.proportional.name) {
     return TextLeadingDistribution.proportional;
@@ -329,9 +331,9 @@ BorderSide parseBorderSide(Map<String, dynamic>? json) {
 
 Map<String, dynamic> convertBorderSide(BorderSide side) {
   return {
-    "color": convertHexColor(side.color),
-    "width": side.width,
-    "style": side.style.name,
+    'color': convertHexColor(side.color),
+    'width': side.width,
+    'style': side.style.name,
   };
 }
 
@@ -445,4 +447,77 @@ Curve parseCurve(String curvestr) {
       return Curves.bounceOut;
   }
   return Curves.decelerate;
+}
+
+/// 解析 Alignment 对象
+/// 支持预设值和自定义 x, y 坐标
+Alignment? parseAlignment(Map<String, dynamic>? json) {
+  if (json == null || json.isEmpty) return null;
+
+  final preset = json['preset']?.toString();
+  if (preset != null) {
+    switch (preset) {
+      case 'topLeft':
+        return Alignment.topLeft;
+      case 'topCenter':
+        return Alignment.topCenter;
+      case 'topRight':
+        return Alignment.topRight;
+      case 'centerLeft':
+        return Alignment.centerLeft;
+      case 'center':
+        return Alignment.center;
+      case 'centerRight':
+        return Alignment.centerRight;
+      case 'bottomLeft':
+        return Alignment.bottomLeft;
+      case 'bottomCenter':
+        return Alignment.bottomCenter;
+      case 'bottomRight':
+        return Alignment.bottomRight;
+    }
+  }
+
+  if (json.containsKey('x') && json.containsKey('y')) {
+    return Alignment(
+      parseDouble(json['x']) ?? 0.0,
+      parseDouble(json['y']) ?? 0.0,
+    );
+  }
+
+  return null;
+}
+
+/// 将 Alignment 对象转换为 Map
+Map<String, dynamic> convertAlignment(Alignment alignment) {
+  // 尝试匹配预定义常量
+  if (alignment == Alignment.topLeft) return {'preset': 'topLeft'};
+  if (alignment == Alignment.topCenter) return {'preset': 'topCenter'};
+  if (alignment == Alignment.topRight) return {'preset': 'topRight'};
+  if (alignment == Alignment.centerLeft) return {'preset': 'centerLeft'};
+  if (alignment == Alignment.center) return {'preset': 'center'};
+  if (alignment == Alignment.centerRight) return {'preset': 'centerRight'};
+  if (alignment == Alignment.bottomLeft) return {'preset': 'bottomLeft'};
+  if (alignment == Alignment.bottomCenter) return {'preset': 'bottomCenter'};
+  if (alignment == Alignment.bottomRight) return {'preset': 'bottomRight'};
+
+  // 自定义值
+  return {
+    'x': alignment.x,
+    'y': alignment.y,
+  };
+}
+
+/// 解析 TileMode 枚举
+TileMode? parseTileMode(String? modeStr) {
+  if (modeStr == null) return null;
+  return TileMode.values.firstWhere(
+    (e) => e.name == modeStr,
+    orElse: () => TileMode.clamp,
+  );
+}
+
+/// 将 TileMode 转换为字符串
+String convertTileMode(TileMode mode) {
+  return mode.name;
 }

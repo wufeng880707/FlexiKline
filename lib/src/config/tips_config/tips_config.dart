@@ -31,7 +31,7 @@ class TipsConfig {
     this.precision,
     this.isShow = true,
     this.style = const TextStyle(
-      fontSize: defaulTextSize,
+      fontSize: defaultTextSize,
       color: Color(0xFF000000),
       overflow: TextOverflow.ellipsis,
       height: defaultTipsTextHeight,
@@ -81,7 +81,7 @@ class TipsConfig {
 
   double get textHeight => textSize * (style.height ?? defaultTextHeight);
 
-  double get textSize => style.fontSize ?? defaulTextSize;
+  double get textSize => style.fontSize ?? defaultTextSize;
 
   TipsConfig of({Color? textColor}) {
     if (style.color == textColor) return this;

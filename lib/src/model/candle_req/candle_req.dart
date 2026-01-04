@@ -120,9 +120,9 @@ class CandleReq {
 }
 
 extension CandleReqExt on CandleReq {
-  String get key => "$instId-$timeBar";
+  String get key => '$instId-$timeBar';
 
-  String get rangeKey => "$instId-$timeBar-$before-$after";
+  String get rangeKey => '$instId-$timeBar-$before-$after';
 
   Map<String, dynamic> toLoadMoreJson() {
     return toRequestParams()..remove('before');

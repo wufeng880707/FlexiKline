@@ -66,7 +66,7 @@ mixin CandleListData on BaseData {
   Range? mergeCandleData(List<List<CandleModel>> data) {
     if (data.isEmpty) return null;
     Range? result;
-    for (List<CandleModel> newList in data) {
+    for (final newList in data) {
       /// 合并[newList]到[data]中
       final range = mergeCandleList(newList);
       if (range != null) {
@@ -89,11 +89,11 @@ mixin CandleListData on BaseData {
   /// return: 返回新列表中被更新的范围[start] ~ [end]
   Range? mergeCandleList(List<CandleModel> newList) {
     if (newList.isEmpty) {
-      logw("mergeCandleList newList is empty!");
+      logw('mergeCandleList newList is empty!');
       return null;
     }
     if (list.isEmpty) {
-      logw("mergeCandleList Use newList directly!");
+      logw('mergeCandleList Use newList directly!');
       _list = List.of(newList);
       return Range(0, newList.length);
     }

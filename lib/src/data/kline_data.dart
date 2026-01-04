@@ -40,7 +40,7 @@ class KlineData extends BaseData with CandleReqData, CandleListData, PaintDrawDa
   final FlexiStopwatch stopwatch = FlexiStopwatch();
 
   static final KlineData empty = KlineData(
-    const CandleReq(instId: "", timeBar: invalidTimeBar),
+    const CandleReq(instId: '', timeBar: invalidTimeBar),
     0,
     list: List.empty(growable: false),
   );
@@ -183,11 +183,11 @@ class KlineData extends BaseData with CandleReqData, CandleListData, PaintDrawDa
   ILogger? logger,
 }) {
   if (newList.isEmpty) {
-    logger?.logw("combineCandleList newList is empty!");
+    logger?.logw('combineCandleList newList is empty!');
     return (oldList, Range.empty);
   }
   if (oldList.isEmpty) {
-    logger?.logw("combineCandleList Use newList directly!");
+    logger?.logw('combineCandleList Use newList directly!');
     return (List.of(newList), Range(0, newList.length));
   }
 
@@ -219,7 +219,7 @@ class KlineData extends BaseData with CandleReqData, CandleListData, PaintDrawDa
 
 /// 去重
 List<CandleModel> removeDuplicate(List<CandleModel> list) {
-  int n = list.length;
+  final n = list.length;
   int fast = 1;
   int slow = 1;
   while (fast < n) {

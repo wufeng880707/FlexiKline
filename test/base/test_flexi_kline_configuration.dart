@@ -144,4 +144,10 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   @override
   String get configKey => 'test';
+
+  @override
+  List<ITimeBar> getTimeBarConfigs() {
+    // TODO: implement getTimeBarConfigs
+    throw UnimplementedError();
+  }
 }

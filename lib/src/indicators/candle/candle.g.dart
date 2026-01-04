@@ -21,25 +21,36 @@ abstract class _$CandleIndicatorCWProxy {
 
   CandleIndicator latest(MarkConfig latest);
 
+  CandleIndicator latestPoint(PointConfig? latestPoint);
+
+  CandleIndicator showLatestPoint(bool showLatestPoint);
+
   CandleIndicator useCandleColorAsLatestBg(bool useCandleColorAsLatestBg);
 
   CandleIndicator showCountDown(bool showCountDown);
 
   CandleIndicator countDown(TextAreaConfig countDown);
 
-  CandleIndicator chartBarStyle(ChartBarStyle chartBarStyle);
-
   CandleIndicator chartType(ChartType chartType);
 
-  CandleIndicator zoomToMinChartType(ChartType? zoomToMinChartType);
+  CandleIndicator minWidthLineType(LineChartType? minWidthLineType);
 
-  CandleIndicator secondsChartType(ChartType? secondsChartType);
+  CandleIndicator timeBarChartTypes(
+      Map<ITimeBar, ChartType>? timeBarChartTypes);
+
+  CandleIndicator hideIndicatorsWhenLineChart(bool hideIndicatorsWhenLineChart);
 
   CandleIndicator longColor(Color? longColor);
 
   CandleIndicator shortColor(Color? shortColor);
 
   CandleIndicator lineColor(Color? lineColor);
+
+  CandleIndicator lineGradientConfig(GradientConfig? lineGradientConfig);
+
+  CandleIndicator longGradientConfig(GradientConfig? longGradientConfig);
+
+  CandleIndicator shortGradientConfig(GradientConfig? shortGradientConfig);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `CandleIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -55,16 +66,21 @@ abstract class _$CandleIndicatorCWProxy {
     MarkConfig low,
     MarkConfig last,
     MarkConfig latest,
+    PointConfig? latestPoint,
+    bool showLatestPoint,
     bool useCandleColorAsLatestBg,
     bool showCountDown,
     TextAreaConfig countDown,
-    ChartBarStyle chartBarStyle,
     ChartType chartType,
-    ChartType? zoomToMinChartType,
-    ChartType? secondsChartType,
+    LineChartType? minWidthLineType,
+    Map<ITimeBar, ChartType>? timeBarChartTypes,
+    bool hideIndicatorsWhenLineChart,
     Color? longColor,
     Color? shortColor,
     Color? lineColor,
+    GradientConfig? lineGradientConfig,
+    GradientConfig? longGradientConfig,
+    GradientConfig? shortGradientConfig,
   });
 }
 
@@ -96,6 +112,14 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
   CandleIndicator latest(MarkConfig latest) => this(latest: latest);
 
   @override
+  CandleIndicator latestPoint(PointConfig? latestPoint) =>
+      this(latestPoint: latestPoint);
+
+  @override
+  CandleIndicator showLatestPoint(bool showLatestPoint) =>
+      this(showLatestPoint: showLatestPoint);
+
+  @override
   CandleIndicator useCandleColorAsLatestBg(bool useCandleColorAsLatestBg) =>
       this(useCandleColorAsLatestBg: useCandleColorAsLatestBg);
 
@@ -108,19 +132,21 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
       this(countDown: countDown);
 
   @override
-  CandleIndicator chartBarStyle(ChartBarStyle chartBarStyle) =>
-      this(chartBarStyle: chartBarStyle);
-
-  @override
   CandleIndicator chartType(ChartType chartType) => this(chartType: chartType);
 
   @override
-  CandleIndicator zoomToMinChartType(ChartType? zoomToMinChartType) =>
-      this(zoomToMinChartType: zoomToMinChartType);
+  CandleIndicator minWidthLineType(LineChartType? minWidthLineType) =>
+      this(minWidthLineType: minWidthLineType);
 
   @override
-  CandleIndicator secondsChartType(ChartType? secondsChartType) =>
-      this(secondsChartType: secondsChartType);
+  CandleIndicator timeBarChartTypes(
+          Map<ITimeBar, ChartType>? timeBarChartTypes) =>
+      this(timeBarChartTypes: timeBarChartTypes);
+
+  @override
+  CandleIndicator hideIndicatorsWhenLineChart(
+          bool hideIndicatorsWhenLineChart) =>
+      this(hideIndicatorsWhenLineChart: hideIndicatorsWhenLineChart);
 
   @override
   CandleIndicator longColor(Color? longColor) => this(longColor: longColor);
@@ -130,6 +156,18 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
 
   @override
   CandleIndicator lineColor(Color? lineColor) => this(lineColor: lineColor);
+
+  @override
+  CandleIndicator lineGradientConfig(GradientConfig? lineGradientConfig) =>
+      this(lineGradientConfig: lineGradientConfig);
+
+  @override
+  CandleIndicator longGradientConfig(GradientConfig? longGradientConfig) =>
+      this(longGradientConfig: longGradientConfig);
+
+  @override
+  CandleIndicator shortGradientConfig(GradientConfig? shortGradientConfig) =>
+      this(shortGradientConfig: shortGradientConfig);
 
   @override
 
@@ -147,16 +185,21 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
     Object? low = const $CopyWithPlaceholder(),
     Object? last = const $CopyWithPlaceholder(),
     Object? latest = const $CopyWithPlaceholder(),
+    Object? latestPoint = const $CopyWithPlaceholder(),
+    Object? showLatestPoint = const $CopyWithPlaceholder(),
     Object? useCandleColorAsLatestBg = const $CopyWithPlaceholder(),
     Object? showCountDown = const $CopyWithPlaceholder(),
     Object? countDown = const $CopyWithPlaceholder(),
-    Object? chartBarStyle = const $CopyWithPlaceholder(),
     Object? chartType = const $CopyWithPlaceholder(),
-    Object? zoomToMinChartType = const $CopyWithPlaceholder(),
-    Object? secondsChartType = const $CopyWithPlaceholder(),
+    Object? minWidthLineType = const $CopyWithPlaceholder(),
+    Object? timeBarChartTypes = const $CopyWithPlaceholder(),
+    Object? hideIndicatorsWhenLineChart = const $CopyWithPlaceholder(),
     Object? longColor = const $CopyWithPlaceholder(),
     Object? shortColor = const $CopyWithPlaceholder(),
     Object? lineColor = const $CopyWithPlaceholder(),
+    Object? lineGradientConfig = const $CopyWithPlaceholder(),
+    Object? longGradientConfig = const $CopyWithPlaceholder(),
+    Object? shortGradientConfig = const $CopyWithPlaceholder(),
   }) {
     return CandleIndicator(
       zIndex: zIndex == const $CopyWithPlaceholder()
@@ -187,6 +230,14 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
           ? _value.latest
           // ignore: cast_nullable_to_non_nullable
           : latest as MarkConfig,
+      latestPoint: latestPoint == const $CopyWithPlaceholder()
+          ? _value.latestPoint
+          // ignore: cast_nullable_to_non_nullable
+          : latestPoint as PointConfig?,
+      showLatestPoint: showLatestPoint == const $CopyWithPlaceholder()
+          ? _value.showLatestPoint
+          // ignore: cast_nullable_to_non_nullable
+          : showLatestPoint as bool,
       useCandleColorAsLatestBg:
           useCandleColorAsLatestBg == const $CopyWithPlaceholder()
               ? _value.useCandleColorAsLatestBg
@@ -200,22 +251,23 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
           ? _value.countDown
           // ignore: cast_nullable_to_non_nullable
           : countDown as TextAreaConfig,
-      chartBarStyle: chartBarStyle == const $CopyWithPlaceholder()
-          ? _value.chartBarStyle
-          // ignore: cast_nullable_to_non_nullable
-          : chartBarStyle as ChartBarStyle,
       chartType: chartType == const $CopyWithPlaceholder()
           ? _value.chartType
           // ignore: cast_nullable_to_non_nullable
           : chartType as ChartType,
-      zoomToMinChartType: zoomToMinChartType == const $CopyWithPlaceholder()
-          ? _value.zoomToMinChartType
+      minWidthLineType: minWidthLineType == const $CopyWithPlaceholder()
+          ? _value.minWidthLineType
           // ignore: cast_nullable_to_non_nullable
-          : zoomToMinChartType as ChartType?,
-      secondsChartType: secondsChartType == const $CopyWithPlaceholder()
-          ? _value.secondsChartType
+          : minWidthLineType as LineChartType?,
+      timeBarChartTypes: timeBarChartTypes == const $CopyWithPlaceholder()
+          ? _value.timeBarChartTypes
           // ignore: cast_nullable_to_non_nullable
-          : secondsChartType as ChartType?,
+          : timeBarChartTypes as Map<ITimeBar, ChartType>?,
+      hideIndicatorsWhenLineChart:
+          hideIndicatorsWhenLineChart == const $CopyWithPlaceholder()
+              ? _value.hideIndicatorsWhenLineChart
+              // ignore: cast_nullable_to_non_nullable
+              : hideIndicatorsWhenLineChart as bool,
       longColor: longColor == const $CopyWithPlaceholder()
           ? _value.longColor
           // ignore: cast_nullable_to_non_nullable
@@ -228,6 +280,18 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
           ? _value.lineColor
           // ignore: cast_nullable_to_non_nullable
           : lineColor as Color?,
+      lineGradientConfig: lineGradientConfig == const $CopyWithPlaceholder()
+          ? _value.lineGradientConfig
+          // ignore: cast_nullable_to_non_nullable
+          : lineGradientConfig as GradientConfig?,
+      longGradientConfig: longGradientConfig == const $CopyWithPlaceholder()
+          ? _value.longGradientConfig
+          // ignore: cast_nullable_to_non_nullable
+          : longGradientConfig as GradientConfig?,
+      shortGradientConfig: shortGradientConfig == const $CopyWithPlaceholder()
+          ? _value.shortGradientConfig
+          // ignore: cast_nullable_to_non_nullable
+          : shortGradientConfig as GradientConfig?,
     );
   }
 }
@@ -254,28 +318,45 @@ CandleIndicator _$CandleIndicatorFromJson(Map<String, dynamic> json) =>
       low: MarkConfig.fromJson(json['low'] as Map<String, dynamic>),
       last: MarkConfig.fromJson(json['last'] as Map<String, dynamic>),
       latest: MarkConfig.fromJson(json['latest'] as Map<String, dynamic>),
+      latestPoint: json['latestPoint'] == null
+          ? null
+          : PointConfig.fromJson(json['latestPoint'] as Map<String, dynamic>),
+      showLatestPoint: json['showLatestPoint'] as bool? ?? true,
       useCandleColorAsLatestBg:
           json['useCandleColorAsLatestBg'] as bool? ?? true,
       showCountDown: json['showCountDown'] as bool? ?? true,
       countDown:
           TextAreaConfig.fromJson(json['countDown'] as Map<String, dynamic>),
-      chartBarStyle: json['chartBarStyle'] == null
-          ? ChartBarStyle.allSolid
-          : const ChartBarStyleConverter()
-              .fromJson(json['chartBarStyle'] as String),
-      chartType: json['chartType'] == null
-          ? ChartType.bar
-          : const ChartTypeConverter().fromJson(json['chartType'] as String),
-      zoomToMinChartType: _$JsonConverterFromJson<String, ChartType>(
-          json['zoomToMinChartType'], const ChartTypeConverter().fromJson),
-      secondsChartType: _$JsonConverterFromJson<String, ChartType>(
-          json['secondsChartType'], const ChartTypeConverter().fromJson),
+      chartType: const ChartTypeConverter()
+          .fromJson(json['chartType'] as Map<String, dynamic>),
+      minWidthLineType:
+          _$JsonConverterFromJson<Map<String, dynamic>, LineChartType>(
+              json['minWidthLineType'],
+              const LineChartTypeConverter().fromJson),
+      timeBarChartTypes: json['timeBarChartTypes'] == null
+          ? const {TimeBar.m1: ChartType.lineNormal}
+          : const TimeBarChartTypesConverter()
+              .fromJson(json['timeBarChartTypes'] as List?),
+      hideIndicatorsWhenLineChart:
+          json['hideIndicatorsWhenLineChart'] as bool? ?? false,
       longColor: _$JsonConverterFromJson<String, Color>(
           json['longColor'], const ColorConverter().fromJson),
       shortColor: _$JsonConverterFromJson<String, Color>(
           json['shortColor'], const ColorConverter().fromJson),
       lineColor: _$JsonConverterFromJson<String, Color>(
           json['lineColor'], const ColorConverter().fromJson),
+      lineGradientConfig: json['lineGradientConfig'] == null
+          ? GradientPresets.lineChart
+          : GradientConfig.fromJson(
+              json['lineGradientConfig'] as Map<String, dynamic>),
+      longGradientConfig: json['longGradientConfig'] == null
+          ? GradientPresets.long
+          : GradientConfig.fromJson(
+              json['longGradientConfig'] as Map<String, dynamic>),
+      shortGradientConfig: json['shortGradientConfig'] == null
+          ? GradientPresets.short
+          : GradientConfig.fromJson(
+              json['shortGradientConfig'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$CandleIndicatorToJson(CandleIndicator instance) =>
@@ -287,22 +368,27 @@ Map<String, dynamic> _$CandleIndicatorToJson(CandleIndicator instance) =>
       'low': instance.low.toJson(),
       'last': instance.last.toJson(),
       'latest': instance.latest.toJson(),
+      'showLatestPoint': instance.showLatestPoint,
+      'latestPoint': instance.latestPoint?.toJson(),
       'useCandleColorAsLatestBg': instance.useCandleColorAsLatestBg,
       'showCountDown': instance.showCountDown,
       'countDown': instance.countDown.toJson(),
-      'chartBarStyle':
-          const ChartBarStyleConverter().toJson(instance.chartBarStyle),
       'chartType': const ChartTypeConverter().toJson(instance.chartType),
-      'zoomToMinChartType': _$JsonConverterToJson<String, ChartType>(
-          instance.zoomToMinChartType, const ChartTypeConverter().toJson),
-      'secondsChartType': _$JsonConverterToJson<String, ChartType>(
-          instance.secondsChartType, const ChartTypeConverter().toJson),
+      'minWidthLineType':
+          _$JsonConverterToJson<Map<String, dynamic>, LineChartType>(
+              instance.minWidthLineType, const LineChartTypeConverter().toJson),
+      'timeBarChartTypes':
+          const TimeBarChartTypesConverter().toJson(instance.timeBarChartTypes),
+      'hideIndicatorsWhenLineChart': instance.hideIndicatorsWhenLineChart,
       'longColor': _$JsonConverterToJson<String, Color>(
           instance.longColor, const ColorConverter().toJson),
       'shortColor': _$JsonConverterToJson<String, Color>(
           instance.shortColor, const ColorConverter().toJson),
       'lineColor': _$JsonConverterToJson<String, Color>(
           instance.lineColor, const ColorConverter().toJson),
+      'lineGradientConfig': instance.lineGradientConfig?.toJson(),
+      'longGradientConfig': instance.longGradientConfig?.toJson(),
+      'shortGradientConfig': instance.shortGradientConfig?.toJson(),
     };
 
 Value? _$JsonConverterFromJson<Json, Value>(

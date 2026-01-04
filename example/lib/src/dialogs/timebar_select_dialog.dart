@@ -13,10 +13,7 @@
 // limitations under the License.
 
 import 'package:example/generated/l10n.dart';
-import 'package:example/src/providers/bit_kline_config.dart';
-import 'package:example/src/providers/default_kline_config.dart';
 import 'package:example/src/theme/flexi_theme.dart';
-import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,24 +29,13 @@ class TimerBarSelectDialog extends ConsumerWidget {
   });
 
   /// 获取时间周期配置列表（兼容不同配置类型）
-  List<TimeBar> _getTimeBarConfigs(IConfiguration configuration) {
-    if (configuration is BitFlexiKlineConfiguration) {
-      return configuration.getTimeBarConfigs();
-    } else if (configuration is DefaultFlexiKlineConfiguration) {
-      return configuration.getTimeBarConfigs();
-    } else {
-      // 默认配置
-      return const [
-        TimeBar.m15,
-        TimeBar.H1,
-        TimeBar.D1,
-      ];
-    }
+  List<ITimeBar> _getTimeBarConfigs(IConfiguration configuration) {
+    return configuration.getTimeBarConfigs();
   }
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBar> onTapTimeBar;
-  final List<TimeBar> preferTimeBarList;
+  final ValueChanged<ITimeBar> onTapTimeBar;
+  final List<ITimeBar> preferTimeBarList;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

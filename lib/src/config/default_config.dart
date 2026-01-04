@@ -15,25 +15,23 @@
 import 'package:flutter/material.dart' hide Overlay;
 
 import '../constant.dart';
-import '../draw_objects/export.dart';
-import '../extension/basic_type_ext.dart';
 import '../extension/render/common.dart';
+import '../extension/basic_type_ext.dart';
 import '../framework/export.dart';
 import '../indicators/export.dart';
 import 'cross_config/cross_config.dart';
+import 'magnifier_config/magnifier_config.dart';
+import 'point_config/point_config.dart';
 import 'draw_config/draw_config.dart';
 import 'flexi_kline_config/flexi_kline_config.dart';
 import 'gesture_config/gesture_config.dart';
 import 'grid_config/grid_config.dart';
 import 'line_config/line_config.dart';
 import 'loading_config/loading_config.dart';
-import 'magnifier_config/magnifier_config.dart';
 import 'mark_config/mark_config.dart';
 import 'paint_config/paint_config.dart';
-import 'point_config/point_config.dart';
 import 'setting_config/setting_config.dart';
 import 'text_area_config/text_area_config.dart';
-import 'tips_config/tips_config.dart';
 import 'tolerance_config/tolerance_config.dart';
 import 'tooltip_config/tooltip_config.dart';
 
@@ -66,7 +64,7 @@ extension IFlexiKlineThemeExt on IFlexiKlineTheme {
   EdgeInsets get tipsPadding => EdgeInsets.only(left: 8 * scale);
 
   /// 默认文本区域Padding
-  EdgeInsets get textPading => EdgeInsets.all(2 * scale);
+  EdgeInsets get textPadding => EdgeInsets.all(2 * scale);
 
   /// 默认指标线图的宽度
   double get indicatorLineWidth {
@@ -74,7 +72,7 @@ extension IFlexiKlineThemeExt on IFlexiKlineTheme {
   }
 
   // 默认文本配置
-  double get normalTextSize => setSp(defaulTextSize);
+  double get normalTextSize => setSp(defaultTextSize);
 }
 
 abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
@@ -193,267 +191,13 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   }
 
   @override
-  Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders {
-    return {
-      // MA 移动平均线 - 主图指标
-      const FlexiIndicatorKey('ma'): (json) => MAIndicator(
-            height: theme.mainIndicatorHeight,
-            padding: theme.mainIndicatorPadding,
-            calcParam: const MaParam(
-              lines: [
-                MALineConfig(
-                  id: 'ma5',
-                  enabled: true,
-                  period: 5,
-                  color: Color(0xFF2196F3), // 蓝色
-                  width: 1.0,
-                ),
-                MALineConfig(
-                  id: 'ma10',
-                  enabled: true,
-                  period: 10,
-                  color: Color(0xFFF44336), // 红色
-                  width: 1.0,
-                ),
-                MALineConfig(
-                  id: 'ma20',
-                  enabled: true,
-                  period: 20,
-                  color: Color(0xFF4CAF50), // 绿色
-                  width: 1.0,
-                ),
-              ],
-            ),
-            tipsPadding: theme.tipsPadding,
-          ),
-
-      // BOLL 布林带 - 主图指标
-      const FlexiIndicatorKey('boll'): (json) => BOLLIndicator(
-            height: theme.mainIndicatorHeight,
-            padding: theme.mainIndicatorPadding,
-            calcParam: const BOLLParam(), // 使用默认参数
-            tipsPadding: theme.tipsPadding,
-          ),
-
-      // EMA 指数移动平均线 - 主图指标
-      const FlexiIndicatorKey('ema'): (json) => EMAIndicator(
-            height: theme.mainIndicatorHeight,
-            padding: theme.mainIndicatorPadding,
-            calcParam: const EmaParam(
-              lines: [
-                EMALineConfig(
-                  id: 'ema7',
-                  enabled: true,
-                  period: 7,
-                  color: Color(0xFF00BCD4), // 青色
-                  width: 1.0,
-                ),
-                EMALineConfig(
-                  id: 'ema25',
-                  enabled: true,
-                  period: 25,
-                  color: Color(0xFFE91E63), // 粉色
-                  width: 1.0,
-                ),
-                EMALineConfig(
-                  id: 'ema99',
-                  enabled: true,
-                  period: 99,
-                  color: Color(0xFFE91E63), // 粉色
-                  width: 1.0,
-                ),
-              ],
-            ),
-            tipsPadding: theme.tipsPadding,
-          ),
-
-      // SAR 抛物线指标 - 主图指标
-      const FlexiIndicatorKey('sar'): (json) => SARIndicator(
-            height: theme.mainIndicatorHeight,
-            padding: theme.mainIndicatorPadding,
-            calcParam: const SARParam(), // 使用默认参数
-            tipsPadding: theme.tipsPadding,
-            tickCount: 5,
-          ),
-
-      // AVL 威廉分形指标 - 主图指标
-      const FlexiIndicatorKey('avl'): (json) => AVLIndicator(
-            height: theme.mainIndicatorHeight,
-            padding: theme.mainIndicatorPadding,
-            calcParam: const AVLParam(), // 使用默认参数
-            tipsPadding: theme.tipsPadding,
-            tickCount: 5,
-          ),
-    };
-  }
+  Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders => {};
 
   @override
-  Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders {
-    return {
-      // VOL_MA 成交量移动平均线 - 副图指标
-      const FlexiIndicatorKey('volMa'): (json) => VolMaIndicator(
-            height: theme.subIndicatorHeight,
-            calcParam: const VolMaParam(
-              lines: [
-                VolMALineConfig(
-                  id: 'volMa5',
-                  enabled: true,
-                  period: 5,
-                  color: Color(0xFF2196F3), // 蓝色
-                  width: 1.0,
-                  opacity: 0.8,
-                ),
-                VolMALineConfig(
-                  id: 'volMa10',
-                  enabled: true,
-                  period: 10,
-                  color: Color(0xFFF44336), // 红色
-                  width: 1.0,
-                  opacity: 0.8,
-                ),
-              ],
-            ),
-            tipsPadding: theme.tipsPadding,
-          ),
-
-      // VOLUME 成交量 - 副图指标
-      const FlexiIndicatorKey('volume'): (json) => VolumeIndicator(
-            height: theme.subIndicatorHeight,
-            calcParam: const VolumeParam(), // 使用默认参数
-            tipsPadding: theme.tipsPadding,
-            tickCount: 5,
-          ),
-
-      // RSI 相对强弱指标 - 副图指标
-      const FlexiIndicatorKey('rsi'): (json) => RSIIndicator(
-            height: theme.subIndicatorHeight,
-            calcParam: const RsiParam(
-              lines: [
-                RSILineConfig(
-                  id: 'rsi14',
-                  enabled: true,
-                  period: 14,
-                  color: Color(0xFF9C27B0), // 紫色
-                  width: 1.0,
-                ),
-              ],
-            ),
-            tipsPadding: theme.tipsPadding,
-            tickCount: 5,
-          ),
-
-      // KDJ 随机指标 - 副图指标
-      const FlexiIndicatorKey('kdj'): (json) => KDJIndicator(
-            height: theme.subIndicatorHeight,
-            calcParam: const KDJParam(), // 使用默认参数
-            tipsPadding: theme.tipsPadding,
-            tickCount: 5,
-          ),
-
-      // MACD 指标 - 副图指标
-      const FlexiIndicatorKey('macd'): (json) => MACDIndicator(
-            height: theme.subIndicatorHeight * 1.2, // MACD需要稍微高一点
-            calcParam: const MACDParam(
-              s: 12, // 短期周期
-              l: 26, // 长期周期
-              m: 9, // 信号周期
-            ),
-            difTips: const TipsConfig(
-              label: 'DIF: ',
-              style: TextStyle(
-                color: Color(0xFF2196F3),
-                fontSize: 12,
-                height: 1.2,
-              ),
-            ),
-            deaTips: const TipsConfig(
-              label: 'DEA: ',
-              style: TextStyle(
-                color: Color(0xFFF44336),
-                fontSize: 12,
-                height: 1.2,
-              ),
-            ),
-            macdTips: const TipsConfig(
-              label: 'MACD: ',
-              style: TextStyle(
-                color: Color(0xFF4CAF50),
-                fontSize: 12,
-                height: 1.2,
-              ),
-            ),
-            tipsPadding: theme.tipsPadding,
-            tickCount: 5,
-          ),
-    };
-  }
+  Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders => {};
 
   @override
-  Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders {
-    return {
-      // 趋势线
-      const FlexiDrawType('trendLine', 2): (overlay, config) =>
-          TrendLineDrawObject(overlay, config),
-
-      // 趋势角度线
-      const FlexiDrawType('trendAngle', 2): (overlay, config) =>
-          TrendAngleDrawObject(overlay, config),
-
-      // 十字线
-      const FlexiDrawType('crossLine', 1): (overlay, config) =>
-          CrossLineDrawObject(overlay, config),
-
-      // 水平线
-      const FlexiDrawType('horizontalLine', 1): (overlay, config) =>
-          HorizontalLineDrawObject(overlay, config),
-
-      // 水平射线
-      const FlexiDrawType('horizontalRayLine', 2): (overlay, config) =>
-          HorizontalRayLineDrawObject(overlay, config),
-
-      // 水平趋势线
-      const FlexiDrawType('horizontalTrendLine', 2): (overlay, config) =>
-          HorizontalTrendLineDrawObject(overlay, config),
-
-      // 垂直线
-      const FlexiDrawType('verticalLine', 1): (overlay, config) =>
-          VerticalLineDrawObject(overlay, config),
-
-      // 延长趋势线
-      const FlexiDrawType('extendedTrendLine', 2): (overlay, config) =>
-          ExtendedTrendLineDrawObject(overlay, config),
-
-      // 箭头线
-      const FlexiDrawType('arrowLine', 2): (overlay, config) =>
-          ArrowLineDrawObject(overlay, config),
-
-      // 射线
-      const FlexiDrawType('rayLine', 2): (overlay, config) => RayLineDrawObject(overlay, config),
-
-      // 价格线
-      const FlexiDrawType('priceLine', 1): (overlay, config) =>
-          PriceLineDrawObject(overlay, config),
-
-      // 平行通道
-      const FlexiDrawType('parallelChannel', 3): (overlay, config) =>
-          ParalleChannelDrawObject(overlay, config),
-
-      // 矩形
-      const FlexiDrawType('rectangle', 2): (overlay, config) =>
-          RectangleDrawObject(overlay, config),
-
-      // 斐波那契回调
-      const FlexiDrawType('fibRetracement', 2): (overlay, config) =>
-          FibRetracementDrawObject(overlay, config),
-
-      // 斐波那契扩展
-      const FlexiDrawType('fibExpansion', 3): (overlay, config) =>
-          FibExpansionDrawObject(overlay, config),
-
-      // 斐波那契扇形
-      const FlexiDrawType('fibFans', 2): (overlay, config) => FibFansDrawObject(overlay, config),
-    };
-  }
+  Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders => {};
 
   /// Grid配置
   GridConfig genGridConfig([GridConfig? grid]) {
@@ -563,8 +307,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
       /// 主/副图绘制参数
       minPaintBlankRate: setting?.minPaintBlankRate ?? 0.5,
-      alwaysCalculateScreenOfCandlesIfEnough:
-          setting?.alwaysCalculateScreenOfCandlesIfEnough ?? false,
+      alwaysCalculateScreenOfCandlesIfEnough: setting?.alwaysCalculateScreenOfCandlesIfEnough ?? false,
       candleMinWidth: setting?.candleMinWidth ?? 1 * theme.pixel,
       candleMaxWidth: setting?.candleMaxWidth ?? 40 * theme.scale,
       candleWidth: setting?.candleWidth ?? 7 * theme.scale,
@@ -794,7 +537,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           magnificationScale: 2,
           margin: EdgeInsets.all(1 * theme.scale),
           size: Size(80 * theme.scale, 80 * theme.scale),
-          decorationOpactity: 1.0,
+          decorationOpacity: 1.0,
           decorationShadows: [
             BoxShadow(
               offset: const Offset(0.1, 0.1),
@@ -914,6 +657,20 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         background: theme.lastPriceTextBg,
         borderColor: instance?.high.text.border?.color,
       ),
+      showLatestPoint: instance?.showLatestPoint ?? true,
+      latestPoint: obtainConfig(
+        instance?.latestPoint,
+        PointConfig(
+          radius: 2 * theme.scale,
+          width: 0 * theme.scale,
+          color: theme.lineChartColor,
+          borderColor: theme.lineChartColor.withAlpha(0.5.alpha),
+          borderWidth: 2 * theme.scale,
+        ),
+      ).of(
+        color: theme.lineChartColor,
+        borderColor: theme.lineChartColor.withAlpha(0.5.alpha),
+      ),
       latest: obtainConfig(
         instance?.latest,
         MarkConfig(
@@ -936,7 +693,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
             ),
             // minWidth: 45 * theme.scale,
             textAlign: TextAlign.center,
-            padding: theme.textPading,
+            padding: theme.textPadding,
             background: theme.latestPriceTextBg,
             border: BorderSide(
               color: theme.markLineColor,
@@ -963,7 +720,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
             height: defaultTextHeight,
           ),
           textAlign: TextAlign.center,
-          padding: theme.textPading,
+          padding: theme.textPadding,
           background: theme.countDownTextBg,
           border: BorderSide(
             color: theme.markLineColor,
@@ -976,13 +733,16 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         background: theme.countDownTextBg,
         borderColor: theme.markLineColor,
       ),
-      chartBarStyle: instance?.chartBarStyle ?? ChartBarStyle.allSolid,
-      chartType: instance?.chartType ?? ChartType.bar,
-      zoomToMinChartType: instance?.zoomToMinChartType ?? ChartType.line,
-      secondsChartType: instance?.secondsChartType ?? ChartType.line,
+      chartType: instance?.chartType ?? ChartType.barSolid,
+      minWidthLineType: instance?.minWidthLineType,
+      timeBarChartTypes: instance?.timeBarChartTypes ?? const {TimeBar.m1: ChartType.lineNormal},
+      hideIndicatorsWhenLineChart: instance?.hideIndicatorsWhenLineChart ?? true,
       longColor: instance?.longColor,
       shortColor: instance?.shortColor,
       lineColor: instance?.lineColor,
+      lineGradientConfig: instance?.lineGradientConfig,
+      longGradientConfig: instance?.longGradientConfig,
+      shortGradientConfig: instance?.shortGradientConfig,
     );
   }
 
@@ -1010,17 +770,5 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         borderColor: null,
       ),
     );
-  }
-
-  @override
-  Map<IIndicatorKey, IndicatorBuilder> getDefaultMainIndicatorBuilders() {
-    // 默认实现：直接返回 mainIndicatorBuilders
-    return mainIndicatorBuilders;
-  }
-
-  @override
-  Map<IIndicatorKey, IndicatorBuilder> getDefaultSubIndicatorBuilders() {
-    // 默认实现：直接返回 subIndicatorBuilders
-    return subIndicatorBuilders;
   }
 }

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:example/src/providers/bit_kline_config.dart';
-import 'package:example/src/providers/default_kline_config.dart';
 import 'package:example/src/theme/flexi_theme.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +27,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
   });
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBar> onTapTimeBar;
+  final ValueChanged<ITimeBar> onTapTimeBar;
   final VoidCallback? onTapDraw;
 
   @override
@@ -66,16 +64,8 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
   }
 
   /// 获取时间周期配置列表
-  List<TimeBar> _getTimeBarConfigs() {
-    final config = controller.configuration;
-    if (config is BitFlexiKlineConfiguration) {
-      return config.getTimeBarConfigs();
-    } else if (config is DefaultFlexiKlineConfiguration) {
-      return config.timeBarBuilders();
-    } else {
-      // 回退到空列表，避免调用不存在的方法
-      return <TimeBar>[];
-    }
+  List<ITimeBar> _getTimeBarConfigs() {
+    return controller.configuration.getTimeBarConfigs();
   }
 
   Widget _buildPreferTimeBarList(BuildContext context, WidgetRef ref) {

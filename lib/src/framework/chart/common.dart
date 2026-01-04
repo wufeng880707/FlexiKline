@@ -14,11 +14,78 @@
 
 part of 'indicator.dart';
 
-// K线图绘制类型
-enum ChartType {
-  bar, // 蜡烛图
-  line, // 折线图
-  upDownLine; // 涨跌线图
+/// K线图绘制类型
+sealed class ChartType {
+  const ChartType();
+
+  /// 全实心蜡烛图
+  static const barSolid = BarChartType(ChartBarStyle.allSolid);
+
+  /// 全空心蜡烛图
+  static const barHollow = BarChartType(ChartBarStyle.allHollow);
+
+  /// 上涨空心蜡烛图
+  static const barUpHollow = BarChartType(ChartBarStyle.upHollow);
+
+  /// 下跌空心蜡烛图
+  static const barDownHollow = BarChartType(ChartBarStyle.downHollow);
+
+  /// OHLC美国线
+  static const barOhlc = BarChartType(ChartBarStyle.ohlc);
+
+  /// 普通折线图
+  static const lineNormal = LineChartType(LineChartStyle.normal);
+
+  /// 涨跌线图
+  static const lineUpDown = LineChartType(LineChartStyle.upDown);
+
+  /// 创建蜡烛图类型
+  ///
+  /// [style] 蜡烛图样式，默认为 [ChartBarStyle.allSolid]
+  factory ChartType.bar([ChartBarStyle style = ChartBarStyle.allSolid]) {
+    return BarChartType(style);
+  }
+
+  /// 创建线图类型
+  ///
+  /// [style] 线图样式，默认为 [LineChartStyle.normal]
+  factory ChartType.line([LineChartStyle style = LineChartStyle.normal]) {
+    return LineChartType(style);
+  }
+
+  /// 是否为线图类型
+  bool get isLine => this is LineChartType;
+
+  /// 是否为蜡烛图类型
+  bool get isBar => this is BarChartType;
+}
+
+/// 蜡烛图类型，包含蜡烛图样式
+final class BarChartType extends ChartType {
+  const BarChartType(this.style);
+
+  final ChartBarStyle style;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is BarChartType && style == other.style;
+
+  @override
+  int get hashCode => style.hashCode;
+}
+
+/// 线图类型，包含线图样式
+final class LineChartType extends ChartType {
+  const LineChartType(this.style);
+
+  final LineChartStyle style;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is LineChartType && style == other.style;
+
+  @override
+  int get hashCode => style.hashCode;
 }
 
 /// K线柱状图的绘制样式
@@ -29,9 +96,15 @@ enum ChartBarStyle {
   downHollow, // 下跌空心
   ohlc; // Open-high-low-close chart(美国线)
 
-  bool get isHollowUp => this == ChartBarStyle.upHollow || this == ChartBarStyle.allHollow;
+  bool get isHollowUp => this == upHollow || this == allHollow;
 
-  bool get isHollowDown => this == ChartBarStyle.downHollow || this == ChartBarStyle.allHollow;
+  bool get isHollowDown => this == downHollow || this == allHollow;
+}
+
+/// K线线图的绘制样式
+enum LineChartStyle {
+  normal, // 普通折线
+  upDown; // 涨跌线
 }
 
 /// Indicator绘制模式

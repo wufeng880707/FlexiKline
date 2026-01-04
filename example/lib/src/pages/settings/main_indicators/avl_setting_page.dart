@@ -251,11 +251,13 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
     debugPrint('重置AVL设置为默认值');
     
     try {
+      // 创建默认配置实例
+      final defaultConfig = DefaultFlexiKlineConfiguration(ref: ref);
       
-       
+       widget.controller.configuration;
       // 从默认主指标配置中获取AVL指标
       const avlKey = FlexiIndicatorKey('avl');
-      final defaultMainIndicators = widget.controller.configuration.getDefaultMainIndicatorBuilders();
+      final defaultMainIndicators = defaultConfig.getDefaultMainIndicatorBuilders();
       final avlBuilder = defaultMainIndicators[avlKey];
       
       if (avlBuilder != null) {

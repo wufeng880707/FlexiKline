@@ -58,7 +58,7 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
           widget.instId2,
         );
 
-    final m15TimeBar = configuration.timeBarBuilders().firstWhere((e) => e.key == 'm15');
+    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.key == 'm15');
 
     req1 = CandleReq(
       instId: widget.instId1,

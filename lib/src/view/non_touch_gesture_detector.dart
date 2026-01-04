@@ -329,7 +329,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   /// onMouseHover _TransformedPointerHoverEvent#1614b(position: Offset(86.5, 343.6))
   void onHover(PointerHoverEvent event) {
     // if (_hoverData == null) return;
-    Offset offset = event.localPosition;
+    final offset = event.localPosition;
     _hoverData ??= GestureData.hover(offset);
 
     if (controller.isDrawVisibility && drawState.isOngoing) {
@@ -384,7 +384,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         case Drawing():
           final offset = drawState.pointerOffset ?? details.localPosition;
           if (offset.isFinite) {
-            logd("onTapUp draw(drawing) confirm pointer:$offset");
+            logd('onTapUp draw(drawing) confirm pointer:$offset');
             _hoverData = GestureData.tap(offset);
             controller.onDrawConfirm(_hoverData!);
             if (controller.isCrossing) {
@@ -396,10 +396,10 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
           final offset = details.localPosition;
           final object = controller.hitTestDrawObject(offset);
           if (object != null && object != drawState.object) {
-            logd("onTapUp draw(editing) switch object:$object");
+            logd('onTapUp draw(editing) switch object:$object');
             controller.onDrawSelect(object);
           } else {
-            logd("onTapUp draw(editing) confirm offset:$offset");
+            logd('onTapUp draw(editing) confirm offset:$offset');
             _hoverData = GestureData.tap(offset);
             controller.onDrawConfirm(_hoverData!);
             if (!controller.isCrossing) {
@@ -411,7 +411,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
           if (controller.drawConfig.allowSelectWhenExit) {
             final object = controller.hitTestDrawObject(details.localPosition);
             if (object != null) {
-              logd("onTapUp draw(exited) select object:$object");
+              logd('onTapUp draw(exited) select object:$object');
               controller.onDrawSelect(object);
               return;
             }
@@ -420,7 +420,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         case Prepared():
           final object = controller.hitTestDrawObject(details.localPosition);
           if (object != null) {
-            logd("onTapUp draw(prepared) select object:$object");
+            logd('onTapUp draw(prepared) select object:$object');
             controller.onDrawSelect(object);
             return;
           }
@@ -431,7 +431,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
     // 这里检测是否命中指标图定制位置
     final ret = controller.onTap(details.localPosition);
     if (ret) {
-      logd("onTapUp handled! :$details");
+      logd('onTapUp handled! :$details');
       return;
     }
   }
@@ -450,7 +450,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         return;
       }
       if (drawState.object?.lock == true) return;
-      logd("onPanStart draw > details:$details");
+      logd('onPanStart draw > details:$details');
       _panData = GestureData.pan(position);
       final result = controller.onDrawMoveStart(_panData!);
       if (!result) {
@@ -492,7 +492,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   /// 平移结束.
   void onPanEnd(DragEndDetails details) {
     if (_panData == null) {
-      logd("onPanEnd panData is empty! details:$details");
+      logd('onPanEnd panData is empty! details:$details');
       return;
     }
 
@@ -516,7 +516,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         controller.curKlineData.isEmpty ||
         (velocity < 0 && !controller.canPanRTL) ||
         (velocity > 0 && !controller.canPanLTR)) {
-      logd("onPanEnd currently can not pan!");
+      logd('onPanEnd currently can not pan!');
       _panData?.end();
       _panData = null;
       setCursorToPrecise();
@@ -541,7 +541,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
     // 平移距离为0 或者 不足1ms, 无需继续平移
     if (panDistance.abs() < precisionError || panDuration <= 1) {
-      logd("onPanEnd currently not need for inertial movement!");
+      logd('onPanEnd currently not need for inertial movement!');
       _panData?.end();
       _panData = null;
       setCursorToPrecise();
@@ -615,7 +615,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   ///   final double rotation;
   void onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
     if (_scaleData == null) {
-      logd("onPointerPanZoomUpdate scaleData is empty! $event ${event.scale}");
+      logd('onPointerPanZoomUpdate scaleData is empty! $event ${event.scale}');
       return;
     }
 
@@ -640,12 +640,12 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
   void onPointerPanZoomEnd(PointerPanZoomEndEvent event) {
     if (_scaleData == null) {
-      logd("onPointerPanZoomEnd scaledata is empty! > event:$event");
+      logd('onPointerPanZoomEnd scaledata is empty! > event:$event');
       return;
     }
 
     if (_scaleData!.isScale) {
-      logd("onPointerPanZoomEnd scale. ${event.localPosition}");
+      logd('onPointerPanZoomEnd scale. ${event.localPosition}');
       _scaleData?.end();
       _scaleData = null;
       controller.onChartScaleEnd();
@@ -657,7 +657,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   /// 如果当前正在crossing中时, 不触发后续的长按逻辑.
   void onLongPressStart(LongPressStartDetails details) {
     if (!gestureConfig.supportLongPress) {
-      logd("onLongPressStart ignore! > crossing:${controller.isCrossing}");
+      logd('onLongPressStart ignore! > crossing:${controller.isCrossing}');
       return;
     }
 
@@ -667,7 +667,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         return;
       }
       if (drawState.object?.lock == true) return;
-      logd("onLongPressStart draw > details:$details");
+      logd('onLongPressStart draw > details:$details');
       _longData = GestureData.long(details.localPosition);
       final result = controller.onDrawMoveStart(_longData!);
       if (!result) {
@@ -681,7 +681,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       controller.cancelCross();
       setCursorToNone();
     } else {
-      logd("onLongPressStart cross > details:$details");
+      logd('onLongPressStart cross > details:$details');
       controller.cancelCross();
       _longData = GestureData.long(details.localPosition);
       final result = controller.onCrossStart(_longData!);
@@ -716,7 +716,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
   void onLongPressEnd(LongPressEndDetails details) {
     if (!gestureConfig.supportLongPress || _longData == null) {
-      logd("onLongPressEnd ignore! > details:$details");
+      logd('onLongPressEnd ignore! > details:$details');
       return;
     }
     // assert(() {

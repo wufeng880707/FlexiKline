@@ -54,10 +54,10 @@ const int defaultSubTickCount = 3;
 const double defaultIndicatorLineWidth = 1;
 
 // 默认文本配置
-const double defaulTextSize = 10;
+const double defaultTextSize = 10;
 
 // 默认文本区域Padding
-const EdgeInsets defaultTextPading = EdgeInsets.all(2);
+const EdgeInsets defaultTextPadding = EdgeInsets.all(2);
 
 // 默认文本高度
 const double defaultTextHeight = 1;
@@ -102,6 +102,12 @@ extension ITimeBarExt on ITimeBar {
   bool get isUtc {
     return bar.equalsIgnoreCase('utc');
   }
+
+  /// 获取显示名称
+  String get showName => bar;
+
+  /// 获取键值
+  String get key => bar;
 }
 
 /// 自定义时间粒度
@@ -126,12 +132,11 @@ final class FlexiTimeBar implements ITimeBar {
     return other is ITimeBar &&
         runtimeType == other.runtimeType &&
         bar == other.bar &&
-        multiplier == other.multiplier &&
-        unit == other.unit;
+        milliseconds == other.milliseconds;
   }
 
   @override
-  int get hashCode => runtimeType.hashCode ^ multiplier.hashCode ^ unit.hashCode;
+  int get hashCode => runtimeType.hashCode ^ bar.hashCode ^ milliseconds.hashCode;
 
   @override
   String toString() => '$bar:$milliseconds';
@@ -158,7 +163,7 @@ enum TimeBar implements ITimeBar {
   D1('1D', 1, TimeUnit.day),
   D2('2D', 2, TimeUnit.day),
   D3('3D', 3, TimeUnit.day),
-  W1('1W', 7, TimeUnit.week),
+  W1('1W', 1, TimeUnit.week),
   M1('1M', 1, TimeUnit.month),
   M3('3M', 3, TimeUnit.month),
   utc6H('6Hutc', 6, TimeUnit.hour),
@@ -166,7 +171,7 @@ enum TimeBar implements ITimeBar {
   utc1D('1Dutc', 1, TimeUnit.day),
   utc2D('2Dutc', 2, TimeUnit.day),
   utc3D('3Dutc', 3, TimeUnit.day),
-  utc1W('1Wutc', 7, TimeUnit.week),
+  utc1W('1Wutc', 1, TimeUnit.week),
   utc1M('1Mutc', 1, TimeUnit.month),
   utc3M('3Mutc', 3, TimeUnit.month);
 
@@ -212,7 +217,7 @@ enum TooltipLabel {
   turnover;
 }
 
-const Map<TooltipLabel, String> defaultTooltipLables = {
+const Map<TooltipLabel, String> defaultTooltipLabels = {
   TooltipLabel.time: 'Time',
   TooltipLabel.open: 'Open',
   TooltipLabel.high: 'High',

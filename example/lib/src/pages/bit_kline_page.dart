@@ -69,7 +69,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
           widget.instId,
         );
 
-    final timeBar = TimeBar.m15;
+    final timeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.key == '15m');
 
     req = CandleReq(
       instId: widget.instId,

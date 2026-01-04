@@ -39,7 +39,7 @@ abstract class BaseData with KlineLog {
 
   @protected
   void initData() {
-    logd("initData BASE");
+    logd('initData BASE');
   }
 
   void dispose() {

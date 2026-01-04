@@ -28,7 +28,7 @@ class MagnifierConfig {
     this.size = const Size(80, 80),
     this.magnificationScale = 2,
     this.clipBehavior = Clip.none,
-    this.decorationOpactity = 1.0,
+    this.decorationOpacity = 1.0,
     this.decorationShadows,
     this.shapeSide = BorderSide.none,
   });
@@ -61,7 +61,7 @@ class MagnifierConfig {
   ///
   /// Generally this is only useful for animating the magnifier in and out, as a
   /// transparent magnifier looks quite confusing.
-  final double decorationOpactity;
+  final double decorationOpacity;
 
   /// A list of shadows cast by the [shape].
   ///

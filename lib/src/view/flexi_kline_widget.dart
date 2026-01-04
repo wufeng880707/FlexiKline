@@ -459,7 +459,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
             child: RawMagnifier(
               key: const ValueKey('KlineRawMagnifier'),
               decoration: MagnifierDecoration(
-                opacity: config.decorationOpactity,
+                opacity: config.decorationOpacity,
                 shadows: config.decorationShadows,
                 shape: widget.magnifierDecorationShapeBuilder?.call(
                       context,
@@ -538,7 +538,7 @@ class ChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Timeline.startSync("Flexi-PaintChart");
+    Timeline.startSync('Flexi-PaintChart');
 
     // try {
     //   /// 保存画布状态

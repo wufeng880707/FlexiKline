@@ -308,7 +308,7 @@ bool isInsideOfPolygon(Offset P, List<Offset> vertexes) {
   Offset end, start = vertexes.first;
   for (int i = 1; i < vertexes.length; i++) {
     end = vertexes[i];
-    cross1 = cross2 = (end - start).cross((P - start));
+    cross1 = cross2 = (end - start).cross(P - start);
     res1 = res1 && cross1 >= 0;
     res2 = res2 && cross2 <= 0;
     if (!res1 && !res2) return false;
@@ -419,9 +419,9 @@ bool isInsideParallelogramByGeometry(
   Parallelogram pl, {
   double deviation = precisionError,
 }) {
-  final vAB = (pl.B - pl.A);
+  final vAB = pl.B - pl.A;
   final kAB = vAB.slope;
-  final vAD = (pl.D - pl.A);
+  final vAD = pl.D - pl.A;
   final kAD = vAD.slope;
 
   final bAD = pl.A.dy - pl.A.dx * kAD;

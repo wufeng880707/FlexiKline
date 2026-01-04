@@ -26,6 +26,7 @@ import '../../constant.dart';
 import '../../core/core.dart';
 import '../../data/kline_data.dart';
 import '../../extension/export.dart';
+import '../../indicators/candle/candle.dart';
 import '../../model/export.dart';
 import '../../utils/algorithm_util.dart';
 import '../../utils/platform_util.dart';
@@ -37,8 +38,8 @@ import '../serializers.dart';
 
 part 'common.dart';
 part 'delegate.dart';
-part 'model.dart';
 part 'indicator.g.dart';
 part 'manager.dart';
+part 'model.dart';
 part 'object.dart';
 part 'object_helper.dart';

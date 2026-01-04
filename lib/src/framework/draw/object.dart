@@ -114,7 +114,7 @@ abstract class DrawStateObject extends OverlayObject with DrawConfigMixin {
   /// 添加指针[p]到[points]中, 并准备下一个指针
   void addPointer(Point p) {
     final index = p.index;
-    assert(index >= 0 && index < steps, "point is invalid");
+    assert(index >= 0 && index < steps, 'point is invalid');
     assert(points[index] == null, 'The points[$index] is not empyt!');
     points[index] = p;
 
@@ -128,7 +128,7 @@ abstract class DrawStateObject extends OverlayObject with DrawConfigMixin {
   void confirmPointer() {
     if (pointer == null) return;
     final index = pointer!.index;
-    assert(index >= 0 && index < steps, "point is invalid");
+    assert(index >= 0 && index < steps, 'point is invalid');
     assert(points[index] != null, 'The points[$index] is not empyt!');
     points[index] = pointer;
     _pointer = null;
@@ -166,7 +166,7 @@ abstract class DrawStateObject extends OverlayObject with DrawConfigMixin {
   }) {
     if (range <= 0 || (dx == null && dy == null)) return null;
     Point? result;
-    for (var point in allPoints) {
+    for (final point in allPoints) {
       if (point == null || point.offset.isInfinite) continue;
       double newRange = range;
       if (dx != null && dy != null) {
@@ -187,7 +187,7 @@ abstract class DrawStateObject extends OverlayObject with DrawConfigMixin {
   /// 计算所有point点构成的刻度区域矩形.
   Rect? getTicksMarksBounds() {
     Offset? min, max, offset;
-    for (var point in allPoints) {
+    for (final point in allPoints) {
       offset = point?.offset;
       if (offset == null || offset.isInfinite) continue;
       min = offset.min(min);
@@ -221,9 +221,7 @@ abstract interface class IDrawObject {
   void draw(IDrawContext context, Canvas canvas, Size size);
 }
 
-abstract class DrawObject<T extends Overlay> extends DrawStateObject
-    with DrawObjectMixin
-    implements IDrawObject {
+abstract class DrawObject<T extends Overlay> extends DrawStateObject with DrawObjectMixin implements IDrawObject {
   DrawObject(super.overlay, super.config);
 
   @override
@@ -232,9 +230,9 @@ abstract class DrawObject<T extends Overlay> extends DrawStateObject
   /// 初始化所有绘制点坐标
   @override
   bool initPoints(IDrawContext context) {
-    for (var point in points) {
+    for (final point in points) {
       if (point == null) return false;
-      final offset = context.calcuateDrawPointOffset(point);
+      final offset = context.calculateDrawPointOffset(point);
       if (offset == null) return false;
       point._offset = offset;
     }
@@ -250,7 +248,7 @@ abstract class DrawObject<T extends Overlay> extends DrawStateObject
 
   Point? hitTestPoint(IDrawContext context, Offset position) {
     assert(position.isFinite, 'hitTestPoint > position$position is infinite!');
-    for (var point in points) {
+    for (final point in points) {
       if (point?.offset.isFinite == true) {
         final distance = (position - point!.offset).distance;
         // assert(() {

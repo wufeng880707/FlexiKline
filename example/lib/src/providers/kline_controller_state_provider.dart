@@ -58,7 +58,7 @@ class KlineStateNotifier extends ChangeNotifier {
   bool get isShowLatestPrice {
     try {
       // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
-      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       return candleIndicator.latest.show;
     } catch (e) {
       return true;
@@ -69,7 +69,7 @@ class KlineStateNotifier extends ChangeNotifier {
   void setShowLatestPrice(bool isShow) {
     try {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
-      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       final updatedIndicator = candleIndicator.copyWith(
         latest: candleIndicator.latest.copyWith(show: isShow),
       );
@@ -85,7 +85,7 @@ class KlineStateNotifier extends ChangeNotifier {
   bool get isShowCountDown {
     try {
       // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
-      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       return candleIndicator.showCountDown;
     } catch (e) {
       return true;
@@ -96,7 +96,7 @@ class KlineStateNotifier extends ChangeNotifier {
   void setShowCountDown(bool isShow) {
     try {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
-      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       final updatedIndicator = candleIndicator.copyWith(showCountDown: isShow);
       // 使用controller的updateIndicator方法更新
       controller.updateIndicator(updatedIndicator);
@@ -110,7 +110,7 @@ class KlineStateNotifier extends ChangeNotifier {
   bool get isShowCandleHighPrice {
     try {
       // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
-      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       return candleIndicator.high.show;
     } catch (e) {
       return true;
@@ -120,7 +120,7 @@ class KlineStateNotifier extends ChangeNotifier {
   void setShowCandleHighPrice(bool isShow) {
     try {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
-      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       final updatedIndicator = candleIndicator.copyWith(
         high: candleIndicator.high.copyWith(show: isShow),
       );
@@ -136,7 +136,7 @@ class KlineStateNotifier extends ChangeNotifier {
   bool get isShowCandleLowPrice {
     try {
       // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
-      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       return candleIndicator.low.show;
     } catch (e) {
       return true;
@@ -146,7 +146,7 @@ class KlineStateNotifier extends ChangeNotifier {
   void setShowCandleLowPrice(bool isShow) {
     try {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
-      final candleIndicator = controller.candlePaintObject.indicator as CandleIndicator;
+      final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       final updatedIndicator = candleIndicator.copyWith(
         low: candleIndicator.low.copyWith(show: isShow),
       );

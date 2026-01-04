@@ -41,7 +41,7 @@ class FixedHashQueue<E> implements Queue<E> {
     if (_queue.contains(value)) {
       E? oldElement;
       final newQueue = ListQueue<E>(fixedCapacity);
-      for (E e in _queue) {
+      for (final e in _queue) {
         if (e == value) {
           oldElement = e;
           newQueue.add(value);
@@ -169,7 +169,7 @@ class FixedHashQueue<E> implements Queue<E> {
   void forEach(void Function(E element) action) => _queue.forEach(action);
 
   @override
-  String join([String separator = ""]) => _queue.join(separator);
+  String join([String separator = '']) => _queue.join(separator);
 
   @override
   E lastWhere(bool Function(E element) test, {E Function()? orElse}) {

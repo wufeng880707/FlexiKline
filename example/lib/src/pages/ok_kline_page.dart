@@ -32,7 +32,6 @@ import 'components/market_ticker_view.dart';
 import 'components/trading_pair_select_title.dart';
 import 'index_page.dart';
 
-
 class OkKlinePage extends ConsumerStatefulWidget {
   const OkKlinePage({
     super.key,
@@ -70,7 +69,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId,
         );
-    final m15TimeBar = TimeBar.m15;
+    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.key == '15m');
 
     req = CandleReq(
       instId: widget.instId,
@@ -79,8 +78,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
       limit: 300,
     );
 
-
-    controller.onCrossI18nTooltipLables = tooltipLables;
+    controller.onCrossI18nTooltipLabels = tooltipLables;
 
     controller.onLoadMoreCandles = loadMoreCandles;
 
@@ -88,7 +86,6 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
       initKlineData(req);
     });
   }
-
 
   void setFullScreen() {
     setState(() {

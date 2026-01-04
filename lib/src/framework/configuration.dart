@@ -94,7 +94,7 @@ mixin FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
   }) {
     return TextStyle(
       color: color,
-      fontSize: fontSize ?? defaulTextSize * scale,
+      fontSize: fontSize ?? defaultTextSize * scale,
       fontWeight: fontWeight,
       overflow: overflow,
       height: height,
@@ -104,7 +104,7 @@ mixin FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
 
   TextStyle get normalTextyStyle => TextStyle(
         color: textColor,
-        fontSize: setSp(defaulTextSize),
+        fontSize: setSp(defaultTextSize),
         fontWeight: FontWeight.normal,
         overflow: TextOverflow.ellipsis,
         height: defaultTextHeight,
@@ -112,7 +112,7 @@ mixin FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
 
   TextStyle get ticksTextStyle => TextStyle(
         color: ticksTextColor,
-        fontSize: setSp(defaulTextSize),
+        fontSize: setSp(defaultTextSize),
         fontWeight: FontWeight.normal,
         overflow: TextOverflow.ellipsis,
         height: defaultTextHeight,
@@ -120,7 +120,7 @@ mixin FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
 
   TextStyle get lastPriceTextStyle => TextStyle(
         color: lastPriceTextColor,
-        fontSize: setSp(defaulTextSize),
+        fontSize: setSp(defaultTextSize),
         fontWeight: FontWeight.normal,
         overflow: TextOverflow.ellipsis,
         height: defaultTextHeight,
@@ -128,21 +128,21 @@ mixin FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
 
   TextStyle get crossTextStyle => TextStyle(
         color: crossTextColor,
-        fontSize: setSp(defaulTextSize),
+        fontSize: setSp(defaultTextSize),
         fontWeight: FontWeight.normal,
         height: defaultTextHeight,
       );
 
   TextStyle get tooltipTextStyle => TextStyle(
         color: tooltipTextColor,
-        fontSize: setSp(defaulTextSize),
+        fontSize: setSp(defaultTextSize),
         overflow: TextOverflow.ellipsis,
         height: defaultMultiTextHeight,
       );
 
   TextStyle getTipsTextStyle(Color tipsColor) => TextStyle(
         color: tipsColor,
-        fontSize: setSp(defaulTextSize),
+        fontSize: setSp(defaultTextSize),
         overflow: TextOverflow.ellipsis,
         height: defaultTipsTextHeight,
       );
@@ -179,13 +179,8 @@ abstract interface class IConfiguration implements IStorage {
   /// 副区指标配置定制
   Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders;
 
-  /// 获取默认主指标配置的方法，用于重置操作
-  /// 优先从JSON同步加载，如果没有则使用代码默认值
-  Map<IIndicatorKey, IndicatorBuilder> getDefaultMainIndicatorBuilders();
-
-  /// 获取默认副指标配置的方法，用于重置操作
-  /// 优先从JSON同步加载，如果没有则使用代码默认值
-  Map<IIndicatorKey, IndicatorBuilder> getDefaultSubIndicatorBuilders();
+  /// 获取时间周期配置列表
+  List<ITimeBar> getTimeBarConfigs();
 
   /// 绘制工具定制
   Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders;
@@ -203,6 +198,11 @@ extension FromJsonExt<T> on FromJson<T> {
 /// 通过[fromJson]函数将[json]数据转换为类型[T]的实例
 T? jsonToInstance<T>(Map<String, dynamic>? json, FromJson<T> fromJson) {
   if (json == null || json.isEmpty) return null;
+    // 增加类型检查
+  if (json is! Map<String, dynamic>) {
+    debugPrint('⚠️ jsonToInstance: Expected Map<String, dynamic> but got ${json.runtimeType}');
+    return null;
+  }
   try {
     return fromJson(json);
   } catch (error, stack) {
@@ -211,9 +211,10 @@ T? jsonToInstance<T>(Map<String, dynamic>? json, FromJson<T> fromJson) {
   return null;
 }
 
-extension IConfigurationExt on IConfiguration {
-  T obtainConfig<T>(T? config, T newConfig) => config ?? newConfig;
+/// 合并配置
+T obtainConfig<T>(T? config, T newConfig) => config ?? newConfig;
 
+extension IConfigurationExt on IConfiguration {
   FlexiKlineConfig getFlexiKlineConfig() {
     FlexiKlineConfig? config;
     try {

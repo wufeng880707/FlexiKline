@@ -157,7 +157,7 @@ CrossConfig _$CrossConfigFromJson(Map<String, dynamic> json) => CrossConfig(
               padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               radius: BorderRadius.all(Radius.circular(4)),
               style: TextStyle(
-                  fontSize: defaulTextSize,
+                  fontSize: defaultTextSize,
                   overflow: TextOverflow.ellipsis,
                   height: defaultMultiTextHeight))
           : TooltipConfig.fromJson(

@@ -68,7 +68,7 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
       ),
     );
 
-    controller.onCrossI18nTooltipLables = tooltipLables;
+    controller.onCrossI18nTooltipLabels = tooltipLables;
 
     controller.onLoadMoreCandles = loadMoreCandles;
 

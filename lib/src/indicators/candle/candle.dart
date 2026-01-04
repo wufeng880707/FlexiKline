@@ -16,14 +16,15 @@ library;
 
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flexi_formatter/flexi_formatter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 import '../../config/export.dart';
 import '../../constant.dart';
 import '../../core/core.dart';
 import '../../extension/export.dart';
-import '../../model/export.dart';
 import '../../framework/export.dart';
+import '../../model/export.dart';
 
 part 'candle.g.dart';
 part 'indicator.dart';

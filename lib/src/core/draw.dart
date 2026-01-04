@@ -19,7 +19,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   @override
   void init() {
     super.init();
-    logd("init draw");
+    logd('init draw');
   }
 
   @override
@@ -103,7 +103,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     if (drawState is Drawing) {
       drawState.object?.doDidChangeTheme(theme);
     }
-    for (var object in _drawObjectManager.overlayObjectList) {
+    for (final object in _drawObjectManager.overlayObjectList) {
       object.doDidChangeTheme(theme);
     }
   }
@@ -280,7 +280,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
         _markRepaintDraw();
       }
     } else {
-      for (var point in object.points) {
+      for (final point in object.points) {
         if (point != null && point.offset.isFinite) {
           object.onUpdateDrawPoint(point, point.offset + delta);
         }
@@ -298,7 +298,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       object.confirmPointer();
     } else {
       if (!drawMagnet.isNormal && isMagneticDrawObject(object)) {
-        for (var point in object.points) {
+        for (final point in object.points) {
           if (point == null) continue;
           final index = dxToIndex(point.offset.dx);
           if (index == null) continue;
@@ -444,7 +444,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       position.isFinite,
       'hitTestDrawObject($position) position is invalid!',
     );
-    for (var object in _drawObjectManager.overlayObjectReversedList) {
+    for (final object in _drawObjectManager.overlayObjectReversedList) {
       if (object.hitTest(this, position)) {
         return object;
       }
@@ -468,7 +468,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   /// 绘制已完成的OverlayList
   void drawOverlayObjectList(Canvas canvas, Size size) {
     final stateObject = drawState.object;
-    for (var object in _drawObjectManager.overlayObjectList) {
+    for (final object in _drawObjectManager.overlayObjectList) {
       if (object.moving) continue;
 
       // TODO: 待优化,
@@ -504,7 +504,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     if (object == null) return;
 
     /// 计算刻度坐标
-    Rect? bounds = object.getTicksMarksBounds();
+    final bounds = object.getTicksMarksBounds();
     if (bounds == null) {
       logd('drawStateAxisTicksText not draw point!');
       return;

@@ -69,7 +69,7 @@ mixin KlineLog implements ILogger {
           stackTrace: stackTrace,
         );
       } else {
-        debugPrint("zp::: DEBUG $logTag\t$msg");
+        debugPrint('zp::: DEBUG $logTag\t$msg');
       }
     }
   }
@@ -90,7 +90,7 @@ mixin KlineLog implements ILogger {
           stackTrace: stackTrace,
         );
       } else {
-        debugPrint("zp::: INFO $logTag\t$msg");
+        debugPrint('zp::: INFO $logTag\t$msg');
       }
     }
   }
@@ -111,7 +111,7 @@ mixin KlineLog implements ILogger {
           stackTrace: stackTrace,
         );
       } else {
-        debugPrint("zp::: WARN $logTag\t$msg");
+        debugPrint('zp::: WARN $logTag\t$msg');
       }
     }
   }
@@ -132,7 +132,7 @@ mixin KlineLog implements ILogger {
           stackTrace: stackTrace,
         );
       } else {
-        debugPrint("zp::: ERROR $logTag\t$msg");
+        debugPrint('zp::: ERROR $logTag\t$msg');
       }
     }
   }

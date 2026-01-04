@@ -32,7 +32,7 @@ class MarkConfig {
     this.line = const LineConfig(),
     this.text = const TextAreaConfig(
       style: TextStyle(
-        fontSize: defaulTextSize,
+        fontSize: defaultTextSize,
         overflow: TextOverflow.ellipsis,
         height: defaultTextHeight,
       ),

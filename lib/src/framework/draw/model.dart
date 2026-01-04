@@ -129,7 +129,7 @@ class Overlay implements Comparable<Overlay> {
 
   Range? get timeRange {
     int? start, end, tmp;
-    for (var p in points) {
+    for (final p in points) {
       tmp = p?.ts;
       if (tmp != null && tmp > 0) {
         start ??= tmp;
@@ -165,14 +165,14 @@ class Overlay implements Comparable<Overlay> {
 
   @override
   int get hashCode {
-    int hash = runtimeType.hashCode ^ id.hashCode ^ key.hashCode ^ type.hashCode;
+    final hash = runtimeType.hashCode ^ id.hashCode ^ key.hashCode ^ type.hashCode;
     // combine其他属性?
     return hash;
   }
 
   @override
   String toString() {
-    return "Overlay(id:$id, key:$key, type:$type) > points:$points";
+    return 'Overlay(id:$id, key:$key, type:$type) > points:$points';
   }
 
   factory Overlay.fromJson(Map<String, dynamic> json) => _$OverlayFromJson(json);

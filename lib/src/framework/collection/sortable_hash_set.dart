@@ -19,7 +19,7 @@ int _dynamicCompare(dynamic a, dynamic b) => Comparable.compare(a, b);
 Comparator<K> _defaultCompare<K>() {
   // If K <: Comparable, then we can just use Comparable.compare
   // with no casts.
-  Object compare = Comparable.compare;
+  final Object compare = Comparable.compare;
   if (compare is Comparator<K>) {
     return compare;
   }
@@ -76,7 +76,7 @@ final class SortableHashSet<E> with SetMixin<E> {
     Iterable<E> elements, {
     void Function(E value)? disposeElement,
   }) {
-    for (var element in elements) {
+    for (final element in elements) {
       final old = append(element);
       if (disposeElement != null && old != null) disposeElement(old);
     }
@@ -97,7 +97,7 @@ final class SortableHashSet<E> with SetMixin<E> {
 
   @override
   E? lookup(Object? element) {
-    for (var e in _set) {
+    for (final e in _set) {
       if (e == element) return e;
     }
     return null;

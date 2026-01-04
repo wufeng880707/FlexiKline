@@ -111,7 +111,7 @@ mixin DrawObjectMixin on DrawStateObject {
 
   /// 绘制[points]中所有点.
   void drawPoints(IDrawContext context, Canvas canvas) {
-    for (var point in points) {
+    for (final point in points) {
       if (point == null) continue;
       if (point == pointer || point.index == pointer?.index) {
         if (moving) {
@@ -128,7 +128,7 @@ mixin DrawObjectMixin on DrawStateObject {
   /// 绘制连接线
   void drawConnectingLine(IDrawContext context, Canvas canvas, Size size) {
     Offset? last;
-    for (var point in points) {
+    for (final point in points) {
       if (point != null) {
         final offset = point.offset;
         canvas.drawCirclePoint(offset, drawPointConfig);
@@ -374,7 +374,7 @@ mixin DrawObjectMixin on DrawStateObject {
 
 extension IDrawContextExt on IDrawContext {
   /// 以当前蜡烛图绘制参数为基础, 将绘制参数[point]转换Offset坐标.
-  Offset? calcuateDrawPointOffset(Point point) {
+  Offset? calculateDrawPointOffset(Point point) {
     final dy = valueToDy(point.value);
     if (dy == null) return null;
 
@@ -386,7 +386,7 @@ extension IDrawContextExt on IDrawContext {
 
   /// 以当前蜡烛图绘制数据为基础, 将[object]的所有point的坐标更新为蜡烛数据坐标
   void updateDrawObjectPointsData(DrawObject object) {
-    for (var point in object.points) {
+    for (final point in object.points) {
       if (point != null) {
         updateDrawPointData(point);
       }
@@ -416,7 +416,7 @@ extension IDrawContextExt on IDrawContext {
     if (index != null) {
       dx = indexToDx(index)! - candleWidthHalf;
     }
-    BagNum? value = dyToValue(dy);
+    final value = dyToValue(dy);
     final candle = curKlineData.get(index);
     if (value != null && candle != null) {
       final high = candle.high;
@@ -467,7 +467,7 @@ extension IDrawContextExt on IDrawContext {
   /// 如果相等, 则可以进行磁吸操作
   bool isMagneticDrawObject(DrawObject object) {
     double? first;
-    for (var point in object.points) {
+    for (final point in object.points) {
       final pointDx = point?.offset.dx;
       if (pointDx == null) return false;
       final index = dxToIndex(pointDx);

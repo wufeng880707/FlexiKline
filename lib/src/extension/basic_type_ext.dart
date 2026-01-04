@@ -27,7 +27,7 @@ extension FlexiKlineString on String {
   /// 首字母大写
   String capitalize() {
     if (isEmpty) return '';
-    return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
+    return '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
   }
 
   /// Case-insensitive equals check
@@ -61,12 +61,12 @@ extension FlexiKlineString on String {
     if (isEmpty) return '';
 
     // Split the string by underscores or hyphens
-    List<String> words = split(RegExp(r'[_\-\s]'));
+    final words = split(RegExp(r'[_\-\s]'));
 
     // Capitalize each word except the first
     return words.asMap().entries.map((entry) {
-      int index = entry.key;
-      String word = entry.value;
+      final index = entry.key;
+      final word = entry.value;
 
       // First word stays lowercase, others get capitalized
       return index == 0 ? word.toLowerCase() : word.capitalize();
@@ -106,7 +106,7 @@ extension FlexiKlineString on String {
     int end = 4, // 结束字符个数
     String ellipsis = '....',
   }) {
-    if (isEmpty) return "";
+    if (isEmpty) return '';
     if (length < math.max(start, end)) return this;
     assert(start > 0 && end > 0, 'start($start) and end($end) must be greater than 0.');
     final index = math.max(start, length - end);

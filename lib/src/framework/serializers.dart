@@ -29,7 +29,7 @@ class IIndicatorKeyConvert implements JsonConverter<IIndicatorKey, String> {
 
   @override
   IIndicatorKey fromJson(String json) {
-    final splits = json.split(":");
+    final splits = json.split(':');
     final id = splits.getItem(0);
     if (id == null || id.isEmpty) return unknownIndicatorKey;
     final label = splits.getItem(1);
@@ -38,7 +38,7 @@ class IIndicatorKeyConvert implements JsonConverter<IIndicatorKey, String> {
 
   @override
   String toJson(IIndicatorKey key) {
-    return "${key.id}:${key.label}";
+    return '${key.id}:${key.label}';
   }
 }
 
@@ -97,19 +97,45 @@ class PaintModeConverter implements JsonConverter<PaintMode, String> {
   String toJson(PaintMode mode) => mode.name;
 }
 
-class ChartTypeConverter implements JsonConverter<ChartType, String> {
+class ChartTypeConverter implements JsonConverter<ChartType, Map<String, dynamic>> {
   const ChartTypeConverter();
 
   @override
-  ChartType fromJson(String json) {
-    return ChartType.values.firstWhere(
-      (e) => e.name.equalsIgnoreCase(json),
-      orElse: () => ChartType.bar,
+  ChartType fromJson(Map<String, dynamic> json) {
+    final type = json['type'] as String;
+    final style = json['style'] as String;
+
+    switch (type) {
+      case 'bar':
+        final barStyle = ChartBarStyle.values.firstWhere(
+          (e) => e.name == style,
+          orElse: () => ChartBarStyle.allSolid,
     );
+        return BarChartType(barStyle);
+      case 'line':
+        final lineStyle = LineChartStyle.values.firstWhere(
+          (e) => e.name == style,
+          orElse: () => LineChartStyle.normal,
+        );
+        return LineChartType(lineStyle);
+      default:
+        return ChartType.barSolid; // 默认值
+    }
   }
 
   @override
-  String toJson(ChartType style) => style.name;
+  Map<String, dynamic> toJson(ChartType chartType) {
+    return switch (chartType) {
+      BarChartType(:final style) => {
+          'type': 'bar',
+          'style': style.name,
+        },
+      LineChartType(:final style) => {
+          'type': 'line',
+          'style': style.name,
+        },
+    };
+  }
 }
 
 class ChartBarStyleConverter implements JsonConverter<ChartBarStyle, String> {
@@ -125,6 +151,83 @@ class ChartBarStyleConverter implements JsonConverter<ChartBarStyle, String> {
 
   @override
   String toJson(ChartBarStyle style) => style.name;
+}
+
+class LineChartStyleConverter implements JsonConverter<LineChartStyle, String> {
+  const LineChartStyleConverter();
+
+  @override
+  LineChartStyle fromJson(String json) {
+    return LineChartStyle.values.firstWhere(
+      (e) => e.name.equalsIgnoreCase(json),
+      orElse: () => LineChartStyle.normal,
+    );
+  }
+
+  @override
+  String toJson(LineChartStyle style) => style.name;
+}
+
+/// LineChartType 类型的序列化转换器
+/// 复用 ChartTypeConverter 的实现
+class LineChartTypeConverter implements JsonConverter<LineChartType, Map<String, dynamic>> {
+  const LineChartTypeConverter();
+
+  @override
+  LineChartType fromJson(Map<String, dynamic> json) {
+    final chartType = const ChartTypeConverter().fromJson(json);
+    return chartType is LineChartType ? chartType : ChartType.lineNormal;
+  }
+
+  @override
+  Map<String, dynamic> toJson(LineChartType chartType) {
+    return const ChartTypeConverter().toJson(chartType);
+  }
+}
+
+/// BarChartType 类型的序列化转换器
+/// 复用 ChartTypeConverter 的实现
+class BarChartTypeConverter implements JsonConverter<BarChartType, Map<String, dynamic>> {
+  const BarChartTypeConverter();
+
+  @override
+  BarChartType fromJson(Map<String, dynamic> json) {
+    final chartType = const ChartTypeConverter().fromJson(json);
+    return chartType is BarChartType ? chartType : ChartType.barSolid;
+  }
+
+  @override
+  Map<String, dynamic> toJson(BarChartType chartType) {
+    return const ChartTypeConverter().toJson(chartType);
+  }
+}
+
+/// 时间周期图表类型映射的序列化转换器
+class TimeBarChartTypesConverter implements JsonConverter<Map<ITimeBar, ChartType>?, List<dynamic>?> {
+  const TimeBarChartTypesConverter();
+
+  @override
+  Map<ITimeBar, ChartType>? fromJson(List<dynamic>? json) {
+    if (json == null) return null;
+    return Map.fromEntries(json.map((e) {
+      final map = e as Map<String, dynamic>;
+      return MapEntry(
+        const ITimeBarConvert().fromJson(map['timeBar'] as Map<String, dynamic>),
+        const ChartTypeConverter().fromJson(map['chartType'] as Map<String, dynamic>),
+      );
+    }));
+  }
+
+  @override
+  List<dynamic>? toJson(Map<ITimeBar, ChartType>? map) {
+    if (map == null) return null;
+    return map.entries
+        .map((e) => {
+              'timeBar': const ITimeBarConvert().toJson(e.key),
+              'chartType': const ChartTypeConverter().toJson(e.value),
+            })
+        .toList();
+  }
 }
 
 /// 基础样式转换
@@ -245,24 +348,21 @@ class EdgeInsetsConverter implements JsonConverter<EdgeInsets, Map<String, dynam
 
   @override
   Map<String, dynamic> toJson(EdgeInsets edgeInsets) {
-    if (edgeInsets.left == 0 &&
-        edgeInsets.top == 0 &&
-        edgeInsets.right == 0 &&
-        edgeInsets.bottom == 0) {
+    if (edgeInsets.left == 0 && edgeInsets.top == 0 && edgeInsets.right == 0 && edgeInsets.bottom == 0) {
       return {};
     }
 
     if (edgeInsets.left == edgeInsets.right && edgeInsets.top == edgeInsets.bottom) {
       return {
-        "horizontal": edgeInsets.left,
-        "vertical": edgeInsets.top,
+        'horizontal': edgeInsets.left,
+        'vertical': edgeInsets.top,
       };
     }
     return {
-      "left": edgeInsets.left,
-      "top": edgeInsets.top,
-      "right": edgeInsets.right,
-      "bottom": edgeInsets.bottom,
+      'left': edgeInsets.left,
+      'top': edgeInsets.top,
+      'right': edgeInsets.right,
+      'bottom': edgeInsets.bottom,
     };
   }
 }
@@ -360,14 +460,14 @@ class BorderConverter implements JsonConverter<Border, Map<String, dynamic>> {
   Map<String, dynamic> toJson(Border border) {
     if (border.isUniform) {
       return {
-        "all": convertBorderSide(border.top),
+        'all': convertBorderSide(border.top),
       };
     }
     return {
-      "top": convertBorderSide(border.top),
-      "right": convertBorderSide(border.right),
-      "bottom": convertBorderSide(border.bottom),
-      "left": convertBorderSide(border.left),
+      'top': convertBorderSide(border.top),
+      'right': convertBorderSide(border.right),
+      'bottom': convertBorderSide(border.bottom),
+      'left': convertBorderSide(border.left),
     };
   }
 }
@@ -507,6 +607,136 @@ class ClipConverter implements JsonConverter<Clip, String> {
   @override
   String toJson(Clip clip) {
     return clip.name;
+  }
+}
+
+/// Alignment 序列化转换器
+class AlignmentConverter implements JsonConverter<Alignment, Map<String, dynamic>> {
+  const AlignmentConverter();
+
+  @override
+  Alignment fromJson(Map<String, dynamic> json) {
+    if (json.isEmpty) return Alignment.center;
+
+    // 支持预定义的 Alignment 常量
+    final preset = json['preset']?.toString();
+    if (preset != null) {
+      switch (preset) {
+        case 'topLeft':
+          return Alignment.topLeft;
+        case 'topCenter':
+          return Alignment.topCenter;
+        case 'topRight':
+          return Alignment.topRight;
+        case 'centerLeft':
+          return Alignment.centerLeft;
+        case 'center':
+          return Alignment.center;
+        case 'centerRight':
+          return Alignment.centerRight;
+        case 'bottomLeft':
+          return Alignment.bottomLeft;
+        case 'bottomCenter':
+          return Alignment.bottomCenter;
+        case 'bottomRight':
+          return Alignment.bottomRight;
+      }
+    }
+
+    // 支持自定义 x, y 值
+    if (json.containsKey('x') && json.containsKey('y')) {
+      return Alignment(
+        parseDouble(json['x']) ?? 0.0,
+        parseDouble(json['y']) ?? 0.0,
+      );
+    }
+
+    return Alignment.center;
+  }
+
+  @override
+  Map<String, dynamic> toJson(Alignment alignment) {
+    // 尝试匹配预定义常量
+    if (alignment == Alignment.topLeft) return {'preset': 'topLeft'};
+    if (alignment == Alignment.topCenter) return {'preset': 'topCenter'};
+    if (alignment == Alignment.topRight) return {'preset': 'topRight'};
+    if (alignment == Alignment.centerLeft) return {'preset': 'centerLeft'};
+    if (alignment == Alignment.center) return {'preset': 'center'};
+    if (alignment == Alignment.centerRight) return {'preset': 'centerRight'};
+    if (alignment == Alignment.bottomLeft) return {'preset': 'bottomLeft'};
+    if (alignment == Alignment.bottomCenter) return {'preset': 'bottomCenter'};
+    if (alignment == Alignment.bottomRight) return {'preset': 'bottomRight'};
+
+    // 自定义值
+    return {
+      'x': alignment.x,
+      'y': alignment.y,
+    };
+  }
+}
+
+/// TileMode 序列化转换器
+class TileModeConverter implements JsonConverter<TileMode, String> {
+  const TileModeConverter();
+
+  @override
+  TileMode fromJson(String json) {
+    return TileMode.values.firstWhere(
+      (e) => e.name == json,
+      orElse: () => TileMode.clamp,
+    );
+  }
+
+  @override
+  String toJson(TileMode mode) {
+    return mode.name;
+  }
+}
+
+/// LinearGradient 序列化转换器
+class LinearGradientConverter implements JsonConverter<LinearGradient, Map<String, dynamic>> {
+  const LinearGradientConverter();
+
+  @override
+  LinearGradient fromJson(Map<String, dynamic> json) {
+    if (json.isEmpty) {
+      return const LinearGradient(colors: []);
+    }
+
+    // 解析颜色列表
+    final colorsList = json['colors'] as List<dynamic>?;
+    final colors = colorsList?.map((c) {
+          if (c is String) {
+            return parseHexColor(c) ?? const Color(0x00000000);
+          } else if (c is int) {
+            return Color(c);
+          }
+          return const Color(0x00000000);
+        }).toList() ??
+        [];
+
+    // 解析 stops
+    final stopsList = json['stops'] as List<dynamic>?;
+    final stops = stopsList?.map((s) => parseDouble(s) ?? 0.0).toList();
+
+    return LinearGradient(
+      begin: json.containsKey('begin') ? const AlignmentConverter().fromJson(json['begin']) : Alignment.centerLeft,
+      end: json.containsKey('end') ? const AlignmentConverter().fromJson(json['end']) : Alignment.centerRight,
+      colors: colors,
+      stops: stops,
+      tileMode: json.containsKey('tileMode') ? const TileModeConverter().fromJson(json['tileMode']) : TileMode.clamp,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson(LinearGradient gradient) {
+    return {
+      'begin': const AlignmentConverter().toJson(gradient.begin as Alignment),
+      'end': const AlignmentConverter().toJson(gradient.end as Alignment),
+      'colors': gradient.colors.map((c) => convertHexColor(c)).toList(),
+      if (gradient.stops != null) 'stops': gradient.stops,
+      'tileMode': const TileModeConverter().toJson(gradient.tileMode),
+    };
   }
 }
 
@@ -654,6 +884,9 @@ const _basicConverterList = <JsonConverter>[
   BorderConverter(),
   BorderRadiusConverter(),
   ClipConverter(),
+  AlignmentConverter(),
+  TileModeConverter(),
+  LinearGradientConverter(),
   BoxShadowConverter(),
   OffsetConverter(),
   TextAlignConvert(),
@@ -664,6 +897,9 @@ const _basicConverterList = <JsonConverter>[
   BagNumConverter(),
   ChartTypeConverter(),
   ChartBarStyleConverter(),
+  LineChartStyleConverter(),
+  LineChartTypeConverter(),
+  BarChartTypeConverter(),
   ITimeBarConvert(),
 ];
 
@@ -683,6 +919,7 @@ const FlexiIndicatorSerializable = JsonSerializable(
   converters: [
     IIndicatorKeyConvert(),
     PaintModeConverter(),
+    TimeBarChartTypesConverter(),
     ..._basicConverterList,
   ],
   explicitToJson: true,

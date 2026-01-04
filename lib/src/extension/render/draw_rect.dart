@@ -56,8 +56,8 @@ extension FlexiDrawRect on Canvas {
 
     // 矫正边界.
     if (drawableSize != null) {
-      double dy = math.max(
-        0,
+      final dy = math.max(
+        0.0,
         math.min(offset.dy, drawableSize.height - size.height),
       );
 

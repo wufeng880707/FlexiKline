@@ -128,7 +128,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
   }
 
   /// TimerBar变更回调
-  void onTapTimerBar(TimeBar timeBar) {
+  void onTapTimerBar(ITimeBar timeBar) {
     try {
       req = req.copyWith(timeBar: timeBar);
       print('copyWith 执行成功');

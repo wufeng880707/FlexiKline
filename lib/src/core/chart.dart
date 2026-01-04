@@ -19,13 +19,13 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   @override
   void init() {
     super.init();
-    logd("init chart");
+    logd('init chart');
   }
 
   @override
   void initState() {
     super.initState();
-    logd('initState indicator');
+    logd('initState chart');
     if (settingConfig.autoStartLastPriceCountDownTimer) {
       startLastPriceCountDownTimer();
     }
@@ -34,7 +34,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   @override
   void dispose() {
     super.dispose();
-    logd('dispose indicator');
+    logd('dispose chart');
     _repaintChart.dispose();
     _isChartStartZoom.dispose();
     _chartZoomSlideBarRect.dispose();
@@ -45,7 +45,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   @override
   void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
     super.onThemeChanged(oldTheme);
-    for (var paintObject in [mainPaintObject, ...subPaintObjects]) {
+    for (final paintObject in [mainPaintObject, ...subPaintObjects]) {
       paintObject.doDidChangeTheme();
     }
   }
@@ -147,7 +147,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
       canvas.restore();
     }
 
-    for (var paintObject in subPaintObjects) {
+    for (final paintObject in subPaintObjects) {
       /// 初始化副区指标数据.
       paintObject.doInitState(
         solt++,
@@ -189,8 +189,8 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
 
     panDistance ??= 0;
     // 计算提前触发LoadMore的偏移量
-    final loadMoreDistanceOffset = gestureConfig.loadMoreWhenNoEnoughDistance ??
-        gestureConfig.loadMoreWhenNoEnoughCandles * candleActualWidth;
+    final loadMoreDistanceOffset =
+        gestureConfig.loadMoreWhenNoEnoughDistance ?? gestureConfig.loadMoreWhenNoEnoughCandles * candleActualWidth;
 
     logd(
       'checkAndLoadMoreCandlesWhenPanEnd(panDistance:$panDistance, panDuration:$panDuration) => length:${curKlineData.length}, paintDxOffset:$paintDxOffset, maxPaintDxOffset:$maxPaintDxOffset, loadMoreDistanceOffset:$loadMoreDistanceOffset',
@@ -362,8 +362,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   void onChartZoomUpdate(GestureData data) {
     double delta = data.dyDelta / 2;
     if (delta == 0) return;
-    if (delta > 0 &&
-        (!canSetMainSize() || mainMinSize.height > (mainChartHeight + mainOriginPadding.height))) {
+    if (delta > 0 && (!canSetMainSize() || mainMinSize.height > (mainChartHeight + mainOriginPadding.height))) {
       logw(
         'onChartZoomUpdate > cannot zoom($delta), mainSize:$mainSize is smaller than the minSize:$mainMinSize',
       );
@@ -395,7 +394,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   @override
   bool onTap(Offset position) {
     if (super.onTap(position)) return true;
-    for (var paintObject in [mainPaintObject, ...subPaintObjects]) {
+    for (final paintObject in [mainPaintObject, ...subPaintObjects]) {
       if (paintObject.handleTap(position)) return true;
     }
     return false;

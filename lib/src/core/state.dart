@@ -24,7 +24,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   @override
   void init() {
     super.init();
-    logd("init state");
+    logd('init state');
     _klineDataCache = FIFOHashMap(capacity: klineDataCacheCapacity);
   }
 
@@ -355,7 +355,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
       return;
     }
 
-    KlineData? data = _klineDataCache[request.key];
+    final data = _klineDataCache[request.key];
     if (data == null) {
       logw('updateKlineData: cannot found klineData by $request');
       return;

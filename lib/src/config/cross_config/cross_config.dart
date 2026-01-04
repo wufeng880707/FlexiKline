@@ -47,7 +47,7 @@ class CrossConfig {
       ),
       radius: BorderRadius.all(Radius.circular(4)),
       style: TextStyle(
-        fontSize: defaulTextSize,
+        fontSize: defaultTextSize,
         overflow: TextOverflow.ellipsis,
         height: defaultMultiTextHeight,
       ),

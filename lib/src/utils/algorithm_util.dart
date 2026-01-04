@@ -21,7 +21,7 @@ import 'package:flutter/foundation.dart';
 /// 参考[gesture_test.dart]测试数据.
 /// y = Fn(x, k);
 double? scaledSingal(double x, double k, {double kMax = 30}) {
-  double sign = x.sign;
+  final sign = x.sign;
   x = x.abs();
   if (x < 1) {
     debugPrint('zp::: scaledSingal x must be >= 1');
@@ -29,10 +29,10 @@ double? scaledSingal(double x, double k, {double kMax = 30}) {
   }
 
   // 归一化 k
-  double kNorm = (k - 1) / (kMax - 1);
+  final kNorm = (k - 1) / (kMax - 1);
 
   // 使用对数函数处理 x，并结合 Sigmoid 函数
-  double y = 1 / (1 + math.exp(-kNorm * (math.log(x) - 1)));
+  final y = 1 / (1 + math.exp(-kNorm * (math.log(x) - 1)));
 
   return y * sign;
 }

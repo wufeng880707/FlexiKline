@@ -123,10 +123,8 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       // TODO: 优化Drawing的处理
     } else if (controller.isCrossing) {
       // TODO: 优化Crossing的处理
-    } else if (_zoomData == null &&
-        controller.isStartZoomChart &&
-        controller.mainRect.include(position)) {
-      logd("onPointerDown position:$position");
+    } else if (_zoomData == null && controller.isStartZoomChart && controller.mainRect.include(position)) {
+      logd('onPointerDown position:$position');
       _moveData = GestureData.move(position);
     }
   }
@@ -153,7 +151,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         }
 
         if (_tapData == null) return;
-        Offset newOffset = _tapData!.offset + event.delta;
+        final newOffset = _tapData!.offset + event.delta;
         // final mainRect = controller.mainRect;
         // if (!mainRect.include(newOffset)) {
         //   newOffset = newOffset.clamp(mainRect);
@@ -185,7 +183,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         GestureBinding.instance.gestureArena.sweep(event.pointer);
       }
 
-      Offset newOffset = _moveData!.offset + event.delta;
+      final newOffset = _moveData!.offset + event.delta;
       controller.onChartMove(_moveData!..update(newOffset));
     }
   }
@@ -211,7 +209,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         case Drawing():
           final pointerOffset = drawState.pointerOffset;
           if (pointerOffset != null && pointerOffset.isFinite) {
-            logd("onTapUp draw(drawing) confirm pointer:$pointerOffset");
+            logd('onTapUp draw(drawing) confirm pointer:$pointerOffset');
             _tapData = GestureData.tap(pointerOffset);
             controller.onDrawConfirm(_tapData!);
             if (drawState.isEditing) {
@@ -224,10 +222,10 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
           final offset = details.localPosition;
           final object = controller.hitTestDrawObject(offset);
           if (object != null && object != drawState.object) {
-            logd("onTapUp draw(editing) switch object:$object");
+            logd('onTapUp draw(editing) switch object:$object');
             controller.onDrawSelect(object);
           } else {
-            logd("onTapUp draw(editing) confirm offset:$offset");
+            logd('onTapUp draw(editing) confirm offset:$offset');
             _tapData = GestureData.tap(offset);
             controller.onDrawConfirm(_tapData!);
             _tapData?.end();
@@ -238,7 +236,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
           if (controller.drawConfig.allowSelectWhenExit) {
             final object = controller.hitTestDrawObject(details.localPosition);
             if (object != null) {
-              logd("onTapUp draw(exited) select object:$object");
+              logd('onTapUp draw(exited) select object:$object');
               controller.onDrawSelect(object);
               return;
             }
@@ -247,7 +245,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         case Prepared():
           final object = controller.hitTestDrawObject(details.localPosition);
           if (object != null) {
-            logd("onTapUp draw(prepared) select object:$object");
+            logd('onTapUp draw(prepared) select object:$object');
             controller.onDrawSelect(object);
             return;
           }
@@ -257,12 +255,12 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     // if (!controller.isCrossing) {
     // 这里检测是否命中指标图定制位置
     if (controller.onTap(details.localPosition)) {
-      logd("onTapUp handled! :$details");
+      logd('onTapUp handled! :$details');
       return;
     }
     // }
 
-    logd("onTapUp cross start details:$details");
+    logd('onTapUp cross start details:$details');
     _tapData = GestureData.tap(details.localPosition);
     final ret = controller.onCrossStart(_tapData!);
     if (!ret) {
@@ -275,7 +273,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   void onScaleStart(ScaleStartDetails details) {
     if (_panScaleData != null && !_panScaleData!.isEnd) {
       // 如果上次平移或缩放, 还没有结束, 不允许开始.
-      logd('onPanStart Currently still ongoing, ignore!!!');
+      logd('onScaleStart Currently still ongoing, ignore!!!');
       return;
     }
 
@@ -285,7 +283,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         return;
       }
       if (drawState.object?.lock == true) return;
-      logd("onScaleStart draw > details:$details");
+      logd('onScaleStart draw > details:$details');
       _panScaleData = GestureData.pan(details.localFocalPoint);
       final result = controller.onDrawMoveStart(_panScaleData!);
       if (!result) {
@@ -305,13 +303,13 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
           position = ScalePosition.middle;
         }
       }
-      logd("onScaleStart scale $position focal:${details.localFocalPoint}");
+      logd('onScaleStart scale $position focal:${details.localFocalPoint}');
       _panScaleData = GestureData.scale(
         details.localFocalPoint,
         position: position,
       );
     } else {
-      logd("onScaleStart pan focal:${details.localFocalPoint}");
+      logd('onScaleStart pan focal:${details.localFocalPoint}');
       _panScaleData = GestureData.pan(details.localFocalPoint);
     }
   }
@@ -319,7 +317,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   /// 平移/缩放中...
   void onScaleUpdate(ScaleUpdateDetails details) {
     if (_panScaleData == null) {
-      logd("onScaleUpdate panScaleData is empty! details:$details");
+      logd('onScaleUpdate panScaleData is empty! details:$details');
       return;
     }
 
@@ -358,7 +356,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   /// 平移/缩放结束.
   void onScaleEnd(ScaleEndDetails details) {
     if (_panScaleData == null) {
-      logd("onScaleEnd panScaledata and ticker is empty! > details:$details");
+      logd('onScaleEnd panScaledata and ticker is empty! > details:$details');
       return;
     }
 
@@ -372,7 +370,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     }
 
     if (_panScaleData!.isScale) {
-      logd("onScaleEnd scale. ${details.pointerCount}");
+      logd('onScaleEnd scale. ${details.pointerCount}');
       if (details.pointerCount <= 0) {
         _panScaleData?.end();
         _panScaleData = null;
@@ -392,7 +390,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         controller.curKlineData.isEmpty ||
         (velocity < 0 && !controller.canPanRTL) ||
         (velocity > 0 && !controller.canPanLTR)) {
-      logd("onScaleEnd currently can not pan!");
+      logd('onScaleEnd currently can not pan!');
       _panScaleData?.end();
       _panScaleData = null;
 
@@ -416,7 +414,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
 
     // 平移距离为0 或者 不足1ms, 无需继续平移
     if (panDistance.abs() < precisionError || panDuration <= 1) {
-      logd("onScaleEnd currently not need for inertial movement!");
+      logd('onScaleEnd currently not need for inertial movement!');
       _panScaleData?.end();
       _panScaleData = null;
 
@@ -452,7 +450,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   /// 如果当前正在crossing中时, 不触发后续的长按逻辑.
   void onLongPressStart(LongPressStartDetails details) {
     if (!gestureConfig.supportLongPress || controller.isCrossing) {
-      logd("onLongPressStart ignore! > crossing:${controller.isCrossing}");
+      logd('onLongPressStart ignore! > crossing:${controller.isCrossing}');
       return;
     }
 
@@ -462,7 +460,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         return;
       }
       if (drawState.object?.lock == true) return;
-      logd("onLongPressStart draw > details:$details");
+      logd('onLongPressStart draw > details:$details');
       _longData = GestureData.long(details.localPosition);
       final result = controller.onDrawMoveStart(_longData!);
       if (!result) {
@@ -470,10 +468,10 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         _longData = null;
       }
     } else if (!controller.isCrossing && controller.onGridMoveStart(details.localPosition)) {
-      logd("onLongPressStart move > details:$details");
+      logd('onLongPressStart move > details:$details');
       _longData = GestureData.long(details.localPosition);
     } else {
-      logd("onLongPressStart cross > details:$details");
+      logd('onLongPressStart cross > details:$details');
       _longData = GestureData.long(details.localPosition);
       final result = controller.onCrossStart(_longData!);
       if (!result) {
@@ -507,7 +505,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
 
   void onLongPressEnd(LongPressEndDetails details) {
     if (!gestureConfig.supportLongPress || _longData == null) {
-      logd("onLongPressEnd ignore! > details:$details");
+      logd('onLongPressEnd ignore! > details:$details');
       return;
     }
     // assert(() {
@@ -531,19 +529,17 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       _zoomData = null;
       return;
     }
-    logd("onVerticalDragDown zoom > details:$details");
+    logd('onVerticalDragDown zoom > details:$details');
     _zoomData = GestureData.zoom(details.localPosition);
   }
 
   void onVerticalDragStart(DragStartDetails details) {
-    if (_zoomData == null ||
-        (controller.isDrawVisibility && drawState.isOngoing) ||
-        controller.isCrossing) {
+    if (_zoomData == null || (controller.isDrawVisibility && drawState.isOngoing) || controller.isCrossing) {
       _zoomData = null;
       return;
     }
     _zoomData!.update(details.localPosition);
-    logd("onVerticalDragStart zoom > vertical starting distance:${_zoomData!.dyDelta}");
+    logd('onVerticalDragStart zoom > vertical starting distance:${_zoomData!.dyDelta}');
     if (_zoomData!.dyDelta.abs() < gestureConfig.zoomStartMinDistance ||
         !controller.onChartZoomStart(details.localPosition)) {
       _zoomData?.end();

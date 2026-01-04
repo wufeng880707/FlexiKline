@@ -19,18 +19,18 @@ part of 'core.dart';
 /// [current] 当前Cross选中的CandleMode数据.
 ///   如果为null, 说明当前Cross线已取消.
 /// [prev] 前一个CandleMode数据
-/// 1. 如果返回null, 则尝试用 [OnCrossI18nTooltipLables] 继续定制.
+/// 1. 如果返回null, 则尝试用 [OnCrossI18nTooltipLabels] 继续定制.
 /// 2. 如果返回const [], 则不会再展示Tooltip信息.
 typedef OnCrossCustomTooltipCallback = List<TooltipInfo>? Function(
   CandleModel? current, {
   CandleModel? prev,
 });
 
-/// 定制TooltipLables国际化
+/// 定制TooltipLabels国际化
 ///
-/// 1. 如果返回null, 则使用默认[defaultTooltipLables] 生成TooltipInfoList
+/// 1. 如果返回null, 则使用默认[defaultTooltipLabels] 生成TooltipInfoList
 /// 2. 如果返回const {}, 则不会再展示Tooltip信息
-typedef OnCrossI18nTooltipLables = Map<TooltipLabel, String>? Function();
+typedef OnCrossI18nTooltipLabels = Map<TooltipLabel, String>? Function();
 
 /// 负责Cross图层的绘制
 ///
@@ -178,7 +178,7 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       /// 绘制 Tooltip
       paintTooltip(canvas, offset, model: model);
 
-      for (var paintObject in subPaintObjects) {
+      for (final paintObject in subPaintObjects) {
         paintObject.doOnCross(canvas, offset, model: model);
       }
       mainPaintObject.doOnCross(canvas, offset, model: model);
@@ -205,7 +205,7 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
     if (!tooltipConfig.show) return;
     final tooltipTextStyle = tooltipConfig.style;
 
-    int? index = dxToIndex(offset.dx);
+    final index = dxToIndex(offset.dx);
     if (index == null) return;
     model ??= curKlineData.get(index);
     final pre = curKlineData.get(index + 1);
@@ -219,16 +219,16 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
     }
 
     if (tooltipInfoList == null) {
-      Map<TooltipLabel, String>? tooltipLables;
-      // 2. 使用定制多语言TooltipLables生成TooltipInfoList
-      if (onCrossI18nTooltipLables != null) {
-        tooltipLables = onCrossI18nTooltipLables!.call();
+      Map<TooltipLabel, String>? tooltipLabels;
+      // 2. 使用定制多语言TooltipLabels生成TooltipInfoList
+      if (onCrossI18nTooltipLabels != null) {
+        tooltipLabels = onCrossI18nTooltipLabels!.call();
       }
-      // 3. 使用FlexiKline内置(默认En)的Lables生成TooltipInfoList
-      tooltipLables ??= defaultTooltipLables;
+      // 3. 使用FlexiKline内置(默认En)的Labels生成TooltipInfoList
+      tooltipLabels ??= defaultTooltipLabels;
 
-      tooltipInfoList = genTooltipInfoListByLables(
-        tooltipLables,
+      tooltipInfoList = genTooltipInfoListByLabels(
+        tooltipLabels,
         model: model,
         pre: pre,
       );
@@ -242,7 +242,7 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
     TooltipInfo info;
     for (int i = 0; i < tooltipInfoList.length; i++) {
       info = tooltipInfoList[i];
-      String br = i < tooltipInfoList.length - 1 ? '\n' : '';
+      final br = i < tooltipInfoList.length - 1 ? '\n' : '';
       labelSpanList.add(TextSpan(
         text: info.label + br,
         style: info.labelStyle ?? tooltipTextStyle,
@@ -269,9 +269,9 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
 
     if (offset.dx > mainChartWidthHalf) {
       // 点击区域在右边; 绘制在左边
-      Offset offset = Offset(
+      final offset = Offset(
         mainRect.left + tooltipConfig.margin.left,
-        mainRect.top + top,
+        top,
       );
 
       final size = canvas.drawText(
@@ -314,9 +314,9 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       );
     } else {
       // 点击区域在左边; 绘制在右边
-      Offset offset = Offset(
+      final offset = Offset(
         mainRect.right - tooltipConfig.margin.right,
-        mainRect.top + top,
+        top,
       );
 
       final size = canvas.drawText(
@@ -361,25 +361,25 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
   }
 
   /// Tooltip定制回调
-  /// 当未实现此接口或定制返回null: 后续将触发[onCrossI18nTooltipLables]接口实现.
+  /// 当未实现此接口或定制返回null: 后续将触发[onCrossI18nTooltipLabels]接口实现.
   /// 当定制返回[]空数组时: 说明由用户自行在页面自由定制.
   OnCrossCustomTooltipCallback? onCrossCustomTooltip;
 
-  /// TooltipLables多语言回调
-  /// 当未实现此接口或定制返回为null: 将使用[defaultTooltipLables]默认英文Tooltip.
-  OnCrossI18nTooltipLables? onCrossI18nTooltipLables;
+  /// TooltipLabels多语言回调
+  /// 当未实现此接口或定制返回为null: 将使用[defaultTooltipLabels]默认英文Tooltip.
+  OnCrossI18nTooltipLabels? onCrossI18nTooltipLabels;
 
-  /// 根据TooltipLables生成TooltipInfoList.
-  List<TooltipInfo> genTooltipInfoListByLables(
-    Map<TooltipLabel, String> tooltipLables, {
+  /// 根据TooltipLabels生成TooltipInfoList.
+  List<TooltipInfo> genTooltipInfoListByLabels(
+    Map<TooltipLabel, String> tooltipLabels, {
     required CandleModel model,
     CandleModel? pre,
   }) {
-    if (tooltipLables.isEmpty) return const [];
+    if (tooltipLabels.isEmpty) return const [];
     final p = curKlineData.precision;
 
     final list = <TooltipInfo>[];
-    tooltipLables.forEach((key, label) {
+    tooltipLabels.forEach((key, label) {
       String? value;
       int riseOrFall = 0;
       switch (key) {

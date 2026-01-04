@@ -22,8 +22,6 @@ mixin CandleReqData on BaseData {
   ITimeBar get timeBar => req.timeBar;
   bool get invalid => req.instId.isEmpty;
 
-  bool get isTimeChart => timeBar == TimeBar.s1;
-
   @override
   CandleReq updateState({RequestState state = RequestState.none}) {
     return _req = req.copyWith(
@@ -44,7 +42,9 @@ mixin CandleReqData on BaseData {
     if (isEmpty || reset) {
       return req.copyWith(after: null, before: null);
     }
-    final model = list.secondWhereOrNull((m) => m.calcuData.dataList.hasValidData);
+    final model = list.secondWhereOrNull(
+      (m) => m.calcuData.dataList.hasValidData,
+    );
     return req.copyWith(
       after: null,
       before: model?.ts,

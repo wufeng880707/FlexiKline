@@ -17,7 +17,6 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:example/generated/l10n.dart';
-import 'package:flexi_formatter/date_time.dart';
 import 'package:flexi_kline/flexi_kline.dart' hide Overlay;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -188,6 +187,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   /// 获取默认主指标配置的方法，用于重置操作
   /// 优先从JSON同步加载，如果没有则使用代码默认值
+  @override
   Map<IIndicatorKey, IndicatorBuilder> getDefaultMainIndicatorBuilders() {
     try {
       // 1. 尝试从JSON同步加载
@@ -450,37 +450,23 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   // ========== 时间周期配置 ==========
 
   /// 获取时间周期配置列表
-  List<TimeBar> getTimeBarConfigs() {
-    return timeBarBuilders();
-  }
-
-  List<TimeBar> timeBarBuilders() {
+  @override
+  List<ITimeBar> getTimeBarConfigs() {
+    // 返回常用的时间周期列表
     return [
-      TimeBar.m1,
-      TimeBar.m3,
-      TimeBar.m5,
-      TimeBar.m15,
-      TimeBar.m30,
-      TimeBar.H1,
-      TimeBar.H2,
-      TimeBar.H4,
-      TimeBar.H6,
-      TimeBar.H12,
-      TimeBar.D1,
-      TimeBar.D2,
-      TimeBar.D3,
-      TimeBar.W1,
-      TimeBar.M1,
-      TimeBar.M3,
-      // UTC
-      TimeBar.utc6H,
-      TimeBar.utc12H,
-      TimeBar.utc1D,
-      TimeBar.utc2D,
-      TimeBar.utc3D,
-      TimeBar.utc1W,
-      TimeBar.utc1M,
-      TimeBar.utc3M,
+      TimeBar.m1, // 1m
+      TimeBar.m3, // 3m
+      TimeBar.m5, // 5m
+      TimeBar.m15, // 15m
+      TimeBar.m30, // 30m
+      TimeBar.H1, // 1H
+      TimeBar.H2, // 2H
+      TimeBar.H4, // 4H
+      TimeBar.H6, // 6H
+      TimeBar.H12, // 12H
+      TimeBar.D1, // 1D
+      TimeBar.W1, // 1W
+      TimeBar.M1, // 1M
     ];
   }
 

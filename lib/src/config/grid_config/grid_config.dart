@@ -24,7 +24,7 @@ part 'grid_config.g.dart';
 ///
 /// 如果指定[dragLine]时:
 /// 1. 当拖拽中时, 使用[dragLine]绘制预拖拽的指标图的底部边线.
-/// 2. 当未拖拽时, 使用[drawLine]绘制其lenght指定长度的线. 其中线类型为实线, 颜色不透明度为[draggingBgOpacity], 且位于指标图底部线居中位置.
+/// 2. 当未拖拽时, 使用[drawLine]绘制其length指定长度的线. 其中线类型为实线, 颜色不透明度为[draggingBgOpacity], 且位于指标图底部线居中位置.
 ///
 /// 如果未指定:
 /// 1. 默认会根据[dragHitTestMinDistance]计算可拖拽区域, 并使用[theme.dragBg]进行填充.

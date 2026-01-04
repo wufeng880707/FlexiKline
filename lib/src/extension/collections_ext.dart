@@ -45,21 +45,21 @@ extension FlexiKlineListExt<T> on List<T> {
 extension FlexiIterableExt<T> on Iterable<T> {
   bool get hasValidData {
     if (isEmpty) return false;
-    for (T t in this) {
+    for (final t in this) {
       if (t != null) return true;
     }
     return false;
   }
 
   T? get secondOrNull {
-    var iterator = this.iterator;
+    final iterator = this.iterator;
     iterator.moveNext();
     if (iterator.moveNext()) return iterator.current;
     return null;
   }
 
   T? get thirdOrNull {
-    var iterator = this.iterator;
+    final iterator = this.iterator;
     iterator
       ..moveNext()
       ..moveNext();
@@ -86,14 +86,14 @@ extension FlexiIterableExt<T> on Iterable<T> {
   /// iteration order.
   void forEachIndexed(void Function(int index, T element) action) {
     var index = 0;
-    for (var element in this) {
+    for (final element in this) {
       action(index++, element);
     }
   }
 
   /// Map each element and filter out the non-empty ones.
   Iterable<R> mapNonNullList<R>(R? Function(T element) convert) sync* {
-    for (var element in this) {
+    for (final element in this) {
       final item = convert(element);
       if (item != null) yield item;
     }
@@ -102,7 +102,7 @@ extension FlexiIterableExt<T> on Iterable<T> {
   /// Maps each element and its index to a new value.
   Iterable<R> mapIndexed<R>(R Function(int index, T element) convert) sync* {
     var index = 0;
-    for (var element in this) {
+    for (final element in this) {
       yield convert(index++, element);
     }
   }
@@ -110,7 +110,7 @@ extension FlexiIterableExt<T> on Iterable<T> {
   /// The elements whose value and index satisfies [test].
   Iterable<T> whereIndexed(bool Function(int index, T element) test) sync* {
     var index = 0;
-    for (var element in this) {
+    for (final element in this) {
       if (test(index++, element)) yield element;
     }
   }
@@ -124,7 +124,7 @@ extension FlexiIterableExt<T> on Iterable<T> {
     // assert(start >= 0, 'start:$start must be non-negative');
     // assert(end == null || end >= start, 'end:$end must be greater than start:$start');
     var index = 0;
-    for (var element in this) {
+    for (final element in this) {
       if (index >= start && (end == null || index < end)) {
         yield element;
       }
@@ -143,7 +143,7 @@ extension FlexiIterableExt<T> on Iterable<T> {
   /// there is only one element.
   /// There must be at least one element.
   T reduceIndexed(T Function(int index, T previous, T element) combine) {
-    var iterator = this.iterator;
+    final iterator = this.iterator;
     if (!iterator.moveNext()) {
       throw StateError('no elements');
     }
@@ -166,7 +166,7 @@ extension FlexiIterableExt<T> on Iterable<T> {
   R foldIndexed<R>(R initialValue, R Function(int index, R previous, T element) combine) {
     var result = initialValue;
     var index = 0;
-    for (var element in this) {
+    for (final element in this) {
       result = combine(index++, result, element);
     }
     return result;
@@ -174,7 +174,7 @@ extension FlexiIterableExt<T> on Iterable<T> {
 
   /// The second element that continuously satisfying [test], or `null` element if there are none.
   T? secondWhereOrNull(bool Function(T element) test) {
-    var iterator = this.iterator;
+    final iterator = this.iterator;
     while (iterator.moveNext()) {
       if (test(iterator.current)) {
         if (iterator.moveNext() && test(iterator.current)) {
@@ -187,7 +187,7 @@ extension FlexiIterableExt<T> on Iterable<T> {
 
   /// The first element satisfying [test], or `null` if there are none.
   T? firstWhereOrNull(bool Function(T element) test) {
-    for (var element in this) {
+    for (final element in this) {
       if (test(element)) return element;
     }
     return null;
@@ -198,7 +198,7 @@ extension FlexiIterableExt<T> on Iterable<T> {
   /// Returns `null` if there are no element and index satisfying [test].
   T? firstWhereIndexedOrNull(bool Function(int index, T element) test) {
     var index = 0;
-    for (var element in this) {
+    for (final element in this) {
       if (test(index++, element)) return element;
     }
     return null;
@@ -239,9 +239,9 @@ extension FlexiIterableExt<T> on Iterable<T> {
   /// Result: [[1, 2], [3, 4], [5]]
   Iterable<List<T>> chunk(int size) sync* {
     if (size <= 0) throw ArgumentError('Size must be positive');
-    var iterator = this.iterator;
+    final iterator = this.iterator;
     while (iterator.moveNext()) {
-      var chunk = [iterator.current];
+      final chunk = [iterator.current];
       for (var i = 1; i < size && iterator.moveNext(); i++) {
         chunk.add(iterator.current);
       }

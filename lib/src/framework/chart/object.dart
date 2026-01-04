@@ -165,6 +165,9 @@ abstract class CandleBasePaintObject<T extends CandleBaseIndicator> extends Pain
     required T super.indicator,
   });
 
+  /// 获取当前蜡烛图的绘制类型.
+  ChartType getChartType();
+
   @nonVirtual
   void moveToInitialPosition() {
     (_context as StateBinding).moveToInitialPosition();
@@ -203,6 +206,35 @@ final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObj
 
   final SortableHashSet<PaintObject> children;
 
+  Set<PaintObject> get paintableChildren {
+    if (onlyMainChart) {
+      return children.where((object) => object.key == candleIndicatorKey).toSet();
+    }
+    return children;
+  }
+
+  /// 获取蜡烛图绘制对象
+  CandleBasePaintObject? get _candlePaintObject {
+    return children.firstWhereOrNull(
+      (obj) => obj.key == candleIndicatorKey,
+    ) as CandleBasePaintObject?;
+  }
+
+  /// 是否只绘制主图（隐藏技术指标）
+  /// 当 CandleIndicator 配置允许且当前图表类型为线图时返回 true
+  bool get onlyMainChart {
+    final candleObject = _candlePaintObject;
+    if (candleObject == null) return false;
+    if (candleObject.indicator is! CandleIndicator) return false;
+
+    // 1. 优先检查配置项（简单的布尔检查，更快）
+    final indicator = candleObject.indicator as CandleIndicator;
+    if (!indicator.hideIndicatorsWhenLineChart) return false;
+
+    // 2. 再检查当前图表类型是否为线图（涉及计算，较慢）
+    return candleObject.getChartType().isLine;
+  }
+
   @override
   T get indicator => _indicator as T;
 
@@ -219,7 +251,7 @@ final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObj
 
   @override
   bool handleTap(Offset position) {
-    for (var object in children) {
+    for (final object in children) {
       if (object.handleTap(position)) return true;
     }
     return false;
@@ -227,14 +259,14 @@ final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObj
 
   @override
   void precompute(Range range, {bool reset = false}) {
-    for (var object in children) {
+    for (final object in children) {
       object.precompute(range, reset: reset);
     }
   }
 
   @override
   void didChangeTheme() {
-    for (var object in children) {
+    for (final object in children) {
       object.didChangeTheme();
     }
   }
@@ -263,7 +295,7 @@ final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObj
   @override
   void dispose() {
     super.dispose();
-    for (var object in children) {
+    for (final object in children) {
       object.dispose();
     }
     children.clear();

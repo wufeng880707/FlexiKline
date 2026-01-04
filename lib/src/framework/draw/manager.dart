@@ -50,7 +50,7 @@ final class OverlayDrawObjectManager with KlineLog {
   Map<String, Iterable<IDrawType>> get supportDrawGroupTypes {
     if (_supportDrawGroupTypes == null || _supportDrawGroupTypes!.isEmpty) {
       final groupMap = <String, Set<IDrawType>>{};
-      for (var type in supportDrawTypes) {
+      for (final type in supportDrawTypes) {
         final set = groupMap[type.groupId] ??= LinkedHashSet<IDrawType>(
           equals: (p0, p1) {
             return p0.groupId == p1.groupId && p0.id == p1.id && p0.steps == p1.steps;
@@ -97,7 +97,7 @@ final class OverlayDrawObjectManager with KlineLog {
     _overlayObjectList.clear();
     _instId = request.instId;
     final list = configuration.getDrawOverlayList(_instId);
-    for (var overlay in list) {
+    for (final overlay in list) {
       final object = generateDrawObject(overlay, config);
       if (object != null) {
         addDrawObject(object);
@@ -117,7 +117,7 @@ final class OverlayDrawObjectManager with KlineLog {
   void updateDrawOverlaysConfig(DrawConfig config) {
     _overlayObjectList.clear();
     final list = configuration.getDrawOverlayList(_instId);
-    for (var overlay in list) {
+    for (final overlay in list) {
       final object = generateDrawObject(overlay, config);
       if (object != null) {
         addDrawObject(object);
@@ -126,7 +126,7 @@ final class OverlayDrawObjectManager with KlineLog {
   }
 
   void dispose() {
-    for (var obj in _overlayObjectList) {
+    for (final obj in _overlayObjectList) {
       obj.dispose();
     }
     _overlayObjectList.clear();
@@ -135,7 +135,7 @@ final class OverlayDrawObjectManager with KlineLog {
   /// 清理当前所有的Overlay.
   void storeAndCleanAllDrawObject() {
     storeDrawOverlaysConfig();
-    for (var obj in _overlayObjectList) {
+    for (final obj in _overlayObjectList) {
       obj.dispose();
     }
     _overlayObjectList.clear();

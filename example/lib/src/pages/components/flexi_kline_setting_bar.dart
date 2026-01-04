@@ -13,8 +13,6 @@
 // limitations under the License.
 
 import 'package:example/generated/l10n.dart';
-import 'package:example/src/providers/bit_kline_config.dart';
-import 'package:example/src/providers/default_kline_config.dart';
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +41,7 @@ class FlexiKlineSettingBar extends ConsumerStatefulWidget {
   });
 
   final FlexiKlineController controller;
-  final ValueChanged<TimeBar> onTapTimeBar;
+  final ValueChanged<ITimeBar> onTapTimeBar;
 
   final AlignmentGeometry? alignment;
   final Decoration? decoration;
@@ -68,19 +66,11 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
   }
 
   /// 获取时间周期配置列表
-  List<TimeBar> _getTimeBarConfigs() {
-    final config = widget.controller.configuration;
-    if (config is BitFlexiKlineConfiguration) {
-      return config.getTimeBarConfigs();
-    } else if (config is DefaultFlexiKlineConfiguration) {
-      return config.getTimeBarConfigs();
-    } else {
-      // 回退到空列表，避免调用不存在的方法
-      return <TimeBar>[];
-    }
+  List<ITimeBar> _getTimeBarConfigs() {
+    return widget.controller.configuration.getTimeBarConfigs();
   }
 
-  List<TimeBar> get preferTimeBarList => [
+  List<ITimeBar> get preferTimeBarList => [
         ..._getTimeBarConfigs().where((e) =>
             e.key == '1m' ||
             e.key == '15m' ||
@@ -90,9 +80,9 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
             e.key == '1W'),
       ];
 
-  bool isPreferTimeBar(TimeBar timeBar) => preferTimeBarList.contains(timeBar);
+  bool isPreferTimeBar(ITimeBar timeBar) => preferTimeBarList.contains(timeBar);
 
-  List<TimeBar> get showTimeBarList => wideScreen ? _getTimeBarConfigs() : preferTimeBarList;
+  List<ITimeBar> get showTimeBarList => wideScreen ? _getTimeBarConfigs() : preferTimeBarList;
 
   final timeBarSettingBtnStatus = ValueNotifier(false);
   Future<void> onTapTimeBarSetting() async {
@@ -200,10 +190,10 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
             child: ValueListenableBuilder(
               valueListenable: widget.controller.timeBarListener,
               builder: (context, value, child) {
-                final showMore = value == null || (value is TimeBar && isPreferTimeBar(value));
+                final showMore = value == null || isPreferTimeBar(value);
                 return TextArrowButton(
                   onPressed: onTapTimeBarSetting,
-                  text: showMore ? s.more : (value is TimeBar ? value.showName : ''),
+                  text: showMore ? s.more : value.showName,
                   iconStatus: timeBarSettingBtnStatus,
                   background: showMore ? null : theme.markBg,
                 );
@@ -240,7 +230,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
 
   Widget _buildTimeBarList(
     BuildContext context, {
-    required List<TimeBar> timerBarList,
+    required List<ITimeBar> timerBarList,
   }) {
     return ValueListenableBuilder(
       valueListenable: widget.controller.timeBarListener,
@@ -285,8 +275,8 @@ class TimeBarTabBar extends ConsumerStatefulWidget {
     this.onTapTimeBar,
   });
 
-  final List<TimeBar> timerBarList;
-  final ValueChanged<TimeBar>? onTapTimeBar;
+  final List<ITimeBar> timerBarList;
+  final ValueChanged<ITimeBar>? onTapTimeBar;
   final ValueListenable<ITimeBar?> timeBarListener;
 
   @override
@@ -297,7 +287,7 @@ class _TimeTabBarViewState extends ConsumerState<TimeBarTabBar>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  List<TimeBar> get timerBarList => widget.timerBarList;
+  List<ITimeBar> get timerBarList => widget.timerBarList;
 
   @override
   void initState() {
@@ -339,9 +329,9 @@ class _TimeTabBarViewState extends ConsumerState<TimeBarTabBar>
     return ValueListenableBuilder(
       valueListenable: widget.timeBarListener,
       builder: (context, value, child) {
-        bool isInList = value != null;
-        if (isInList) {
-          final index = (value is TimeBar) ? timerBarList.indexOf(value) : -1;
+        bool isInList = false;
+        if (value != null) {
+          final index = timerBarList.indexOf(value);
           isInList = index >= 0;
           if (isInList && index != _tabController.index) {
             _tabController.animateTo(index);

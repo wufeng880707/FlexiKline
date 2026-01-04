@@ -17,7 +17,7 @@ abstract class _$MagnifierConfigCWProxy {
 
   MagnifierConfig clipBehavior(Clip clipBehavior);
 
-  MagnifierConfig decorationOpactity(double decorationOpactity);
+  MagnifierConfig decorationOpacity(double decorationOpacity);
 
   MagnifierConfig decorationShadows(List<BoxShadow>? decorationShadows);
 
@@ -35,7 +35,7 @@ abstract class _$MagnifierConfigCWProxy {
     Size size,
     double magnificationScale,
     Clip clipBehavior,
-    double decorationOpactity,
+    double decorationOpacity,
     List<BoxShadow>? decorationShadows,
     BorderSide shapeSide,
   });
@@ -65,8 +65,8 @@ class _$MagnifierConfigCWProxyImpl implements _$MagnifierConfigCWProxy {
       this(clipBehavior: clipBehavior);
 
   @override
-  MagnifierConfig decorationOpactity(double decorationOpactity) =>
-      this(decorationOpactity: decorationOpactity);
+  MagnifierConfig decorationOpacity(double decorationOpacity) =>
+      this(decorationOpacity: decorationOpacity);
 
   @override
   MagnifierConfig decorationShadows(List<BoxShadow>? decorationShadows) =>
@@ -89,7 +89,7 @@ class _$MagnifierConfigCWProxyImpl implements _$MagnifierConfigCWProxy {
     Object? size = const $CopyWithPlaceholder(),
     Object? magnificationScale = const $CopyWithPlaceholder(),
     Object? clipBehavior = const $CopyWithPlaceholder(),
-    Object? decorationOpactity = const $CopyWithPlaceholder(),
+    Object? decorationOpacity = const $CopyWithPlaceholder(),
     Object? decorationShadows = const $CopyWithPlaceholder(),
     Object? shapeSide = const $CopyWithPlaceholder(),
   }) {
@@ -114,10 +114,10 @@ class _$MagnifierConfigCWProxyImpl implements _$MagnifierConfigCWProxy {
           ? _value.clipBehavior
           // ignore: cast_nullable_to_non_nullable
           : clipBehavior as Clip,
-      decorationOpactity: decorationOpactity == const $CopyWithPlaceholder()
-          ? _value.decorationOpactity
+      decorationOpacity: decorationOpacity == const $CopyWithPlaceholder()
+          ? _value.decorationOpacity
           // ignore: cast_nullable_to_non_nullable
-          : decorationOpactity as double,
+          : decorationOpacity as double,
       decorationShadows: decorationShadows == const $CopyWithPlaceholder()
           ? _value.decorationShadows
           // ignore: cast_nullable_to_non_nullable
@@ -155,8 +155,7 @@ MagnifierConfig _$MagnifierConfigFromJson(Map<String, dynamic> json) =>
       clipBehavior: json['clipBehavior'] == null
           ? Clip.none
           : const ClipConverter().fromJson(json['clipBehavior'] as String),
-      decorationOpactity:
-          (json['decorationOpactity'] as num?)?.toDouble() ?? 1.0,
+      decorationOpacity: (json['decorationOpacity'] as num?)?.toDouble() ?? 1.0,
       decorationShadows: (json['decorationShadows'] as List<dynamic>?)
           ?.map((e) =>
               const BoxShadowConverter().fromJson(e as Map<String, dynamic>))
@@ -174,7 +173,7 @@ Map<String, dynamic> _$MagnifierConfigToJson(MagnifierConfig instance) =>
       'size': const SizeConverter().toJson(instance.size),
       'magnificationScale': instance.magnificationScale,
       'clipBehavior': const ClipConverter().toJson(instance.clipBehavior),
-      'decorationOpactity': instance.decorationOpactity,
+      'decorationOpacity': instance.decorationOpacity,
       if (instance.decorationShadows
               ?.map(const BoxShadowConverter().toJson)
               .toList()

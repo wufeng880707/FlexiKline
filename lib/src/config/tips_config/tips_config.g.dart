@@ -98,7 +98,7 @@ TipsConfig _$TipsConfigFromJson(Map<String, dynamic> json) => TipsConfig(
       isShow: json['isShow'] as bool? ?? true,
       style: json['style'] == null
           ? const TextStyle(
-              fontSize: defaulTextSize,
+              fontSize: defaultTextSize,
               color: Color(0xFF000000),
               overflow: TextOverflow.ellipsis,
               height: defaultTipsTextHeight)
