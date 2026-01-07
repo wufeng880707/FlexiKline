@@ -156,6 +156,9 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
           initOffset ??= mainRect.center;
           object.setPointer(Point.pointer(0, magneticSnap(initOffset)));
         }
+        // 【新增】初始化时更新监听器，让放大镜显形
+        _drawPointerListener.updateValue(object.pointer);
+
         _drawState = DrawState.draw(object);
       } else {
         _drawState = const Prepared();
@@ -180,6 +183,9 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     final newOffset = magneticSnap(data.offset);
     if (newOffset != pointer.offset) {
       object.onUpdateDrawPoint(pointer, newOffset);
+
+      // 【新增】绘制移动时，实时更新放大镜位置
+      _drawPointerListener.updateValue(pointer);
       _markRepaintDraw();
     }
   }
@@ -212,11 +218,18 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
           if (nextObj != null) {
             final initOffset = object.lastPoint?.offset ?? data.offset;
             nextObj.setPointer(Point.pointer(0, magneticSnap(initOffset)));
+
+            // 【新增】连续绘制模式：更新为下一个点的指针
+            _drawPointerListener.updateValue(nextObj.pointer);
+
             _drawState = DrawState.draw(nextObj);
           } else {
             _drawState = Editing(object);
           }
         } else {
+
+          // 【新增】绘制结束：清空指针，隐藏放大镜
+          _drawPointerListener.updateValue(null);
           _drawState = Editing(object);
         }
       }

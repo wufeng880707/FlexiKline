@@ -138,7 +138,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   Future<Map<String, dynamic>?> loadThemeJsonConfig() async {
     try {
       final String jsonString =
-          await rootBundle.loadString('example/lib/default_flexi_kline_configuration.json');
+          await rootBundle.loadString('lib/default_flexi_kline_configuration.json');
       final Map<String, dynamic> config = jsonDecode(jsonString);
       defLogger.d('Successfully loaded theme JSON config');
       return config;

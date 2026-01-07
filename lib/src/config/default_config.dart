@@ -15,21 +15,21 @@
 import 'package:flutter/material.dart' hide Overlay;
 
 import '../constant.dart';
-import '../extension/render/common.dart';
 import '../extension/basic_type_ext.dart';
+import '../extension/render/common.dart';
 import '../framework/export.dart';
 import '../indicators/export.dart';
 import 'cross_config/cross_config.dart';
-import 'magnifier_config/magnifier_config.dart';
-import 'point_config/point_config.dart';
 import 'draw_config/draw_config.dart';
 import 'flexi_kline_config/flexi_kline_config.dart';
 import 'gesture_config/gesture_config.dart';
 import 'grid_config/grid_config.dart';
 import 'line_config/line_config.dart';
 import 'loading_config/loading_config.dart';
+import 'magnifier_config/magnifier_config.dart';
 import 'mark_config/mark_config.dart';
 import 'paint_config/paint_config.dart';
+import 'point_config/point_config.dart';
 import 'setting_config/setting_config.dart';
 import 'text_area_config/text_area_config.dart';
 import 'tolerance_config/tolerance_config.dart';
@@ -199,6 +199,11 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   @override
   Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders => {};
 
+  @override
+  List<ITimeBar> getTimeBarConfigs() {
+    return TimeBar.values;
+  }
+
   /// Grid配置
   GridConfig genGridConfig([GridConfig? grid]) {
     return GridConfig(
@@ -288,7 +293,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       scalePosition: gesture?.scalePosition ?? ScalePosition.auto,
       scaleSpeed: gesture?.scaleSpeed ?? 10,
       supportKeyboardShortcuts: gesture?.supportKeyboardShortcuts ?? true,
-      enableZoom: gesture?.enableZoom ?? false,
+      enableZoom: gesture?.enableZoom ?? true,
       zoomStartMinDistance: gesture?.zoomStartMinDistance ?? 5,
       zoomSpeed: gesture?.zoomSpeed ?? 1,
     );
@@ -307,7 +312,8 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
       /// 主/副图绘制参数
       minPaintBlankRate: setting?.minPaintBlankRate ?? 0.5,
-      alwaysCalculateScreenOfCandlesIfEnough: setting?.alwaysCalculateScreenOfCandlesIfEnough ?? false,
+      alwaysCalculateScreenOfCandlesIfEnough:
+          setting?.alwaysCalculateScreenOfCandlesIfEnough ?? false,
       candleMinWidth: setting?.candleMinWidth ?? 1 * theme.pixel,
       candleMaxWidth: setting?.candleMaxWidth ?? 40 * theme.scale,
       candleWidth: setting?.candleWidth ?? 7 * theme.scale,
@@ -543,7 +549,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
               offset: const Offset(0.1, 0.1),
               blurRadius: 2,
               spreadRadius: 3,
-              color: theme.themeColor.withAlpha(0.1.alpha), // 此处不适配Theme
+              color: theme.themeColor.withAlpha(0.1.alpha),
             )
           ],
           shapeSide: BorderSide(
@@ -553,6 +559,8 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         ),
       ).of(
         sideColor: theme.gridLine,
+        // 【新增】注入阴影颜色：使用文本颜色的 20% 透明度，适配深浅主题
+        shadowColor: theme.textColor.withOpacity(0.05),
       ),
     );
   }

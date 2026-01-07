@@ -198,7 +198,7 @@ extension FromJsonExt<T> on FromJson<T> {
 /// 通过[fromJson]函数将[json]数据转换为类型[T]的实例
 T? jsonToInstance<T>(Map<String, dynamic>? json, FromJson<T> fromJson) {
   if (json == null || json.isEmpty) return null;
-    // 增加类型检查
+  // 增加类型检查
   if (json is! Map<String, dynamic>) {
     debugPrint('⚠️ jsonToInstance: Expected Map<String, dynamic> but got ${json.runtimeType}');
     return null;

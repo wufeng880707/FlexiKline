@@ -9,8 +9,7 @@
   ],
   "_comment_defaultColors": "默认颜色池，新增MA线时自动分配",
   
-  "mainIndicators": {    
-
+  "mainIndicators": {
     "ma": {
       "_comment": "移动平均线指标配置",
       "type": "ma",

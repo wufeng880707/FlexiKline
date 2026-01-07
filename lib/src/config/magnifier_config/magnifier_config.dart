@@ -87,10 +87,31 @@ class MagnifierConfig {
 
   MagnifierConfig of({
     Color? sideColor,
+    Color? shadowColor, 
   }) {
-    if (shapeSide.color == sideColor) return this;
+    // 【新增】处理阴影颜色替换
+    var newShadows = decorationShadows;
+    if (shadowColor != null && decorationShadows != null) {
+      newShadows = decorationShadows!.map((e) {
+        return BoxShadow(
+          color: shadowColor,
+          offset: e.offset,
+          blurRadius: e.blurRadius,
+          spreadRadius: e.spreadRadius,
+          blurStyle: e.blurStyle,
+        );
+      }).toList();
+    }
+
+    // 处理边框颜色 (原有逻辑保持不变)
+    var newSide = shapeSide;
+    if (sideColor != null && shapeSide.color != sideColor) {
+      newSide = shapeSide.copyWith(color: sideColor);
+    }
+
     return copyWith(
-      shapeSide: shapeSide.copyWith(color: sideColor),
+      shapeSide: newSide,
+      decorationShadows: newShadows, // 【新增】应用新阴影
     );
   }
 
