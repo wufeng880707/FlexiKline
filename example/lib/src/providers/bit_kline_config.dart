@@ -109,7 +109,7 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   Color get lastPriceTextBg => Colors.black54;
 
   @override
-  Color get gridLine => const Color(0xFF949494);
+  Color get gridLine => const Color(0xFFB0B0B0);
 
   Color get markLine => const Color(0xFF949494);
 
@@ -188,7 +188,7 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   Color get crossTextBg => const Color(0xFF404040);
 
   @override
-  Color get gridLine => const Color(0xFF222222);
+  Color get gridLine => const Color(0xFF333333);
 
   Color get markLine => const Color(0xFFA0A0A0);
 
@@ -246,8 +246,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   // 加载指标JSON配置
   Future<Map<String, dynamic>?> _loadIndicatorJsonConfig() async {
     try {
-      final String jsonString =
-          await rootBundle.loadString('lib/flexi_kline_indicators_configuration.json');
+      final String jsonString = await rootBundle.loadString('lib/flexi_kline_indicators_configuration.json');
       final Map<String, dynamic> config = jsonDecode(jsonString);
       defLogger.d('Successfully loaded indicator JSON config for bit theme');
       return config;
@@ -260,8 +259,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   // 加载主题JSON配置
   Future<Map<String, dynamic>?> _loadThemeJsonConfig() async {
     try {
-      final String jsonString =
-          await rootBundle.loadString('lib/default_flexi_kline_configuration.json');
+      final String jsonString = await rootBundle.loadString('lib/default_flexi_kline_configuration.json');
       final Map<String, dynamic> config = jsonDecode(jsonString);
       defLogger.d('Successfully loaded theme JSON config for bit theme');
       return config;
@@ -402,9 +400,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
       if (jsonStr != null && jsonStr.isNotEmpty) {
         final json = jsonDecode(jsonStr);
         if (json is List) {
-          return json
-              .map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>))
-              .toList();
+          return json.map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>)).toList();
         }
       }
     } catch (err, stack) {
@@ -465,9 +461,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
       if (jsonStr != null && jsonStr.isNotEmpty) {
         final json = jsonDecode(jsonStr);
         if (json is List) {
-          return json
-              .map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>))
-              .toList();
+          return json.map((e) => flexi_overlay.Overlay.fromJson(e as Map<String, dynamic>)).toList();
         }
       }
     } catch (err, stack) {
@@ -487,8 +481,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   }
 
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator(
-      [MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
+  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator([MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
     final theme = ref.read(bitFlexiKlineThemeProvider);
     return MainPaintObjectIndicator<PaintObjectIndicator>(
       size: Size(ScreenUtil().screenWidth, 300.r),
@@ -514,8 +507,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     if (cachedConfig != null) {
       try {
         _cachedMainIndicatorBuilders = _buildMainIndicatorsFromConfig(cachedConfig);
-        defLogger.d(
-            '✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from cache (bit theme)');
+        defLogger.d('✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from cache (bit theme)');
       } catch (e) {
         defLogger.e('❌ Failed to build main indicators from cached config: $e');
         _cachedMainIndicatorBuilders = null;
@@ -530,8 +522,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
         if (_cachedMainIndicatorBuilders == null) {
           _loadMainIndicatorsFromJsonAsync();
         } else {
-          defLogger.d(
-              '✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
+          defLogger.d('✅ Loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
         }
       } catch (e) {
         defLogger.e('❌ Failed to load main indicators from JSON: $e');
@@ -541,8 +532,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     // 3. 最后使用代码默认配置
     if (_cachedMainIndicatorBuilders == null) {
       _cachedMainIndicatorBuilders = getDefaultMainIndicatorBuilders();
-      defLogger
-          .d('✅ Using ${_cachedMainIndicatorBuilders!.length} default main indicators (bit theme)');
+      defLogger.d('✅ Using ${_cachedMainIndicatorBuilders!.length} default main indicators (bit theme)');
     }
 
     // 合并super指标并返回
@@ -589,8 +579,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
         // ✅ 关键修复：保存完整的配置参数到缓存
         await setConfig('mainIndicatorBuilders', mainIndicators);
 
-        defLogger.d(
-            '✅ Async loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
+        defLogger.d('✅ Async loaded ${_cachedMainIndicatorBuilders!.length} main indicators from JSON (bit theme)');
       } else {
         defLogger.w('⚠️ No mainIndicators found in JSON config (bit theme)');
       }
@@ -619,8 +608,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     if (cachedConfig != null) {
       try {
         _cachedSubIndicatorBuilders = _buildSubIndicatorsFromConfig(cachedConfig);
-        defLogger.d(
-            '✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from cache (bit theme)');
+        defLogger.d('✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from cache (bit theme)');
       } catch (e) {
         defLogger.e('❌ Failed to build sub indicators from cached config: $e');
         _cachedSubIndicatorBuilders = null;
@@ -635,8 +623,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
         if (_cachedSubIndicatorBuilders == null) {
           _loadSubIndicatorsFromJsonAsync();
         } else {
-          defLogger.d(
-              '✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
+          defLogger.d('✅ Loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
         }
       } catch (e) {
         defLogger.e('❌ Failed to load sub indicators from JSON: $e');
@@ -646,8 +633,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     // 3. 最后使用代码默认配置
     if (_cachedSubIndicatorBuilders == null) {
       _cachedSubIndicatorBuilders = getDefaultSubIndicators();
-      defLogger
-          .d('✅ Using ${_cachedSubIndicatorBuilders!.length} default sub indicators (bit theme)');
+      defLogger.d('✅ Using ${_cachedSubIndicatorBuilders!.length} default sub indicators (bit theme)');
     }
 
     // 合并super指标并返回
@@ -688,8 +674,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
         // ✅ 关键修复：保存完整的配置参数到缓存
         await setConfig('subIndicatorBuilders', subIndicators);
 
-        defLogger.d(
-            '✅ Async loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
+        defLogger.d('✅ Async loaded ${_cachedSubIndicatorBuilders!.length} sub indicators from JSON (bit theme)');
       } else {
         defLogger.w('⚠️ No subIndicators found in JSON config (bit theme)');
       }
@@ -720,8 +705,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
         if (json is Map<String, dynamic>) {
           return json;
         } else {
-          defLogger.w(
-              'getConfig: expected Map<String, dynamic> but got ${json.runtimeType} for key $key');
+          defLogger.w('getConfig: expected Map<String, dynamic> but got ${json.runtimeType} for key $key');
         }
       }
     } catch (err, stack) {
@@ -786,63 +770,49 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders {
     return {
       // 趋势线
-      const FlexiDrawType('trendLine', 2): (overlay, config) =>
-          TrendLineDrawObject(overlay, config),
+      const FlexiDrawType('trendLine', 2): (overlay, config) => TrendLineDrawObject(overlay, config),
 
       // 趋势角度线
-      const FlexiDrawType('trendAngle', 2): (overlay, config) =>
-          TrendAngleDrawObject(overlay, config),
+      const FlexiDrawType('trendAngle', 2): (overlay, config) => TrendAngleDrawObject(overlay, config),
 
       // 十字线
-      const FlexiDrawType('crossLine', 1): (overlay, config) =>
-          CrossLineDrawObject(overlay, config),
+      const FlexiDrawType('crossLine', 1): (overlay, config) => CrossLineDrawObject(overlay, config),
 
       // 水平线
-      const FlexiDrawType('horizontalLine', 1): (overlay, config) =>
-          HorizontalLineDrawObject(overlay, config),
+      const FlexiDrawType('horizontalLine', 1): (overlay, config) => HorizontalLineDrawObject(overlay, config),
 
       // 水平射线
-      const FlexiDrawType('horizontalRayLine', 2): (overlay, config) =>
-          HorizontalRayLineDrawObject(overlay, config),
+      const FlexiDrawType('horizontalRayLine', 2): (overlay, config) => HorizontalRayLineDrawObject(overlay, config),
 
       // 水平趋势线
-      const FlexiDrawType('horizontalTrendLine', 2): (overlay, config) =>
-          HorizontalTrendLineDrawObject(overlay, config),
+      const FlexiDrawType('horizontalTrendLine', 2): (overlay, config) => HorizontalTrendLineDrawObject(overlay, config),
 
       // 垂直线
-      const FlexiDrawType('verticalLine', 1): (overlay, config) =>
-          VerticalLineDrawObject(overlay, config),
+      const FlexiDrawType('verticalLine', 1): (overlay, config) => VerticalLineDrawObject(overlay, config),
 
       // 延长趋势线
-      const FlexiDrawType('extendedTrendLine', 2): (overlay, config) =>
-          ExtendedTrendLineDrawObject(overlay, config),
+      const FlexiDrawType('extendedTrendLine', 2): (overlay, config) => ExtendedTrendLineDrawObject(overlay, config),
 
       // 箭头线
-      const FlexiDrawType('arrowLine', 2): (overlay, config) =>
-          ArrowLineDrawObject(overlay, config),
+      const FlexiDrawType('arrowLine', 2): (overlay, config) => ArrowLineDrawObject(overlay, config),
 
       // 射线
       const FlexiDrawType('rayLine', 2): (overlay, config) => RayLineDrawObject(overlay, config),
 
       // 价格线
-      const FlexiDrawType('priceLine', 1): (overlay, config) =>
-          PriceLineDrawObject(overlay, config),
+      const FlexiDrawType('priceLine', 1): (overlay, config) => PriceLineDrawObject(overlay, config),
 
       // 平行通道
-      const FlexiDrawType('parallelChannel', 3): (overlay, config) =>
-          ParalleChannelDrawObject(overlay, config),
+      const FlexiDrawType('parallelChannel', 3): (overlay, config) => ParalleChannelDrawObject(overlay, config),
 
       // 矩形
-      const FlexiDrawType('rectangle', 2): (overlay, config) =>
-          RectangleDrawObject(overlay, config),
+      const FlexiDrawType('rectangle', 2): (overlay, config) => RectangleDrawObject(overlay, config),
 
       // 斐波那契回调
-      const FlexiDrawType('fibRetracement', 2): (overlay, config) =>
-          FibRetracementDrawObject(overlay, config),
+      const FlexiDrawType('fibRetracement', 2): (overlay, config) => FibRetracementDrawObject(overlay, config),
 
       // 斐波那契扩展
-      const FlexiDrawType('fibExpansion', 3): (overlay, config) =>
-          FibExpansionDrawObject(overlay, config),
+      const FlexiDrawType('fibExpansion', 3): (overlay, config) => FibExpansionDrawObject(overlay, config),
 
       // 斐波那契扇形
       const FlexiDrawType('fibFans', 2): (overlay, config) => FibFansDrawObject(overlay, config),
@@ -929,8 +899,7 @@ extension BitFlexiKlineConfigurationParse on BitFlexiKlineConfiguration {
   }
 
   // 根据配置创建指标构建器
-  IndicatorBuilder _createIndicatorBuilderFromConfig(
-      Map<String, dynamic> config, BaseBitFlexiKlineTheme theme) {
+  IndicatorBuilder _createIndicatorBuilderFromConfig(Map<String, dynamic> config, BaseBitFlexiKlineTheme theme) {
     final type = config['type'] as String?;
 
     switch (type) {

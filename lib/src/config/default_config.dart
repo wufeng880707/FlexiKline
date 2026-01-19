@@ -312,8 +312,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
       /// 主/副图绘制参数
       minPaintBlankRate: setting?.minPaintBlankRate ?? 0.5,
-      alwaysCalculateScreenOfCandlesIfEnough:
-          setting?.alwaysCalculateScreenOfCandlesIfEnough ?? false,
+      alwaysCalculateScreenOfCandlesIfEnough: setting?.alwaysCalculateScreenOfCandlesIfEnough ?? false,
       candleMinWidth: setting?.candleMinWidth ?? 1 * theme.pixel,
       candleMaxWidth: setting?.candleMaxWidth ?? 40 * theme.scale,
       candleWidth: setting?.candleWidth ?? 7 * theme.scale,
@@ -598,7 +597,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       ).of(
         paintColor: theme.markLineColor,
         textColor: theme.textColor,
-        background: instance?.high.text.style.color,
+        background: Colors.transparent, // instance?.high.text.style.color,
         borderColor: instance?.high.text.border?.color,
       ),
       low: obtainConfig(
@@ -625,7 +624,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       ).of(
         paintColor: theme.markLineColor,
         textColor: theme.textColor,
-        background: instance?.high.text.style.color,
+        background: Colors.transparent, //instance?.high.text.style.color,
         borderColor: instance?.high.text.border?.color,
       ),
       last: obtainConfig(
