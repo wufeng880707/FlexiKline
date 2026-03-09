@@ -125,8 +125,7 @@ class CandleIndicator extends CandleBaseIndicator {
   Map<String, dynamic> toJson() => _$CandleIndicatorToJson(this);
 }
 
-class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject<T>
-    with PaintYAxisTicksOnCrossMixin, PaintCandleHelperMixin {
+class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject<T> with PaintYAxisTicksOnCrossMixin, PaintCandleHelperMixin {
   CandlePaintObject({
     required super.context,
     required super.indicator,
@@ -169,6 +168,12 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     final minmax = klineData.calculateMinmax(start, end);
     _maxHigh = minmax?.max;
     _minLow = minmax?.min;
+
+    // 当最大值等于最小值时（所有K线价格相同），扩展范围避免显示异常
+    if (minmax != null && minmax.max == minmax.min) {
+      minmax.expand(0); // 触发自动扩展逻辑
+    }
+
     return minmax;
   }
 
@@ -510,8 +515,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
       // 时间周期 > 1秒时才显示倒计时
       if (indicator.showCountDown && klineData.timeBar.milliseconds > TimeBar.s1.milliseconds) {
         final nextUpdateDateTime = model.nextUpdateDateTime(klineData.req.timeBar);
-        if (nextUpdateDateTime != null &&
-            nextUpdateDateTime.millisecondsSinceEpoch > DateTime.now().millisecondsSinceEpoch) {
+        if (nextUpdateDateTime != null && nextUpdateDateTime.millisecondsSinceEpoch > DateTime.now().millisecondsSinceEpoch) {
           countDownText = nextUpdateDateTime.diffAsCountdown();
         }
       }

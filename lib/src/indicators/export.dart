@@ -22,5 +22,6 @@ export 'macd/macd.dart';
 export 'rsi/rsi.dart';
 export 'sar/sar.dart';
 export 'time/time.dart';
+export 'trade_mark/trade_mark.dart';
 export 'vol_ma/vol_ma.dart';
 export 'volume/volume.dart';

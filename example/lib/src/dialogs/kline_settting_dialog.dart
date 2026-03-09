@@ -341,7 +341,25 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                   // shape: theme.defaultShape,
                 ),
               ),
-              const Expanded(child: SizedBox.shrink())
+              Expanded(
+                child: CheckboxListTile(
+                  dense: true,
+                  value: klineState.isShowTradeMark,
+                  contentPadding: EdgeInsets.zero,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  onChanged: (value) {
+                    klineState.setShowTradeMark(!klineState.isShowTradeMark);
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: Text(
+                    '买卖标记', // 或者使用 s.tradeMark 如果有国际化
+                    style: theme.t1s14w500,
+                  ),
+                  activeColor: theme.t1,
+                  selected: true,
+                  checkColor: theme.themeColor,
+                ),
+              ),
             ],
           )
         ],

@@ -31,9 +31,11 @@ class KlineStateNotifier extends ChangeNotifier {
   final Ref ref;
   final FlexiKlineController controller;
 
-  Set<IIndicatorKey> get supportMainIndicatorKeys => controller.supportMainIndicatorKeys.toSet();
+  Set<IIndicatorKey> get supportMainIndicatorKeys => 
+      controller.supportMainIndicatorKeys.where((key) => key != tradeMarkIndicatorKey).toSet();
   Set<IIndicatorKey> get supportSubIndicatorKeys => controller.supportSubIndicatorKeys.toSet();
-  Set<IIndicatorKey> get mainIndicatorKeys => controller.mainIndicatorKeys.toSet();
+  Set<IIndicatorKey> get mainIndicatorKeys => 
+      controller.mainIndicatorKeys.where((key) => key != tradeMarkIndicatorKey).toSet();
   Set<IIndicatorKey> get subIndicatorKeys => controller.subIndicatorKeys.toSet();
 
   void onTapMainIndicator(IIndicatorKey key) {
@@ -170,6 +172,36 @@ class KlineStateNotifier extends ChangeNotifier {
       showYAxisTick: isShow,
     );
     notifyListeners();
+  }
+
+  /// 是否展示买卖标记
+  bool get isShowTradeMark {
+    try {
+      final tradeMarkIndicator = controller.getIndicator<TradeMarkIndicator>(tradeMarkIndicatorKey);
+      return tradeMarkIndicator?.calcParam.show ?? false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 设置是否展示买卖标记
+  void setShowTradeMark(bool isShow) {
+    if (isShow == isShowTradeMark) return; // 避免不必要的更新
+    
+    try {
+      final tradeMarkIndicator = controller.getIndicator<TradeMarkIndicator>(tradeMarkIndicatorKey);
+      if (tradeMarkIndicator != null) {
+        // 更新显示状态
+        final updatedParam = tradeMarkIndicator.calcParam.copyWith(show: isShow);
+        final updatedIndicator = tradeMarkIndicator.copyWith(calcParam: updatedParam);
+        controller.updateIndicator(updatedIndicator);
+        notifyListeners();
+      } else {
+        print('TradeMarkIndicator not found in controller');
+      }
+    } catch (e) {
+      print('Error setting trade mark visibility: $e');
+    }
   }
 
   /// 缩放位置

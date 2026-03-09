@@ -410,10 +410,19 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator(
       [MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
     final theme = ref.read(defaultKlineThemeProvider);
+    // 确保TradeMarkIndicator始终存在（即使默认隐藏）
+    final children = <IIndicatorKey>{};
+    if (instance?.children != null) {
+      children.addAll(instance!.children);
+    }
+    // 始终包含TradeMarkIndicator，状态由calcParam.show控制
+    children.add(tradeMarkIndicatorKey);
+    
     return MainPaintObjectIndicator<PaintObjectIndicator>(
       size: Size(ScreenUtil().screenWidth, 300.r),
       padding: theme.mainIndicatorPadding,
       drawBelowTipsArea: true,
+      children: children,
     );
   }
 

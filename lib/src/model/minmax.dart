@@ -14,8 +14,8 @@
 
 import 'package:decimal/decimal.dart';
 
-import 'bag_num.dart';
 import '../extension/collections_ext.dart';
+import 'bag_num.dart';
 
 class MinMax {
   static final MinMax zero = MinMax(max: BagNum.zero, min: BagNum.zero);
@@ -59,6 +59,12 @@ class MinMax {
     if (margin > 0) {
       max = max.addNum(margin);
       min = min.subNum(margin);
+    } else if (max == min && margin == 0) {
+      // 当最大值等于最小值时，扩展一个小范围以避免除零
+      // 使用价格的 1% 作为扩展范围，最小为 0.01
+      final expandSize = (max.toDouble() * 0.01).clamp(0.01, double.infinity);
+      max = max.addNum(expandSize);
+      min = min.subNum(expandSize);
     }
   }
 

@@ -807,6 +807,20 @@ class ColorConverter implements JsonConverter<Color, String> {
   }
 }
 
+class FontWeightConverter implements JsonConverter<FontWeight, String> {
+  const FontWeightConverter();
+
+  @override
+  FontWeight fromJson(String json) {
+    return parseFontWeight(json, def: FontWeight.normal);
+  }
+
+  @override
+  String toJson(FontWeight fontWeight) {
+    return convertFontWeight(fontWeight);
+  }
+}
+
 class DecimalConverter implements JsonConverter<Decimal, dynamic> {
   const DecimalConverter();
   @override
@@ -893,6 +907,7 @@ const _basicConverterList = <JsonConverter>[
   TextStyleConverter(),
   StrutStyleConverter(),
   ColorConverter(),
+  FontWeightConverter(),
   DecimalConverter(),
   BagNumConverter(),
   ChartTypeConverter(),
@@ -930,6 +945,8 @@ const FlexiIndicatorSerializable = JsonSerializable(
 const FlexiParamSerializable = JsonSerializable(
   converters: [
     ColorConverter(),
+    FontWeightConverter(),
+    TextStyleConverter(),
     EdgeInsetsConverter(),
   ],
   explicitToJson: true,
