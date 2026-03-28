@@ -23,7 +23,7 @@ extension FlexiKlineNumExt on num {
   }
 }
 
-extension FlexiKlineString on String {
+extension FlexiKlineStringExt on String {
   /// 首字母大写
   String capitalize() {
     if (isEmpty) return '';

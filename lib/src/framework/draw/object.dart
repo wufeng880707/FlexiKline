@@ -268,7 +268,7 @@ abstract class DrawObject<T extends Overlay> extends DrawStateObject with DrawOb
   bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
     assert(points.isNotEmpty, 'hitTest points.length must be greater than 0');
     Point? last;
-    for (var point in points) {
+    for (final point in points) {
       if (point?.offset.isFinite == true && last != null) {
         final distance = position.distanceToLineSegment(
           last.offset,

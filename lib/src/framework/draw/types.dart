@@ -16,9 +16,14 @@ part of 'overlay.dart';
 
 const drawObjectDefaultZIndex = 0;
 
+<<<<<<< HEAD:lib/src/framework/draw/common.dart
 typedef DrawObjectBuilder<T extends Overlay, R extends DrawObject<T>> = R?
     Function(T overlay, DrawConfig config);
+=======
+typedef DrawObjectBuilder<T extends Overlay, R extends DrawObject<T>> = R? Function(T overlay, DrawConfig config);
+>>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:lib/src/framework/draw/types.dart
 
+/// 绘制类型接口
 abstract interface class IDrawType {
   int get steps;
   String get id;
@@ -54,10 +59,14 @@ final class FlexiDrawType implements IDrawType {
 
   @override
   int get hashCode {
+<<<<<<< HEAD:lib/src/framework/draw/common.dart
     return runtimeType.hashCode ^
         id.hashCode ^
         steps.hashCode ^
         groupId.hashCode;
+=======
+    return runtimeType.hashCode ^ id.hashCode ^ steps.hashCode ^ groupId.hashCode;
+>>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:lib/src/framework/draw/types.dart
   }
 }
 
@@ -65,6 +74,7 @@ const unknownDrawType = FlexiDrawType('unknown', 0);
 
 const String drawGroupUnknown = 'unknown';
 
+/// 磁吸模式
 enum MagnetMode {
   normal,
   weak,

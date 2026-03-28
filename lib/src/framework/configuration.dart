@@ -26,6 +26,9 @@ const drawOverlayListConfigKey = 'draw_overlay_list_config';
 const drawOverlayListKey = 'list';
 const drawToolbarPositionKey = 'draw_toolbar_position';
 
+/// 获取FlexiKline主题的函数类型
+typedef FlexiKlineThemeGetter<T extends IFlexiKlineTheme> = T Function();
+
 /// FlexiKline主题接口.
 ///
 /// 定义FlexiKline中通用颜色
@@ -47,8 +50,7 @@ abstract interface class IFlexiKlineTheme {
   /// 涨跌颜色
   Color get long;
   Color get short;
-  Color get indraTodayAvgColor;
-  Color get indraTodayCloseColor;
+
   Color get transparent;
 
   /// 背景色
@@ -179,9 +181,6 @@ abstract interface class IConfiguration implements IStorage {
   /// 副区指标配置定制
   Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders;
 
-  /// 获取时间周期配置列表
-  List<ITimeBar> getTimeBarConfigs();
-
   /// 绘制工具定制
   Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders;
 }
@@ -198,11 +197,6 @@ extension FromJsonExt<T> on FromJson<T> {
 /// 通过[fromJson]函数将[json]数据转换为类型[T]的实例
 T? jsonToInstance<T>(Map<String, dynamic>? json, FromJson<T> fromJson) {
   if (json == null || json.isEmpty) return null;
-  // 增加类型检查
-  if (json is! Map<String, dynamic>) {
-    debugPrint('⚠️ jsonToInstance: Expected Map<String, dynamic> but got ${json.runtimeType}');
-    return null;
-  }
   try {
     return fromJson(json);
   } catch (error, stack) {

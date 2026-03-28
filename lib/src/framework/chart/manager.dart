@@ -33,12 +33,14 @@ final class IndicatorPaintObjectManager with KlineLog {
     for (final MapEntry(key: key, value: builder) in mainIndicators.entries) {
       _registerMainIndicatorBuilder(key, builder);
     }
-    final subIndicators = configuration.subIndicatorBuilders;
-    for (final MapEntry(key: key, value: builder) in subIndicators.entries) {
-      _registerSubIndicatorBuilder(key, builder);
+    if (subIndicatorMaxCount > 0) {
+      final subIndicators = configuration.subIndicatorBuilders;
+      for (final MapEntry(key: key, value: builder) in subIndicators.entries) {
+        _registerSubIndicatorBuilder(key, builder);
+      }
     }
     _flexiKlineConfig = configuration.getFlexiKlineConfig();
-    _subPaintObjectQueue = FixedHashQueue<PaintObjectBox>(subIndicatorMaxCount);
+    _subPaintObjectQueue = FixedHashQueue<PaintObject>(subIndicatorMaxCount);
   }
 
   @override
@@ -48,12 +50,11 @@ final class IndicatorPaintObjectManager with KlineLog {
   late FlexiKlineConfig _flexiKlineConfig;
   FlexiKlineConfig get flexiKlineConfig => _flexiKlineConfig;
 
-  /// 动态维护指标计算数据存储位置.
-  /// 注: 仅能通过[configuration]配置去计算指标计算数据存储位置.
-  final Map<IIndicatorKey, int> _indicatorDataIndexs = {
-    // candleIndicatorKey: 0,
-    // timeIndicatorKey: 1,
-  };
+  /// 动态维护指标计算数据存储位置
+  ///
+  /// 仅对 [DataIndicatorKey]（数据指标）分配 slot。
+  /// 注：仅能通过 [configuration] 配置去计算指标计算数据存储位置。
+  final Map<DataIndicatorKey, int> _indicatorDataIndexs = {};
 
   late final FixedHashQueue<PaintObject> _subPaintObjectQueue;
 
@@ -107,7 +108,8 @@ final class IndicatorPaintObjectManager with KlineLog {
   ) {
     _mainIndicatorBuilders[key] = builder;
     _supportMainIndicatorKeys = null;
-    if (!_indicatorDataIndexs.containsKey(key)) {
+    // 仅对 DataIndicatorKey 分配 slot
+    if (key is DataIndicatorKey && !_indicatorDataIndexs.containsKey(key)) {
       logi('registerMainIndicatorBuilder $key:${_indicatorDataIndexs.length}');
       _indicatorDataIndexs[key] = _indicatorDataIndexs.length;
     }
@@ -119,7 +121,8 @@ final class IndicatorPaintObjectManager with KlineLog {
   ) {
     _subIndicatorBuilders[key] = builder;
     _supportSubIndicatorKeys = null;
-    if (!_indicatorDataIndexs.containsKey(key)) {
+    // 仅对 DataIndicatorKey 分配 slot
+    if (key is DataIndicatorKey && !_indicatorDataIndexs.containsKey(key)) {
       logi('registerSubIndicatorBuilder $key:${_indicatorDataIndexs.length}');
       _indicatorDataIndexs[key] = _indicatorDataIndexs.length;
     }
@@ -133,35 +136,55 @@ final class IndicatorPaintObjectManager with KlineLog {
     return _subIndicatorBuilders.containsKey(key) || key == timeIndicatorKey;
   }
 
-  int? getIndicatorDataIndex(IIndicatorKey key) {
-    return _indicatorDataIndexs.getItem(key);
+  int? getIndicatorDataIndex(DataIndicatorKey key) {
+    return _indicatorDataIndexs[key];
   }
 
   int get indicatorCount => _indicatorDataIndexs.length;
 
+  /// 创建并初始化 PaintObject
+  PaintObject _createAndInitPaintObject<T extends Indicator>(
+    T indicator,
+    IPaintContext context,
+  ) {
+    final paintObject = indicator.createPaintObject();
+
+    paintObject._indicator = indicator;
+    paintObject.__context = context;
+
+    // paintObject 已经混入了 KlineLog，所以直接设置
+    if (context is KlineLog) {
+      paintObject.loggerDelegate = (context as KlineLog).loggerDelegate;
+    }
+
+    return paintObject;
+  }
+
   /// 初始化主区/副区指标
-  /// 1. 确认指标数据在[CandleModel]的[CalculateData]中的index.
-  /// 2. 初始化主区绘制对象, 初始化副区绘制对象队列
-  /// 3. 从配置中加载缓存的主/副区指标.
+  /// 1. 初始化主区绘制对象（MainPaintObject）及蜡烛图、时间轴绘制对象
+  /// 2. 从配置中加载缓存的主/副区指标.
   void init(IPaintContext context) {
     final mainIndicator = flexiKlineConfig.mainIndicator;
-    _mainPaintObject = MainPaintObject(
-      context: context,
-      indicator: mainIndicator.copyWith(),
-    );
+    _mainPaintObject = MainPaintObject();
+    _mainPaintObject._indicator = mainIndicator.copyWith();
+    _mainPaintObject.__context = context;
+    // _mainPaintObject 已经混入了 KlineLog，所以直接设置
+    if (context is KlineLog) {
+      _mainPaintObject.loggerDelegate = (context as KlineLog).loggerDelegate;
+    }
 
     /// 配置默认指标蜡烛图指标和时间指标
     try {
       final candle = configuration.candleIndicatorBuilder.call(
         configuration.getConfig(candleIndicatorKey.id),
       );
-      _candlePaintObject = candle.createPaintObject(context);
+      _candlePaintObject = _createAndInitPaintObject(candle, context) as CandleBasePaintObject;
       _mainPaintObject.appendPaintObject(_candlePaintObject);
 
       final time = configuration.timeIndicatorBuilder.call(
         configuration.getConfig(timeIndicatorKey.id),
       );
-      _timePaintObject = time.createPaintObject(context);
+      _timePaintObject = _createAndInitPaintObject(time, context) as TimeBasePaintObject;
     } catch (error, stack) {
       loge(
         'init catch an exception!',
@@ -190,18 +213,22 @@ final class IndicatorPaintObjectManager with KlineLog {
     /// 配置默认指标蜡烛图指标和时间指标
     final mainIndicator = flexiKlineConfig.mainIndicator;
     try {
-      mainPaintObject.doDidUpdateIndicator(mainIndicator.copyWith(
+      final newMainIndicator = mainIndicator.copyWith(
         size: mainPaintObject.size,
-      ));
+      );
+      mainPaintObject._indicator = newMainIndicator; // 手动更新
+      mainPaintObject.doDidUpdateIndicator(newMainIndicator);
 
       final candle = configuration.candleIndicatorBuilder.call(
         configuration.getConfig(candleIndicatorKey.id),
       );
+      candlePaintObject._indicator = candle; // 手动更新
       candlePaintObject.doDidUpdateIndicator(candle);
 
       final time = configuration.timeIndicatorBuilder.call(
         configuration.getConfig(timeIndicatorKey.id),
       );
+      timePaintObject._indicator = time; // 手动更新
       timePaintObject.doDidUpdateIndicator(time);
     } catch (error, stack) {
       loge(
@@ -303,7 +330,8 @@ final class IndicatorPaintObjectManager with KlineLog {
       builder: _mainIndicatorBuilders[key],
     );
     if (indicator == null) return null;
-    final newObj = indicator.createPaintObject(context);
+
+    final newObj = _createAndInitPaintObject(indicator, context);
     _mainPaintObject.appendPaintObject(newObj);
     return newObj;
   }
@@ -342,7 +370,8 @@ final class IndicatorPaintObjectManager with KlineLog {
       builder: _subIndicatorBuilders[key],
     );
     if (indicator == null) return null;
-    final newObj = indicator.createPaintObject(context);
+
+    final newObj = _createAndInitPaintObject(indicator, context);
     flexiKlineConfig.sub.add(key);
     final oldObj = _subPaintObjectQueue.append(newObj);
     oldObj?.dispose();
@@ -364,9 +393,9 @@ final class IndicatorPaintObjectManager with KlineLog {
     return hasRemove;
   }
 
-  /// 获取主区[key]指定的指标配置实例
-  /// 1. 先从当前载入的指标中查找
-  /// 2. 如果不存在, 则从配置缓存中加载[key]对应的指标
+  /// 获取[key]指定的指标配置实例（先查主区, 再查副区）
+  /// 1. 先从当前载入的绘制对象中查找
+  /// 2. 如果未载入, 则从配置缓存中加载[key]对应的指标
   T? getIndicator<T extends Indicator>(IIndicatorKey key) {
     if (hasRegisteredInMain(key)) {
       Indicator? indicator = mainPaintObject.getChildIndicator(key);
@@ -387,18 +416,27 @@ final class IndicatorPaintObjectManager with KlineLog {
     return null;
   }
 
-  bool updateIndicator<T extends Indicator>(T indicator) {
+  /// 更新[indicator]指标配置
+  /// 1. 如果已载入, 则更新当前绘制对象的指标
+  /// 2. 如果未载入, 则保存到本地缓存中, 以备后续使用
+  /// [forceSave] 是否强制保存到本地缓存中
+  /// 注: 如果[forceSave]为true, 当指标被动加载时, 强制使用最新配置.
+  /// 返回: 是否更新成功
+  bool updateIndicator<T extends Indicator>(T indicator, [bool forceSave = false]) {
     final key = indicator.key;
     if (hasRegisteredInMain(key)) {
       bool updated = mainPaintObject.updateChildIndicator(indicator);
-      if (!updated) {
-        updated = configuration.saveIndicator(indicator);
+      if (!updated || forceSave) {
+        updated = configuration.saveIndicator(indicator) || updated;
       }
       return updated;
     } else if (hasRegisteredInSub(key)) {
       final object = subPaintObjects.firstWhereOrNull((obj) => obj.key == key);
       if (object != null) {
         object.doDidUpdateIndicator(indicator);
+        if (forceSave) {
+          return configuration.saveIndicator(indicator);
+        }
         return true;
       } else {
         return configuration.saveIndicator(indicator);
@@ -426,16 +464,16 @@ final class IndicatorPaintObjectManager with KlineLog {
 
   /// 收集当前指标的计算参数
   /// 考虑在主区/副区同时存在的指标.
-  @Deprecated('废弃, 由PaintObject执行precompute')
-  Map<IIndicatorKey, dynamic> getIndicatorCalcParams() {
-    final calcParams = mainPaintObject.getCalcParams();
-    for (final object in subPaintObjects) {
-      final params = object.getCalcParams();
-      if (params.isEmpty) continue;
-      calcParams.addAll(params);
-    }
-    return calcParams;
-  }
+  // @Deprecated('废弃, 由PaintObject执行precompute')
+  // Map<IIndicatorKey, dynamic> getIndicatorCalcParams() {
+  //   final calcParams = mainPaintObject.getCalcParams();
+  //   for (final object in subPaintObjects) {
+  //     final params = object.getCalcParams();
+  //     if (params.isEmpty) continue;
+  //     calcParams.addAll(params);
+  //   }
+  //   return calcParams;
+  // }
 
   void restoreHeight() {
     mainPaintObject.restoreSize();

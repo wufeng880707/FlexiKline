@@ -16,7 +16,8 @@ import 'dart:collection';
 
 /// 固定大小的Hash队列
 ///
-/// [fixedCapacity] 固定容量, 必须大于0
+/// [fixedCapacity] 固定容量, 必须大于等于0
+/// 当[fixedCapacity] 为0时，队列表现为一个“禁用添加”的空队列)
 /// 主要特性.
 /// 1. 固定容量.
 /// 2. 元素无重复.
@@ -26,7 +27,7 @@ import 'dart:collection';
 /// 实现在[append]中.
 class FixedHashQueue<E> implements Queue<E> {
   FixedHashQueue(this.fixedCapacity)
-      : assert(fixedCapacity > 0, 'fixedCapacity must be greater than 0'),
+      : assert(fixedCapacity >= 0, 'fixedCapacity must be greater than or equal to 0'),
         _queue = ListQueue<E>(fixedCapacity);
 
   final int fixedCapacity;

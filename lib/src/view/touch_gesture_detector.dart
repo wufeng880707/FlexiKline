@@ -16,8 +16,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
 import '../constant.dart';
-import '../extension/geometry_ext.dart';
 import '../extension/functions_ext.dart';
+import '../extension/geometry_ext.dart';
 import '../framework/chart/indicator.dart';
 import '../framework/draw/overlay.dart';
 import '../framework/logger.dart';
@@ -53,7 +53,15 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   GestureData? _longData;
 
   /// 是否已清理过手势竞技场(解决手势冲突), 避免重复操作.
+  /// 作用域为单次 pointer 会话（PointerDown → PointerUp/Cancel），
+  /// 由 [_pointerEnd] 重置. 仅适用于单指独占路径（crossing/drawing/zoom/move）.
   bool isSweeped = false;
+
+  /// 当前活跃的指针数量，用于检测多指触摸状态.
+  int _activePointerCount = 0;
+
+  /// zoom slider 拖拽是否已正式开始（通过了最小距离检查且 onChartZoomStart 返回 true）
+  bool _isZoomStarted = false;
 
   @override
   String get logTag => 'TouchGesture';
@@ -86,43 +94,23 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         onLongPressMoveUpdate: onLongPressMoveUpdate.throttleOnFps,
         onLongPressEnd: onLongPressEnd,
 
-        /// 子组件
-        child: IgnorePointer(
-          ignoring: !gestureConfig.enableZoom,
-          child: ValueListenableBuilder(
-            valueListenable: controller.canvasSizeChangeListener,
-            builder: (context, canvasSize, child) => SizedBox(
-              width: canvasSize.width,
-              height: canvasSize.height,
-              child: Stack(children: [
-                ValueListenableBuilder(
-                  valueListenable: controller.chartZoomSlideBarRectListener,
-                  builder: (context, rect, child) => Positioned.fromRect(
-                    rect: rect,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onVerticalDragDown: onVerticalDragDown,
-                      onVerticalDragStart: onVerticalDragStart,
-                      onVerticalDragUpdate: onVerticalDragUpdate.throttleOnFps,
-                      onVerticalDragEnd: onVerticalDragEnd,
-                      onVerticalDragCancel: onVerticalDragEnd,
-                    ),
-                  ),
-                ),
-              ]),
-            ),
-          ),
-        ),
+        child: const SizedBox.expand(),
       ),
     );
   }
 
   void onPointerDown(PointerDownEvent event) {
+    if (++_activePointerCount == 2) {
+      controller.setMultiTouch(true);
+    }
     final position = event.localPosition;
     if (controller.isDrawVisibility && drawState.isOngoing) {
       // TODO: 优化Drawing的处理
     } else if (controller.isCrossing) {
       // TODO: 优化Crossing的处理
+    } else if (gestureConfig.enableZoom && _zoomData == null && controller.chartZoomSlideBarRect.include(position)) {
+      logd('onPointerDown zoom > position:$position');
+      _zoomData = GestureData.zoom(position);
     } else if (_zoomData == null && controller.isStartZoomChart && controller.mainRect.include(position)) {
       logd('onPointerDown position:$position');
       _moveData = GestureData.move(position);
@@ -140,9 +128,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       final pointerOffset = drawState.pointerOffset;
       if (pointerOffset != null) {
         if (!isSweeped) {
-          logi(
-            'onPointerMove currently in drawing, need clear the gesture arena!',
-          );
+          logi('onPointerMove currently in drawing, need clear the gesture arena!');
           isSweeped = true;
           GestureBinding.instance.gestureArena.sweep(event.pointer);
           if (pointerOffset.isFinite) {
@@ -160,25 +146,39 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       }
     } else if (controller.isCrossing) {
       if (!isSweeped) {
-        logi(
-          'onPointerMove currently in crossing, need clear the gesture arena!',
-        );
+        logi('onPointerMove currently in crossing, need clear the gesture arena!');
         isSweeped = true;
         GestureBinding.instance.gestureArena.sweep(event.pointer);
       }
 
-      if (_tapData == null) return;
+      if (_tapData == null) {
+        logd('onPointerMove crossing but _tapData is null, skip');
+        return;
+      }
       Offset newOffset = _tapData!.offset + event.delta;
       final canvasRect = controller.canvasRect;
       if (!canvasRect.include(newOffset)) {
         newOffset = newOffset.clamp(canvasRect);
       }
       controller.onCrossUpdate(_tapData!..update(newOffset));
+    } else if (_zoomData != null) {
+      if (!isSweeped) {
+        logi('onPointerMove currently in zoom slider, need clear the gesture arena!');
+        isSweeped = true;
+        GestureBinding.instance.gestureArena.sweep(event.pointer);
+      }
+      _zoomData!.update(event.localPosition);
+      if (!_isZoomStarted) {
+        if (_zoomData!.dyDelta.abs() >= gestureConfig.zoomStartMinDistance &&
+            controller.onChartZoomStart(event.localPosition, false)) {
+          _isZoomStarted = true;
+        }
+      } else {
+        controller.onChartZoomUpdate(_zoomData!);
+      }
     } else if (controller.isStartZoomChart && _moveData != null) {
       if (!isSweeped) {
-        logi(
-          'onPointerMove currently in zooming, need clear the gesture arena!',
-        );
+        logi('onPointerMove currently in zooming, need clear the gesture arena!');
         isSweeped = true;
         GestureBinding.instance.gestureArena.sweep(event.pointer);
       }
@@ -188,16 +188,26 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     }
   }
 
-  void onPointerUp(PointerUpEvent event) {
+  void onPointerUp(PointerUpEvent event) => _pointerEnd(event);
+
+  void onPointerCancel(PointerCancelEvent event) => _pointerEnd(event);
+
+  void _pointerEnd(PointerEvent event) {
+    if (_activePointerCount > 0) _activePointerCount--;
+    if (_activePointerCount < 2) {
+      controller.setMultiTouch(false);
+    }
     if (isSweeped) {
       isSweeped = false;
     }
-    _moveData = null;
-  }
-
-  void onPointerCancel(PointerCancelEvent event) {
-    if (isSweeped) {
-      isSweeped = false;
+    if (_zoomData != null) {
+      logd('_pointerEnd zoom end by ${event.runtimeType}');
+      if (_isZoomStarted) {
+        controller.onChartZoomEnd();
+      }
+      _zoomData?.end();
+      _zoomData = null;
+      _isZoomStarted = false;
     }
     _moveData = null;
   }
@@ -271,6 +281,10 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
 
   /// 平移/缩放开始.
   void onScaleStart(ScaleStartDetails details) {
+    if (_zoomData != null || _moveData != null) {
+      return;
+    }
+
     if (_panScaleData != null && !_panScaleData!.isEnd) {
       // 如果上次平移或缩放, 还没有结束, 不允许开始.
       logd('onScaleStart Currently still ongoing, ignore!!!');
@@ -290,7 +304,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         _panScaleData?.end();
         _panScaleData = null;
       }
-    } else if (_panScaleData?.isScale == true || details.pointerCount > 1) {
+    } else if (gestureConfig.enableScale && details.pointerCount > 1) {
       ScalePosition position = _panScaleData?.initPosition ?? gestureConfig.scalePosition;
       if (position == ScalePosition.auto) {
         final third = controller.canvasRect.width / 3;
@@ -330,13 +344,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         );
         controller.onDrawMoveUpdate(_panScaleData!);
       }
-    } else if (_panScaleData!.isPan) {
-      _panScaleData!.update(
-        details.localFocalPoint.clamp(controller.canvasRect),
-        newScale: details.scale,
-      );
-      controller.onChartMove(_panScaleData!);
-    } else if (_panScaleData!.isScale) {
+    } else if (gestureConfig.enableScale && _panScaleData!.isScale) {
       final newScale = scaledDecelerate(details.scale);
       final change = details.scale - _panScaleData!.scale;
       // assert(() {
@@ -350,6 +358,15 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         );
         controller.onChartScale(_panScaleData!);
       }
+    } else if (_panScaleData!.isPan) {
+      _panScaleData!.update(
+        details.localFocalPoint.clamp(controller.canvasRect),
+        newScale: details.scale,
+      );
+      controller.onChartMove(
+        _panScaleData!,
+        gestureConfig.tolerance.effectivePanSmoothFactor,
+      );
     }
   }
 
@@ -371,10 +388,8 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
 
     if (_panScaleData!.isScale) {
       logd('onScaleEnd scale. ${details.pointerCount}');
-      if (details.pointerCount <= 0) {
-        _panScaleData?.end();
-        _panScaleData = null;
-      }
+      _panScaleData?.end();
+      _panScaleData = null;
       controller.onChartScaleEnd();
 
       /// 检查并加载更多蜡烛数据
@@ -386,13 +401,14 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     // >0: 正数代表从左向右滑动.
     final velocity = details.velocity.pixelsPerSecond.dx;
 
-    if (!gestureConfig.isInertialPan ||
+    if (!gestureConfig.enableInertialPan ||
         controller.curKlineData.isEmpty ||
         (velocity < 0 && !controller.canPanRTL) ||
         (velocity > 0 && !controller.canPanLTR)) {
       logd('onScaleEnd currently can not pan!');
       _panScaleData?.end();
       _panScaleData = null;
+      controller.onPanEnd();
 
       /// 检查并加载更多蜡烛数据
       controller.checkAndLoadMoreCandlesWhenPanEnd();
@@ -404,9 +420,6 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     /// 惯性平移的最大距离.
     final panDistance = velocity * tolerance.distanceFactor;
 
-    /// 确认继续平移时间 (利用log指数函数特点: 随着自变量velocity的增大，函数值的增长速度逐渐减慢)
-    /// 测试当限定参数[tolerance.maxDuration]等于1000(1秒时), [velocity]带入后[duration]变化为:
-    /// 100000 > 1151.29; 10000 > 921.03; 9000 > 910.49; 5000 > 851.71; 2000 > 760.09; 800 > 668.46; 100 > 460.51
     final panDuration = calcuInertialPanDuration(
       panDistance,
       maxDuration: tolerance.maxDuration,
@@ -417,6 +430,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       logd('onScaleEnd currently not need for inertial movement!');
       _panScaleData?.end();
       _panScaleData = null;
+      controller.onPanEnd();
 
       /// 检查并加载更多蜡烛数据
       controller.checkAndLoadMoreCandlesWhenPanEnd();
@@ -441,6 +455,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       onCompleted: () {
         _panScaleData?.end();
         _panScaleData = null;
+        controller.onPanEnd();
       },
     );
   }
@@ -449,7 +464,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   ///
   /// 如果当前正在crossing中时, 不触发后续的长按逻辑.
   void onLongPressStart(LongPressStartDetails details) {
-    if (!gestureConfig.supportLongPress || controller.isCrossing) {
+    if (!gestureConfig.enableLongPress || controller.isCrossing) {
       logd('onLongPressStart ignore! > crossing:${controller.isCrossing}');
       return;
     }
@@ -482,7 +497,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   }
 
   void onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
-    if (!gestureConfig.supportLongPress || _longData == null) {
+    if (!gestureConfig.enableLongPress || _longData == null) {
       return;
     }
     // assert(() {
@@ -504,7 +519,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   }
 
   void onLongPressEnd(LongPressEndDetails details) {
-    if (!gestureConfig.supportLongPress || _longData == null) {
+    if (!gestureConfig.enableLongPress || _longData == null) {
       logd('onLongPressEnd ignore! > details:$details');
       return;
     }
@@ -522,42 +537,5 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     }
     _longData?.end();
     _longData = null;
-  }
-
-  void onVerticalDragDown(DragDownDetails details) {
-    if ((controller.isDrawVisibility && drawState.isOngoing) || controller.isCrossing) {
-      _zoomData = null;
-      return;
-    }
-    logd('onVerticalDragDown zoom > details:$details');
-    _zoomData = GestureData.zoom(details.localPosition);
-  }
-
-  void onVerticalDragStart(DragStartDetails details) {
-    if (_zoomData == null || (controller.isDrawVisibility && drawState.isOngoing) || controller.isCrossing) {
-      _zoomData = null;
-      return;
-    }
-    _zoomData!.update(details.localPosition);
-    logd('onVerticalDragStart zoom > vertical starting distance:${_zoomData!.dyDelta}');
-    if (_zoomData!.dyDelta.abs() < gestureConfig.zoomStartMinDistance ||
-        !controller.onChartZoomStart(details.localPosition)) {
-      _zoomData?.end();
-      _zoomData = null;
-    }
-  }
-
-  void onVerticalDragUpdate(DragUpdateDetails details) {
-    if (_zoomData == null) return;
-    // logd('onVerticalDragUpdate zoom > $details');
-    _zoomData!.update(details.localPosition);
-    controller.onChartZoomUpdate(_zoomData!);
-  }
-
-  void onVerticalDragEnd([DragEndDetails? details]) {
-    logd('onVerticalDragEnd zoom > $details');
-    controller.onChartZoomEnd();
-    _zoomData?.end();
-    _zoomData = null;
   }
 }

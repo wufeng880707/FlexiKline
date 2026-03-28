@@ -1,3 +1,37 @@
+## 2.0.0
+* Replace BagNum with FlexiNum for numeric representation (Breaking Changes).
+* Introduce ICandleModel interface and FlexiCandleModel; unify candle model to support custom models (Breaking Changes).
+* Refactor Indicator to generic class with typed key system: IIndicatorKey sealed class with DataIndicatorKey, BusinessIndicatorKey and NormalIndicatorKey subtypes (Breaking Changes).
+* Split PaintObjectIndicator into DataIndicator and BusinessIndicator with corresponding DataPaintObject and BusinessPaintObject (Breaking Changes).
+* Refactor paint object interfaces: rename IPaintBoundingBox to IPaintBounding, introduce IBasePainter/IComputablePainter/IBusinessPainter, add PaintObjectComputableMixin (Breaking Changes).
+* Change PaintObject initialization to lazy pattern; remove context and indicator from constructors (Breaking Changes).
+* Deprecate TimeBar enum and unify with ITimeBar (Breaking Changes).
+* Rename supportLongPress to enableLongPress in GestureConfig (Breaking Changes).
+* Refactor project structure: extract `TimeBar`, `LayoutMode`, `FlexiChartType`, indicator keys and paint interfaces into independent modules; rename `common.dart` files to `types.dart` / `interfaces.dart`.
+* Add `FlexiUpdater<T>` typedef and `updateXxxConfig` convenience methods to SettingBinding.
+* Improve type safety: replace manual casts with `whereType<IComputablePainter>()`.
+* Add enableScale property to GestureConfig to allow disabling scale/zoom gestures.
+* Resolve two-finger zoom gesture conflicts and optimize zoom experience.
+* Add Y-axis smooth interpolation during pan to reduce coordinate jumps.
+* Add panSmoothFactor and convergenceRatio to ToleranceConfig for configurable smoothing.
+* Update inertial pan duration formula from log to sqrt for better velocity-to-duration mapping.
+* Enhance lint rules and apply fixes across codebase.
+
+## 1.2.1
+* Refactor ChartType to FlexiChartType with improved structure and key property (Breaking Changes).
+* Add negative number constants to BagNum (minusHundred, minusFifty, minusTen, minusThree, minusTwo, minusOne).
+* Add time bar comparison methods (isSameAs, compareTimeBar) for ITimeBar.
+* Improve chart framework serialization and object handling.
+* Update flexi_formatter dependency to ^1.7.3.
+
+## 1.2.0
+* Fix multiple naming typos in public APIs (Breaking Changes).
+* Add latest candle point marker for line chart.
+* Refactor ChartType to sealed class; replace timeChartType/minCandleWidthChartType with timeBarChartTypes/minWidthLineType for flexible chart type configuration (Breaking Changes).
+* Move hideIndicatorsInTimeChart from SettingConfig to CandleIndicator as hideIndicatorsWhenLineChart (Breaking Changes).
+* Replace LinearGradient with GradientConfig for better serialization and flexibility; rename chart painting methods (Breaking Changes).
+
+
 ## 1.1.1
 * Add listening for the painting range changes.
 * Optimize the minmax of chart when no market fluctuation.

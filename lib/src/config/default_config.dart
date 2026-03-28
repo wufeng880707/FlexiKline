@@ -16,13 +16,14 @@ import 'package:flutter/material.dart' hide Overlay;
 
 import '../constant.dart';
 import '../extension/basic_type_ext.dart';
-import '../extension/render/common.dart';
+import '../extension/render/types.dart';
 import '../framework/export.dart';
 import '../indicators/export.dart';
 import 'cross_config/cross_config.dart';
 import 'draw_config/draw_config.dart';
 import 'flexi_kline_config/flexi_kline_config.dart';
 import 'gesture_config/gesture_config.dart';
+import 'gradient_config/gradient_config.dart';
 import 'grid_config/grid_config.dart';
 import 'line_config/line_config.dart';
 import 'loading_config/loading_config.dart';
@@ -79,8 +80,6 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
   const BaseFlexiKlineTheme({
     required this.long,
     required this.short,
-    required this.indraTodayAvgColor,
-    required this.indraTodayCloseColor,
     required this.dragBg,
     required this.chartBg,
     required this.tooltipBg,
@@ -106,12 +105,6 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
   final Color long;
   @override
   final Color short;
-
-  @override
-  final Color indraTodayAvgColor;
-
-  @override
-  final Color indraTodayCloseColor;
 
   /// 背景色
   @override
@@ -142,6 +135,7 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
   final Color markLineColor;
   @override
   final Color lineChartColor;
+
   @override
   final Color themeColor;
 
@@ -191,200 +185,13 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   }
 
   @override
-  Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders => {
-    // 交易标记 - 主图指标（默认隐藏，通过设置控制显示）
-    tradeMarkIndicatorKey: (json) => TradeMarkIndicator(
-      height: 300.0,
-      padding: EdgeInsets.zero,
-      calcParam: const TradeMarkParam(
-        show: false, // 默认隐藏
-      ),
-      tradeMarks: _createTestTradeMarks(), // 添加测试数据
-    ),
-  };
-
-  /// 创建测试交易标记数据 - 覆盖多个时间周期
-  List<TradeMarkData> _createTestTradeMarks() {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    return [
-      // === 1分钟级别数据 (1m) ===
-      TradeMarkData(
-        timestamp: now - 5 * 60 * 1000, // 5分钟前
-        type: TradeType.buy,
-        price: 50000.0,
-        maxPrice: 50050.0,
-        volume: 0.1,
-        orderId: 'buy_1m_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 3 * 60 * 1000, // 3分钟前
-        type: TradeType.sell,
-        price: 50200.0,
-        maxPrice: 50250.0,
-        volume: 0.08,
-        orderId: 'sell_1m_1',
-      ),
-      
-      // === 15分钟级别数据 (15m) ===
-      TradeMarkData(
-        timestamp: now - 30 * 60 * 1000, // 30分钟前
-        type: TradeType.buy,
-        price: 49800.0,
-        maxPrice: 49850.0,
-        volume: 0.2,
-        orderId: 'buy_15m_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 45 * 60 * 1000, // 45分钟前
-        type: TradeType.sell,
-        price: 49600.0,
-        maxPrice: 49650.0,
-        volume: 0.15,
-        orderId: 'sell_15m_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 75 * 60 * 1000, // 75分钟前
-        type: TradeType.buy,
-        price: 49400.0,
-        maxPrice: 49450.0,
-        volume: 0.3,
-        orderId: 'buy_15m_2',
-      ),
-      
-      // === 1小时级别数据 (1H) ===
-      TradeMarkData(
-        timestamp: now - 2 * 60 * 60 * 1000, // 2小时前
-        type: TradeType.sell,
-        price: 49200.0,
-        maxPrice: 49280.0,
-        volume: 0.5,
-        orderId: 'sell_1h_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 4 * 60 * 60 * 1000, // 4小时前
-        type: TradeType.buy,
-        price: 49000.0,
-        maxPrice: 49100.0,
-        volume: 0.25,
-        orderId: 'buy_1h_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 8 * 60 * 60 * 1000, // 8小时前
-        type: TradeType.sell,
-        price: 48800.0,
-        maxPrice: 48900.0,
-        volume: 0.4,
-        orderId: 'sell_1h_2',
-      ),
-      
-      // === 4小时级别数据 (4H) ===
-      TradeMarkData(
-        timestamp: now - 1 * 24 * 60 * 60 * 1000, // 1天前
-        type: TradeType.buy,
-        price: 48500.0,
-        maxPrice: 48600.0,
-        volume: 0.8,
-        orderId: 'buy_4h_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 2 * 24 * 60 * 60 * 1000, // 2天前
-        type: TradeType.sell,
-        price: 48200.0,
-        maxPrice: 48350.0,
-        volume: 0.6,
-        orderId: 'sell_4h_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 4 * 24 * 60 * 60 * 1000, // 4天前
-        type: TradeType.buy,
-        price: 48000.0,
-        maxPrice: 48150.0,
-        volume: 1.0,
-        orderId: 'buy_4h_2',
-      ),
-      
-      // === 1天级别数据 (1D) ===
-      TradeMarkData(
-        timestamp: now - 7 * 24 * 60 * 60 * 1000, // 1周前
-        type: TradeType.sell,
-        price: 47500.0,
-        maxPrice: 47700.0,
-        volume: 1.2,
-        orderId: 'sell_1d_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 14 * 24 * 60 * 60 * 1000, // 2周前
-        type: TradeType.buy,
-        price: 47000.0,
-        maxPrice: 47200.0,
-        volume: 0.9,
-        orderId: 'buy_1d_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 21 * 24 * 60 * 60 * 1000, // 3周前
-        type: TradeType.sell,
-        price: 46500.0,
-        maxPrice: 46800.0,
-        volume: 1.5,
-        orderId: 'sell_1d_2',
-      ),
-      
-      // === 1周级别数据 (1W) ===
-      TradeMarkData(
-        timestamp: now - 30 * 24 * 60 * 60 * 1000, // 1个月前
-        type: TradeType.buy,
-        price: 45000.0,
-        maxPrice: 45300.0,
-        volume: 2.0,
-        orderId: 'buy_1w_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 60 * 24 * 60 * 60 * 1000, // 2个月前
-        type: TradeType.sell,
-        price: 44000.0,
-        maxPrice: 44500.0,
-        volume: 1.8,
-        orderId: 'sell_1w_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 90 * 24 * 60 * 60 * 1000, // 3个月前
-        type: TradeType.buy,
-        price: 43000.0,
-        maxPrice: 43400.0,
-        volume: 2.5,
-        orderId: 'buy_1w_2',
-      ),
-      
-      // === 1月级别数据 (1M) ===
-      TradeMarkData(
-        timestamp: now - 180 * 24 * 60 * 60 * 1000, // 6个月前
-        type: TradeType.sell,
-        price: 40000.0,
-        maxPrice: 40800.0,
-        volume: 3.0,
-        orderId: 'sell_1m_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 365 * 24 * 60 * 60 * 1000, // 1年前
-        type: TradeType.buy,
-        price: 35000.0,
-        maxPrice: 35500.0,
-        volume: 4.0,
-        orderId: 'buy_1m_1',
-      ),
-    ];
-  }
+  Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders => {};
 
   @override
   Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders => {};
 
   @override
   Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders => {};
-
-  @override
-  List<ITimeBar> getTimeBarConfigs() {
-    return TimeBar.values;
-  }
 
   /// Grid配置
   GridConfig genGridConfig([GridConfig? grid]) {
@@ -467,15 +274,16 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
   /// Gesture配置
   GestureConfig genGestureConfig([GestureConfig? gesture]) {
     return GestureConfig(
-      supportLongPress: gesture?.supportLongPress ?? true,
-      isInertialPan: gesture?.isInertialPan ?? true,
+      enableLongPress: gesture?.enableLongPress ?? true,
+      enableInertialPan: gesture?.enableInertialPan ?? true,
       tolerance: gesture?.tolerance ?? ToleranceConfig(),
       loadMoreWhenNoEnoughDistance: gesture?.loadMoreWhenNoEnoughDistance,
       loadMoreWhenNoEnoughCandles: gesture?.loadMoreWhenNoEnoughCandles ?? 60,
+      enableScale: gesture?.enableScale ?? true,
       scalePosition: gesture?.scalePosition ?? ScalePosition.auto,
       scaleSpeed: gesture?.scaleSpeed ?? 10,
       supportKeyboardShortcuts: gesture?.supportKeyboardShortcuts ?? true,
-      enableZoom: gesture?.enableZoom ?? true,
+      enableZoom: gesture?.enableZoom ?? false,
       zoomStartMinDistance: gesture?.zoomStartMinDistance ?? 5,
       zoomSpeed: gesture?.zoomSpeed ?? 1,
     );
@@ -730,7 +538,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
               offset: const Offset(0.1, 0.1),
               blurRadius: 2,
               spreadRadius: 3,
-              color: theme.themeColor.withAlpha(0.1.alpha),
+              color: theme.themeColor.withAlpha(0.1.alpha), // 此处不适配Theme
             )
           ],
           shapeSide: BorderSide(
@@ -740,14 +548,12 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         ),
       ).of(
         sideColor: theme.gridLine,
-        // 【新增】注入阴影颜色：使用文本颜色的 20% 透明度，适配深浅主题
-        shadowColor: theme.textColor.withOpacity(0.05),
       ),
     );
   }
 
   MainPaintObjectIndicator genMainIndicator(
-    MainPaintObjectIndicator<PaintObjectIndicator>? mainIndicator,
+    MainPaintObjectIndicator<Indicator>? mainIndicator,
   );
 
   CandleIndicator genCandleIndicator(CandleIndicator? instance) {
@@ -779,7 +585,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       ).of(
         paintColor: theme.markLineColor,
         textColor: theme.textColor,
-        background: Colors.transparent, // instance?.high.text.style.color,
+        background: instance?.high.text.background,
         borderColor: instance?.high.text.border?.color,
       ),
       low: obtainConfig(
@@ -806,8 +612,8 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
       ).of(
         paintColor: theme.markLineColor,
         textColor: theme.textColor,
-        background: Colors.transparent, //instance?.high.text.style.color,
-        borderColor: instance?.high.text.border?.color,
+        background: instance?.low.text.background,
+        borderColor: instance?.low.text.border?.color,
       ),
       last: obtainConfig(
         instance?.last,
@@ -922,16 +728,16 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         background: theme.countDownTextBg,
         borderColor: theme.markLineColor,
       ),
-      chartType: instance?.chartType ?? ChartType.barSolid,
+      chartType: instance?.chartType ?? FlexiChartType.barSolid,
       minWidthLineType: instance?.minWidthLineType,
-      timeBarChartTypes: instance?.timeBarChartTypes ?? const {TimeBar.m1: ChartType.lineNormal},
+      timeBarChartTypes: instance?.timeBarChartTypes ?? {timeBar1m: FlexiChartType.lineNormal},
       hideIndicatorsWhenLineChart: instance?.hideIndicatorsWhenLineChart ?? true,
       longColor: instance?.longColor,
       shortColor: instance?.shortColor,
       lineColor: instance?.lineColor,
-      lineGradientConfig: instance?.lineGradientConfig,
-      longGradientConfig: instance?.longGradientConfig,
-      shortGradientConfig: instance?.shortGradientConfig,
+      lineGradientConfig: instance?.lineGradientConfig ?? GradientPresets.lineChart,
+      longGradientConfig: instance?.longGradientConfig ?? GradientPresets.long,
+      shortGradientConfig: instance?.shortGradientConfig ?? GradientPresets.short,
     );
   }
 

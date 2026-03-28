@@ -45,7 +45,7 @@ class CandleIndicator extends CandleBaseIndicator {
     required this.countDown,
     required this.chartType,
     this.minWidthLineType,
-    this.timeBarChartTypes = const {TimeBar.m1: ChartType.lineNormal},
+    this.timeBarChartTypes = const {},
     this.hideIndicatorsWhenLineChart = false,
     this.longColor,
     this.shortColor,
@@ -80,19 +80,19 @@ class CandleIndicator extends CandleBaseIndicator {
   final bool showCountDown;
   final TextAreaConfig countDown;
 
-  /// Kline图表类型（包含样式）
-  final ChartType chartType;
+  /// 主区蜡烛图表默认类型（包含样式）
+  final FlexiChartType chartType;
 
   /// 缩放至最小蜡烛宽度时使用的线图类型
   /// 限制为 LineChartType，因为最小宽度时蜡烛图无法正常显示
   /// 如果为 null，则使用默认 chartType
-  final LineChartType? minWidthLineType;
+  final FlexiLineChartType? minWidthLineType;
 
   /// 指定时间周期使用的图表类型映射
   /// Key: 时间周期，Value: 对应的图表类型
   /// 优先级高于 minWidthLineType
   /// 匹配规则：基于 milliseconds 匹配，支持 TimeBar 和 FlexiTimeBar 互相等效
-  final Map<ITimeBar, ChartType>? timeBarChartTypes;
+  final Map<ITimeBar, FlexiChartType>? timeBarChartTypes;
 
   /// 当图表类型为线图时，是否隐藏主区的技术指标（如 MA 等）
   /// 用于避免主线图与技术指标线重合，影响可读性
@@ -116,31 +116,29 @@ class CandleIndicator extends CandleBaseIndicator {
   final GradientConfig? shortGradientConfig;
 
   @override
-  CandlePaintObject createPaintObject(IPaintContext context) {
-    return CandlePaintObject(context: context, indicator: this);
-  }
+  CandlePaintObject createPaintObject() => CandlePaintObject();
 
   factory CandleIndicator.fromJson(Map<String, dynamic> json) => _$CandleIndicatorFromJson(json);
+
   @override
   Map<String, dynamic> toJson() => _$CandleIndicatorToJson(this);
 }
 
-class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject<T> with PaintYAxisTicksOnCrossMixin, PaintCandleHelperMixin {
-  CandlePaintObject({
-    required super.context,
-    required super.indicator,
-  });
-
+class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject<T>
+    with PaintYAxisTicksOnCrossMixin, PaintCandleHelperMixin {
   @override
   Color get longColor => indicator.longColor ?? theme.long;
 
   @override
   Color get shortColor => indicator.shortColor ?? theme.short;
 
-  BagNum? _maxHigh, _minLow;
+  FlexiNum? _maxHigh, _minLow;
 
   @override
-  ChartType getChartType() {
+  bool get hideIndicatorsWhenLineChart => indicator.hideIndicatorsWhenLineChart;
+
+  @override
+  FlexiChartType getChartType() {
     // 1. 优先检查时间周期映射（基于 milliseconds 匹配）
     final timeBar = klineData.timeBar;
     final chartTypes = indicator.timeBarChartTypes;
@@ -168,12 +166,6 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     final minmax = klineData.calculateMinmax(start, end);
     _maxHigh = minmax?.max;
     _minLow = minmax?.min;
-
-    // 当最大值等于最小值时（所有K线价格相同），扩展范围避免显示异常
-    if (minmax != null && minmax.max == minmax.min) {
-      minmax.expand(0); // 触发自动扩展逻辑
-    }
-
     return minmax;
   }
 
@@ -182,12 +174,12 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     final chartType = getChartType();
 
     switch (chartType) {
-      case BarChartType(:final style):
+      case FlexiBarChartType(:final style):
         // 绘制蜡烛柱状图，传入样式
         paintBarTypeCandleChart(canvas, size, style);
-      case LineChartType(:final style):
+      case FlexiLineChartType(:final style):
         switch (style) {
-          case LineChartStyle.normal:
+          case ChartLineStyle.normal:
             // 绘制普通折线图
             paintCandleLineChart(
               canvas,
@@ -202,7 +194,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
               ),
             );
             paintLatestCandlePoint(canvas, size);
-          case LineChartStyle.upDown:
+          case ChartLineStyle.updown:
             // 绘制涨跌线图
             paintCandleUpDownLineChart(
               canvas,
@@ -246,7 +238,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
 
   // onCross时, 格式化Y轴上的标记值.
   @override
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(FlexiNum value, {required int precision}) {
     return formatPrice(
       value.toDecimal(),
       precision: klineData.precision,
@@ -269,9 +261,9 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
 
     Offset? maxHighOffset, minLowOffset;
     final hasEnough = paintDxOffset > 0;
-    BagNum maxHigh = klineData[start].high;
-    BagNum minLow = klineData[start].low;
-    CandleModel m;
+    FlexiNum maxHigh = klineData[start].high;
+    FlexiNum minLow = klineData[start].low;
+    FlexiCandleModel m;
     for (var i = start; i < end; i++) {
       m = klineData[i];
       final dx = offset - (i - start) * candleActualWidth;
@@ -321,11 +313,11 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     }
 
     // 最后绘制在蜡烛图中的最大价钱标记
-    if (maxHighOffset != null && maxHigh > BagNum.zero) {
+    if (maxHighOffset != null && maxHigh > FlexiNum.zero) {
       paintPriceMark(canvas, maxHighOffset, maxHigh, indicator.high);
     }
     // 最后绘制在蜡烛图中的最小价钱标记
-    if (minLowOffset != null && minLow > BagNum.zero) {
+    if (minLowOffset != null && minLow > FlexiNum.zero) {
       paintPriceMark(canvas, minLowOffset, minLow, indicator.low);
     }
   }
@@ -334,7 +326,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
   void paintPriceMark(
     Canvas canvas,
     Offset offset,
-    BagNum val,
+    FlexiNum val,
     MarkConfig markConfig,
   ) {
     final flag = offset.dx > chartRectWidthHalf ? -1 : 1;
@@ -513,9 +505,10 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
       /// 倒计时Text
       String? countDownText;
       // 时间周期 > 1秒时才显示倒计时
-      if (indicator.showCountDown && klineData.timeBar.milliseconds > TimeBar.s1.milliseconds) {
+      if (indicator.showCountDown && klineData.timeBar.milliseconds > Duration.millisecondsPerSecond) {
         final nextUpdateDateTime = model.nextUpdateDateTime(klineData.req.timeBar);
-        if (nextUpdateDateTime != null && nextUpdateDateTime.millisecondsSinceEpoch > DateTime.now().millisecondsSinceEpoch) {
+        if (nextUpdateDateTime != null &&
+            nextUpdateDateTime.millisecondsSinceEpoch > DateTime.now().millisecondsSinceEpoch) {
           countDownText = nextUpdateDateTime.diffAsCountdown();
         }
       }
@@ -679,7 +672,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {

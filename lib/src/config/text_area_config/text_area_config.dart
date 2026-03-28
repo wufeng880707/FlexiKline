@@ -17,6 +17,7 @@ import 'package:flutter/painting.dart';
 
 import '../../constant.dart';
 import '../../extension/export.dart';
+import '../../framework/configuration.dart';
 import '../../framework/serializers.dart';
 import '../../framework/configuration.dart';
 

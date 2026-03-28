@@ -107,7 +107,7 @@ extension IndicatorObjectExt on IndicatorObject {
 }
 
 /// 绘制对象混入边界计算的通用扩展
-mixin PaintObjectBoundingMixin on IndicatorObject implements IPaintBoundingBox {
+mixin PaintObjectBoundingMixin<T extends Indicator<IIndicatorKey>> on IndicatorObject<T> implements IPaintBounding {
   bool get drawInMain => slot == mainIndicatorSlot;
   bool get drawInSub => slot > mainIndicatorSlot;
 
@@ -206,12 +206,17 @@ mixin PaintObjectBoundingMixin on IndicatorObject implements IPaintBoundingBox {
   }
 }
 
-/// 绘制对象混入数据初始化的通用扩展
-mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
+/// 绘制对象混入状态管理的通用扩展
+///
+/// 提供 minMax 管理、坐标转换等功能。
+mixin PaintObjectStateMixin<T extends Indicator<IIndicatorKey>> on IndicatorObject<T> implements IPaintState {
   int? _start;
   int? _end;
 
   MinMax? _minMax;
+
+  /// 用于平移过程中 Y 轴边界平滑过渡的缓存
+  MinMax? _smoothMinMax;
 
   @override
   MinMax get minMax => _minMax ?? MinMax.zero;
@@ -223,21 +228,35 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
     _dyFactor = null;
   }
 
+  /// 对 minMax 做平滑插值, 减少平移过程中 Y 轴坐标系的跳变
+  /// [smoothFactor] 控制平滑程度: 值越小越平滑(但响应越慢), 建议 0.1~0.25
+  /// 当 factor=1.0 时, lerp 直接返回精确值, 无需特殊处理
+  void smoothMinMax({double smoothFactor = 1.0}) {
+    if (_minMax == null) return;
+    if (smoothFactor >= 1.0) {
+      _smoothMinMax = null;
+    } else {
+      _smoothMinMax = MinMax.lerp(_smoothMinMax ?? _minMax!, _minMax!, smoothFactor);
+      setMinMax(_smoothMinMax!);
+    }
+  }
+
   double? _dyFactor;
+  @override
   double get dyFactor {
     if (_dyFactor != null) return _dyFactor!;
     if (chartRect.height == 0) return _dyFactor = 1;
     return _dyFactor = chartRect.height / minMax.diffDivisor.toDouble();
   }
 
-  double valueToDy(BagNum value, {bool correct = true}) {
+  double valueToDy(FlexiNum value, {bool correct = true}) {
     if (correct) value = value.clamp(minMax.min, minMax.max);
     return chartRect.bottom - (value - minMax.min).toDouble() * dyFactor;
   }
 
-  BagNum? dyToValue(double dy, {bool check = true}) {
+  FlexiNum? dyToValue(double dy, {bool check = true}) {
     if (check && !drawableRect.includeDy(dy)) return null;
-    return minMax.max - ((dy - chartRect.top) / dyFactor).toBagNum();
+    return minMax.max - ((dy - chartRect.top) / dyFactor).toFlexiNum();
   }
 
   double? indexToDx(num index, {bool check = true}) {
@@ -258,22 +277,46 @@ mixin PaintObjectDataInitMixin on IndicatorObject implements IPaintDataInit {
     return dxPaintOffset / candleActualWidth;
   }
 
-  CandleModel? dxToCandle(double dx) {
+  FlexiCandleModel? dxToCandle(double dx) {
     final index = dxToIndex(dx).toInt();
     return klineData.get(index);
   }
 
-  CandleModel? offsetToCandle(Offset? offset) {
+  FlexiCandleModel? offsetToCandle(Offset? offset) {
     if (offset != null) return dxToCandle(offset.dx);
     return null;
   }
 
-  double valueToDyOnCandle(BagNum value, {bool correct = false}) {
+  double valueToDyOnCandle(FlexiNum value, {bool correct = false}) {
     return _context.valueToDyOnCandle(value, correct: correct);
   }
 
-  BagNum? dyToValueOnCandle(double dy, {bool check = false}) {
+  FlexiNum? dyToValueOnCandle(double dy, {bool check = false}) {
     return _context.dyToValueOnCandle(dy, check: check);
+  }
+
+  @override
+  MinMax? initState(int start, int end) {
+    // 默认实现返回 null，表示使用当前 minMax
+    // 子类可以 override 此方法提供自定义实现
+    return null;
+  }
+}
+
+/// 绘制对象混入数据预计算的扩展
+///
+/// 提供数据预计算能力，仅用于 DataPaintObject。
+mixin PaintObjectComputableMixin<T extends DataIndicator> on PaintObject<T> {
+  /// 判断是否需要重新预计算
+  ///
+  /// 当指标配置参数发生变化时，判断是否需要重新计算。
+  bool shouldPrecompute(covariant T oldIndicator) {
+    return oldIndicator.calcParam != indicator.calcParam && indicator.calcParam != null;
+  }
+
+  /// 数据预计算（空实现，供子类 override）
+  void precompute(Range range, {bool reset = false}) {
+    // 空实现
   }
 }
 
@@ -325,7 +368,7 @@ mixin PaintYAxisTicksMixin<T extends Indicator> on PaintObject<T> {
 
   /// 如果要定制格式化刻度值. 在PaintObject中覆写此方法.
   @protected
-  String formatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(FlexiNum value, {required int precision}) {
     return formatPrice(
       value.toDecimal(),
       precision: precision,
@@ -364,7 +407,7 @@ mixin PaintYAxisTicksOnCrossMixin<T extends Indicator> on PaintObject<T> {
   }
 
   @protected
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(FlexiNum value, {required int precision}) {
     return formatPrice(
       value.toDecimal(),
       precision: precision,
@@ -407,7 +450,7 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
   /// [chartStyle]为蜡烛柱的样式, 支持: ohlcChart, upHollow, downHollow
   void paintCandleBar(
     Canvas canvas,
-    CandleModel m, {
+    FlexiCandleModel m, {
     required double dx,
     double? high,
     double? low,
@@ -494,7 +537,7 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
     startOffset ??= startCandleDx - candleWidthHalf;
 
     final points = <Offset>[];
-    CandleModel m;
+    FlexiCandleModel m;
     for (var i = start; i < end; i++) {
       m = klineData[i];
       points.add(Offset(
@@ -609,25 +652,25 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
   }
 }
 
-extension PaintObjectExt on PaintObject {
-  /// 获取当前指标计算参数
-  Map<IIndicatorKey, dynamic> getCalcParams() {
-    if (calcParams != null) {
-      return {key: calcParams};
-    }
-    return const <IIndicatorKey, dynamic>{};
-  }
-}
+// extension PaintObjectExt on PaintObject {
+//   /// 获取当前指标计算参数
+//   Map<IIndicatorKey, dynamic> getCalcParams() {
+//     if (calcParams != null) {
+//       return {key: calcParams};
+//     }
+//     return const <IIndicatorKey, dynamic>{};
+//   }
+// }
 
-extension MultiPaintObjectExt on MainPaintObject {
-  /// 收集[MainPaintObject]中子指标的计算参数
-  Map<IIndicatorKey, dynamic> getCalcParams() {
-    final params = <IIndicatorKey, dynamic>{};
-    for (final object in children) {
-      if (object.calcParams != null) {
-        params[object.key] = object.calcParams;
-      }
-    }
-    return params;
-  }
-}
+// extension MultiPaintObjectExt on MainPaintObject {
+//   /// 收集[MainPaintObject]中子指标的计算参数
+//   Map<IIndicatorKey, dynamic> getCalcParams() {
+//     final params = <IIndicatorKey, dynamic>{};
+//     for (final object in children) {
+//       if (object.calcParams != null) {
+//         params[object.key] = object.calcParams;
+//       }
+//     }
+//     return params;
+//   }
+// }

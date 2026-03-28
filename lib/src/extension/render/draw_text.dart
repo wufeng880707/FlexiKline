@@ -18,7 +18,7 @@ import 'package:flutter/painting.dart';
 
 import '../../config/text_area_config/text_area_config.dart';
 import '../geometry_ext.dart';
-import 'common.dart';
+import 'types.dart';
 
 extension FlexiDrawTextExt on Canvas {
   /// 绘制文本
@@ -60,7 +60,7 @@ extension FlexiDrawTextExt on Canvas {
       return Size.zero;
     }
 
-    TextPainter textPainter = TextPainter(
+    final textPainter = TextPainter(
       text: textSpan ??
           TextSpan(
             text: text,
@@ -87,7 +87,7 @@ extension FlexiDrawTextExt on Canvas {
     }
 
     if (drawableRect != null) {
-      double dy = math.max(
+      final dy = math.max(
         drawableRect.top,
         math.min(offset.dy, drawableRect.bottom),
       );
@@ -152,7 +152,7 @@ extension FlexiDrawTextExt on Canvas {
           offset.dy,
           offset.dx + containerSize.width,
           offset.dy + containerSize.height,
-          Radius.circular(0),
+          const Radius.circular(0),
         ));
       }
 

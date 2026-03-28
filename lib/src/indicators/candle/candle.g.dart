@@ -31,12 +31,12 @@ abstract class _$CandleIndicatorCWProxy {
 
   CandleIndicator countDown(TextAreaConfig countDown);
 
-  CandleIndicator chartType(ChartType chartType);
+  CandleIndicator chartType(FlexiChartType chartType);
 
-  CandleIndicator minWidthLineType(LineChartType? minWidthLineType);
+  CandleIndicator minWidthLineType(FlexiLineChartType? minWidthLineType);
 
   CandleIndicator timeBarChartTypes(
-      Map<ITimeBar, ChartType>? timeBarChartTypes);
+      Map<ITimeBar, FlexiChartType>? timeBarChartTypes);
 
   CandleIndicator hideIndicatorsWhenLineChart(bool hideIndicatorsWhenLineChart);
 
@@ -71,9 +71,9 @@ abstract class _$CandleIndicatorCWProxy {
     bool useCandleColorAsLatestBg,
     bool showCountDown,
     TextAreaConfig countDown,
-    ChartType chartType,
-    LineChartType? minWidthLineType,
-    Map<ITimeBar, ChartType>? timeBarChartTypes,
+    FlexiChartType chartType,
+    FlexiLineChartType? minWidthLineType,
+    Map<ITimeBar, FlexiChartType>? timeBarChartTypes,
     bool hideIndicatorsWhenLineChart,
     Color? longColor,
     Color? shortColor,
@@ -132,15 +132,16 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
       this(countDown: countDown);
 
   @override
-  CandleIndicator chartType(ChartType chartType) => this(chartType: chartType);
+  CandleIndicator chartType(FlexiChartType chartType) =>
+      this(chartType: chartType);
 
   @override
-  CandleIndicator minWidthLineType(LineChartType? minWidthLineType) =>
+  CandleIndicator minWidthLineType(FlexiLineChartType? minWidthLineType) =>
       this(minWidthLineType: minWidthLineType);
 
   @override
   CandleIndicator timeBarChartTypes(
-          Map<ITimeBar, ChartType>? timeBarChartTypes) =>
+          Map<ITimeBar, FlexiChartType>? timeBarChartTypes) =>
       this(timeBarChartTypes: timeBarChartTypes);
 
   @override
@@ -254,15 +255,15 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
       chartType: chartType == const $CopyWithPlaceholder()
           ? _value.chartType
           // ignore: cast_nullable_to_non_nullable
-          : chartType as ChartType,
+          : chartType as FlexiChartType,
       minWidthLineType: minWidthLineType == const $CopyWithPlaceholder()
           ? _value.minWidthLineType
           // ignore: cast_nullable_to_non_nullable
-          : minWidthLineType as LineChartType?,
+          : minWidthLineType as FlexiLineChartType?,
       timeBarChartTypes: timeBarChartTypes == const $CopyWithPlaceholder()
           ? _value.timeBarChartTypes
           // ignore: cast_nullable_to_non_nullable
-          : timeBarChartTypes as Map<ITimeBar, ChartType>?,
+          : timeBarChartTypes as Map<ITimeBar, FlexiChartType>?,
       hideIndicatorsWhenLineChart:
           hideIndicatorsWhenLineChart == const $CopyWithPlaceholder()
               ? _value.hideIndicatorsWhenLineChart
@@ -327,14 +328,14 @@ CandleIndicator _$CandleIndicatorFromJson(Map<String, dynamic> json) =>
       showCountDown: json['showCountDown'] as bool? ?? true,
       countDown:
           TextAreaConfig.fromJson(json['countDown'] as Map<String, dynamic>),
-      chartType: const ChartTypeConverter()
+      chartType: const FlexiChartTypeConverter()
           .fromJson(json['chartType'] as Map<String, dynamic>),
       minWidthLineType:
-          _$JsonConverterFromJson<Map<String, dynamic>, LineChartType>(
+          _$JsonConverterFromJson<Map<String, dynamic>, FlexiLineChartType>(
               json['minWidthLineType'],
               const LineChartTypeConverter().fromJson),
       timeBarChartTypes: json['timeBarChartTypes'] == null
-          ? const {TimeBar.m1: ChartType.lineNormal}
+          ? const {}
           : const TimeBarChartTypesConverter()
               .fromJson(json['timeBarChartTypes'] as List?),
       hideIndicatorsWhenLineChart:
@@ -373,9 +374,9 @@ Map<String, dynamic> _$CandleIndicatorToJson(CandleIndicator instance) =>
       'useCandleColorAsLatestBg': instance.useCandleColorAsLatestBg,
       'showCountDown': instance.showCountDown,
       'countDown': instance.countDown.toJson(),
-      'chartType': const ChartTypeConverter().toJson(instance.chartType),
+      'chartType': const FlexiChartTypeConverter().toJson(instance.chartType),
       'minWidthLineType':
-          _$JsonConverterToJson<Map<String, dynamic>, LineChartType>(
+          _$JsonConverterToJson<Map<String, dynamic>, FlexiLineChartType>(
               instance.minWidthLineType, const LineChartTypeConverter().toJson),
       'timeBarChartTypes':
           const TimeBarChartTypesConverter().toJson(instance.timeBarChartTypes),

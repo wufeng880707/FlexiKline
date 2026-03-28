@@ -21,6 +21,7 @@ import '../extension/export.dart';
 import '../framework/chart/indicator.dart';
 import '../framework/logger.dart';
 import '../model/export.dart';
+import '../types.dart';
 
 part 'base_data.dart';
 part 'candle_req.dart';
@@ -46,12 +47,12 @@ class KlineData extends BaseData with CandleReqData, CandleListData, PaintDrawDa
   );
 
   /// 预计算Kline指标数据
-  /// [indicatorCount]指标图个数
   /// [newList] 新增的蜡烛数据
-  /// [subPaintObjects] 待计算的指标集合
+  /// [mainPaintObjects] 主区待计算的指标集合
+  /// [subPaintObjects] 副区待计算的指标集合
   /// [reset] 是否重置; 如果有, 忽略之前的计算结果.
   Future<void> precomputeKlineData({
-    required List<CandleModel> newList,
+    required List<ICandleModel> newList,
     required Iterable<PaintObject> mainPaintObjects,
     required Iterable<PaintObject> subPaintObjects,
     bool reset = false,
@@ -89,24 +90,18 @@ class KlineData extends BaseData with CandleReqData, CandleListData, PaintDrawDa
 
       /// 3. 计算指标数据
       logd('precomputeKlineData Start Main $reset-$range');
-      for (final object in mainPaintObjects) {
+      for (final computable in mainPaintObjects.whereType<IComputablePainter>()) {
         await stopwatch.exec(
-          () => object.precompute(
-            range!,
-            reset: reset,
-          ),
-          label: '$logTag-Main-precompute:${object.key}-$range',
+          () => computable.precompute(range!, reset: reset),
+          label: '$logTag-Main-precompute:${computable.key}-$range',
         );
       }
 
       logd('precomputeKlineData Start Sub $reset-$range');
-      for (final object in subPaintObjects) {
+      for (final computable in subPaintObjects.whereType<IComputablePainter>()) {
         await stopwatch.exec(
-          () => object.precompute(
-            range!,
-            reset: reset,
-          ),
-          label: '$logTag-Sub-precompute:${object.key}-$range',
+          () => computable.precompute(range!, reset: reset),
+          label: '$logTag-Sub-precompute:${computable.key}-$range',
         );
       }
       logd('precomputeKlineData End $reset-$range');

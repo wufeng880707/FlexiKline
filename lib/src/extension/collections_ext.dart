@@ -379,7 +379,7 @@ extension FlexiMapExt<K, V> on Map<K, V> {
   @Deprecated('废弃, 不安全')
   T? obtainItem<T>(K? key) {
     if (key == null) return null;
-    V? val = this[key];
+    final val = this[key];
     if (val == null) return null;
     if (val is Map && T == Map<String, dynamic>) {
       return Map<String, dynamic>.from(val) as T;

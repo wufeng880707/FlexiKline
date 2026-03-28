@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// 绘制方向
 enum DrawDirection {
   /// The draw flows from left to right.
   ltr,
@@ -26,12 +27,17 @@ enum DrawDirection {
   bool get isrtl => this == rtl;
 }
 
+/// 线条类型
 enum LineType {
   solid, // 实线
   dashed, // 虚线
   dotted; // 点线
 }
 
+<<<<<<< HEAD:lib/src/extension/render/common.dart
+=======
+/// Y轴对齐方式
+>>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:lib/src/extension/render/types.dart
 enum YAxisAlign {
   top,
   center,

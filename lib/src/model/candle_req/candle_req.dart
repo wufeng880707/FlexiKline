@@ -18,6 +18,7 @@ import 'package:json_annotation/json_annotation.dart';
 import '../../constant.dart';
 import '../../extension/export.dart';
 import '../../framework/serializers.dart';
+import '../time_bar.dart';
 
 part 'candle_req.g.dart';
 
@@ -46,7 +47,7 @@ enum RequestState {
 class CandleReq {
   const CandleReq({
     required this.instId,
-    this.timeBar = TimeBar.m1,
+    this.timeBar = timeBar1m,
     this.limit = 100,
     this.precision = defaultPrecision,
     this.after,

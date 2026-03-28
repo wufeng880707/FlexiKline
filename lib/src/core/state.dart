@@ -40,6 +40,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     logd('dispose state');
     _candleRequestListener.dispose();
     _isFirstCandleMoveOffScreenListener.dispose();
+    _isMultiTouchNotifier.dispose();
     _timeBarListener.dispose();
     _paintRangeListener.dispose();
     _klineDataCache.forEach((key, data) {
@@ -61,6 +62,15 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   final _isFirstCandleMoveOffScreenListener = ValueNotifier(false);
   ValueListenable<bool> get isFirstCandleMoveOffScreenListener {
     return _isFirstCandleMoveOffScreenListener;
+  }
+
+  /// 当前是否处于多指触摸（双指缩放）状态.
+  final _isMultiTouchNotifier = ValueNotifier<bool>(false);
+  ValueListenable<bool> get isMultiTouchListener => _isMultiTouchNotifier;
+  void setMultiTouch(bool value) {
+    if (_isMultiTouchNotifier.value != value) {
+      _isMultiTouchNotifier.value = value;
+    }
   }
 
   /// 当KlineData的TimeBar的监听器
@@ -127,7 +137,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   double get maxPaintWidth => curKlineData.length * candleActualWidth;
 
   @override
-  CandleModel? dxToCandle(double dx) {
+  FlexiCandleModel? dxToCandle(double dx) {
     final index = dxToIndex(dx);
     return curKlineData.get(index);
   }
@@ -163,22 +173,22 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   }
 
   @override
-  double valueToDy(BagNum value, {bool correct = false}) {
+  double valueToDy(FlexiNum value, {bool correct = false}) {
     return mainPaintObject.valueToDy(value, correct: correct);
   }
 
   @override
-  BagNum? dyToValue(double dy, {bool check = false}) {
+  FlexiNum? dyToValue(double dy, {bool check = false}) {
     return mainPaintObject.dyToValue(dy, check: check);
   }
 
   @override
-  double valueToDyOnCandle(BagNum value, {bool correct = false}) {
+  double valueToDyOnCandle(FlexiNum value, {bool correct = false}) {
     return candlePaintObject.valueToDy(value, correct: correct);
   }
 
   @override
-  BagNum? dyToValueOnCandle(double dy, {bool check = false}) {
+  FlexiNum? dyToValueOnCandle(double dy, {bool check = false}) {
     return candlePaintObject.dyToValue(dy, check: check);
   }
 
@@ -346,7 +356,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   /// 更新[list]到[request]请求指定的[KlineData]中
   Future<void> updateKlineData(
     CandleReq request,
-    List<CandleModel> list, {
+    List<ICandleModel> list, {
     bool reset = false,
   }) async {
     // 数据为空, 无需要更新.
@@ -408,7 +418,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   /// 2. 对于实时数据更新, 会仅计算[newList]部分.
   Future<void> _startPrecomputeKlineData(
     KlineData data, {
-    List<CandleModel> newList = const [],
+    List<ICandleModel> newList = const [],
     bool reset = false,
   }) async {
     if (!reset && newList.isEmpty) {

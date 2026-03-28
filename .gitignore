@@ -1,4 +1,5 @@
 # Miscellaneous
+*.orig
 *.class
 *.log
 *.pyc
@@ -21,11 +22,6 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
-flexi_kline_indicators/
-flexi_kline_draw_tools/
-flexi_ws/
-.vscode/
-
 # Flutter/Dart/Pub related
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
 /pubspec.lock
@@ -35,3 +31,8 @@ build/
 
 # FVM Version Cache
 .fvm/
+
+# Example app — local Android build outputs (do not commit)
+example/android/.gradle/
+example/android/local.properties
+example/android/key.properties
