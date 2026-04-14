@@ -15,47 +15,31 @@
 part of 'sar.dart';
 
 @visibleForTesting
-extension CandleSarExt on CandleModel {
-  // 假设SAR的dataIndex为4（如有不同请调整）
-  static const int _sarIndex = 4;
+extension CandleSarExt on FlexiCandleModel {
+  List<FlexiNum?>? sarList(int dataIndex) => getList<FlexiNum>(dataIndex);
 
-  List<BagNum?>? get _sarList => calcuData.getData(_sarIndex);
-  set _sarList(List<BagNum?>? value) => calcuData.setData(_sarIndex, value);
-
-  BagNum? get sar {
-    final list = _sarList;
-    if (list != null && list.length == 2) return list[0];
-    return null;
+  FlexiNum? sarValue(int dataIndex) {
+    final list = sarList(dataIndex);
+    return (list != null && list.length == 2) ? list[0] : null;
   }
 
-  set sar(BagNum? value) {
-    var list = _sarList;
-    if (list == null || list.length != 2) list = List.filled(2, null);
-    list[0] = value;
-    _sarList = list;
+  int? sarFlag(int dataIndex) {
+    final list = sarList(dataIndex);
+    return (list != null && list.length == 2) ? list[1]?.toDouble().toInt() : null;
   }
 
-  int? get sarFlag {
-    final list = _sarList;
-    if (list != null && list.length == 2) return list[1]?.toDouble().toInt();
-    return null;
+  void setSar(int dataIndex, FlexiNum? sar, int? flag) {
+    final list = getOrInitList<FlexiNum>(dataIndex, 2);
+    list[0] = sar;
+    list[1] = flag != null ? FlexiNum.fromNum(flag) : null;
   }
 
-  set sarFlag(int? value) {
-    var list = _sarList;
-    if (list == null || list.length != 2) list = List.filled(2, null);
-    list[1] = value != null ? BagNum.fromNum(value) : null;
-    _sarList = list;
-  }
+  bool isValidSarData(int dataIndex) => sarValue(dataIndex) != null && sarFlag(dataIndex) != null;
 
-  bool get isValidSarData => sar != null && sarFlag != null;
-
-  void cleanSar() {
-    _sarList = null;
-  }
+  void cleanSar(int dataIndex) => clean(dataIndex);
 }
 
-mixin SarDataMixin<T extends SARIndicator> on PaintObjectBox<T> {
+mixin SarDataMixin<T extends SARIndicator> on DataPaintObject<T> {
   SARParam get calcParam => indicator.calcParam;
 
   @override
@@ -83,12 +67,11 @@ mixin SarDataMixin<T extends SARIndicator> on PaintObjectBox<T> {
     double af = param.periods.start;
     final step = param.periods.step;
     final maxAf = param.periods.max;
-    BagNum? ep;
+    FlexiNum? ep;
     bool isIncreasing = false;
-    BagNum sar = BagNum.zero;
-    BagNum minLow;
-    BagNum maxHigh;
-    CandleModel m;
+    FlexiNum sar = FlexiNum.zero;
+    FlexiNum minLow;
+    FlexiNum maxHigh;
     int flag = 0;
 
     // 修正：正确初始化第一个SAR值和趋势判断
@@ -119,7 +102,7 @@ mixin SarDataMixin<T extends SARIndicator> on PaintObjectBox<T> {
     }
 
     for (int i = end; i >= start; i--) {
-      m = klineData.list[i];
+      final m = klineData.list[i];
       if (isIncreasing) {
         flag = 1; // 上涨
         if (ep == null || ep < m.high) {
@@ -169,8 +152,7 @@ mixin SarDataMixin<T extends SARIndicator> on PaintObjectBox<T> {
           isIncreasing = true;
         }
       }
-      m.sarFlag = flag;
-      m.sar = sar;
+      m.setSar(dataIndex, sar, flag);
     }
   }
 
@@ -204,17 +186,17 @@ mixin SarDataMixin<T extends SARIndicator> on PaintObjectBox<T> {
 
     int endIndex = end - 1;
     if (end < start) return null;
-    if (!klineData.list[endIndex].isValidSarData) {
+    if (!klineData.list[endIndex].isValidSarData(dataIndex)) {
       calcuAndCacheSar(param, start: 0, end: klineData.list.length);
     }
 
     MinMax? minmax;
-    CandleModel m;
     for (int i = endIndex; i >= start; i--) {
-      m = klineData.list[i];
-      if (m.sar != null) {
-        minmax ??= MinMax.same(m.sar!);
-        minmax.updateMinMaxBy(m.sar!);
+      final m = klineData.list[i];
+      final sarVal = m.sarValue(dataIndex);
+      if (sarVal != null) {
+        minmax ??= MinMax.same(sarVal);
+        minmax.updateMinMaxBy(sarVal);
       }
     }
     return minmax;

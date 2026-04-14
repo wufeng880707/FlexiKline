@@ -15,62 +15,41 @@
 part of 'boll.dart';
 
 @visibleForTesting
-extension CandleBollExt on CandleModel {
-  // 假设BOLL的dataIndex为2（如有不同请调整）
-  static const int _bollIndex = 2;
+extension CandleBollExt on FlexiCandleModel {
+  List<FlexiNum?>? bollList(int dataIndex) => getList<FlexiNum>(dataIndex);
 
-  List<BagNum?>? get _bollList => calcuData.getData(_bollIndex);
-  set _bollList(List<BagNum?>? value) => calcuData.setData(_bollIndex, value);
-
-  BagNum? get mb {
-    final list = _bollList;
-    if (list != null && list.length == 3) return list[0];
+  FlexiNum? bollMb(int dataIndex) {
+    final list = bollList(dataIndex);
+    if (list != null && list.length >= 3) return list[0];
     return null;
   }
 
-  set mb(BagNum? value) {
-    var list = _bollList;
-    if (list == null || list.length != 3) list = List.filled(3, null);
-    list[0] = value;
-    _bollList = list;
-  }
-
-  BagNum? get up {
-    final list = _bollList;
-    if (list != null && list.length == 3) return list[1];
+  FlexiNum? bollUp(int dataIndex) {
+    final list = bollList(dataIndex);
+    if (list != null && list.length >= 3) return list[1];
     return null;
   }
 
-  set up(BagNum? value) {
-    var list = _bollList;
-    if (list == null || list.length != 3) list = List.filled(3, null);
-    list[1] = value;
-    _bollList = list;
-  }
-
-  BagNum? get dn {
-    final list = _bollList;
-    if (list != null && list.length == 3) return list[2];
+  FlexiNum? bollDn(int dataIndex) {
+    final list = bollList(dataIndex);
+    if (list != null && list.length >= 3) return list[2];
     return null;
   }
 
-  set dn(BagNum? value) {
-    var list = _bollList;
-    if (list == null || list.length != 3) list = List.filled(3, null);
-    list[2] = value;
-    _bollList = list;
-  }
+  bool isValidBollData(int dataIndex) =>
+      bollMb(dataIndex) != null &&
+      bollUp(dataIndex) != null &&
+      bollDn(dataIndex) != null;
 
-  bool get isValidBollData => mb != null && up != null && dn != null;
-  MinMax? get bollMinmax {
-    if (!isValidBollData) return null;
-    return MinMax(max: mb!, min: mb!)
-      ..updateMinMaxBy(up!)
-      ..updateMinMaxBy(dn!);
+  MinMax? bollMinmax(int dataIndex) {
+    if (!isValidBollData(dataIndex)) return null;
+    return MinMax(max: bollMb(dataIndex)!, min: bollMb(dataIndex)!)
+      ..updateMinMaxBy(bollUp(dataIndex)!)
+      ..updateMinMaxBy(bollDn(dataIndex)!);
   }
 }
 
-mixin BollDataMixin<T extends BOLLIndicator> on PaintObjectBox<T> {
+mixin BollDataMixin<T extends BOLLIndicator> on DataPaintObject<T> {
   BOLLParam get calcParam => indicator.calcParam;
 
   @override
@@ -101,7 +80,7 @@ mixin BollDataMixin<T extends BOLLIndicator> on PaintObjectBox<T> {
       if (i + period > len) continue;
 
       // 计算移动平均
-      BagNum sum = m.close;
+      FlexiNum sum = m.close;
       for (int j = i + 1; j < i + period; j++) {
         sum += klineData.list[j].close;
       }
@@ -113,12 +92,13 @@ mixin BollDataMixin<T extends BOLLIndicator> on PaintObjectBox<T> {
         variance += (klineData.list[j].close.toDouble() - ma.toDouble()) *
             (klineData.list[j].close.toDouble() - ma.toDouble());
       }
-      final std = BagNum.fromNum(math.sqrt(variance / period));
+      final std = FlexiNum.fromNum(math.sqrt(variance / period));
 
       // 设置BOLL值
-      m.mb = ma;
-      m.up = ma + std * BagNum.fromNum(param.periods.stdDev);
-      m.dn = ma - std * BagNum.fromNum(param.periods.stdDev);
+      final list = m.getOrInitList<FlexiNum>(dataIndex, 3);
+      list[0] = ma;
+      list[1] = ma + std * FlexiNum.fromNum(param.periods.stdDev);
+      list[2] = ma - std * FlexiNum.fromNum(param.periods.stdDev);
     }
   }
 
@@ -154,17 +134,17 @@ mixin BollDataMixin<T extends BOLLIndicator> on PaintObjectBox<T> {
     final period = param.periods.period;
     end = math.min(len - period, end - 1);
 
-    if (!klineData.list[end].isValidBollData) {
+    if (!klineData.list[end].isValidBollData(dataIndex)) {
       calcuAndCacheBoll(param, start: 0, end: len);
     }
 
     MinMax? minmax;
-    CandleModel m;
+    FlexiCandleModel m;
     for (int i = end; i >= start; i--) {
       m = klineData.list[i];
-      if (m.isValidBollData) {
-        minmax ??= m.bollMinmax;
-        minmax?.updateMinMax(m.bollMinmax);
+      if (m.isValidBollData(dataIndex)) {
+        minmax ??= m.bollMinmax(dataIndex);
+        minmax?.updateMinMax(m.bollMinmax(dataIndex));
       }
     }
     return minmax;

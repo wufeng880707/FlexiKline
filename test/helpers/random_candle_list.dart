@@ -32,11 +32,7 @@ Future<List<CandleModel>> genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-<<<<<<< HEAD:test/base/random_candle_list.dart
-  TimeBar timeBar = TimeBar.D1,
-=======
   ITimeBar timeBar = timeBar1D,
->>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:test/helpers/random_candle_list.dart
   DateTime? dateTime,
   bool isHistory = true,
 }) async {
@@ -71,23 +67,12 @@ Future<List<CandleModel>> genRandomCandleList({
     if (h < l) [h, l] = [l, h];
     v = genVal(v, rangeVol);
     m = CandleModel(
-<<<<<<< HEAD:test/base/random_candle_list.dart
-      ts: dateTime
-          .add(Duration(milliseconds: flag * i * timeBar.milliseconds))
-          .millisecondsSinceEpoch,
-      h: h.d,
-      o: o.d,
-      c: c.d,
-      l: l.d,
-      v: v.d,
-=======
       timestamp: dateTime.add(Duration(milliseconds: flag * i * timeBar.milliseconds)).millisecondsSinceEpoch,
       high: h.d,
       open: o.d,
       close: c.d,
       low: l.d,
       volume: v.d,
->>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:test/helpers/random_candle_list.dart
     );
     if (isHistory) {
       list.add(m);

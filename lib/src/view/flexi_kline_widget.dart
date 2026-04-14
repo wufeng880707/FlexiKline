@@ -423,39 +423,42 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
     return ValueListenableBuilder(
       valueListenable: controller.drawPointerListener,
       builder: (context, pointer, child) {
-        bool visible = false;
         final pointerOffset = pointer?.offset;
+        final bool visible = pointerOffset != null &&
+            pointerOffset.isFinite &&
+            drawRect.contains(pointerOffset);
+
+        double left = config.margin.left;
+        double top = config.margin.top;
         Offset focalPosition = Offset.zero;
-        AlignmentGeometry alignment = AlignmentDirectional.topStart;
-        EdgeInsets margin = config.margin;
-        if (pointerOffset != null && pointerOffset.isFinite) {
-          visible = true;
-          Offset position;
+
+        if (visible) {
           if (pointerOffset.dx > drawRect.width * 0.5) {
-            alignment = AlignmentDirectional.topStart;
-            position = config.size.center(margin.topLeft);
-            position = Offset(
-              drawRect.left + position.dx,
-              drawRect.top + position.dy,
-            );
+            left = config.margin.left;
+            top = config.margin.top;
           } else {
-            alignment = AlignmentDirectional.topEnd;
-            final valueTxtWidth = controller.drawState.object?.valueTicksSize?.width ?? 0;
-            margin = margin.copyWith(right: margin.right + valueTxtWidth);
-            position = Offset(
-              drawRect.right - margin.right - config.size.width / 2,
-              drawRect.top + margin.top + config.size.height / 2,
-            );
+            final valueTxtWidth =
+                controller.drawState.object?.valueTicksSize?.width ?? 0;
+            left = drawRect.width -
+                config.margin.right -
+                config.size.width -
+                valueTxtWidth;
+            top = config.margin.top;
           }
-          focalPosition = pointerOffset - position;
+          final magnifierCenter = Offset(
+            left + config.size.width / 2,
+            top + config.size.height / 2,
+          );
+          focalPosition = pointerOffset - magnifierCenter;
         }
-        return Visibility(
-          key: const ValueKey('MagnifierVisibility'),
-          visible: visible,
-          child: Container(
-            key: const ValueKey('MagnifierContainer'),
-            alignment: alignment,
-            margin: margin,
+
+        return Positioned(
+          key: const ValueKey('MagnifierPositioned'),
+          left: left,
+          top: top,
+          child: Visibility(
+            key: const ValueKey('MagnifierVisibility'),
+            visible: visible,
             child: RawMagnifier(
               key: const ValueKey('KlineRawMagnifier'),
               decoration: MagnifierDecoration(

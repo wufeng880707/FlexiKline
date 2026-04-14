@@ -15,15 +15,16 @@
 part of 'ema.dart';
 
 @visibleForTesting
-extension CandleEmaExt on CandleModel {
-  static const int _emaIndex = 6;
-  List<BagNum?>? get emaList => calcuData.getData(_emaIndex);
-  set emaList(List<BagNum?>? value) => calcuData.setData(_emaIndex, value);
-  bool get isValidEmaList => emaList != null && emaList!.any((e) => e != null);
-  void cleanEma() => emaList = null;
+extension CandleEmaExt on FlexiCandleModel {
+  List<FlexiNum?>? getEmaList(int dataIndex) => getList<FlexiNum>(dataIndex);
+
+  bool isValidEmaList(int dataIndex) =>
+      getEmaList(dataIndex)?.any((e) => e != null) ?? false;
+
+  void cleanEma(int dataIndex) => clean(dataIndex);
 }
 
-mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
+mixin EmaDataMixin<T extends EMAIndicator> on DataPaintObject<T> {
   EmaParam get calcParam => indicator.calcParam;
 
   @override
@@ -37,12 +38,12 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
   }
 
   /// 计算EMA，要求传入的`values`是按时间从旧到新排列的.
-  List<BagNum?> _ema(List<BagNum?> values, int period) {
+  List<FlexiNum?> _ema(List<FlexiNum?> values, int period) {
     final len = values.length;
-    final result = List<BagNum?>.filled(len, null);
+    final result = List<FlexiNum?>.filled(len, null);
     if (len < period) return result;
 
-    final multiplier = BagNum.fromNum(2.0 / (period + 1));
+    final multiplier = FlexiNum.fromNum(2.0 / (period + 1));
 
     // 寻找第一个非空值作为计算起点
     int firstValidIndex = -1;
@@ -58,7 +59,7 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
     }
 
     // 第一个EMA值是前`period`个数据的简单移动平均(SMA)
-    BagNum sum = BagNum.zero;
+    FlexiNum sum = FlexiNum.zero;
     for (int i = firstValidIndex; i < firstValidIndex + period; i++) {
       sum += values[i]!;
     }
@@ -69,7 +70,7 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
       final value = values[i];
       final prevEma = result[i - 1];
       if (value != null && prevEma != null) {
-        result[i] = value * multiplier + prevEma * (BagNum.one - multiplier);
+        result[i] = value * multiplier + prevEma * (FlexiNum.one - multiplier);
       } else if (prevEma != null) {
         // 如果当前值为空, 则沿用上一个EMA值.
         result[i] = prevEma;
@@ -92,7 +93,7 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
 
     if (reset) {
       for (final m in list) {
-        m.cleanEma();
+        m.cleanEma(dataIndex);
       }
     }
 
@@ -104,7 +105,7 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
     final closeValues = list.map((c) => c.close).toList().reversed.toList();
 
     // 为每个启用的EMA线计算EMA
-    final emaResults = <List<BagNum?>>[];
+    final emaResults = <List<FlexiNum?>>[];
     for (final lineConfig in enabledLines) {
       if (lineConfig.period <= 0) continue; // 跳过无效周期
       final emaResult = _ema(closeValues, lineConfig.period);
@@ -113,7 +114,7 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
 
     // 将计算结果(从旧到新)反转回来, 以匹配原始list(从新到旧)的顺序.
     for (int i = 0; i < len; i++) {
-      final emaValues = <BagNum?>[];
+      final emaValues = <FlexiNum?>[];
       bool hasValidData = false;
 
       for (int j = 0; j < emaResults.length; j++) {
@@ -126,10 +127,10 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
       }
 
       if (hasValidData) {
-        list[i].emaList = emaValues;
+        list[i].setList(dataIndex, emaValues);
       } else {
         if (reset) {
-          list[i].emaList = null;
+          list[i].clean(dataIndex);
         }
       }
     }
@@ -154,15 +155,15 @@ mixin EmaDataMixin<T extends EMAIndicator> on PaintObjectBox<T> {
     
     // 确保数据已计算，使用安全的索引检查
     final checkIndex = (end > 0 ? end - 1 : 0).clamp(0, len - 1);
-    if (!klineData.list[checkIndex].isValidEmaList) {
+    if (!klineData.list[checkIndex].isValidEmaList(dataIndex)) {
       calcuAndCacheEma(param, start: 0, end: len);
     }
 
     MinMax? minmax;
     for (int i = start; i < end; i++) {
       final m = klineData.list[i];
-      if (m.isValidEmaList) {
-        for (final emaValue in m.emaList!) {
+      if (m.isValidEmaList(dataIndex)) {
+        for (final emaValue in m.getEmaList(dataIndex)!) {
           if (emaValue != null) {
             minmax ??= MinMax(max: emaValue, min: emaValue);
             minmax.updateMinMaxBy(emaValue);

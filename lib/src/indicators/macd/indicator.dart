@@ -16,7 +16,7 @@ part of 'macd.dart';
 
 @CopyWith()
 @FlexiIndicatorSerializable
-class MACDIndicator extends PaintObjectIndicator implements IPrecomputable {
+class MACDIndicator extends DataIndicator implements IPrecomputable {
   MACDIndicator({
     super.zIndex = 0,
     required super.height,
@@ -27,7 +27,7 @@ class MACDIndicator extends PaintObjectIndicator implements IPrecomputable {
     required this.macdTips,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const FlexiIndicatorKey('macd'));
+  }) : super(key: const DataIndicatorKey('macd'));
 
   /// MACD 参数（包含所有配置）
   @override
@@ -41,8 +41,8 @@ class MACDIndicator extends PaintObjectIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  PaintObjectBox createPaintObject(IPaintContext context) {
-    return MACDPaintObject(context: context, indicator: this);
+  DataPaintObject<MACDIndicator> createPaintObject() {
+    return MACDPaintObject();
   }
 
   factory MACDIndicator.fromJson(Map<String, dynamic> json) => _$MACDIndicatorFromJson(json);
@@ -50,9 +50,9 @@ class MACDIndicator extends PaintObjectIndicator implements IPrecomputable {
   Map<String, dynamic> toJson() => _$MACDIndicatorToJson(this);
 }
 
-class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
+class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
     with MacdDataMixin<T>, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
-  MACDPaintObject({required super.context, required super.indicator});
+  MACDPaintObject();
 
   @override
   MinMax? initState(int start, int end) {
@@ -78,7 +78,7 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
   }
 
   @override
-  String formatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -96,7 +96,7 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
   }
 
   @override
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -118,32 +118,30 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
     final List<Offset> deaPoints = [];
     final param = indicator.calcParam;
     
-    double zeroDy = valueToDy(BagNum.zero);
+    double zeroDy = valueToDy(FlexiNum.zero);
     final offset = startCandleDx - candleWidthHalf;
     final candleHalf = candleWidthHalf - candleSpacing;
 
-    CandleModel m;
-    CandleModel? next;
     for (int i = start; i < end; i++) {
-      m = list[i];
-      if (!m.isValidMacdData) continue;
+      final m = list[i];
+      if (!m.isValidMacdData(dataIndex)) continue;
       final dx = offset - (i - start) * candleActualWidth;
       
       // 📈 只有启用的线条才收集点位
-      if (param.difLine.enabled && m.dif != null) {
-        difPoints.add(Offset(dx, valueToDy(m.dif!, correct: false)));
+      if (param.difLine.enabled && m.macdDif(dataIndex) != null) {
+        difPoints.add(Offset(dx, valueToDy(m.macdDif(dataIndex)!, correct: false)));
       }
-      if (param.deaLine.enabled && m.dea != null) {
-        deaPoints.add(Offset(dx, valueToDy(m.dea!, correct: false)));
+      if (param.deaLine.enabled && m.macdDea(dataIndex) != null) {
+        deaPoints.add(Offset(dx, valueToDy(m.macdDea(dataIndex)!, correct: false)));
       }
 
       // 📊 根据配置决定是否绘制柱状图
-      if (param.histogramEnabled && m.macd != null) {
-        next = list.getItem(i + 1);
-        final histogramColor = _getHistogramColor(m.macd!, next?.macd);
-        final histogramStyle = _getHistogramStyle(m.macd!, next?.macd);
+      if (param.histogramEnabled && m.macdVal(dataIndex) != null) {
+        final next = list.getItem(i + 1);
+        final histogramColor = _getHistogramColor(m.macdVal(dataIndex)!, next?.macdVal(dataIndex));
+        final histogramStyle = _getHistogramStyle(m.macdVal(dataIndex)!, next?.macdVal(dataIndex));
         
-        if (histogramStyle == HistogramStyle.hollow && next?.macd != null && m.macd! > next!.macd!) {
+        if (histogramStyle == HistogramStyle.hollow && next?.macdVal(dataIndex) != null && m.macdVal(dataIndex)! > next!.macdVal(dataIndex)!) {
           // 空心柱状图
           final hollowBarPaint = Paint()
             ..color = histogramColor
@@ -154,7 +152,7 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
             Path()
               ..addRect(Rect.fromPoints(
                 Offset(dx - candleHalf, zeroDy),
-                Offset(dx + candleHalf, valueToDy(m.macd!, correct: false)),
+                Offset(dx + candleHalf, valueToDy(m.macdVal(dataIndex)!, correct: false)),
               )),
             hollowBarPaint,
           );
@@ -167,7 +165,7 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
 
           canvas.drawLine(
             Offset(dx, zeroDy),
-            Offset(dx, valueToDy(m.macd!)),
+            Offset(dx, valueToDy(m.macdVal(dataIndex)!)),
             solidBarPaint,
           );
         }
@@ -218,8 +216,8 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
   }
 
   /// 根据 MACD 值和趋势获取柱状图颜色
-  Color _getHistogramColor(BagNum currentMacd, BagNum? nextMacd) {
-    final isBullish = currentMacd > BagNum.zero;
+  Color _getHistogramColor(FlexiNum currentMacd, FlexiNum? nextMacd) {
+    final isBullish = currentMacd > FlexiNum.zero;
     final isIncreasing = nextMacd != null && currentMacd > nextMacd;
     
     if (isBullish) {
@@ -234,8 +232,8 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
   }
 
   /// 根据 MACD 值和趋势获取柱状图样式
-  HistogramStyle _getHistogramStyle(BagNum currentMacd, BagNum? nextMacd) {
-    final isBullish = currentMacd > BagNum.zero;
+  HistogramStyle _getHistogramStyle(FlexiNum currentMacd, FlexiNum? nextMacd) {
+    final isBullish = currentMacd > FlexiNum.zero;
     final isIncreasing = nextMacd != null && currentMacd > nextMacd;
     
     if (isBullish) {
@@ -252,22 +250,22 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {
     model ??= offsetToCandle(offset);
-    if (model == null || !model.isValidMacdData) return null;
+    if (model == null || !model.isValidMacdData(dataIndex)) return null;
 
     final precision = indicator.calcParam.precision;
     final param = indicator.calcParam;
     final children = <TextSpan>[];
 
     // 📈 根据配置决定是否显示DIF
-    if (param.difLine.enabled && model.dif != null) {
+    if (param.difLine.enabled && model.macdDif(dataIndex) != null) {
       children.add(TextSpan(
         text: formatNumber(
-          model.dif!.toDecimal(),
+          model.macdDif(dataIndex)!.toDecimal(),
           precision: indicator.difTips.getP(precision),
           cutInvalidZero: true,
           prefix: indicator.difTips.label,
@@ -278,10 +276,10 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
     }
 
     // 📈 根据配置决定是否显示DEA
-    if (param.deaLine.enabled && model.dea != null) {
+    if (param.deaLine.enabled && model.macdDea(dataIndex) != null) {
       children.add(TextSpan(
         text: formatNumber(
-          model.dea!.toDecimal(),
+          model.macdDea(dataIndex)!.toDecimal(),
           precision: indicator.deaTips.getP(precision),
           cutInvalidZero: true,
           prefix: indicator.deaTips.label,
@@ -292,16 +290,16 @@ class MACDPaintObject<T extends MACDIndicator> extends PaintObjectBox<T>
     }
 
     // 📊 根据配置决定是否显示MACD
-    if (param.histogramEnabled && model.macd != null) {
+    if (param.histogramEnabled && model.macdVal(dataIndex) != null) {
       children.add(TextSpan(
         text: formatNumber(
-          model.macd!.toDecimal(),
+          model.macdVal(dataIndex)!.toDecimal(),
           precision: indicator.macdTips.getP(precision),
           cutInvalidZero: true,
           prefix: indicator.macdTips.label,
           suffix: ' ',
         ),
-        style: indicator.macdTips.style.copyWith(color: _getHistogramColor(model.macd!, null)),
+        style: indicator.macdTips.style.copyWith(color: _getHistogramColor(model.macdVal(dataIndex)!, null)),
       ));
     }
 

@@ -15,14 +15,11 @@
 part of 'ma.dart';
 
 @visibleForTesting
-extension on CandleModel {
-  List<BagNum?>? getMaList(int dataIndex, [int? paramLen]) {
-    List<BagNum?>? list = calcuData.getData(dataIndex);
+extension on FlexiCandleModel {
+  List<FlexiNum?>? getMaList(int dataIndex, [int? paramLen]) {
+    List<FlexiNum?>? list = getList<FlexiNum>(dataIndex);
     if (list == null && paramLen != null && paramLen > 0) {
-      calcuData.setData(
-        dataIndex,
-        list = List.filled(paramLen, null, growable: false),
-      );
+      list = getOrInitList<FlexiNum>(dataIndex, paramLen);
     }
     return list;
   }
@@ -34,10 +31,9 @@ extension on CandleModel {
   MinMax? getMaListMinmax(int dataIndex) {
     return MinMax.getMinMaxByList(getMaList(dataIndex));
   }
-
 }
 
-mixin MaDataMixin<T extends MAIndicator> on PaintObjectBox<T> {
+mixin MaDataMixin<T extends MAIndicator> on DataPaintObject<T> {
   MaParam get calcParam => indicator.calcParam;
 
   @override
@@ -51,7 +47,7 @@ mixin MaDataMixin<T extends MAIndicator> on PaintObjectBox<T> {
   }
 
   /// 计算 [index] 位置的 [count] 个数据的Ma指标.
-  BagNum? calcuMa(
+  FlexiNum? calcuMa(
     int index,
     int count,
   ) {
@@ -61,7 +57,7 @@ mixin MaDataMixin<T extends MAIndicator> on PaintObjectBox<T> {
 
     final m = klineData.list[index];
 
-    BagNum sum = m.close;
+    FlexiNum sum = m.close;
     for (int i = index + 1; i < index + count; i++) {
       sum += klineData.list[i].close;
     }
@@ -85,8 +81,8 @@ mixin MaDataMixin<T extends MAIndicator> on PaintObjectBox<T> {
     end = math.min(len - count, end - 1);
 
     /// 初始值化[index]位置的MA值
-    CandleModel m = klineData.list[end];
-    BagNum sum = m.close;
+    FlexiCandleModel m = klineData.list[end];
+    FlexiNum sum = m.close;
     for (int i = end + 1; i < end + count; i++) {
       sum += klineData.list[i].close;
     }
@@ -148,7 +144,7 @@ mixin MaDataMixin<T extends MAIndicator> on PaintObjectBox<T> {
       calcuAndCacheMa(param, start: 0, end: len);
     }
     MinMax? minmax;
-    CandleModel m;
+    FlexiCandleModel m;
     for (int i = end; i >= start; i--) {
       m = klineData.list[i];
       minmax ??= m.getMaListMinmax(dataIndex);

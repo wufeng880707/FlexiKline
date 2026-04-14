@@ -67,17 +67,18 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
 
   /// 获取时间周期配置列表
   List<ITimeBar> _getTimeBarConfigs() {
-    return widget.controller.configuration.getTimeBarConfigs();
+    return (widget.controller.configuration as dynamic).getTimeBarConfigs()
+        as List<ITimeBar>;
   }
 
   List<ITimeBar> get preferTimeBarList => [
         ..._getTimeBarConfigs().where((e) =>
-            e.key == '1m' ||
-            e.key == '15m' ||
-            e.key == '1H' ||
-            e.key == '4H' ||
-            e.key == '1D' ||
-            e.key == '1W'),
+            e.bar == '1m' ||
+            e.bar == '15m' ||
+            e.bar == '1H' ||
+            e.bar == '4H' ||
+            e.bar == '1D' ||
+            e.bar == '1W'),
       ];
 
   bool isPreferTimeBar(ITimeBar timeBar) => preferTimeBarList.contains(timeBar);
@@ -193,7 +194,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
                 final showMore = value == null || isPreferTimeBar(value);
                 return TextArrowButton(
                   onPressed: onTapTimeBarSetting,
-                  text: showMore ? s.more : value.showName,
+                  text: showMore ? s.more : value.bar,
                   iconStatus: timeBarSettingBtnStatus,
                   background: showMore ? null : theme.markBg,
                 );
@@ -255,7 +256,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar> wit
                 ),
                 margin: EdgeInsetsDirectional.symmetric(horizontal: 2.r),
                 child: Text(
-                  bar.showName,
+                  bar.bar,
                   style: selected ? theme.t1s14w700 : theme.t1s14w400,
                 ),
               ),
@@ -313,7 +314,7 @@ class _TimeTabBarViewState extends ConsumerState<TimeBarTabBar>
   void initTabController() {
     int index = 0;
     final bar = widget.timeBarListener.value;
-    if (bar != null && bar is TimeBar) index = timerBarList.indexOf(bar);
+    if (bar != null && bar is ITimeBar) index = timerBarList.indexOf(bar);
     index = index.clamp(0, timerBarList.length);
     _tabController = TabController(
       initialIndex: index,
@@ -361,7 +362,7 @@ class _TimeTabBarViewState extends ConsumerState<TimeBarTabBar>
                 alignment: AlignmentDirectional.center,
                 width: 40.r,
                 child: FittedBox(
-                  child: Text(bar.showName),
+                  child: Text(bar.bar),
                 ),
               ),
             );

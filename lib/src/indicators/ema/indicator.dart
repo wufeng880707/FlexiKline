@@ -15,14 +15,14 @@
 part of 'ema.dart';
 
 @CopyWith()
-class EMAIndicator extends PaintObjectIndicator implements IPrecomputable {
+class EMAIndicator extends DataIndicator implements IPrecomputable {
   EMAIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
     this.calcParam = const EmaParam(),
     required this.tipsPadding,
-  }) : super(key: const FlexiIndicatorKey('ema'));
+  }) : super(key: const DataIndicatorKey('ema'));
 
   /// EMA 参数（包含所有配置）
   @override
@@ -32,16 +32,13 @@ class EMAIndicator extends PaintObjectIndicator implements IPrecomputable {
   final EdgeInsets tipsPadding;
 
   @override
-  PaintObjectBox createPaintObject(IPaintContext context) {
-    return EMAPaintObject(context: context, indicator: this);
+  DataPaintObject<EMAIndicator> createPaintObject() {
+    return EMAPaintObject();
   }
 }
 
-class EMAPaintObject<T extends EMAIndicator> extends PaintObjectBox<T> with EmaDataMixin<T> {
-  EMAPaintObject({
-    required super.context,
-    required super.indicator,
-  });
+class EMAPaintObject<T extends EMAIndicator> extends DataPaintObject<T> with EmaDataMixin<T> {
+  EMAPaintObject();
 
   @override
   MinMax? initState(int start, int end) {
@@ -71,10 +68,10 @@ class EMAPaintObject<T extends EMAIndicator> extends PaintObjectBox<T> with EmaD
     for (int j = 0; j < enabledLines.length; j++) {
       final lineConfig = enabledLines[j];
       if (lineConfig.period <= 0) continue; // 跳过无效周期
-      BagNum? val;
+      FlexiNum? val;
       final List<Offset> points = [];
       for (int i = start; i < end; i++) {
-        val = list[i].emaList?.getItem(j);
+        val = list[i].getEmaList(dataIndex)?.getItem(j);
         if (val == null) continue;
         final point = Offset(
           offset - (i - start) * candleActualWidth,
@@ -110,16 +107,16 @@ class EMAPaintObject<T extends EMAIndicator> extends PaintObjectBox<T> with EmaD
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {
     model ??= offsetToCandle(offset);
-    if (model == null || !model.isValidEmaList) return null;
+    if (model == null || !model.isValidEmaList(dataIndex)) return null;
 
     final children = <TextSpan>[];
     final enabledLines = indicator.calcParam.enabledLines;
-    final emaList = model.emaList!;
+    final emaList = model.getEmaList(dataIndex)!;
     
     for (int i = 0; i < enabledLines.length && i < emaList.length; i++) {
       final lineConfig = enabledLines[i];

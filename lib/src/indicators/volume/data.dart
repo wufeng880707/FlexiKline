@@ -14,7 +14,7 @@
 
 part of 'volume.dart';
 
-mixin VolumeDataMixin<T extends VolumeIndicator> on PaintObjectBox<T> {
+mixin VolumeDataMixin<T extends VolumeIndicator> on DataPaintObject<T> {
   @override
   void precompute(Range range, {bool reset = false}) {}
 
@@ -26,9 +26,9 @@ mixin VolumeDataMixin<T extends VolumeIndicator> on PaintObjectBox<T> {
     end ??= klineData.end;
     if (!klineData.checkStartAndEnd(start, end)) return null;
 
-    CandleModel m = klineData.list[end - 1];
-    BagNum minVol = m.vol;
-    BagNum maxVol = m.vol;
+    var m = klineData.list[end - 1];
+    FlexiNum minVol = m.vol;
+    FlexiNum maxVol = m.vol;
     for (int i = end - 2; i >= start; i--) {
       m = klineData.list[i];
       maxVol = m.vol > maxVol ? m.vol : maxVol;

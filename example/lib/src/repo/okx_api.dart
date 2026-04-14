@@ -64,8 +64,7 @@ List<CandleModel> _dataToCandleList(dynamic data) {
   if (data is List<dynamic> && data.isNotEmpty) {
     final list = List<CandleModel>.empty(growable: true);
     for (var json in data) {
-      final m = CandleModel.fromList(json);
-      if (m != null) list.add(m);
+      list.add(CandleModel.fromList(json));
     }
     return list;
   }

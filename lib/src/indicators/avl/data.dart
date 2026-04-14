@@ -15,17 +15,17 @@
 part of 'avl.dart';
 
 @visibleForTesting
-extension CandleAvlExt on CandleModel {
+extension CandleAvlExt on FlexiCandleModel {
   /// 直接计算AVL均价线：(开盘价 + 最高价 + 最低价 + 收盘价) / 4
   /// 不使用缓存，每次都实时计算
-  BagNum get avl => (open + high + low + close).divNum(4);
+  FlexiNum get avl => (open + high + low + close).divNum(4);
 
   bool get isValidAvlData => true; // AVL总是可以计算的
   
   MinMax get avlMinmax => MinMax(max: avl, min: avl);
 }
 
-mixin AvlDataMixin<T extends AVLIndicator> on PaintObjectBox<T> {
+mixin AvlDataMixin<T extends AVLIndicator> on DataPaintObject<T> {
   AVLParam get calcParam => indicator.calcParam;
 
   @override

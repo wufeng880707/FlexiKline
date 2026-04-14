@@ -51,6 +51,8 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
       DeviceOrientation.landscapeRight,
     ]);
 
+    configuration = DefaultFlexiKlineConfiguration(ref: ref);
+
     final p1 = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId1,
         );
@@ -58,7 +60,7 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
           widget.instId2,
         );
 
-    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.key == 'm15');
+    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.bar == '15m');
 
     req1 = CandleReq(
       instId: widget.instId1,
@@ -72,8 +74,6 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
       precision: p2 ?? 2,
       limit: 300,
     );
-
-    configuration = DefaultFlexiKlineConfiguration(ref: ref);
     controller1 = FlexiKlineController(
       configuration: configuration,
       logger: LoggerImpl(

@@ -19,7 +19,7 @@ part of 'sar.dart';
 /// SAR(今日)：SAR (昨日) + AF (动能趋势指标) x [ (区间极值(波段内最极值) – SAR(昨日)]
 @CopyWith()
 @FlexiIndicatorSerializable
-class SARIndicator extends PaintObjectIndicator implements IPrecomputable {
+class SARIndicator extends DataIndicator implements IPrecomputable {
   SARIndicator({
     super.zIndex = 0,
     required super.height,
@@ -30,7 +30,7 @@ class SARIndicator extends PaintObjectIndicator implements IPrecomputable {
 
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const FlexiIndicatorKey('sar'));
+  }) : super(key: const DataIndicatorKey('sar'));
 
   /// SAR计算参数 - 包含所有配置
   @override
@@ -43,10 +43,8 @@ class SARIndicator extends PaintObjectIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  PaintObjectBox createPaintObject(
-    IPaintContext context,
-  ) {
-    return SARPaintObject(context: context, indicator: this);
+  DataPaintObject<SARIndicator> createPaintObject() {
+    return SARPaintObject();
   }
 
   factory SARIndicator.fromJson(Map<String, dynamic> json) => _$SARIndicatorFromJson(json);
@@ -55,15 +53,12 @@ class SARIndicator extends PaintObjectIndicator implements IPrecomputable {
   Map<String, dynamic> toJson() => _$SARIndicatorToJson(this);
 }
 
-class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
+class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
     with SarDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
-  SARPaintObject({
-    required super.context,
-    required super.indicator,
-  });
+  SARPaintObject();
 
   bool? _isInsub;
-  bool get isInSub => _isInsub ??= indicator.key == const FlexiIndicatorKey('sar');
+  bool get isInSub => _isInsub ??= indicator.key == const DataIndicatorKey('sar');
 
   @override
   MinMax? initState(int start, int end) {
@@ -101,7 +96,7 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String formatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(FlexiNum value, {required int precision}) {
     return formatPrice(
       value.toDecimal(),
       precision: precision,
@@ -123,7 +118,7 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
 
   /// 在onCross时, 重写[paintYAxisTicksOnCross]中的格式化刻度值
   @override
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(FlexiNum value, {required int precision}) {
     return formatPrice(
       value.toDecimal(),
       precision: precision,
@@ -153,17 +148,16 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
     );
 
     final offset = startCandleDx - candleWidthHalf;
-    CandleModel m;
     for (int i = start; i < end; i++) {
-      m = list[i];
-      if (!m.isValidSarData) continue;
+      final m = list[i];
+      if (!m.isValidSarData(dataIndex)) continue;
       final dx = offset - (i - start) * candleActualWidth;
       
       // 根据配置决定使用涨跌色还是固定颜色
       if (appearance.useTrendColor) {
-        if (m.sarFlag! > 0) {
+        if (m.sarFlag(dataIndex)! > 0) {
           paint.color = longColor;
-        } else if (m.sarFlag! < 0) {
+        } else if (m.sarFlag(dataIndex)! < 0) {
           paint.color = shortColor;
         } else {
           paint.color = theme.textColor;
@@ -172,7 +166,7 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
         paint.color = appearance.color;
       }
       
-      final center = Offset(dx, valueToDy(m.sar!, correct: false));
+      final center = Offset(dx, valueToDy(m.sarValue(dataIndex)!, correct: false));
       
       // 绘制 SAR 点
       canvas.drawCircle(center, radius, paint);
@@ -191,12 +185,12 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {
     model ??= offsetToCandle(offset);
-    if (model == null || !model.isValidSarData) return null;
+    if (model == null || !model.isValidSarData(dataIndex)) return null;
 
     final display = indicator.calcParam.display;
     final periods = indicator.calcParam.periods;
@@ -210,7 +204,7 @@ class SARPaintObject<T extends SARIndicator> extends PaintObjectBox<T>
     }
     
     text += formatNumber(
-      model.sar?.toDecimal(),
+      model.sarValue(dataIndex)?.toDecimal(),
       precision: display.precision,
       cutInvalidZero: true,
     );

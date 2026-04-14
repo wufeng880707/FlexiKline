@@ -15,7 +15,7 @@
 part of 'boll.dart';
 
 /// BOLL 布林带指标
-class BOLLIndicator extends PaintObjectIndicator implements IPrecomputable {
+class BOLLIndicator extends DataIndicator implements IPrecomputable {
   BOLLIndicator({
     super.zIndex = 0,
     required super.height,
@@ -23,7 +23,7 @@ class BOLLIndicator extends PaintObjectIndicator implements IPrecomputable {
     this.calcParam = const BOLLParam(),
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const FlexiIndicatorKey('boll'));
+  }) : super(key: const DataIndicatorKey('boll'));
 
   /// BOLL计算参数 - 包含所有配置
   @override
@@ -36,19 +36,14 @@ class BOLLIndicator extends PaintObjectIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  PaintObjectBox createPaintObject(
-    IPaintContext context,
-  ) {
-    return BOLLPaintObject(context: context, indicator: this);
+  DataPaintObject<BOLLIndicator> createPaintObject() {
+    return BOLLPaintObject();
   }
 }
 
-class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
+class BOLLPaintObject<T extends BOLLIndicator> extends DataPaintObject<T>
     with BollDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
-  BOLLPaintObject({
-    required super.context,
-    required super.indicator,
-  });
+  BOLLPaintObject();
 
   bool? _isInsub;
   bool get isInSub => _isInsub ??= indicator.key.id == 'subBoll';
@@ -89,7 +84,7 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String formatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -111,7 +106,7 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
 
   /// 在onCross时, 重写[paintYAxisTicksOnCross]中的格式化刻度值
   @override
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -140,24 +135,23 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
     }
 
     final offset = startCandleDx - candleWidthHalf;
-    CandleModel m;
     
     for (int i = start; i < end; i++) {
-      m = list[i];
-      if (!m.isValidBollData) continue;
+      final m = list[i];
+      if (!m.isValidBollData(dataIndex)) continue;
       final dx = offset - (i - start) * candleActualWidth;
       
       for (final lineType in enabledLines) {
-        BagNum? value;
+        FlexiNum? value;
         switch (lineType) {
           case BOLLLineType.ub:
-            value = m.up;
+            value = m.bollUp(dataIndex);
             break;
           case BOLLLineType.boll:
-            value = m.mb;
+            value = m.bollMb(dataIndex);
             break;
           case BOLLLineType.lb:
-            value = m.dn;
+            value = m.bollDn(dataIndex);
             break;
         }
         if (value != null) {
@@ -228,12 +222,12 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {
     model ??= offsetToCandle(offset);
-    if (model == null || !model.isValidBollData) return null;
+    if (model == null || !model.isValidBollData(dataIndex)) return null;
 
     final enabledLines = indicator.calcParam.enabledLines;
     if (enabledLines.isEmpty) return null;
@@ -243,23 +237,23 @@ class BOLLPaintObject<T extends BOLLIndicator> extends PaintObjectBox<T>
 
     // 动态构建 tips 文本
     for (final lineType in enabledLines) {
-      BagNum? value;
+      FlexiNum? value;
       String label;
       Color color;
 
       switch (lineType) {
         case BOLLLineType.ub:
-          value = model.up;
+          value = model.bollUp(dataIndex);
           label = 'UB';
           color = indicator.calcParam.lines.ub.color;
           break;
         case BOLLLineType.boll:
-          value = model.mb;
+          value = model.bollMb(dataIndex);
           label = 'BOLL';
           color = indicator.calcParam.lines.boll.color;
           break;
         case BOLLLineType.lb:
-          value = model.dn;
+          value = model.bollDn(dataIndex);
           label = 'LB';
           color = indicator.calcParam.lines.lb.color;
           break;

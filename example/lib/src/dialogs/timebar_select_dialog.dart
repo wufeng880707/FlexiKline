@@ -30,7 +30,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
 
   /// 获取时间周期配置列表（兼容不同配置类型）
   List<ITimeBar> _getTimeBarConfigs(IConfiguration configuration) {
-    return configuration.getTimeBarConfigs();
+    return (configuration as dynamic).getTimeBarConfigs() as List<ITimeBar>;
   }
 
   final FlexiKlineController controller;
@@ -94,7 +94,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
                 onPressed: () => onTapTimeBar(bar),
                 child: FittedBox(
                   child: Text(
-                    bar.showName,
+                    bar.bar,
                     style: theme.t2s12w400.copyWith(
                       color: theme.t1,
                       fontWeight: selected ? FontWeight.bold : null,
@@ -132,7 +132,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
                 onPressed: () => onTapTimeBar(timeBar),
                 child: FittedBox(
                   child: Text(
-                    timeBar.showName,
+                    timeBar.bar,
                     style: theme.t2s12w400.copyWith(
                       color: theme.t1,
                       fontWeight: selected ? FontWeight.bold : null,

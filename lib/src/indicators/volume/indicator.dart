@@ -15,7 +15,7 @@
 part of 'volume.dart';
 
 @CopyWith()
-class VolumeIndicator extends PaintObjectIndicator {
+class VolumeIndicator extends DataIndicator {
   VolumeIndicator({
     super.zIndex = 0,
     required super.height,
@@ -23,7 +23,7 @@ class VolumeIndicator extends PaintObjectIndicator {
     required this.calcParam,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const FlexiIndicatorKey('volume'), paintMode: PaintMode.alone);
+  }) : super(key: const DataIndicatorKey('volume'), paintMode: PaintMode.alone);
 
   @override
   final VolumeParam calcParam;
@@ -39,17 +39,15 @@ class VolumeIndicator extends PaintObjectIndicator {
   // final bool useTint;
 
   @override
-  VolumePaintObject createPaintObject(
-    IPaintContext context,
-  ) {
-    return VolumePaintObject(context: context, indicator: this);
+  DataPaintObject<VolumeIndicator> createPaintObject() {
+    return VolumePaintObject();
   }
 
 }
 
-class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
+class VolumePaintObject<T extends VolumeIndicator> extends DataPaintObject<T>
     with VolumeDataMixin<T>, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
-  VolumePaintObject({required super.context, required super.indicator});
+  VolumePaintObject();
 
   @override
   MinMax? initState(int start, int end) {
@@ -81,7 +79,7 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String formatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -101,7 +99,7 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
 
   /// 在onCross时, 重写[paintYAxisTicksOnCross]中的格式化刻度值
   @override
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -159,7 +157,7 @@ class VolumePaintObject<T extends VolumeIndicator> extends PaintObjectBox<T>
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {

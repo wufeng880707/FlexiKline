@@ -1024,6 +1024,7 @@ const FlexiParamSerializable = JsonSerializable(
   converters: [
     ColorConverter(),
     EdgeInsetsConverter(),
+    TextStyleConverter(),
   ],
   explicitToJson: true,
 );

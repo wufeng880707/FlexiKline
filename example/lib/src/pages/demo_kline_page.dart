@@ -65,7 +65,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
       logger: logger,
     );
 
-    final timeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.key == '15m');
+    final timeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.bar == '15m');
     final now = DateTime.now().millisecondsSinceEpoch;
     final before = now - (now % timeBar.milliseconds);
     final after = before - count * timeBar.milliseconds;
@@ -128,8 +128,8 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
 
   /// 当crossing时, 自定义Tooltip
   List<TooltipInfo>? onCrossCustomTooltip(
-    CandleModel? current, {
-    CandleModel? prev,
+    FlexiCandleModel? current, {
+    FlexiCandleModel? prev,
   }) {
     if (current == null) {
       ref.read(marketCandleProvider.notifier).emitOnCross(null);
@@ -138,10 +138,9 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
       return [];
     }
 
-    final candle = current.clone()..confirm = '';
-    // 暂存振幅到candle的confirm中.
-    if (prev != null) candle.confirm = candle.rangeRate(prev).toString();
-    ref.read(marketCandleProvider.notifier).emitOnCross(candle);
+    String? rangeRate;
+    if (prev != null) rangeRate = current.rangeRate(prev).toString();
+    ref.read(marketCandleProvider.notifier).emitOnCross(current, rangeRate: rangeRate);
     // 返回空数组, 自行定制.
     return [];
   }

@@ -108,9 +108,9 @@
 
   "gesture": {
     "_comment": "手势操作配置 - 控制用户交互行为",
-    "supportLongPress": true,
+    "enableLongPress": true,
     "_comment_longPress": "是否支持长按显示十字线",
-    "isInertialPan": true,
+    "enableInertialPan": true,
     "_comment_inertialPan": "是否启用惯性平移动画",
 
     "tolerance": {

@@ -403,12 +403,12 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
           value = formatPrice(model.change.toDecimal(), precision: p, cutInvalidZero: false);
           break;
         case TooltipLabel.chgRate:
-          value = formatPercentage(model.changeRate.toDecimal(), precision: 2);
+          value = formatPercentage(NumFlexiNumExt(model.changeRate).toDecimal(), precision: 2);
           riseOrFall = model.change.signum;
           break;
         case TooltipLabel.range:
           if (pre != null) {
-            value = formatPercentage(model.rangeRate(pre).toDecimal(), precision: 2);
+            value = formatPercentage(NumFlexiNumExt(model.rangeRate(pre)).toDecimal(), precision: 2);
           } else {
             value = formatPrice(model.range.toDecimal(), precision: p, cutInvalidZero: false);
           }

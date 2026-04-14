@@ -190,6 +190,10 @@ abstract class BusinessPaintObject<T extends BusinessIndicator> extends PaintObj
   @override
   @protected
   void loadBusinessData() {}
+
+  /// 从上下文获取注入的业务数据
+  @protected
+  D? getBusinessData<D>(IIndicatorKey key) => _context.getBusinessData<D>(key);
 }
 
 /// 蜡烛图绘制对象

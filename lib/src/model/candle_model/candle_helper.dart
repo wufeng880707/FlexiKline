@@ -14,62 +14,12 @@
 
 part of 'candle_model.dart';
 
-final class CalculateData {
-  CalculateData._(this.dataList);
-
-  factory CalculateData.init(
-    int indicatorCount,
-  ) {
-    return CalculateData._(List.filled(indicatorCount, null, growable: false));
-  }
-
-  final List<Object?> dataList;
-
-  T? getData<T>(int index) {
-    final obj = dataList.getItem(index);
-    return obj is T ? obj : null;
-  }
-
-  bool setData<T>(int index, T data) {
-    if (!dataList.checkIndex(index)) return false;
-    dataList[index] = data;
-    return true;
-  }
-}
-
 extension CandleModelExt on CandleModel {
-  DateTime get dateTime {
-    return DateTime.fromMillisecondsSinceEpoch(ts);
-  }
-
-  String formatDateTime(ITimeBar timeBar) {
-    return dateTime.formatByUnit(timeBar.unit);
-  }
-
-  DateTime? nextUpdateDateTime(ITimeBar timeBar) {
-    if (timeBar.isValid) {
-      return DateTime.fromMillisecondsSinceEpoch(
-        ts + timeBar.milliseconds,
-        isUtc: timeBar.isUtc,
-      );
-    }
-    return null;
-  }
-
-  bool get isLong => close >= open;
-
-  Decimal get change => c - o;
+  bool get isLong => closeDouble >= openDouble;
 
   double get changeRate {
-    if (change == Decimal.zero) return 0;
-    return (change / o).toDouble();
-  }
-
-  Decimal get range => h - l;
-
-  double rangeRate(CandleModel pre) {
-    if (range == Decimal.zero) return 0;
-    return (range / pre.c).toDouble();
+    if (changeDouble == 0) return 0;
+    return changeDouble / openDouble;
   }
 
   CandleModel clone() {

@@ -16,7 +16,7 @@ part of 'vol_ma.dart';
 
 /// VolMa 移动平均指标线
 @CopyWith()
-class VolMaIndicator extends PaintObjectIndicator implements IPrecomputable {
+class VolMaIndicator extends DataIndicator implements IPrecomputable {
   VolMaIndicator({
     super.zIndex = 0,
     super.height = defaultSubIndicatorHeight,
@@ -24,7 +24,7 @@ class VolMaIndicator extends PaintObjectIndicator implements IPrecomputable {
     required this.calcParam,
     required this.tipsPadding,
     this.ticksCount = defaultSubTickCount,
-  }) : super(key: const FlexiIndicatorKey('volMa'));
+  }) : super(key: const DataIndicatorKey('volMa'));
 
   @override
   final VolMaParam calcParam;
@@ -34,19 +34,14 @@ class VolMaIndicator extends PaintObjectIndicator implements IPrecomputable {
   dynamic getCalcParam() => calcParam;
 
   @override
-  VolMaPaintObject createPaintObject(
-    IPaintContext context,
-  ) {
-    return VolMaPaintObject(context: context, indicator: this);
+  DataPaintObject<VolMaIndicator> createPaintObject() {
+    return VolMaPaintObject();
   }
 }
 
-class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
+class VolMaPaintObject<T extends VolMaIndicator> extends DataPaintObject<T>
     with VolmaDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
-  VolMaPaintObject({
-    required super.context,
-    required super.indicator,
-  });
+  VolMaPaintObject();
 
   @override
   MinMax? initState(int start, int end) {
@@ -156,7 +151,7 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
     final offset = startCandleDx - candleWidthHalf;
     for (int j = 0; j < enabledLines.length; j++) {
       final lineConfig = enabledLines[j];
-      BagNum? val;
+      FlexiNum? val;
       final List<Offset> points = [];
       for (int i = start; i < end; i++) {
         val = list[i].getVolMaList(dataIndex)?.getItem(j);
@@ -196,7 +191,7 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {
@@ -226,7 +221,7 @@ class VolMaPaintObject<T extends VolMaIndicator> extends PaintObjectBox<T>
       final enabledLines = param.enabledLines;
 
       /// Ma Tips文本
-      BagNum? val;
+      FlexiNum? val;
       for (int i = 0; i < volMaList.length && i < enabledLines.length; i++) {
         val = volMaList.getItem(i);
         if (val == null) continue;

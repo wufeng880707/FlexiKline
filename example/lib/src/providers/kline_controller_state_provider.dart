@@ -186,21 +186,17 @@ class KlineStateNotifier extends ChangeNotifier {
 
   /// 设置是否展示买卖标记
   void setShowTradeMark(bool isShow) {
-    if (isShow == isShowTradeMark) return; // 避免不必要的更新
-    
-    try {
-      final tradeMarkIndicator = controller.getIndicator<TradeMarkIndicator>(tradeMarkIndicatorKey);
-      if (tradeMarkIndicator != null) {
-        // 更新显示状态
-        final updatedParam = tradeMarkIndicator.calcParam.copyWith(show: isShow);
-        final updatedIndicator = tradeMarkIndicator.copyWith(calcParam: updatedParam);
-        controller.updateIndicator(updatedIndicator);
-        notifyListeners();
-      } else {
-        print('TradeMarkIndicator not found in controller');
-      }
-    } catch (e) {
-      print('Error setting trade mark visibility: $e');
+    if (isShow == isShowTradeMark) return;
+
+    final indicator = controller.getIndicator<TradeMarkIndicator>(
+      tradeMarkIndicatorKey,
+    );
+    if (indicator != null) {
+      final updated = indicator.copyWith(
+        calcParam: indicator.calcParam.copyWith(show: isShow),
+      );
+      controller.updateIndicator(updated);
+      notifyListeners();
     }
   }
 
@@ -219,13 +215,13 @@ class KlineStateNotifier extends ChangeNotifier {
 
   /// 是否支持长按操作
   bool get supportLongPress {
-    return controller.gestureConfig.supportLongPress;
+    return controller.gestureConfig.enableLongPress;
   }
 
   void setSupportLongPress(bool isSupport) {
     if (isSupport == supportLongPress) return;
     controller.gestureConfig = controller.gestureConfig.copyWith(
-      supportLongPress: isSupport,
+      enableLongPress: isSupport,
     );
     notifyListeners();
   }
@@ -233,7 +229,7 @@ class KlineStateNotifier extends ChangeNotifier {
   /// 惯性平移
   // 容忍参数
   String get toleranceDesc {
-    final enable = controller.gestureConfig.isInertialPan;
+    final enable = controller.gestureConfig.enableInertialPan;
     if (enable) {
       final config = controller.gestureConfig.tolerance;
       return '${config.maxDuration} - ${config.distanceFactor} - ${config.curvestr}';
@@ -246,7 +242,7 @@ class KlineStateNotifier extends ChangeNotifier {
   }
 
   bool get isInertialPan {
-    return controller.gestureConfig.isInertialPan;
+    return controller.gestureConfig.enableInertialPan;
   }
 
   void setInertialPan(
@@ -259,7 +255,7 @@ class KlineStateNotifier extends ChangeNotifier {
           maxDuration != controller.gestureConfig.tolerance.maxDuration ||
           distanceFactor != controller.gestureConfig.tolerance.distanceFactor) {
         controller.gestureConfig = controller.gestureConfig.copyWith(
-          isInertialPan: isEnable,
+          enableInertialPan: isEnable,
           tolerance: controller.gestureConfig.tolerance.copyWith(
             maxDuration: maxDuration ?? controller.gestureConfig.tolerance.maxDuration,
             distanceFactor: distanceFactor ?? controller.gestureConfig.tolerance.distanceFactor,
@@ -269,7 +265,7 @@ class KlineStateNotifier extends ChangeNotifier {
       }
     } else if (isEnable != isInertialPan) {
       controller.gestureConfig = controller.gestureConfig.copyWith(
-        isInertialPan: isEnable,
+        enableInertialPan: isEnable,
       );
       notifyListeners();
     }

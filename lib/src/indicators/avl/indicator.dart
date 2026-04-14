@@ -19,7 +19,7 @@ part of 'avl.dart';
 /// 适用于24小时连续交易的加密货币市场，使用四价平均提供更全面的价格信息
 @CopyWith()
 @FlexiIndicatorSerializable
-class AVLIndicator extends PaintObjectIndicator implements IPrecomputable {
+class AVLIndicator extends DataIndicator implements IPrecomputable {
   AVLIndicator({
     super.zIndex = 0,
     required super.height,
@@ -27,7 +27,7 @@ class AVLIndicator extends PaintObjectIndicator implements IPrecomputable {
     this.calcParam = const AVLParam(),
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const FlexiIndicatorKey('avl'));
+  }) : super(key: const DataIndicatorKey('avl'));
 
   /// AVL计算参数 - 包含所有配置
   @override
@@ -40,10 +40,8 @@ class AVLIndicator extends PaintObjectIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  PaintObjectBox createPaintObject(
-    IPaintContext context,
-  ) {
-    return AVLPaintObject(context: context, indicator: this);
+  DataPaintObject<AVLIndicator> createPaintObject() {
+    return AVLPaintObject();
   }
 
   factory AVLIndicator.fromJson(Map<String, dynamic> json) => _$AVLIndicatorFromJson(json);
@@ -52,12 +50,9 @@ class AVLIndicator extends PaintObjectIndicator implements IPrecomputable {
   Map<String, dynamic> toJson() => _$AVLIndicatorToJson(this);
 }
 
-class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
+class AVLPaintObject<T extends AVLIndicator> extends DataPaintObject<T>
     with AvlDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
-  AVLPaintObject({
-    required super.context,
-    required super.indicator,
-  });
+  AVLPaintObject();
 
   bool? _isInsub;
   bool get isInSub => _isInsub ??= indicator.key.id == 'subAvl';
@@ -98,7 +93,7 @@ class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String formatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(FlexiNum value, {required int precision}) {
     return formatPrice(
       value.toDecimal(),
       precision: precision,
@@ -120,7 +115,7 @@ class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
 
   /// 在onCross时, 重写[paintYAxisTicksOnCross]中的格式化刻度值
   @override
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(FlexiNum value, {required int precision}) {
     return formatPrice(
       value.toDecimal(),
       precision: precision,
@@ -141,9 +136,8 @@ class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
     final List<Offset> points = [];
     final offset = startCandleDx - candleWidthHalf;
 
-    CandleModel m;
     for (int i = start; i < end; i++) {
-      m = list[i];
+      final m = list[i];
       if (!m.isValidAvlData) continue;
       final dx = offset - (i - start) * candleActualWidth;
       points.add(Offset(dx, valueToDy(m.avl!, correct: false)));
@@ -185,7 +179,7 @@ class AVLPaintObject<T extends AVLIndicator> extends PaintObjectBox<T>
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {

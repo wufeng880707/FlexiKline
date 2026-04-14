@@ -65,7 +65,8 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
 
   /// 获取时间周期配置列表
   List<ITimeBar> _getTimeBarConfigs() {
-    return controller.configuration.getTimeBarConfigs();
+    return (controller.configuration as dynamic).getTimeBarConfigs()
+        as List<ITimeBar>;
   }
 
   Widget _buildPreferTimeBarList(BuildContext context, WidgetRef ref) {
@@ -92,7 +93,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
                 ),
                 margin: EdgeInsetsDirectional.symmetric(horizontal: 6.r),
                 child: Text(
-                  timeBar.showName,
+                  timeBar.bar,
                   style: selected ? theme.t1s14w700 : theme.t1s14w400,
                 ),
               ),

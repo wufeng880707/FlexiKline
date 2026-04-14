@@ -59,7 +59,7 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
     
     try {
       // 检查AVL指标是否存在
-      const avlKey = FlexiIndicatorKey('avl');
+      const avlKey = DataIndicatorKey('avl');
       enabled = controller.mainIndicatorKeys.contains(avlKey);
       
       if (enabled) {
@@ -211,7 +211,7 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
     try {
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
-      const avlKey = FlexiIndicatorKey('avl');
+      const avlKey = DataIndicatorKey('avl');
       
       if (enabled && controller.mainIndicatorKeys.contains(avlKey)) {
         // 更新现有的AVL指标
@@ -256,7 +256,7 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
       
        widget.controller.configuration;
       // 从默认主指标配置中获取AVL指标
-      const avlKey = FlexiIndicatorKey('avl');
+      const avlKey = DataIndicatorKey('avl');
       final defaultMainIndicators = defaultConfig.getDefaultMainIndicatorBuilders();
       final avlBuilder = defaultMainIndicators[avlKey];
       

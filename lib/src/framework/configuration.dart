@@ -67,6 +67,7 @@ abstract interface class IFlexiKlineTheme {
   Color get gridLine; // grid网格线颜色
   Color get crossColor; // 十字线颜色
   Color get drawColor; // 绘制工具线颜色(十字线)
+  Color get drawTextColor; // 绘制工具刻度文字颜色
   Color get markLineColor; // 指示线颜色(最高,最低, 最新价, 拖拽底色)
   Color get lineChartColor; // line图默认颜色
 

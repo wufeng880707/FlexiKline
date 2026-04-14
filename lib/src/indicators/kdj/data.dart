@@ -15,62 +15,41 @@
 part of 'kdj.dart';
 
 @visibleForTesting
-extension CandleKdjExt on CandleModel {
-  // 假设KDJ的dataIndex为3（如有不同请调整）
-  static const int _kdjIndex = 7;
+extension CandleKdjExt on FlexiCandleModel {
+  List<FlexiNum?>? kdjList(int dataIndex) => getList<FlexiNum>(dataIndex);
 
-  List<BagNum?>? get _kdjList => calcuData.getData(_kdjIndex);
-  set _kdjList(List<BagNum?>? value) => calcuData.setData(_kdjIndex, value);
-
-  BagNum? get k {
-    final list = _kdjList;
-    if (list != null && list.length == 3) return list[0];
+  FlexiNum? kdjK(int dataIndex) {
+    final list = kdjList(dataIndex);
+    if (list != null && list.length >= 3) return list[0];
     return null;
   }
 
-  set k(BagNum? value) {
-    var list = _kdjList;
-    if (list == null || list.length != 3) list = List.filled(3, null);
-    list[0] = value;
-    _kdjList = list;
-  }
-
-  BagNum? get d {
-    final list = _kdjList;
-    if (list != null && list.length == 3) return list[1];
+  FlexiNum? kdjD(int dataIndex) {
+    final list = kdjList(dataIndex);
+    if (list != null && list.length >= 3) return list[1];
     return null;
   }
 
-  set d(BagNum? value) {
-    var list = _kdjList;
-    if (list == null || list.length != 3) list = List.filled(3, null);
-    list[1] = value;
-    _kdjList = list;
-  }
-
-  BagNum? get j {
-    final list = _kdjList;
-    if (list != null && list.length == 3) return list[2];
+  FlexiNum? kdjJ(int dataIndex) {
+    final list = kdjList(dataIndex);
+    if (list != null && list.length >= 3) return list[2];
     return null;
   }
 
-  set j(BagNum? value) {
-    var list = _kdjList;
-    if (list == null || list.length != 3) list = List.filled(3, null);
-    list[2] = value;
-    _kdjList = list;
-  }
+  bool isValidKdjData(int dataIndex) =>
+      kdjK(dataIndex) != null &&
+      kdjD(dataIndex) != null &&
+      kdjJ(dataIndex) != null;
 
-  bool get isValidKdjData => k != null && d != null && j != null;
-  MinMax? get kdjMinmax {
-    if (!isValidKdjData) return null;
-    return MinMax(max: k!, min: k!)
-      ..updateMinMaxBy(d!)
-      ..updateMinMaxBy(j!);
+  MinMax? kdjMinmax(int dataIndex) {
+    if (!isValidKdjData(dataIndex)) return null;
+    return MinMax(max: kdjK(dataIndex)!, min: kdjK(dataIndex)!)
+      ..updateMinMaxBy(kdjD(dataIndex)!)
+      ..updateMinMaxBy(kdjJ(dataIndex)!);
   }
 }
 
-mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
+mixin KdjDataMixin<T extends KDJIndicator> on DataPaintObject<T> {
   KDJParam get calcParam => indicator.calcParam;
 
   @override
@@ -101,8 +80,8 @@ mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
       if (i + kPeriod > len) continue;
 
       // 计算RSV
-      BagNum high = m.high;
-      BagNum low = m.low;
+      FlexiNum high = m.high;
+      FlexiNum low = m.low;
       for (int j = i + 1; j < i + kPeriod; j++) {
         final candle = klineData.list[j];
         if (candle.high > high) high = candle.high;
@@ -110,33 +89,34 @@ mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
       }
 
       final rsv =
-          high == low ? BagNum.fromNum(50) : ((m.close - low) / (high - low)) * BagNum.fromNum(100);
+          high == low ? FlexiNum.fromNum(50) : ((m.close - low) / (high - low)) * FlexiNum.fromNum(100);
 
       // 计算K值
-      BagNum k = BagNum.fromNum(50);
+      FlexiNum k = FlexiNum.fromNum(50);
       if (i < len - 1) {
-        final prevK = klineData.list[i + 1].k ?? BagNum.fromNum(50);
-        k = (prevK * BagNum.fromNum(param.calculation.dPeriod - 1) + rsv) / BagNum.fromNum(param.calculation.dPeriod);
+        final prevK = klineData.list[i + 1].kdjK(dataIndex) ?? FlexiNum.fromNum(50);
+        k = (prevK * FlexiNum.fromNum(param.calculation.dPeriod - 1) + rsv) / FlexiNum.fromNum(param.calculation.dPeriod);
       } else {
         k = rsv;
       }
 
       // 计算D值
-      BagNum d = BagNum.fromNum(50);
+      FlexiNum d = FlexiNum.fromNum(50);
       if (i < len - 1) {
-        final prevD = klineData.list[i + 1].d ?? BagNum.fromNum(50);
-        d = (prevD * BagNum.fromNum(param.calculation.jPeriod - 1) + k) / BagNum.fromNum(param.calculation.jPeriod);
+        final prevD = klineData.list[i + 1].kdjD(dataIndex) ?? FlexiNum.fromNum(50);
+        d = (prevD * FlexiNum.fromNum(param.calculation.jPeriod - 1) + k) / FlexiNum.fromNum(param.calculation.jPeriod);
       } else {
         d = k;
       }
 
       // 计算J值
-      final j = k * BagNum.fromNum(3) - d * BagNum.fromNum(2);
+      final j = k * FlexiNum.fromNum(3) - d * FlexiNum.fromNum(2);
 
       // 设置KDJ值
-      m.k = k;
-      m.d = d;
-      m.j = j;
+      final kdjSlot = m.getOrInitList<FlexiNum>(dataIndex, 3);
+      kdjSlot[0] = k;
+      kdjSlot[1] = d;
+      kdjSlot[2] = j;
     }
   }
 
@@ -172,17 +152,17 @@ mixin KdjDataMixin<T extends KDJIndicator> on PaintObjectBox<T> {
     final kPeriod = param.calculation.kPeriod;
     end = math.min(len - kPeriod, end - 1);
 
-    if (!klineData.list[end].isValidKdjData) {
+    if (!klineData.list[end].isValidKdjData(dataIndex)) {
       calcuAndCacheKdj(param, start: 0, end: len);
     }
 
     MinMax? minmax;
-    CandleModel m;
+    FlexiCandleModel m;
     for (int i = end; i >= start; i--) {
       m = klineData.list[i];
-      if (m.isValidKdjData) {
-        minmax ??= m.kdjMinmax;
-        minmax?.updateMinMax(m.kdjMinmax);
+      if (m.isValidKdjData(dataIndex)) {
+        minmax ??= m.kdjMinmax(dataIndex);
+        minmax?.updateMinMax(m.kdjMinmax(dataIndex));
       }
     }
     return minmax;

@@ -30,7 +30,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
   });
 
   final CandleReq candleReq;
-  final CandleModel? data;
+  final FlexiCandleModel? data;
 
   int get p => candleReq.precision;
 
@@ -46,19 +46,15 @@ class MarketTooltipCustomView extends ConsumerWidget {
   Widget _buildMarketInfo(
     BuildContext context,
     WidgetRef ref,
-    CandleModel? data,
+    FlexiCandleModel? data,
   ) {
     final s = S.of(context);
     final theme = ref.watch(themeProvider);
     final changeRate = data?.changeRate;
-    final confirm = data?.confirm;
-    // 判断振幅是否暂存到candle的confirm中, 如果是则使用.
-    final range = confirm != null &&
-            confirm.isNotEmpty &&
-            confirm != '1' &&
-            confirm != '0'
-        ? formatNumber(parseDouble(data?.confirm)?.d, precision: 2, showSign: true, suffix: '%')
-        : formatNumber(data?.range, precision: p);
+    final crossRangeRate = ref.read(marketCandleProvider.notifier).crossRangeRate;
+    final range = crossRangeRate != null && crossRangeRate.isNotEmpty
+        ? formatNumber(parseDouble(crossRangeRate)?.d, precision: 2, showSign: true, suffix: '%')
+        : formatNumber(data?.range.toDecimal(), precision: p);
     Color rateColor;
     Color? marketBg;
     if (changeRate == null || changeRate == 0) {
@@ -95,7 +91,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                   child: FittedBox(
                     child: Text(
                       formatNumber(
-                        data?.c,
+                        data?.close.toDecimal(),
                         precision: candleReq.precision,
                         enableGrouping: true,
                         cutInvalidZero: true,
@@ -143,7 +139,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                 KVItem(
                   label: s.tooltipOpen,
                   value: formatPrice(
-                    data?.o,
+                    data?.open.toDecimal(),
                     precision: p,
                     enableGrouping: true,
                   ),
@@ -151,7 +147,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                 KVItem(
                   label: s.tooltipHigh,
                   value: formatPrice(
-                    data?.h,
+                    data?.high.toDecimal(),
                     precision: p,
                     enableGrouping: true,
                   ),
@@ -159,7 +155,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                 KVItem(
                   label: s.tooltipLow,
                   value: formatPrice(
-                    data?.l,
+                    data?.low.toDecimal(),
                     precision: p,
                     enableGrouping: true,
                   ),
@@ -167,7 +163,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
                 KVItem(
                   label: s.tooltipAmount,
                   value: formatPrice(
-                    data?.v,
+                    data?.vol.toDecimal(),
                     precision: p,
                     enableGrouping: true,
                   ),

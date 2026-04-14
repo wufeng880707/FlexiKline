@@ -15,30 +15,26 @@
 part of 'rsi.dart';
 
 @visibleForTesting
-extension on CandleModel {
+extension on FlexiCandleModel {
   List<double?>? getRsiList(int dataIndex, [int? paramLen]) {
-    List<double?>? list = calcuData.getData(dataIndex);
+    List<double?>? list = getList<double>(dataIndex);
     if (list == null && paramLen != null && paramLen > 0) {
-      calcuData.setData(
-        dataIndex,
-        list = List.filled(paramLen, null, growable: false),
-      );
+      list = List.filled(paramLen, null, growable: false);
+      setList(dataIndex, list);
     }
     return list;
   }
 
-  bool isValidRsi(int dataIndex) {
-    return getRsiList(dataIndex)?.hasValidData ?? false;
-  }
+  bool isValidRsi(int dataIndex) => getRsiList(dataIndex)?.any((e) => e != null) ?? false;
 
   MinMax? getRsiMinmax(int dataIndex) {
     final rsiList = getRsiList(dataIndex);
     if (rsiList == null) return null;
-    return MinMax.getMinMaxByList(rsiList.map((e) => e != null ? BagNum.fromNum(e) : null).toList());
+    return MinMax.getMinMaxByList(rsiList.map((e) => e != null ? FlexiNum.fromNum(e) : null).toList());
   }
 }
 
-mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
+mixin RsiDataMixin<T extends RSIIndicator> on DataPaintObject<T> {
   RsiParam get calcParam => indicator.calcParam;
 
   @override
@@ -66,15 +62,15 @@ mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
     /// RSI要从end前的count+1个数据开始计算.
     final index = math.min(end + count, len - 1);
 
-    CandleModel m = klineData.list[index];
-    BagNum prevClose = m.close;
-    BagNum sumGain = BagNum.zero;
-    BagNum sumLoss = BagNum.zero;
-    BagNum? avgGain;
-    BagNum? avgLoss;
-    BagNum diff;
-    BagNum gain = BagNum.zero;
-    BagNum loss = BagNum.zero;
+    var m = klineData.list[index];
+    FlexiNum prevClose = m.close;
+    FlexiNum sumGain = FlexiNum.zero;
+    FlexiNum sumLoss = FlexiNum.zero;
+    FlexiNum? avgGain;
+    FlexiNum? avgLoss;
+    FlexiNum diff;
+    FlexiNum gain = FlexiNum.zero;
+    FlexiNum loss = FlexiNum.zero;
     for (int i = index - 1; i >= start; i--) {
       m = klineData.list[i];
 
@@ -82,11 +78,11 @@ mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
       prevClose = m.close;
       if (diff.signum > 0) {
         gain = diff;
-        loss = BagNum.zero;
+        loss = FlexiNum.zero;
         sumGain = gain + sumGain;
       } else {
         loss = diff.abs();
-        gain = BagNum.zero;
+        gain = FlexiNum.zero;
         sumLoss = loss + sumLoss;
       }
 
@@ -105,7 +101,7 @@ mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
         }
 
         m.getRsiList(dataIndex, paramLen)![paramIndex] =
-            avgLoss == BagNum.zero ? 0 : 100 - (100 / (1 + avgGain.div(avgLoss).toDouble()));
+            avgLoss == FlexiNum.zero ? 0 : 100 - (100 / (1 + avgGain.div(avgLoss).toDouble()));
 
         diff = _calculateUpVal(i + count - 1);
         if (diff.signum > 0) {
@@ -118,12 +114,12 @@ mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
   }
 
   /// 计算[index]位置的RSI指标上升值
-  BagNum _calculateUpVal(int index) {
+  FlexiNum _calculateUpVal(int index) {
     final list = klineData.list;
     if (index >= 0 && index < list.length - 1) {
       return list[index].close - list[index + 1].close;
     }
-    return BagNum.zero;
+    return FlexiNum.zero;
   }
 
   void calcuAndCacheRsi(
@@ -167,9 +163,8 @@ mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
     }
 
     MinMax? minmax;
-    CandleModel m;
     for (int i = end; i >= start; i--) {
-      m = klineData.list[i];
+      final m = klineData.list[i];
       minmax ??= m.getRsiMinmax(dataIndex);
       minmax?.updateMinMax(m.getRsiMinmax(dataIndex));
     }
@@ -177,12 +172,12 @@ mixin RsiDataMixin<T extends RSIIndicator> on PaintObjectBox<T> {
     // 如果启用参考线，需要考虑参考线的范围
     if (param.reference.enabled) {
       minmax ??= MinMax(
-        min: BagNum.fromNum(param.reference.oversold),
-        max: BagNum.fromNum(param.reference.overbought),
+        min: FlexiNum.fromNum(param.reference.oversold),
+        max: FlexiNum.fromNum(param.reference.overbought),
       );
       minmax.updateMinMax(MinMax(
-        min: BagNum.fromNum(param.reference.oversold),
-        max: BagNum.fromNum(param.reference.overbought),
+        min: FlexiNum.fromNum(param.reference.oversold),
+        max: FlexiNum.fromNum(param.reference.overbought),
       ));
     }
     

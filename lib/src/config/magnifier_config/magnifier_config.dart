@@ -87,10 +87,29 @@ class MagnifierConfig {
 
   MagnifierConfig of({
     Color? sideColor,
+    Color? shadowColor,
   }) {
-    if (shapeSide.color == sideColor) return this;
+    var newShadows = decorationShadows;
+    if (shadowColor != null && decorationShadows != null) {
+      newShadows = decorationShadows!.map((e) {
+        return BoxShadow(
+          color: shadowColor,
+          offset: e.offset,
+          blurRadius: e.blurRadius,
+          spreadRadius: e.spreadRadius,
+          blurStyle: e.blurStyle,
+        );
+      }).toList();
+    }
+
+    var newSide = shapeSide;
+    if (sideColor != null && shapeSide.color != sideColor) {
+      newSide = shapeSide.copyWith(color: sideColor);
+    }
+
     return copyWith(
-      shapeSide: shapeSide.copyWith(color: sideColor),
+      shapeSide: newSide,
+      decorationShadows: newShadows,
     );
   }
 

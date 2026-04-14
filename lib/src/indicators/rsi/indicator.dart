@@ -16,7 +16,7 @@ part of 'rsi.dart';
 
 /// RSI 相对强弱指标
 @CopyWith()
-class RSIIndicator extends PaintObjectIndicator implements IPrecomputable {
+class RSIIndicator extends DataIndicator implements IPrecomputable {
   RSIIndicator({
     super.zIndex = 0,
     required super.height,
@@ -24,7 +24,7 @@ class RSIIndicator extends PaintObjectIndicator implements IPrecomputable {
     required this.calcParam,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const FlexiIndicatorKey('rsi'));
+  }) : super(key: const DataIndicatorKey('rsi'));
 
   final RsiParam calcParam;
   final EdgeInsets tipsPadding;
@@ -33,19 +33,14 @@ class RSIIndicator extends PaintObjectIndicator implements IPrecomputable {
   dynamic getCalcParam() => calcParam;
 
   @override
-  PaintObjectBox createPaintObject(
-    IPaintContext context,
-  ) {
-    return RSIPaintObject(context: context, indicator: this);
+  DataPaintObject<RSIIndicator> createPaintObject() {
+    return RSIPaintObject();
   }
 }
 
-class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
+class RSIPaintObject<T extends RSIIndicator> extends DataPaintObject<T>
     with RsiDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
-  RSIPaintObject({
-    required super.context,
-    required super.indicator,
-  });
+  RSIPaintObject();
 
   @override
   MinMax? initState(int start, int end) {
@@ -76,7 +71,7 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String formatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -96,7 +91,7 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
 
   /// 在onCross时, 重写[paintYAxisTicksOnCross]中的格式化刻度值
   @override
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -123,7 +118,7 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
         if (val == null) continue;
         points.add(Offset(
           offset - (i - start) * candleActualWidth,
-          valueToDy(BagNum.fromNum(val), correct: false),
+          valueToDy(FlexiNum.fromNum(val), correct: false),
         ));
       }
 
@@ -163,7 +158,7 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
       ..strokeWidth = reference.lineWidth;
 
     // 超买线
-    final overboughtY = valueToDy(BagNum.fromNum(reference.overbought), correct: false);
+    final overboughtY = valueToDy(FlexiNum.fromNum(reference.overbought), correct: false);
     if (reference.dashWidth > 0) {
       _drawDashedLine(canvas, Offset(0, overboughtY), Offset(size.width, overboughtY), paint, reference.dashWidth);
     } else {
@@ -171,7 +166,7 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
     }
 
     // 超卖线
-    final oversoldY = valueToDy(BagNum.fromNum(reference.oversold), correct: false);
+    final oversoldY = valueToDy(FlexiNum.fromNum(reference.oversold), correct: false);
     if (reference.dashWidth > 0) {
       _drawDashedLine(canvas, Offset(0, oversoldY), Offset(size.width, oversoldY), paint, reference.dashWidth);
     } else {
@@ -205,7 +200,7 @@ class RSIPaintObject<T extends RSIIndicator> extends PaintObjectBox<T>
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {

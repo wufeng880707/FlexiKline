@@ -30,6 +30,9 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
 
   final OverlayDrawObjectManager _drawObjectManager;
 
+  /// 业务指标外部数据存储
+  final Map<IIndicatorKey, Object> _businessDataMap = {};
+
   KlineBindingBase({
     required this.configuration,
     this.autoSave = true,
@@ -69,6 +72,7 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
     if (autoSave) storeFlexiKlineConfig();
     _paintObjectManager.dispose();
     _drawObjectManager.dispose();
+    _businessDataMap.clear();
   }
 
   @protected
@@ -114,6 +118,28 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
   @override
   Future<bool> setConfig(String key, Map<String, dynamic> value) {
     return configuration.setConfig(key, value);
+  }
+
+  /// 注入业务指标的外部数据
+  ///
+  /// 外部（如 Riverpod Provider）在数据变更或 timeBar 切换时调用，
+  /// 将已处理好的数据注入框架。[BusinessPaintObject] 在绘制时通过
+  /// [getBusinessData] 获取。
+  void setBusinessData<T extends Object>(IIndicatorKey key, T data) {
+    final old = _businessDataMap[key];
+    if (identical(old, data)) return;
+    _businessDataMap[key] = data;
+  }
+
+  /// 清除 [key] 指定的业务数据
+  void removeBusinessData(IIndicatorKey key) {
+    _businessDataMap.remove(key);
+  }
+
+  @override
+  T? getBusinessData<T>(IIndicatorKey key) {
+    final data = _businessDataMap[key];
+    return data is T ? data : null;
   }
 }
 

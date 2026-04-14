@@ -17,9 +17,10 @@ import 'package:copy_with_extension/copy_with_extension.dart';
 import '../../extension/collections_ext.dart' show FlexiIterableExt, FlexiKlineListExt;
 import '../../utils/convert_util.dart' show parseInt;
 import '../../utils/export.dart' show parseBool;
-import '../flexi_candle_model.dart' show ICandleModel, FlexiCandleModel;
+import '../flexi_candle_model.dart' show ICandleModel, FlexiCandleModel, FlexiICandleModelExt;
 
 part 'candle_model.g.dart';
+part 'candle_helper.dart';
 
 /// FlexiKline 提供的 K 线参考模型。
 ///

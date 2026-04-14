@@ -22,16 +22,11 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   double get scale {
     if (_scale != null) return _scale!;
-<<<<<<< HEAD:test/base/test_flexi_kline_configuration.dart
-    final mediaQuery = MediaQueryData.fromView(window);
-    _scale = math.min(mediaQuery.size.width, mediaQuery.size.height) / 393;
-=======
     final view = PlatformDispatcher.instance.implicitView;
     final size = view != null
         ? view.physicalSize / view.devicePixelRatio
         : const Size(393, 852);
     _scale = size.shortestSide / 393;
->>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:test/helpers/test_kline_config.dart
     return _scale!;
   }
 
@@ -39,13 +34,8 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   double get pixel {
     if (_pixel != null) return _pixel!;
-<<<<<<< HEAD:test/base/test_flexi_kline_configuration.dart
-    final mediaQuery = MediaQueryData.fromView(window);
-    _pixel = 1.0 / mediaQuery.devicePixelRatio;
-=======
     final view = PlatformDispatcher.instance.implicitView;
     _pixel = view != null ? 1.0 / view.devicePixelRatio : 1.0;
->>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:test/helpers/test_kline_config.dart
     return _pixel!;
   }
 
@@ -73,12 +63,6 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color crossTextBg = const Color(0xFF111111);
 
-<<<<<<< HEAD:test/base/test_flexi_kline_configuration.dart
-  // @override
-  // Color drawTextBg = Colors.blue;
-
-=======
->>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:test/helpers/test_kline_config.dart
   @override
   Color transparent = Colors.transparent;
 
@@ -93,6 +77,9 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
 
   @override
   Color get drawColor => Colors.blueAccent;
+
+  @override
+  Color get drawTextColor => const Color(0xFFFFFFFF);
 
   @override
   Color markLineColor = Colors.blue;
@@ -116,7 +103,6 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   Color tooltipTextColor = const Color(0xFF949494);
 
   @override
-<<<<<<< HEAD:test/base/test_flexi_kline_configuration.dart
   Color get latestPriceTextBg => const Color(0xFF000000);
 
   @override
@@ -124,21 +110,6 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
 
   @override
   Color get lineChartColor => const Color(0xFF2196F3);
-
-  @override
-  Color get indraTodayAvgColor => const Color(0xFFFF9800);
-
-  @override
-  Color get indraTodayCloseColor => const Color(0xFF4CAF50);
-=======
-  Color get latestPriceTextBg => throw UnimplementedError();
-
-  @override
-  Color get dragBg => throw UnimplementedError();
-
-  @override
-  Color get lineChartColor => throw UnimplementedError();
->>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:test/helpers/test_kline_config.dart
 }
 
 class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
@@ -146,18 +117,13 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   IFlexiKlineTheme get theme => TestFlexiKlineTheme();
 
   @override
-  Map<IDrawType, DrawObjectBuilder<Overlay, DrawObject<Overlay>>> get drawObjectBuilders {
+  Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders {
     return {};
   }
 
   @override
-<<<<<<< HEAD:test/base/test_flexi_kline_configuration.dart
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator(
-    MainPaintObjectIndicator<PaintObjectIndicator>? mainIndicator,
-=======
-  MainPaintObjectIndicator<Indicator> genMainIndicator(
+  MainPaintObjectIndicator genMainIndicator(
     MainPaintObjectIndicator<Indicator>? mainIndicator,
->>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:test/helpers/test_kline_config.dart
   ) {
     throw UnimplementedError();
   }
@@ -170,18 +136,6 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   @override
   Future<bool> setConfig(String key, Map<String, dynamic> value) {
     throw UnimplementedError();
-<<<<<<< HEAD:test/base/test_flexi_kline_configuration.dart
-  }
-
-  @override
-  String get configKey => 'test';
-
-  @override
-  List<ITimeBar> getTimeBarConfigs() {
-    // TODO: implement getTimeBarConfigs
-    throw UnimplementedError();
-=======
->>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:test/helpers/test_kline_config.dart
   }
 
   @override

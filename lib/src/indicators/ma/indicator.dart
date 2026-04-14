@@ -16,14 +16,14 @@ part of 'ma.dart';
 
 /// MA 移动平均指标线
 @CopyWith()
-class MAIndicator extends PaintObjectIndicator implements IPrecomputable {
+class MAIndicator extends DataIndicator implements IPrecomputable {
   MAIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
     this.calcParam = const MaParam(),
     required this.tipsPadding,
-  }) : super(key: const FlexiIndicatorKey('ma'));
+  }) : super(key: const DataIndicatorKey('ma'));
 
   /// MA 参数（包含所有配置）
   @override
@@ -33,17 +33,14 @@ class MAIndicator extends PaintObjectIndicator implements IPrecomputable {
   final EdgeInsets tipsPadding;
 
   @override
-  PaintObjectBox createPaintObject(IPaintContext context) {
-    return MAPaintObject(context: context, indicator: this);
+  DataPaintObject<MAIndicator> createPaintObject() {
+    return MAPaintObject();
   }
 
 }
 
-class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> with MaDataMixin {
-  MAPaintObject({
-    required super.context,
-    required super.indicator,
-  });
+class MAPaintObject<T extends MAIndicator> extends DataPaintObject<T> with MaDataMixin {
+  MAPaintObject();
 
   @override
   MinMax? initState(int start, int end) {
@@ -79,7 +76,7 @@ class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> with MaData
     for (int j = 0; j < enabledLines.length; j++) {
       final lineConfig = enabledLines[j];
       if (lineConfig.period <= 0) continue; // 跳过无效周期
-      BagNum? val;
+      FlexiNum? val;
       final List<Offset> points = [];
       for (int i = start; i < end; i++) {
         val = list[i].getMaList(dataIndex)?.getItem(j);
@@ -120,7 +117,7 @@ class MAPaintObject<T extends MAIndicator> extends PaintObjectBox<T> with MaData
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {

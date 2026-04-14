@@ -20,6 +20,7 @@ import 'package:example/src/config.dart';
 import 'package:example/src/theme/export.dart';
 import 'package:example/src/theme/flexi_theme.dart';
 import 'package:example/src/utils/cache_util.dart';
+import 'package:flexi_formatter/date_time.dart' show TimeUnit;
 import 'package:flexi_kline/flexi_kline.dart' hide Overlay;
 import 'package:flexi_kline/src/framework/draw/overlay.dart' as flexi_overlay;
 import 'package:flutter/material.dart';
@@ -81,6 +82,9 @@ abstract class BaseBitFlexiKlineTheme with FlexiKlineThemeTextStyle implements I
   Color get drawColor => Colors.blueAccent;
 
   Color get drawTextBg => Colors.blue;
+
+  @override
+  Color get drawTextColor => const Color(0xFFFFFFFF);
 }
 
 class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
@@ -135,8 +139,9 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   Color get drawColor => Colors.blue;
 
   @override
+  Color get drawTextColor => const Color(0xFF000000);
+
   Color get indraTodayAvgColor => const Color(0xffff9933);
-  @override
   Color get indraTodayCloseColor => const Color(0xff4d78ff);
 
   @override
@@ -161,9 +166,7 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   @override
   String key = 'flexi_kline_config_key_bit-dark';
 
-  @override
   Color get indraTodayAvgColor => const Color(0xffff9933);
-  @override
   Color get indraTodayCloseColor => const Color(0xff4d78ff);
 
   @override
@@ -212,6 +215,9 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
 
   @override
   Color get drawColor => Colors.lightBlue;
+
+  @override
+  Color get drawTextColor => const Color(0xFFFFFFFF);
 
   @override
   Color get lastPriceTextBg => latestPriceTextBg;
@@ -413,7 +419,6 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   List<ITimeBar>? _cachedTimeBarConfigs;
 
   /// 获取时间周期配置列表
-  @override
   List<ITimeBar> getTimeBarConfigs() {
     if (_cachedTimeBarConfigs != null) {
       return _cachedTimeBarConfigs!;
@@ -427,28 +432,28 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   List<ITimeBar> _getDefaultTimeBarConfigs() {
     // 返回常用的时间周期列表
     return [
-      TimeBar.m1, // 1m
-      TimeBar.m3, // 3m
-      TimeBar.m5, // 5m
-      TimeBar.m15, // 15m
-      TimeBar.m30, // 30m
-      TimeBar.H1, // 1H
-      TimeBar.H2, // 2H
-      TimeBar.H4, // 4H
-      TimeBar.H6, // 6H
-      TimeBar.H12, // 12H
-      TimeBar.D1, // 1D
-      TimeBar.D2, // 2D
-      TimeBar.D3, // 3D
-      TimeBar.W1, // 1W
-      TimeBar.M1, // 1M
-      TimeBar.M3, // 3M
+      const FlexiTimeBar('1m', 1, TimeUnit.minute),
+      const FlexiTimeBar('3m', 3, TimeUnit.minute),
+      const FlexiTimeBar('5m', 5, TimeUnit.minute),
+      const FlexiTimeBar('15m', 15, TimeUnit.minute),
+      const FlexiTimeBar('30m', 30, TimeUnit.minute),
+      const FlexiTimeBar('1H', 1, TimeUnit.hour),
+      const FlexiTimeBar('2H', 2, TimeUnit.hour),
+      const FlexiTimeBar('4H', 4, TimeUnit.hour),
+      const FlexiTimeBar('6H', 6, TimeUnit.hour),
+      const FlexiTimeBar('12H', 12, TimeUnit.hour),
+      const FlexiTimeBar('1D', 1, TimeUnit.day),
+      const FlexiTimeBar('2D', 2, TimeUnit.day),
+      const FlexiTimeBar('3D', 3, TimeUnit.day),
+      const FlexiTimeBar('1W', 1, TimeUnit.week),
+      const FlexiTimeBar('1M', 1, TimeUnit.month),
+      const FlexiTimeBar('3M', 3, TimeUnit.month),
       // UTC 时间周期
-      TimeBar.utc6H, // 6Hutc
-      TimeBar.utc12H, // 12Hutc
-      TimeBar.utc1D, // 1Dutc
-      TimeBar.utc1W, // 1Wutc
-      TimeBar.utc1M, // 1Mutc
+      const FlexiTimeBar('6Hutc', 6, TimeUnit.hour),
+      const FlexiTimeBar('12Hutc', 12, TimeUnit.hour),
+      const FlexiTimeBar('1Dutc', 1, TimeUnit.day),
+      const FlexiTimeBar('1Wutc', 1, TimeUnit.week),
+      const FlexiTimeBar('1Mutc', 1, TimeUnit.month),
     ];
   }
 
@@ -481,7 +486,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   }
 
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator([MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
+  MainPaintObjectIndicator genMainIndicator([MainPaintObjectIndicator<Indicator>? instance]) {
     final theme = ref.read(bitFlexiKlineThemeProvider);
     // 确保TradeMarkIndicator始终存在（即使默认隐藏）
     final children = <IIndicatorKey>{};
@@ -491,7 +496,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     // 始终包含TradeMarkIndicator，状态由calcParam.show控制
     children.add(tradeMarkIndicatorKey);
     
-    return MainPaintObjectIndicator<PaintObjectIndicator>(
+    return MainPaintObjectIndicator(
       size: Size(ScreenUtil().screenWidth, 300.r),
       padding: theme.mainIndicatorPadding,
       drawBelowTipsArea: true,
@@ -547,6 +552,10 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     final result = Map<IIndicatorKey, IndicatorBuilder>.from(_cachedMainIndicatorBuilders!);
     final superBuilders = super.mainIndicatorBuilders;
     result.addAll(superBuilders);
+
+    // 确保 TradeMarkIndicator builder 始终存在
+    result[tradeMarkIndicatorKey] ??= (json) => _parseTradeMarkIndicator(json);
+
     return result;
   }
 
@@ -752,7 +761,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     // 解析配置并创建对应的指标构建器
     config.forEach((key, value) {
       if (value is Map<String, dynamic>) {
-        builders[FlexiIndicatorKey(key)] = _createIndicatorBuilderFromConfig(value, theme);
+        builders[DataIndicatorKey(key)] = _createIndicatorBuilderFromConfig(value, theme);
       }
     });
 
@@ -767,7 +776,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     // 解析配置并创建对应的指标构建器
     config.forEach((key, value) {
       if (value is Map<String, dynamic>) {
-        builders[FlexiIndicatorKey(key)] = _createIndicatorBuilderFromConfig(value, theme);
+        builders[DataIndicatorKey(key)] = _createIndicatorBuilderFromConfig(value, theme);
       }
     });
 
@@ -909,35 +918,21 @@ extension BitFlexiKlineConfigurationParse on BitFlexiKlineConfiguration {
   /// 解析交易标记指标配置
   TradeMarkIndicator _parseTradeMarkIndicator(Map<String, dynamic>? config) {
     if (config == null) {
-      return TradeMarkIndicator(
-        calcParam: const TradeMarkParam(),
-        tradeMarks: const [],
-      );
+      return TradeMarkIndicator(calcParam: const TradeMarkParam());
     }
 
     TradeMarkParam? calcParam;
     if (config.containsKey('calcParam')) {
       try {
-        calcParam = TradeMarkParam.fromJson(config['calcParam'] as Map<String, dynamic>);
+        calcParam = TradeMarkParam.fromJson(
+          config['calcParam'] as Map<String, dynamic>,
+        );
       } catch (e) {
         defLogger.w('Failed to parse TradeMarkParam: $e');
       }
     }
 
-    List<TradeMarkData> tradeMarks = [];
-    if (config.containsKey('tradeMarks')) {
-      final marks = config['tradeMarks'] as List?;
-      if (marks != null) {
-        tradeMarks = marks
-            .map((m) => TradeMarkData.fromJson(m as Map<String, dynamic>))
-            .toList();
-      }
-    }
-
-    return TradeMarkIndicator(
-      calcParam: calcParam ?? const TradeMarkParam(),
-      tradeMarks: tradeMarks,
-    );
+    return TradeMarkIndicator(calcParam: calcParam ?? const TradeMarkParam());
   }
 
   // 根据配置创建指标构建器
@@ -1211,7 +1206,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
   Map<IIndicatorKey, IndicatorBuilder> _getDefaultMainIndicators() {
     return {
       // MA 移动平均线 - 主图指标
-      const FlexiIndicatorKey('ma'): (json) => MAIndicator(
+      const DataIndicatorKey('ma'): (json) => MAIndicator(
             height: theme.mainIndicatorHeight,
             padding: theme.mainIndicatorPadding,
             calcParam: const MaParam(
@@ -1243,7 +1238,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
           ),
 
       // BOLL 布林带 - 主图指标
-      const FlexiIndicatorKey('boll'): (json) => BOLLIndicator(
+      const DataIndicatorKey('boll'): (json) => BOLLIndicator(
             height: theme.mainIndicatorHeight,
             padding: theme.mainIndicatorPadding,
             calcParam: const BOLLParam(), // 使用默认参数
@@ -1251,7 +1246,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
           ),
 
       // EMA 指数移动平均线 - 主图指标
-      const FlexiIndicatorKey('ema'): (json) => EMAIndicator(
+      const DataIndicatorKey('ema'): (json) => EMAIndicator(
             height: theme.mainIndicatorHeight,
             padding: theme.mainIndicatorPadding,
             calcParam: const EmaParam(
@@ -1283,7 +1278,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
           ),
 
       // SAR 抛物线指标 - 主图指标
-      const FlexiIndicatorKey('sar'): (json) => SARIndicator(
+      const DataIndicatorKey('sar'): (json) => SARIndicator(
             height: theme.mainIndicatorHeight,
             padding: theme.mainIndicatorPadding,
             calcParam: const SARParam(), // 使用默认参数
@@ -1292,7 +1287,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
           ),
 
       // AVL 威廉分形指标 - 主图指标
-      const FlexiIndicatorKey('avl'): (json) => AVLIndicator(
+      const DataIndicatorKey('avl'): (json) => AVLIndicator(
             height: theme.mainIndicatorHeight,
             padding: theme.mainIndicatorPadding,
             calcParam: const AVLParam(), // 使用默认参数
@@ -1308,7 +1303,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
   Map<IIndicatorKey, IndicatorBuilder> getDefaultSubIndicators() {
     return {
       // VOL_MA 成交量移动平均线 - 副图指标
-      const FlexiIndicatorKey('volMa'): (json) => VolMaIndicator(
+      const DataIndicatorKey('volMa'): (json) => VolMaIndicator(
             height: theme.subIndicatorHeight,
             calcParam: const VolMaParam(
               lines: [
@@ -1334,7 +1329,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
           ),
 
       // VOLUME 成交量 - 副图指标
-      const FlexiIndicatorKey('volume'): (json) => VolumeIndicator(
+      const DataIndicatorKey('volume'): (json) => VolumeIndicator(
             height: theme.subIndicatorHeight,
             calcParam: const VolumeParam(), // 使用默认参数
             tipsPadding: theme.tipsPadding,
@@ -1342,7 +1337,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
           ),
 
       // RSI 相对强弱指标 - 副图指标
-      const FlexiIndicatorKey('rsi'): (json) => RSIIndicator(
+      const DataIndicatorKey('rsi'): (json) => RSIIndicator(
             height: theme.subIndicatorHeight,
             calcParam: const RsiParam(
               lines: [
@@ -1360,7 +1355,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
           ),
 
       // KDJ 随机指标 - 副图指标
-      const FlexiIndicatorKey('kdj'): (json) => KDJIndicator(
+      const DataIndicatorKey('kdj'): (json) => KDJIndicator(
             height: theme.subIndicatorHeight,
             calcParam: const KDJParam(), // 使用默认参数
             tipsPadding: theme.tipsPadding,
@@ -1368,7 +1363,7 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
           ),
 
       // MACD 指标 - 副图指标
-      const FlexiIndicatorKey('macd'): (json) => MACDIndicator(
+      const DataIndicatorKey('macd'): (json) => MACDIndicator(
             height: theme.subIndicatorHeight * 1.2, // MACD需要稍微高一点
             calcParam: const MACDParam(
               s: 12, // 短期周期
@@ -1403,187 +1398,13 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
             tickCount: 5,
           ),
 
-      // 交易标记 - 主图指标（默认隐藏，通过设置控制显示）
+      // 交易标记 - 主图叠加层
       tradeMarkIndicatorKey: (json) => TradeMarkIndicator(
-            height: theme.mainIndicatorHeight,
-            padding: theme.mainIndicatorPadding,
             calcParam: const TradeMarkParam(
-              show: false, // 默认隐藏
+              show: true,
             ),
-            tradeMarks: _createTestTradeMarks(), // 添加测试数据
           ),
     };
   }
 
-  /// 创建测试交易标记数据 - 覆盖多个时间周期
-  List<TradeMarkData> _createTestTradeMarks() {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    return [
-      // === 1分钟级别数据 (1m) ===
-      TradeMarkData(
-        timestamp: now - 5 * 60 * 1000, // 5分钟前
-        type: TradeType.buy,
-        price: 50000.0,
-        maxPrice: 50050.0,
-        volume: 0.1,
-        orderId: 'buy_1m_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 3 * 60 * 1000, // 3分钟前
-        type: TradeType.sell,
-        price: 50200.0,
-        maxPrice: 50250.0,
-        volume: 0.08,
-        orderId: 'sell_1m_1',
-      ),
-      
-      // === 15分钟级别数据 (15m) ===
-      TradeMarkData(
-        timestamp: now - 30 * 60 * 1000, // 30分钟前
-        type: TradeType.buy,
-        price: 49800.0,
-        maxPrice: 49850.0,
-        volume: 0.2,
-        orderId: 'buy_15m_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 45 * 60 * 1000, // 45分钟前
-        type: TradeType.sell,
-        price: 49600.0,
-        maxPrice: 49650.0,
-        volume: 0.15,
-        orderId: 'sell_15m_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 75 * 60 * 1000, // 75分钟前
-        type: TradeType.buy,
-        price: 49400.0,
-        maxPrice: 49450.0,
-        volume: 0.3,
-        orderId: 'buy_15m_2',
-      ),
-      
-      // === 1小时级别数据 (1H) ===
-      TradeMarkData(
-        timestamp: now - 2 * 60 * 60 * 1000, // 2小时前
-        type: TradeType.sell,
-        price: 49200.0,
-        maxPrice: 49280.0,
-        volume: 0.5,
-        orderId: 'sell_1h_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 4 * 60 * 60 * 1000, // 4小时前
-        type: TradeType.buy,
-        price: 49000.0,
-        maxPrice: 49100.0,
-        volume: 0.25,
-        orderId: 'buy_1h_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 8 * 60 * 60 * 1000, // 8小时前
-        type: TradeType.sell,
-        price: 48800.0,
-        maxPrice: 48900.0,
-        volume: 0.4,
-        orderId: 'sell_1h_2',
-      ),
-      
-      // === 4小时级别数据 (4H) ===
-      TradeMarkData(
-        timestamp: now - 1 * 24 * 60 * 60 * 1000, // 1天前
-        type: TradeType.buy,
-        price: 48500.0,
-        maxPrice: 48600.0,
-        volume: 0.8,
-        orderId: 'buy_4h_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 2 * 24 * 60 * 60 * 1000, // 2天前
-        type: TradeType.sell,
-        price: 48200.0,
-        maxPrice: 48350.0,
-        volume: 0.6,
-        orderId: 'sell_4h_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 4 * 24 * 60 * 60 * 1000, // 4天前
-        type: TradeType.buy,
-        price: 48000.0,
-        maxPrice: 48150.0,
-        volume: 1.0,
-        orderId: 'buy_4h_2',
-      ),
-      
-      // === 1天级别数据 (1D) ===
-      TradeMarkData(
-        timestamp: now - 7 * 24 * 60 * 60 * 1000, // 1周前
-        type: TradeType.sell,
-        price: 47500.0,
-        maxPrice: 47700.0,
-        volume: 1.2,
-        orderId: 'sell_1d_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 14 * 24 * 60 * 60 * 1000, // 2周前
-        type: TradeType.buy,
-        price: 47000.0,
-        maxPrice: 47200.0,
-        volume: 0.9,
-        orderId: 'buy_1d_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 21 * 24 * 60 * 60 * 1000, // 3周前
-        type: TradeType.sell,
-        price: 46500.0,
-        maxPrice: 46800.0,
-        volume: 1.5,
-        orderId: 'sell_1d_2',
-      ),
-      
-      // === 1周级别数据 (1W) ===
-      TradeMarkData(
-        timestamp: now - 30 * 24 * 60 * 60 * 1000, // 1个月前
-        type: TradeType.buy,
-        price: 45000.0,
-        maxPrice: 45300.0,
-        volume: 2.0,
-        orderId: 'buy_1w_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 60 * 24 * 60 * 60 * 1000, // 2个月前
-        type: TradeType.sell,
-        price: 44000.0,
-        maxPrice: 44500.0,
-        volume: 1.8,
-        orderId: 'sell_1w_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 90 * 24 * 60 * 60 * 1000, // 3个月前
-        type: TradeType.buy,
-        price: 43000.0,
-        maxPrice: 43400.0,
-        volume: 2.5,
-        orderId: 'buy_1w_2',
-      ),
-      
-      // === 1月级别数据 (1M) ===
-      TradeMarkData(
-        timestamp: now - 180 * 24 * 60 * 60 * 1000, // 6个月前
-        type: TradeType.sell,
-        price: 40000.0,
-        maxPrice: 40800.0,
-        volume: 3.0,
-        orderId: 'sell_1m_1',
-      ),
-      TradeMarkData(
-        timestamp: now - 365 * 24 * 60 * 60 * 1000, // 1年前
-        type: TradeType.buy,
-        price: 35000.0,
-        maxPrice: 35500.0,
-        volume: 4.0,
-        orderId: 'buy_1m_1',
-      ),
-    ];
-  }
 }

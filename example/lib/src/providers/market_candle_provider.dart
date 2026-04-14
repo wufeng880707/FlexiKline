@@ -18,31 +18,36 @@ import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final marketCandleProvider =
-    StreamNotifierProvider.autoDispose<MarketCandleNotifier, CandleModel>(
+    StreamNotifierProvider.autoDispose<MarketCandleNotifier, FlexiCandleModel>(
   MarketCandleNotifier.new,
 );
 
-class MarketCandleNotifier extends AutoDisposeStreamNotifier<CandleModel> {
-  late StreamController<CandleModel> controller;
+class MarketCandleNotifier extends AutoDisposeStreamNotifier<FlexiCandleModel> {
+  late StreamController<FlexiCandleModel> controller;
 
   bool isCrossing = false;
 
+  /// 十字线期间暂存的振幅率字符串
+  String? crossRangeRate;
+
   @override
-  Stream<CandleModel> build() {
-    controller = StreamController<CandleModel>();
+  Stream<FlexiCandleModel> build() {
+    controller = StreamController<FlexiCandleModel>();
     return controller.stream;
   }
 
-  void emitOnCross(CandleModel? model) {
+  void emitOnCross(FlexiCandleModel? model, {String? rangeRate}) {
     if (model != null) {
       isCrossing = true;
+      crossRangeRate = rangeRate;
       controller.add(model);
     } else {
       isCrossing = false;
+      crossRangeRate = null;
     }
   }
 
-  void emit(CandleModel model) {
+  void emit(FlexiCandleModel model) {
     if (isCrossing) return;
     controller.add(model);
   }

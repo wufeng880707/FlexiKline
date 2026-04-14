@@ -34,10 +34,7 @@ enum LineType {
   dotted; // 点线
 }
 
-<<<<<<< HEAD:lib/src/extension/render/common.dart
-=======
 /// Y轴对齐方式
->>>>>>> 6c71d9ce122f9b6298b759a5aa16cfb378d1f65d:lib/src/extension/render/types.dart
 enum YAxisAlign {
   top,
   center,

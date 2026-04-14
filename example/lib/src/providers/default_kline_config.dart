@@ -17,6 +17,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:example/generated/l10n.dart';
+import 'package:flexi_formatter/date_time.dart' show TimeUnit;
 import 'package:flexi_kline/flexi_kline.dart' hide Overlay;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,8 +49,6 @@ class DefaultFlexiKlineTheme extends BaseFlexiKlineTheme with FlexiKlineThemeTex
   DefaultFlexiKlineTheme({
     required this.theme,
   }) : super(
-          indraTodayAvgColor: theme.indraTodayAvgColor,
-          indraTodayCloseColor: theme.indraTodayCloseColor,
           dragBg: theme.translucentBg,
           latestPriceTextBg: theme.translucentBg,
           lineChartColor: const Color(0xFF2196F3),
@@ -65,6 +64,7 @@ class DefaultFlexiKlineTheme extends BaseFlexiKlineTheme with FlexiKlineThemeTex
           gridLine: theme.gridLine,
           crossColor: theme.t1,
           drawColor: Colors.blueAccent,
+          drawTextColor: theme.t1,
           themeColor: theme.themeColor,
           textColor: theme.t1,
           ticksTextColor: theme.t2,
@@ -160,34 +160,34 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   @override
   Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders {
     // 三层配置加载策略: 缓存 -> JSON -> 代码默认值
+    Map<IIndicatorKey, IndicatorBuilder> result = {};
     try {
       // 1. 尝试从缓存加载
       final cachedIndicators = _loadMainIndicatorsFromCache();
       if (cachedIndicators.isNotEmpty) {
         defLogger.d('Loaded ${cachedIndicators.length} main indicators from cache');
-        return cachedIndicators;
-      }
-
-      // 2. 尝试从JSON同步加载
-      final jsonIndicators = _loadMainIndicatorsFromJsonSync();
-      if (jsonIndicators.isNotEmpty) {
-        defLogger.d('Loaded ${jsonIndicators.length} main indicators from JSON');
-        // 异步保存到缓存
-        _saveMainIndicatorsToCache(jsonIndicators);
-        return jsonIndicators;
+        result = cachedIndicators;
+      } else {
+        // 2. 尝试从JSON同步加载
+        final jsonIndicators = _loadMainIndicatorsFromJsonSync();
+        if (jsonIndicators.isNotEmpty) {
+          defLogger.d('Loaded ${jsonIndicators.length} main indicators from JSON');
+          _saveMainIndicatorsToCache(jsonIndicators);
+          result = jsonIndicators;
+        }
       }
     } catch (err, stack) {
       defLogger.e('Error loading main indicators: $err', stackTrace: stack);
     }
 
-    // 3. 返回代码默认值（空映射，依赖JSON配置）
-    defLogger.d('Using empty main indicators map, relying on JSON configuration');
-    return super.mainIndicatorBuilders;
+    result[tradeMarkIndicatorKey] ??= (json) =>
+        _parseTradeMarkIndicator(json);
+
+    return result;
   }
 
   /// 获取默认主指标配置的方法，用于重置操作
   /// 优先从JSON同步加载，如果没有则使用代码默认值
-  @override
   Map<IIndicatorKey, IndicatorBuilder> getDefaultMainIndicatorBuilders() {
     try {
       // 1. 尝试从JSON同步加载
@@ -230,7 +230,6 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   /// 获取默认副指标配置的方法，用于重置操作
   /// 优先从JSON同步加载，如果没有则使用代码默认值
-  @override
   Map<IIndicatorKey, IndicatorBuilder> getDefaultSubIndicatorBuilders() {
     try {
       // 1. 尝试从JSON同步加载
@@ -265,7 +264,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
         for (final indicatorConfig in cachedData['indicators']) {
           if (indicatorConfig is Map<String, dynamic>) {
-            final key = FlexiIndicatorKey(indicatorConfig['key'] as String);
+            final key = DataIndicatorKey(indicatorConfig['key'] as String);
             final builder = createIndicatorBuilderFromConfig(indicatorConfig, theme);
             indicators[key] = builder;
           }
@@ -289,7 +288,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
         for (final indicatorConfig in cachedData['indicators']) {
           if (indicatorConfig is Map<String, dynamic>) {
-            final key = FlexiIndicatorKey(indicatorConfig['key'] as String);
+            final key = DataIndicatorKey(indicatorConfig['key'] as String);
             final builder = createIndicatorBuilderFromConfig(indicatorConfig, theme);
             indicators[key] = builder;
           }
@@ -342,7 +341,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
     for (final entry in mainIndicators.entries) {
       try {
-        final key = FlexiIndicatorKey(entry.key);
+        final key = DataIndicatorKey(entry.key);
         final config = entry.value as Map<String, dynamic>;
         final builder = createIndicatorBuilderFromConfig(config, theme);
         indicators[key] = builder;
@@ -361,7 +360,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
     for (final entry in subIndicators.entries) {
       try {
-        final key = FlexiIndicatorKey(entry.key);
+        final key = DataIndicatorKey(entry.key);
         final config = entry.value as Map<String, dynamic>;
         final builder = createIndicatorBuilderFromConfig(config, theme);
         indicators[key] = builder;
@@ -406,9 +405,26 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     }
   }
 
+  TradeMarkIndicator _parseTradeMarkIndicator(Map<String, dynamic>? config) {
+    if (config == null) {
+      return TradeMarkIndicator(calcParam: const TradeMarkParam());
+    }
+    TradeMarkParam? calcParam;
+    if (config.containsKey('calcParam')) {
+      try {
+        calcParam = TradeMarkParam.fromJson(
+          config['calcParam'] as Map<String, dynamic>,
+        );
+      } catch (e) {
+        defLogger.w('Failed to parse TradeMarkParam: $e');
+      }
+    }
+    return TradeMarkIndicator(calcParam: calcParam ?? const TradeMarkParam());
+  }
+
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator(
-      [MainPaintObjectIndicator<PaintObjectIndicator>? instance]) {
+  MainPaintObjectIndicator genMainIndicator(
+      [MainPaintObjectIndicator<Indicator>? instance]) {
     final theme = ref.read(defaultKlineThemeProvider);
     // 确保TradeMarkIndicator始终存在（即使默认隐藏）
     final children = <IIndicatorKey>{};
@@ -418,7 +434,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     // 始终包含TradeMarkIndicator，状态由calcParam.show控制
     children.add(tradeMarkIndicatorKey);
     
-    return MainPaintObjectIndicator<PaintObjectIndicator>(
+    return MainPaintObjectIndicator(
       size: Size(ScreenUtil().screenWidth, 300.r),
       padding: theme.mainIndicatorPadding,
       drawBelowTipsArea: true,
@@ -459,23 +475,22 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   // ========== 时间周期配置 ==========
 
   /// 获取时间周期配置列表
-  @override
   List<ITimeBar> getTimeBarConfigs() {
     // 返回常用的时间周期列表
     return [
-      TimeBar.m1, // 1m
-      TimeBar.m3, // 3m
-      TimeBar.m5, // 5m
-      TimeBar.m15, // 15m
-      TimeBar.m30, // 30m
-      TimeBar.H1, // 1H
-      TimeBar.H2, // 2H
-      TimeBar.H4, // 4H
-      TimeBar.H6, // 6H
-      TimeBar.H12, // 12H
-      TimeBar.D1, // 1D
-      TimeBar.W1, // 1W
-      TimeBar.M1, // 1M
+      const FlexiTimeBar('1m', 1, TimeUnit.minute),
+      const FlexiTimeBar('3m', 3, TimeUnit.minute),
+      const FlexiTimeBar('5m', 5, TimeUnit.minute),
+      const FlexiTimeBar('15m', 15, TimeUnit.minute),
+      const FlexiTimeBar('30m', 30, TimeUnit.minute),
+      const FlexiTimeBar('1H', 1, TimeUnit.hour),
+      const FlexiTimeBar('2H', 2, TimeUnit.hour),
+      const FlexiTimeBar('4H', 4, TimeUnit.hour),
+      const FlexiTimeBar('6H', 6, TimeUnit.hour),
+      const FlexiTimeBar('12H', 12, TimeUnit.hour),
+      const FlexiTimeBar('1D', 1, TimeUnit.day),
+      const FlexiTimeBar('1W', 1, TimeUnit.week),
+      const FlexiTimeBar('1M', 1, TimeUnit.month),
     ];
   }
 

@@ -22,6 +22,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../config.dart';
 import '../providers/default_kline_config.dart';
 import '../providers/instruments_provider.dart';
+import '../providers/trade_mark_provider.dart';
 import '../theme/flexi_theme.dart';
 import 'common/kline_page_data_update_mixin.dart';
 import 'components/flexi_kline_draw_toolbar.dart';
@@ -48,6 +49,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     with KlinePageDataUpdateMixin<OkKlinePage> {
   late final FlexiKlineController controller;
   late final DefaultFlexiKlineConfiguration configuration;
+  late final TradeMarkDataManager _tradeMarkManager;
   bool isFullScreen = false;
 
   @override
@@ -69,7 +71,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId,
         );
-    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.key == '15m');
+    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.bar == '15m');
 
     req = CandleReq(
       instId: widget.instId,
@@ -82,9 +84,24 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
 
     controller.onLoadMoreCandles = loadMoreCandles;
 
+    _tradeMarkManager = TradeMarkDataManager(controller);
+    controller.timeBarListener.addListener(_onTimeBarChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       initKlineData(req);
     });
+  }
+
+  void _onTimeBarChanged() {
+    _tradeMarkManager.onTimeBarChanged(controller.timeBarListener.value);
+  }
+
+  @override
+  void dispose() {
+    controller.timeBarListener.removeListener(_onTimeBarChanged);
+    _tradeMarkManager.dispose();
+    controller.dispose();
+    super.dispose();
   }
 
   void setFullScreen() {
@@ -280,5 +297,19 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
   @override
   Future<void> initKlineData(CandleReq request, {bool reset = false}) async {
     await super.initKlineData(request, reset: reset);
+    _injectTestTradeMarks();
+  }
+
+  void _injectTestTradeMarks() {
+    final klineData = controller.curKlineData;
+    if (!klineData.canPaintChart) return;
+
+    if (!controller.hasAddedMainIndicator(tradeMarkIndicatorKey)) {
+      controller.addMainIndicator(tradeMarkIndicatorKey);
+    }
+
+    final marks = createTestTradeMarks(klineData);
+    _tradeMarkManager.onTimeBarChanged(klineData.req.timeBar);
+    _tradeMarkManager.setRawMarks(marks);
   }
 }

@@ -15,18 +15,37 @@
 part of 'macd.dart';
 
 @visibleForTesting
-extension CandleMacdExt on CandleModel {
-  static const int _macdIndex = 3;
-  List<BagNum?>? get macdList => calcuData.getData(_macdIndex);
-  set macdList(List<BagNum?>? value) => calcuData.setData(_macdIndex, value);
-  BagNum? get dif => macdList?.getItem(0);
-  BagNum? get dea => macdList?.getItem(1);
-  BagNum? get macd => macdList?.getItem(2);
-  bool get isValidMacdData => macdList != null && dif != null && dea != null && macd != null;
-  void cleanMacd() => macdList = null;
+extension CandleMacdExt on FlexiCandleModel {
+  List<FlexiNum?>? macdList(int dataIndex) => getList<FlexiNum>(dataIndex);
+
+  FlexiNum? macdDif(int dataIndex) {
+    final list = macdList(dataIndex);
+    return (list != null && list.isNotEmpty) ? list[0] : null;
+  }
+
+  FlexiNum? macdDea(int dataIndex) {
+    final list = macdList(dataIndex);
+    return (list != null && list.length > 1) ? list[1] : null;
+  }
+
+  FlexiNum? macdVal(int dataIndex) {
+    final list = macdList(dataIndex);
+    return (list != null && list.length > 2) ? list[2] : null;
+  }
+
+  bool isValidMacdData(int dataIndex) {
+    final list = macdList(dataIndex);
+    return list != null &&
+        list.length >= 3 &&
+        list[0] != null &&
+        list[1] != null &&
+        list[2] != null;
+  }
+
+  void cleanMacd(int dataIndex) => clean(dataIndex);
 }
 
-mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
+mixin MacdDataMixin<T extends MACDIndicator> on DataPaintObject<T> {
   MACDParam get calcParam => indicator.calcParam;
 
   @override
@@ -38,12 +57,12 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
   }
 
   /// 计算EMA，要求传入的`values`是按时间从旧到新排列的.
-  List<BagNum?> _ema(List<BagNum?> values, int period) {
+  List<FlexiNum?> _ema(List<FlexiNum?> values, int period) {
     final len = values.length;
-    final result = List<BagNum?>.filled(len, null);
+    final result = List<FlexiNum?>.filled(len, null);
     if (len < period) return result;
 
-    final multiplier = BagNum.fromNum(2.0 / (period + 1));
+    final multiplier = FlexiNum.fromNum(2.0 / (period + 1));
 
     // 寻找第一个非空值作为计算起点
     int firstValidIndex = -1;
@@ -59,7 +78,7 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
     }
 
     // 第一个EMA值是前`period`个数据的简单移动平均(SMA)
-    BagNum sum = BagNum.zero;
+    FlexiNum sum = FlexiNum.zero;
     for (int i = firstValidIndex; i < firstValidIndex + period; i++) {
       sum += values[i]!;
     }
@@ -70,7 +89,7 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
       final value = values[i];
       final prevEma = result[i - 1];
       if (value != null && prevEma != null) {
-        result[i] = value * multiplier + prevEma * (BagNum.one - multiplier);
+        result[i] = value * multiplier + prevEma * (FlexiNum.one - multiplier);
       } else if (prevEma != null) {
         // 如果当前值为空, 则沿用上一个EMA值.
         result[i] = prevEma;
@@ -87,7 +106,7 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
     final len = list.length;
     if (reset) {
       for (final m in list) {
-        m.cleanMacd();
+        m.cleanMacd(dataIndex);
       }
     }
 
@@ -110,7 +129,7 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
     final emaL = _ema(closeValues, l);
 
     // 2. 计算DIF
-    final difList = List<BagNum?>.filled(len, null);
+    final difList = List<FlexiNum?>.filled(len, null);
     for (int i = 0; i < len; i++) {
       if (emaS[i] != null && emaL[i] != null) {
         difList[i] = emaS[i]! - emaL[i]!;
@@ -121,13 +140,13 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
     final deaList = _ema(difList, m);
 
     // 4. 计算MACD柱 (根据配置决定是否启用柱状图)
-    final macdList = List<BagNum?>.filled(len, null);
+    final macdList = List<FlexiNum?>.filled(len, null);
     if (param.histogramEnabled) {
       for (int i = 0; i < len; i++) {
         final dif = difList[i];
         final dea = deaList[i];
         if (dif != null && dea != null) {
-          macdList[i] = (dif - dea) * BagNum.two;
+          macdList[i] = (dif - dea) * FlexiNum.two;
         }
       }
     }
@@ -149,14 +168,13 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
       final shouldStoreMacd = param.histogramEnabled && macd != null;
       
       if (shouldStoreDif || shouldStoreDea || shouldStoreMacd) {
-        // 始终存储三个值，但可能为null（根据配置）
-        list[i].macdList = [
+        list[i].setList<FlexiNum>(dataIndex, [
           shouldStoreDif ? dif : null,
-          shouldStoreDea ? dea : null, 
+          shouldStoreDea ? dea : null,
           shouldStoreMacd ? macd : null,
-        ];
+        ]);
       } else if (reset) {
-        list[i].macdList = null;
+        list[i].clean(dataIndex);
       }
     }
   }
@@ -173,35 +191,38 @@ mixin MacdDataMixin<T extends MACDIndicator> on PaintObjectBox<T> {
     MinMax? minmax;
     for (int i = start; i < end; i++) {
       final m = klineData.list[i];
-      if (m.macdList != null) {
-        // 📊 根据配置决定计算哪些指标的最值
-        if (param.difLine.enabled && m.dif != null) {
+      if (m.macdList(dataIndex) != null) {
+        final dif = m.macdDif(dataIndex);
+        final dea = m.macdDea(dataIndex);
+        final macd = m.macdVal(dataIndex);
+
+        if (param.difLine.enabled && dif != null) {
           if (minmax == null) {
-            minmax = MinMax(max: m.dif!, min: m.dif!);
+            minmax = MinMax(max: dif, min: dif);
           } else {
-            minmax.updateMinMaxBy(m.dif!);
+            minmax.updateMinMaxBy(dif);
           }
         }
-        
-        if (param.deaLine.enabled && m.dea != null) {
+
+        if (param.deaLine.enabled && dea != null) {
           if (minmax == null) {
-            minmax = MinMax(max: m.dea!, min: m.dea!);
+            minmax = MinMax(max: dea, min: dea);
           } else {
-            minmax.updateMinMaxBy(m.dea!);
+            minmax.updateMinMaxBy(dea);
           }
         }
-        
-        if (param.histogramEnabled && m.macd != null) {
+
+        if (param.histogramEnabled && macd != null) {
           if (minmax == null) {
-            minmax = MinMax(max: m.macd!, min: m.macd!);
+            minmax = MinMax(max: macd, min: macd);
           } else {
-            minmax.updateMinMaxBy(m.macd!);
+            minmax.updateMinMaxBy(macd);
           }
         }
         
         // 📏 如果启用零轴线，确保包含零点在范围内
         if (param.showZeroLine && minmax != null) {
-          minmax.updateMinMaxBy(BagNum.zero);
+          minmax.updateMinMaxBy(FlexiNum.zero);
         }
       }
     }

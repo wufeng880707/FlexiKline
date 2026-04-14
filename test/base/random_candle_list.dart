@@ -32,7 +32,7 @@ Future<List<CandleModel>> genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-  TimeBar timeBar = TimeBar.D1,
+  ITimeBar timeBar = timeBar1D,
   DateTime? dateTime,
   bool isHistory = true,
 }) async {
@@ -67,14 +67,14 @@ Future<List<CandleModel>> genRandomCandleList({
     if (h < l) [h, l] = [l, h];
     v = genVal(v, rangeVol);
     m = CandleModel(
-      ts: dateTime
+      timestamp: dateTime
           .add(Duration(milliseconds: flag * i * timeBar.milliseconds))
           .millisecondsSinceEpoch,
-      h: h.d,
-      o: o.d,
-      c: c.d,
-      l: l.d,
-      v: v.d,
+      high: h.d,
+      open: o.d,
+      close: c.d,
+      low: l.d,
+      volume: v.d,
     );
     if (isHistory) {
       list.add(m);

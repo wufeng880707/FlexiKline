@@ -26,15 +26,15 @@ List<CandleModel> getETHUSDT1DLimit50List() {
       final item = data[i];
       if (item is List) {
         list.add(CandleModel(
-          ts: int.parse(item[0]),
-          o: Decimal.parse(item[1].toString()),
-          h: Decimal.parse(item[2].toString()),
-          l: Decimal.parse(item[3].toString()),
-          c: Decimal.parse(item[4].toString()),
-          v: Decimal.parse(item[5].toString()),
-          vc: Decimal.parse(item[6].toString()),
-          vcq: Decimal.parse(item[7].toString()),
-          confirm: item[8],
+          timestamp: int.parse(item[0]),
+          open: Decimal.parse(item[1].toString()),
+          high: Decimal.parse(item[2].toString()),
+          low: Decimal.parse(item[3].toString()),
+          close: Decimal.parse(item[4].toString()),
+          volume: Decimal.parse(item[5].toString()),
+          turnover: Decimal.parse(item[6].toString()),
+          tradeCount: parseInt(item[7]),
+          confirmed: parseBool(item[8]) ?? item[8] == '1',
         ));
       }
     }
@@ -51,13 +51,13 @@ List<CandleModel> getCandleModelList() {
       final item = data[i];
       if (item is List) {
         list.add(CandleModel(
-          ts: item[0] * 1000,
-          o: Decimal.parse(item[1].toString()),
-          h: Decimal.parse(item[2].toString()),
-          l: Decimal.parse(item[3].toString()),
-          c: Decimal.parse(item[4].toString()),
-          v: Decimal.parse(item[5].toString()),
-          vc: Decimal.parse(item[6].toString()),
+          timestamp: item[0] * 1000,
+          open: Decimal.parse(item[1].toString()),
+          high: Decimal.parse(item[2].toString()),
+          low: Decimal.parse(item[3].toString()),
+          close: Decimal.parse(item[4].toString()),
+          volume: Decimal.parse(item[5].toString()),
+          turnover: Decimal.parse(item[6].toString()),
         ));
       }
     }

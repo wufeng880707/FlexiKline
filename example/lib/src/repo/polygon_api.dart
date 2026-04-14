@@ -70,14 +70,13 @@ List<CandleModel> _dataToCandleList(dynamic data) {
     for (int i = data.length - 1; i >= 0; i--) {
       final json = data[i];
       list.add(CandleModel(
-        ts: json['t'],
-        o: Decimal.parse(json['o'].toString()),
-        h: Decimal.parse(json['h'].toString()),
-        l: Decimal.parse(json['l'].toString()),
-        c: Decimal.parse(json['c'].toString()),
-        v: Decimal.parse(json['n'].toString()),
-        vc: Decimal.parse(json['v'].toString()),
-        vcq: Decimal.parse(json['vw'].toString()),
+        timestamp: json['t'],
+        open: Decimal.parse(json['o'].toString()),
+        high: Decimal.parse(json['h'].toString()),
+        low: Decimal.parse(json['l'].toString()),
+        close: Decimal.parse(json['c'].toString()),
+        volume: Decimal.parse(json['n'].toString()),
+        turnover: Decimal.parse(json['v'].toString()),
       ));
     }
     return list;

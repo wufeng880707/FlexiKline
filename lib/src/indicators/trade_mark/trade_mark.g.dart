@@ -15,8 +15,6 @@ abstract class _$TradeMarkIndicatorCWProxy {
 
   TradeMarkIndicator calcParam(TradeMarkParam calcParam);
 
-  TradeMarkIndicator tradeMarks(List<TradeMarkData> tradeMarks);
-
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TradeMarkIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -28,7 +26,6 @@ abstract class _$TradeMarkIndicatorCWProxy {
     double height,
     EdgeInsets padding,
     TradeMarkParam calcParam,
-    List<TradeMarkData> tradeMarks,
   });
 }
 
@@ -52,10 +49,6 @@ class _$TradeMarkIndicatorCWProxyImpl implements _$TradeMarkIndicatorCWProxy {
       this(calcParam: calcParam);
 
   @override
-  TradeMarkIndicator tradeMarks(List<TradeMarkData> tradeMarks) =>
-      this(tradeMarks: tradeMarks);
-
-  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TradeMarkIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -68,7 +61,6 @@ class _$TradeMarkIndicatorCWProxyImpl implements _$TradeMarkIndicatorCWProxy {
     Object? height = const $CopyWithPlaceholder(),
     Object? padding = const $CopyWithPlaceholder(),
     Object? calcParam = const $CopyWithPlaceholder(),
-    Object? tradeMarks = const $CopyWithPlaceholder(),
   }) {
     return TradeMarkIndicator(
       zIndex: zIndex == const $CopyWithPlaceholder()
@@ -87,10 +79,6 @@ class _$TradeMarkIndicatorCWProxyImpl implements _$TradeMarkIndicatorCWProxy {
           ? _value.calcParam
           // ignore: cast_nullable_to_non_nullable
           : calcParam as TradeMarkParam,
-      tradeMarks: tradeMarks == const $CopyWithPlaceholder()
-          ? _value.tradeMarks
-          // ignore: cast_nullable_to_non_nullable
-          : tradeMarks as List<TradeMarkData>,
     );
   }
 }

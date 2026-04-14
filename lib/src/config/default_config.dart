@@ -91,6 +91,7 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
     required this.gridLine,
     required this.crossColor,
     required this.drawColor,
+    required this.drawTextColor,
     required this.markLineColor,
     required this.lineChartColor,
     required this.themeColor,
@@ -131,6 +132,8 @@ abstract class BaseFlexiKlineTheme implements IFlexiKlineTheme {
   final Color crossColor;
   @override
   final Color drawColor;
+  @override
+  final Color drawTextColor;
   @override
   final Color markLineColor;
   @override
@@ -435,7 +438,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
 
   DrawConfig genDrawConfig([DrawConfig? draw]) {
     return DrawConfig(
-      enable: draw?.enable ?? false,
+      enable: draw?.enable ?? true,
 
       /// 当绘制状态是退出时, 是否允许选择已绘制的Overlay.
       allowSelectWhenExit: draw?.allowSelectWhenExit ?? true,
@@ -491,12 +494,12 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         PointConfig(
           radius: 9 * theme.scale,
           width: 0 * theme.scale,
-          color: const Color(0xFFFFFFFF), // 必须指定
+          color: theme.drawTextColor,
           borderWidth: 1 * theme.scale,
           borderColor: theme.drawColor,
         ),
       ).of(
-        color: const Color(0xFFFFFFFF),
+        color: theme.drawTextColor,
         borderColor: theme.drawColor,
       ),
 
@@ -505,7 +508,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         draw?.ticksText,
         TextAreaConfig(
           style: TextStyle(
-            color: const Color(0xFFFFFFFF), // 必须指定
+            color: theme.drawTextColor,
             fontSize: theme.normalTextSize,
             fontWeight: FontWeight.normal,
             height: defaultTextHeight,
@@ -517,7 +520,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
           ),
         ),
       ).of(
-        textColor: const Color(0xFFFFFFFF),
+        textColor: theme.drawTextColor,
         background: null,
         borderColor: null,
       ),
@@ -548,6 +551,7 @@ mixin FlexiKlineThemeConfigurationMixin implements IConfiguration {
         ),
       ).of(
         sideColor: theme.gridLine,
+        shadowColor: theme.textColor.withValues(alpha: 0.05),
       ),
     );
   }

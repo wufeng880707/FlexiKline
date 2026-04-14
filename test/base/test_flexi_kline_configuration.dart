@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flexi_kline/flexi_kline.dart';
@@ -23,8 +22,11 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   double get scale {
     if (_scale != null) return _scale!;
-    final mediaQuery = MediaQueryData.fromView(window);
-    _scale = math.min(mediaQuery.size.width, mediaQuery.size.height) / 393;
+    final view = PlatformDispatcher.instance.implicitView;
+    final size = view != null
+        ? view.physicalSize / view.devicePixelRatio
+        : const Size(393, 852);
+    _scale = size.shortestSide / 393;
     return _scale!;
   }
 
@@ -32,8 +34,8 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   double get pixel {
     if (_pixel != null) return _pixel!;
-    final mediaQuery = MediaQueryData.fromView(window);
-    _pixel = 1.0 / mediaQuery.devicePixelRatio;
+    final view = PlatformDispatcher.instance.implicitView;
+    _pixel = view != null ? 1.0 / view.devicePixelRatio : 1.0;
     return _pixel!;
   }
 
@@ -77,7 +79,10 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   Color crossColor = const Color(0xFF000000);
 
   @override
-  Color get drawColor => Colors.blueAccent;
+  Color get drawColor => Colors.blue;
+
+  @override
+  Color get drawTextColor => const Color(0xFFFFFFFF);
 
   @override
   Color markLineColor = Colors.blue;
@@ -108,12 +113,6 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
 
   @override
   Color get lineChartColor => const Color(0xFF2196F3);
-
-  @override
-  Color get indraTodayAvgColor => const Color(0xFFFF9800);
-
-  @override
-  Color get indraTodayCloseColor => const Color(0xFF4CAF50);
 }
 
 class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
@@ -121,13 +120,13 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   IFlexiKlineTheme get theme => TestFlexiKlineTheme();
 
   @override
-  Map<IDrawType, DrawObjectBuilder<Overlay, DrawObject<Overlay>>> get drawObjectBuilders {
+  Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders {
     return {};
   }
 
   @override
-  MainPaintObjectIndicator<PaintObjectIndicator> genMainIndicator(
-    MainPaintObjectIndicator<PaintObjectIndicator>? mainIndicator,
+  MainPaintObjectIndicator genMainIndicator(
+    MainPaintObjectIndicator<Indicator>? mainIndicator,
   ) {
     throw UnimplementedError();
   }
@@ -144,10 +143,4 @@ class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   @override
   String get configKey => 'test';
-
-  @override
-  List<ITimeBar> getTimeBarConfigs() {
-    // TODO: implement getTimeBarConfigs
-    throw UnimplementedError();
-  }
 }

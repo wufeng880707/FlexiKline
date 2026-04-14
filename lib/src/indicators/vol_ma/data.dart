@@ -15,29 +15,21 @@
 part of 'vol_ma.dart';
 
 @visibleForTesting
-extension on CandleModel {
-  List<BagNum?>? getVolMaList(int dataIndex, [int? paramLen]) {
-    List<BagNum?>? list = calcuData.getData(dataIndex);
+extension on FlexiCandleModel {
+  List<FlexiNum?>? getVolMaList(int dataIndex, [int? paramLen]) {
+    List<FlexiNum?>? list = getList<FlexiNum>(dataIndex);
     if (list == null && paramLen != null && paramLen > 0) {
-      calcuData.setData(
-        dataIndex,
-        list = List.filled(paramLen, null, growable: false),
-      );
+      list = getOrInitList<FlexiNum>(dataIndex, paramLen);
     }
     return list;
   }
 
-  bool isValidVolMaList(int dataIndex) {
-    return getVolMaList(dataIndex)?.hasValidData ?? false;
-  }
+  bool isValidVolMaList(int dataIndex) => getVolMaList(dataIndex)?.any((e) => e != null) ?? false;
 
-  MinMax? getVolMaListMinmax(int dataIndex) {
-    return MinMax.getMinMaxByList(getVolMaList(dataIndex));
-  }
-
+  MinMax? getVolMaListMinmax(int dataIndex) => MinMax.getMinMaxByList(getVolMaList(dataIndex));
 }
 
-mixin VolmaDataMixin<T extends VolMaIndicator> on PaintObjectBox<T> {
+mixin VolmaDataMixin<T extends VolMaIndicator> on DataPaintObject<T> {
   VolMaParam get calcParam => indicator.calcParam;
 
   @override
@@ -51,7 +43,7 @@ mixin VolmaDataMixin<T extends VolMaIndicator> on PaintObjectBox<T> {
   }
 
   /// 计算 [index] 位置的 [count] 个数据的Ma指标.
-  BagNum? calcuVolMa(
+  FlexiNum? calcuVolMa(
     int index,
     int count,
   ) {
@@ -61,7 +53,7 @@ mixin VolmaDataMixin<T extends VolMaIndicator> on PaintObjectBox<T> {
 
     final m = klineData.list[index];
 
-    BagNum sum = m.vol;
+    FlexiNum sum = m.vol;
     for (int i = index + 1; i < index + count; i++) {
       sum += klineData.list[i].vol;
     }
@@ -85,8 +77,8 @@ mixin VolmaDataMixin<T extends VolMaIndicator> on PaintObjectBox<T> {
     end = math.min(len - count, end - 1);
 
     /// 初始值化[index]位置的MA值
-    CandleModel m = klineData.list[end];
-    BagNum sum = m.vol;
+    var m = klineData.list[end];
+    FlexiNum sum = m.vol;
     for (int i = end + 1; i < end + count; i++) {
       sum += klineData.list[i].vol;
     }
@@ -144,9 +136,8 @@ mixin VolmaDataMixin<T extends VolMaIndicator> on PaintObjectBox<T> {
     }
 
     MinMax? minmax;
-    CandleModel m;
     for (int i = end; i >= start; i--) {
-      m = klineData.list[i];
+      final m = klineData.list[i];
       minmax ??= m.getVolMaListMinmax(dataIndex);
       minmax?.updateMinMax(m.getVolMaListMinmax(dataIndex));
     }
@@ -161,9 +152,9 @@ mixin VolmaDataMixin<T extends VolMaIndicator> on PaintObjectBox<T> {
     end ??= klineData.end;
     if (!klineData.checkStartAndEnd(start, end)) return null;
 
-    CandleModel m = klineData.list[end - 1];
-    BagNum minVol = m.vol;
-    BagNum maxVol = m.vol;
+    var m = klineData.list[end - 1];
+    FlexiNum minVol = m.vol;
+    FlexiNum maxVol = m.vol;
     for (int i = end - 2; i >= start; i--) {
       m = klineData.list[i];
       maxVol = m.vol > maxVol ? m.vol : maxVol;

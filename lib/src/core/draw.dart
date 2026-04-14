@@ -156,6 +156,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
           initOffset ??= mainRect.center;
           object.setPointer(Point.pointer(0, magneticSnap(initOffset)));
         }
+        _drawPointerListener.updateValue(object.pointer);
         _drawState = DrawState.draw(object);
       } else {
         _drawState = const Prepared();
@@ -180,6 +181,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     final newOffset = magneticSnap(data.offset);
     if (newOffset != pointer.offset) {
       object.onUpdateDrawPoint(pointer, newOffset);
+      _drawPointerListener.updateValue(pointer);
       _markRepaintDraw();
     }
   }
@@ -212,11 +214,13 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
           if (nextObj != null) {
             final initOffset = object.lastPoint?.offset ?? data.offset;
             nextObj.setPointer(Point.pointer(0, magneticSnap(initOffset)));
+            _drawPointerListener.updateValue(nextObj.pointer);
             _drawState = DrawState.draw(nextObj);
           } else {
             _drawState = Editing(object);
           }
         } else {
+          _drawPointerListener.updateValue(null);
           _drawState = Editing(object);
         }
       }

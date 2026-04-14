@@ -65,13 +65,3 @@ int calcuInertialPanDuration(double velocity, {required int maxDuration}) {
   final half = dist.sign == 0 ? 0.5 : dist.sign * (1 - dist.abs()) * 0.5;
   return (d1 - half, d2 + half);
 }
-
-/// 确保两数[d1]和[d2]的距离不小于[minDistance]
-(double, double) ensureMinDistance(double d1, double d2, {double minDistance = 1.0}) {
-  final dist = d2 - d1;
-  if (dist >= 1 || dist <= -1) {
-    return (d1, d2);
-  }
-  final half = dist.sign == 0 ? 0.5 : dist.sign * (1 - dist.abs()) * 0.5;
-  return (d1 - half, d2 + half);
-}

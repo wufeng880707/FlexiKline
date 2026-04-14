@@ -21,7 +21,7 @@ part of 'kdj.dart';
 /// 若无前一日K 值与D值，则可分别用50来代替。
 /// J值=3*当日K值-2*当日D值
 @CopyWith()
-class KDJIndicator extends PaintObjectIndicator implements IPrecomputable {
+class KDJIndicator extends DataIndicator implements IPrecomputable {
   KDJIndicator({
     super.zIndex = 0,
     required super.height,
@@ -29,7 +29,7 @@ class KDJIndicator extends PaintObjectIndicator implements IPrecomputable {
     this.calcParam = const KDJParam(),
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const FlexiIndicatorKey('kdj'));
+  }) : super(key: const DataIndicatorKey('kdj'));
 
   /// KDJ 参数（包含所有配置）
   @override
@@ -40,17 +40,14 @@ class KDJIndicator extends PaintObjectIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  PaintObjectBox createPaintObject(IPaintContext context) {
-    return KDJPaintObject(context: context, indicator: this);
+  DataPaintObject<KDJIndicator> createPaintObject() {
+    return KDJPaintObject();
   }
 }
 
-class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
+class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
     with KdjDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
-  KDJPaintObject({
-    required super.context,
-    required super.indicator,
-  });
+  KDJPaintObject();
 
   @override
   MinMax? initState(int start, int end) {
@@ -82,7 +79,7 @@ class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
   @override
-  String formatTicksValue(BagNum value, {required int precision}) {
+  String formatTicksValue(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -102,7 +99,7 @@ class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
 
   /// 在onCross时, 重写[paintYAxisTicksOnCross]中的格式化刻度值
   @override
-  String formatTicksValueOnCross(BagNum value, {required int precision}) {
+  String formatTicksValueOnCross(FlexiNum value, {required int precision}) {
     return formatNumber(
       value.toDecimal(),
       precision: precision,
@@ -143,18 +140,18 @@ class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
       // 收集点位
       for (int i = start; i < end; i++) {
         final m = list[i];
-        if (!m.isValidKdjData) continue;
+        if (!m.isValidKdjData(dataIndex)) continue;
         
-        BagNum? value;
+        FlexiNum? value;
         switch (lineType) {
           case KDJLineType.k:
-            value = m.k;
+            value = m.kdjK(dataIndex);
             break;
           case KDJLineType.d:
-            value = m.d;
+            value = m.kdjD(dataIndex);
             break;
           case KDJLineType.j:
-            value = m.j;
+            value = m.kdjJ(dataIndex);
             break;
         }
         
@@ -194,12 +191,12 @@ class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {
     model ??= offsetToCandle(offset);
-    if (model == null || !model.isValidKdjData) return null;
+    if (model == null || !model.isValidKdjData(dataIndex)) return null;
 
     final children = <TextSpan>[];
     final enabledLines = indicator.calcParam.enabledLines;
@@ -207,23 +204,23 @@ class KDJPaintObject<T extends KDJIndicator> extends PaintObjectBox<T>
     final showPeriod = indicator.calcParam.display.showPeriodInTips;
     
     for (final lineType in enabledLines) {
-      BagNum? value;
+      FlexiNum? value;
       KDJLineConfig lineConfig;
       String label;
       
       switch (lineType) {
         case KDJLineType.k:
-          value = model.k;
+          value = model.kdjK(dataIndex);
           lineConfig = indicator.calcParam.lines.k;
           label = showPeriod ? 'K(${indicator.calcParam.calculation.kPeriod})' : 'K';
           break;
         case KDJLineType.d:
-          value = model.d;
+          value = model.kdjD(dataIndex);
           lineConfig = indicator.calcParam.lines.d;
           label = showPeriod ? 'D(${indicator.calcParam.calculation.dPeriod})' : 'D';
           break;
         case KDJLineType.j:
-          value = model.j;
+          value = model.kdjJ(dataIndex);
           lineConfig = indicator.calcParam.lines.j;
           label = showPeriod ? 'J(${indicator.calcParam.calculation.jPeriod})' : 'J';
           break;

@@ -52,7 +52,8 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
   @override
   void initState() {
     super.initState();
-    final timeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.key == 'H1');
+    configuration = DefaultFlexiKlineConfiguration(ref: ref);
+    final timeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.bar == '1H');
 
     req1 = CandleReq(
       instId: 'SATS-USDT',
@@ -64,7 +65,6 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
       timeBar: timeBar,
       precision: 4,
     );
-    configuration = DefaultFlexiKlineConfiguration(ref: ref);
     controller1 = FlexiKlineController(
       configuration: configuration,
       logger: logger,

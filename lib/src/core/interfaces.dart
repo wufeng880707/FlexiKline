@@ -144,6 +144,12 @@ abstract interface class IPaintContext implements IStorage, ILogger {
   /// 获取指标数量
   int get indicatorCount;
 
+  /// 获取业务指标的外部数据
+  ///
+  /// 由外部通过 [FlexiKlineController.setBusinessData] 注入。
+  /// [BusinessPaintObject] 在绘制时调用此方法获取数据，框架不关心 [T] 的具体类型。
+  T? getBusinessData<T>(IIndicatorKey key);
+
   /// 重绘
   void requestRepaint();
 }

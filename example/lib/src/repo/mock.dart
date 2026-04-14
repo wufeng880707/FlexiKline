@@ -33,68 +33,68 @@ Future<List<CandleModel>> genCustomCandleList({
   DateTime dateTime = DateTime.now();
   return <CandleModel>[
     CandleModel(
-      ts: dateTime.add(const Duration(days: 0)).millisecondsSinceEpoch,
-      h: 320.d,
-      o: 100.d,
-      c: 300.d,
-      l: 10.d,
-      v: 80.d,
+      timestamp: dateTime.add(const Duration(days: 0)).millisecondsSinceEpoch,
+      high: 320.d,
+      open: 100.d,
+      close: 300.d,
+      low: 10.d,
+      volume: 80.d,
     ),
     CandleModel(
-      ts: dateTime.add(const Duration(days: -1)).millisecondsSinceEpoch,
-      h: 220.d,
-      o: 60.d,
-      c: 200.d,
-      l: 50.d,
-      v: 50.d,
+      timestamp: dateTime.add(const Duration(days: -1)).millisecondsSinceEpoch,
+      high: 220.d,
+      open: 60.d,
+      close: 200.d,
+      low: 50.d,
+      volume: 50.d,
     ),
     CandleModel(
-      ts: dateTime.add(const Duration(days: -2)).millisecondsSinceEpoch,
-      h: 320.d,
-      o: 200.d,
-      c: 100.d,
-      l: 50.d,
-      v: 90.d,
+      timestamp: dateTime.add(const Duration(days: -2)).millisecondsSinceEpoch,
+      high: 320.d,
+      open: 200.d,
+      close: 100.d,
+      low: 50.d,
+      volume: 90.d,
     ),
     CandleModel(
-      ts: dateTime.add(const Duration(days: -3)).millisecondsSinceEpoch,
-      h: 140.d,
-      o: 90.d,
-      c: 120.d,
-      l: 80.d,
-      v: 30.d,
+      timestamp: dateTime.add(const Duration(days: -3)).millisecondsSinceEpoch,
+      high: 140.d,
+      open: 90.d,
+      close: 120.d,
+      low: 80.d,
+      volume: 30.d,
     ),
     CandleModel(
-      ts: dateTime.add(const Duration(days: -4)).millisecondsSinceEpoch,
-      h: 200.d,
-      o: 120.d,
-      c: 20.d,
-      l: 20.d,
-      v: 20.d,
+      timestamp: dateTime.add(const Duration(days: -4)).millisecondsSinceEpoch,
+      high: 200.d,
+      open: 120.d,
+      close: 20.d,
+      low: 20.d,
+      volume: 20.d,
     ),
     CandleModel(
-      ts: dateTime.add(const Duration(days: -5)).millisecondsSinceEpoch,
-      h: 130.d,
-      o: 20.d,
-      c: 110.d,
-      l: 10.d,
-      v: 10.d,
+      timestamp: dateTime.add(const Duration(days: -5)).millisecondsSinceEpoch,
+      high: 130.d,
+      open: 20.d,
+      close: 110.d,
+      low: 10.d,
+      volume: 10.d,
     ),
     CandleModel(
-      ts: dateTime.add(const Duration(days: -6)).millisecondsSinceEpoch,
-      h: 160.d,
-      o: 110.d,
-      c: 150.d,
-      l: 100.d,
-      v: 90.d,
+      timestamp: dateTime.add(const Duration(days: -6)).millisecondsSinceEpoch,
+      high: 160.d,
+      open: 110.d,
+      close: 150.d,
+      low: 100.d,
+      volume: 90.d,
     ),
     CandleModel(
-      ts: dateTime.add(const Duration(days: -7)).millisecondsSinceEpoch,
-      h: 160.d,
-      o: 150.d,
-      c: 120.d,
-      l: 100.d,
-      v: 20.d,
+      timestamp: dateTime.add(const Duration(days: -7)).millisecondsSinceEpoch,
+      high: 160.d,
+      open: 150.d,
+      close: 120.d,
+      low: 100.d,
+      volume: 20.d,
     ),
   ];
 }
@@ -197,14 +197,14 @@ Future<List<CandleModel>> _genRandomCandleList({
     if (h < l) [h, l] = [l, h];
     v = genVal(v, rangeVol);
     m = CandleModel(
-      ts: dateTime
+      timestamp: dateTime
           .add(Duration(milliseconds: flag * i * timeBar.milliseconds))
           .millisecondsSinceEpoch,
-      h: h.d,
-      o: o.d,
-      c: c.d,
-      l: l.d,
-      v: v.d,
+      high: h.d,
+      open: o.d,
+      close: c.d,
+      low: l.d,
+      volume: v.d,
     );
     if (isHistory) {
       list.add(m);
@@ -250,13 +250,13 @@ Future<List<CandleModel>> genLocalMinusculeCandleList({
   for (var i = data.length - 1; i >= data.length - count; i--) {
     final item = data[i];
     list.add(CandleModel(
-      ts: item[0] * 1000,
-      o: genMinusculeDecimal(item[1], exponent),
-      h: genMinusculeDecimal(item[2], exponent),
-      l: genMinusculeDecimal(item[3], exponent),
-      c: genMinusculeDecimal(item[4], exponent),
-      v: genMinusculeDecimal(item[5], 2),
-      vc: genMinusculeDecimal(item[6], 2),
+      timestamp: item[0] * 1000,
+      open: genMinusculeDecimal(item[1], exponent),
+      high: genMinusculeDecimal(item[2], exponent),
+      low: genMinusculeDecimal(item[3], exponent),
+      close: genMinusculeDecimal(item[4], exponent),
+      volume: genMinusculeDecimal(item[5], 2),
+      turnover: genMinusculeDecimal(item[6], 2),
     ));
   }
   return list;
@@ -274,13 +274,13 @@ Future<List<CandleModel>> genLocalCandleList({
     final item = data[i];
     if (item is List) {
       list.add(CandleModel(
-        ts: item[0] * 1000,
-        o: Decimal.parse(item[1].toString()),
-        h: Decimal.parse(item[2].toString()),
-        l: Decimal.parse(item[3].toString()),
-        c: Decimal.parse(item[4].toString()),
-        v: Decimal.parse(item[5].toString()),
-        vc: Decimal.parse(item[6].toString()),
+        timestamp: item[0] * 1000,
+        open: Decimal.parse(item[1].toString()),
+        high: Decimal.parse(item[2].toString()),
+        low: Decimal.parse(item[3].toString()),
+        close: Decimal.parse(item[4].toString()),
+        volume: Decimal.parse(item[5].toString()),
+        turnover: Decimal.parse(item[6].toString()),
       ));
     }
   }
@@ -600,15 +600,14 @@ List<CandleModel> genETHUSDT1DLimit100List() {
       final item = data[i];
       if (item is List) {
         list.add(CandleModel(
-          ts: int.parse(item[0]),
-          o: Decimal.parse(item[1].toString()),
-          h: Decimal.parse(item[2].toString()),
-          l: Decimal.parse(item[3].toString()),
-          c: Decimal.parse(item[4].toString()),
-          v: Decimal.parse(item[5].toString()),
-          vc: Decimal.parse(item[6].toString()),
-          vcq: Decimal.parse(item[7].toString()),
-          confirm: item[8],
+          timestamp: int.parse(item[0]),
+          open: Decimal.parse(item[1].toString()),
+          high: Decimal.parse(item[2].toString()),
+          low: Decimal.parse(item[3].toString()),
+          close: Decimal.parse(item[4].toString()),
+          volume: Decimal.parse(item[5].toString()),
+          turnover: Decimal.parse(item[6].toString()),
+          confirmed: item[8] == '1',
         ));
       }
     }
