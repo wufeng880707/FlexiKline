@@ -200,6 +200,72 @@ class KlineStateNotifier extends ChangeNotifier {
     }
   }
 
+  /// K线图样式（蜡烛柱样式）
+  ChartBarStyle get chartBarStyle {
+    try {
+      final candle = controller.getCandleIndicator<CandleIndicator>();
+      if (candle.chartType is FlexiBarChartType) {
+        return (candle.chartType as FlexiBarChartType).style;
+      }
+      return ChartBarStyle.allSolid;
+    } catch (_) {
+      return ChartBarStyle.allSolid;
+    }
+  }
+
+  void setChartBarStyle(ChartBarStyle style) {
+    try {
+      final candle = controller.getCandleIndicator<CandleIndicator>();
+      final updated = candle.copyWith(
+        chartType: FlexiChartType.bar(style),
+      );
+      controller.updateIndicator(updated);
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// K线图类型（柱状图/线图/涨跌图）
+  FlexiChartType get chartType {
+    try {
+      return controller.getCandleIndicator<CandleIndicator>().chartType;
+    } catch (_) {
+      return FlexiChartType.barSolid;
+    }
+  }
+
+  void setChartType(FlexiChartType type) {
+    try {
+      final candle = controller.getCandleIndicator<CandleIndicator>();
+      final updated = candle.copyWith(chartType: type);
+      controller.updateIndicator(updated);
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// 缩放至最小图表类型
+  FlexiLineChartType? get minWidthLineType {
+    try {
+      return controller.getCandleIndicator<CandleIndicator>().minWidthLineType;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void setMinWidthLineType(FlexiLineChartType? type) {
+    try {
+      final candle = controller.getCandleIndicator<CandleIndicator>();
+      final updated = candle.copyWith(minWidthLineType: type);
+      controller.updateIndicator(updated);
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// 看涨颜色
+  Color get longColor => controller.configuration.theme.long;
+
+  /// 看跌颜色
+  Color get shortColor => controller.configuration.theme.short;
+
   /// 缩放位置
   ScalePosition get scalePosition {
     return controller.gestureConfig.scalePosition;
