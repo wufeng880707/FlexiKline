@@ -40,8 +40,8 @@ const EdgeInsets defaultSubIndicatorPadding = EdgeInsets.only(top: 12);
 
 // 默认主图区域Padding
 const EdgeInsets defaultMainIndicatorPadding = EdgeInsets.only(
-  top: 5, // 顶部留白
-  bottom: 5, // 底部留白, 5: 最低价字体高度的一半, 保证最低价文本不会绘制到边线上.
+  top: 20, // 顶部留白
+  bottom: 20, // 底部留白, 5: 最低价字体高度的一半, 保证最低价文本不会绘制到边线上.
 );
 
 // 默认副图指标最大数量

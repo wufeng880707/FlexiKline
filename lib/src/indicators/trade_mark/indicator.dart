@@ -70,7 +70,69 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
 
   @override
   MinMax? initState(int start, int end) {
-    return null;
+    if (!klineData.canPaintChart) return null;
+    if (!indicator.calcParam.show) return null;
+
+    final groupedMarks = getBusinessData<Map<int, CandleTradeMarks>>(
+      tradeMarkIndicatorKey,
+    );
+    if (groupedMarks == null || groupedMarks.isEmpty) return null;
+
+    bool hasVisibleBuy = false;
+    bool hasVisibleSell = false;
+    for (int i = start; i <= end && i < klineData.list.length; i++) {
+      final marks = groupedMarks[klineData.list[i].ts];
+      if (marks == null || marks.isEmpty) continue;
+      if (marks.hasBuy) hasVisibleBuy = true;
+      if (marks.hasSell) hasVisibleSell = true;
+      if (hasVisibleBuy && hasVisibleSell) break;
+    }
+
+    if (!hasVisibleBuy && !hasVisibleSell) return null;
+
+    final candleMinMax = klineData.calculateMinmax(start, end);
+    if (candleMinMax == null) return null;
+
+    final param = indicator.calcParam;
+    final markPixelHeight = _estimateMarkHeight(param);
+
+    final availableHeight = chartRect.height;
+    if (availableHeight <= 0) return null;
+
+    final priceRange = candleMinMax.diffDivisor.toDouble();
+    if (priceRange <= 0) return null;
+
+    // 精确求解：padding_price = markPx * range / (chartH - totalMarkPx)
+    // 避免循环依赖（dyFactor 依赖 MinMax，MinMax 依赖 padding）
+    final totalMarkPx =
+        (hasVisibleBuy ? markPixelHeight : 0.0) +
+        (hasVisibleSell ? markPixelHeight : 0.0);
+    final denominator = availableHeight - totalMarkPx;
+    if (denominator <= 0) return null;
+
+    final pricePerMarkPx = priceRange / denominator;
+
+    return MinMax(
+      min: hasVisibleBuy
+          ? candleMinMax.min -
+              FlexiNum.fromNum(pricePerMarkPx * markPixelHeight)
+          : candleMinMax.min,
+      max: hasVisibleSell
+          ? candleMinMax.max +
+              FlexiNum.fromNum(pricePerMarkPx * markPixelHeight)
+          : candleMinMax.max,
+    );
+  }
+
+  /// 估算单个买卖标记在 Y 方向占用的总像素高度
+  double _estimateMarkHeight(TradeMarkParam param) {
+    if (param.useArrowStyle) {
+      final fontSize = param.buyTextStyle.fontSize ?? 8.0;
+      // spacing + 箭头 + 文字标签（fontSize + padding*2）
+      return param.spacing + param.arrowSize + fontSize + 6.0;
+    } else {
+      return param.spacing + param.markerRadius * 2;
+    }
   }
 
   @override
