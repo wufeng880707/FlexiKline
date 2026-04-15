@@ -89,77 +89,206 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
     final startIndex = klineData.start;
     final endIndex = klineData.end;
     final paint = Paint()..style = PaintingStyle.fill;
+    final param = indicator.calcParam;
 
     for (int i = startIndex; i <= endIndex; i++) {
       final candle = klineData.list[i];
       final marks = groupedMarks[candle.ts];
       if (marks == null || marks.isEmpty) continue;
 
-      final x = indexToDx(i) ?? 0;
+      final rawDx = indexToDx(i);
+      if (rawDx == null) continue;
+      // indexToDx 返回的是蜡烛区域的右边缘，减去半宽得到蜡烛中心线
+      final cx = rawDx - candleWidthHalf;
 
       if (marks.hasBuy) {
-        final y = valueToDy(candle.low) +
-            indicator.calcParam.spacing +
-            indicator.calcParam.markerRadius;
-        _drawTradeMark(canvas, Offset(x, y), marks.buyMark!, paint);
+        final tipY = valueToDy(candle.low) + param.spacing;
+        _drawBuyMark(canvas, cx, tipY, marks.buyMark!, paint);
       }
 
       if (marks.hasSell) {
-        final y = valueToDy(candle.high) -
-            indicator.calcParam.spacing -
-            indicator.calcParam.markerRadius;
-        _drawTradeMark(canvas, Offset(x, y), marks.sellMark!, paint);
+        final tipY = valueToDy(candle.high) - param.spacing;
+        _drawSellMark(canvas, cx, tipY, marks.sellMark!, paint);
       }
     }
   }
 
-  void _drawTradeMark(
+  /// 绘制买入标记：向上的箭头，尖端在 tipY，体在下方
+  ///
+  /// ```
+  ///     ▲       ← tipY (箭头尖端，紧贴蜡烛低点)
+  ///    / \
+  ///   /   \
+  ///  ╔═════╗
+  ///  ║  B  ║   ← 标签体
+  ///  ╚═════╝
+  /// ```
+  void _drawBuyMark(
     Canvas canvas,
-    Offset center,
+    double cx,
+    double tipY,
     TradeMarkData mark,
     Paint paint,
   ) {
     final param = indicator.calcParam;
-    final radius = param.markerRadius;
+    final color = param.buyBgColor;
+
+    if (param.useArrowStyle) {
+      final arrowH = param.arrowSize;
+      final arrowW = param.arrowSize;
+
+      // 箭头三角形（尖端朝上）
+      final arrowPath = Path()
+        ..moveTo(cx, tipY)
+        ..lineTo(cx - arrowW, tipY + arrowH)
+        ..lineTo(cx + arrowW, tipY + arrowH)
+        ..close();
+
+      paint
+        ..color = color
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(arrowPath, paint);
+
+      // 标签紧接箭头底部
+      _drawLabel(canvas, cx, tipY + arrowH, mark, paint, color, below: true);
+    } else {
+      final center = Offset(cx, tipY + param.markerRadius);
+      _drawCircleMark(canvas, center, mark, paint, color);
+    }
+  }
+
+  /// 绘制卖出标记：向下的箭头，尖端在 tipY，体在上方
+  ///
+  /// ```
+  ///  ╔═════╗
+  ///  ║  S  ║   ← 标签体
+  ///  ╚═════╝
+  ///   \   /
+  ///    \ /
+  ///     ▼       ← tipY (箭头尖端，紧贴蜡烛高点)
+  /// ```
+  void _drawSellMark(
+    Canvas canvas,
+    double cx,
+    double tipY,
+    TradeMarkData mark,
+    Paint paint,
+  ) {
+    final param = indicator.calcParam;
+    final color = param.sellBgColor;
+
+    if (param.useArrowStyle) {
+      final arrowH = param.arrowSize;
+      final arrowW = param.arrowSize;
+
+      // 箭头三角形（尖端朝下）
+      final arrowPath = Path()
+        ..moveTo(cx, tipY)
+        ..lineTo(cx - arrowW, tipY - arrowH)
+        ..lineTo(cx + arrowW, tipY - arrowH)
+        ..close();
+
+      paint
+        ..color = color
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(arrowPath, paint);
+
+      // 标签紧接箭头顶部
+      _drawLabel(canvas, cx, tipY - arrowH, mark, paint, color, below: false);
+    } else {
+      final center = Offset(cx, tipY - param.markerRadius);
+      _drawCircleMark(canvas, center, mark, paint, color);
+    }
+  }
+
+  /// 绘制文字标签（矩形带圆角）
+  void _drawLabel(
+    Canvas canvas,
+    double cx,
+    double anchorY,
+    TradeMarkData mark,
+    Paint paint,
+    Color bgColor, {
+    required bool below,
+  }) {
+    final param = indicator.calcParam;
+    final textStyle =
+        mark.type == TradeType.buy ? param.buyTextStyle : param.sellTextStyle;
 
     String text = mark.type == TradeType.buy ? 'B' : 'S';
     if (mark.count > 1 && param.showQuantity) {
       text = '$text${mark.count}';
     }
 
-    final baseTextStyle =
-        mark.type == TradeType.buy ? param.buyTextStyle : param.sellTextStyle;
-    final textStyle = mark.count > 1
-        ? baseTextStyle.copyWith(
-            fontSize: (baseTextStyle.fontSize ?? 12.0) - 1)
-        : baseTextStyle;
-
-    final textPainter = TextPainter(
+    final tp = TextPainter(
       text: TextSpan(text: text, style: textStyle),
       textDirection: TextDirection.ltr,
+    )..layout();
+
+    const padH = 3.0;
+    const padV = 1.5;
+    final labelW = tp.width + padH * 2;
+    final labelH = tp.height + padV * 2;
+
+    final left = cx - labelW / 2;
+    final top = below ? anchorY : anchorY - labelH;
+
+    final rrect = RRect.fromLTRBR(
+      left,
+      top,
+      left + labelW,
+      top + labelH,
+      const Radius.circular(2),
     );
 
-    paint.color =
-        mark.type == TradeType.buy ? param.buyBgColor : param.sellBgColor;
-    paint.style = PaintingStyle.fill;
+    paint
+      ..color = bgColor
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(rrect, paint);
+
+    tp.paint(canvas, Offset(left + padH, top + padV));
+  }
+
+  /// 圆形样式（备用）
+  void _drawCircleMark(
+    Canvas canvas,
+    Offset center,
+    TradeMarkData mark,
+    Paint paint,
+    Color bgColor,
+  ) {
+    final param = indicator.calcParam;
+    final radius = param.markerRadius;
+
+    paint
+      ..color = bgColor
+      ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, paint);
 
-    if (param.borderColor != null) {
-      paint.color = param.borderColor!;
-      paint.style = PaintingStyle.stroke;
-      paint.strokeWidth = param.borderWidth;
+    if (param.borderColor != null && param.borderWidth > 0) {
+      paint
+        ..color = param.borderColor!
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = param.borderWidth;
       canvas.drawCircle(center, radius, paint);
+      paint
+        ..style = PaintingStyle.fill
+        ..strokeWidth = 1;
     }
 
-    textPainter.layout();
-    final textOffset = Offset(
-      center.dx - textPainter.width / 2,
-      center.dy - textPainter.height / 2,
-    );
-    textPainter.paint(canvas, textOffset);
+    final textStyle =
+        mark.type == TradeType.buy ? param.buyTextStyle : param.sellTextStyle;
+    final text = mark.type == TradeType.buy ? 'B' : 'S';
 
-    paint.style = PaintingStyle.fill;
-    paint.strokeWidth = 1;
+    final tp = TextPainter(
+      text: TextSpan(text: text, style: textStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    tp.paint(
+      canvas,
+      Offset(center.dx - tp.width / 2, center.dy - tp.height / 2),
+    );
   }
 
   @override

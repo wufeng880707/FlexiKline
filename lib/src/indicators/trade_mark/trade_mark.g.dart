@@ -95,6 +95,8 @@ abstract class _$TradeMarkParamCWProxy {
 
   TradeMarkParam markerRadius(double markerRadius);
 
+  TradeMarkParam arrowSize(double arrowSize);
+
   TradeMarkParam buyBgColor(Color buyBgColor);
 
   TradeMarkParam sellBgColor(Color sellBgColor);
@@ -111,6 +113,8 @@ abstract class _$TradeMarkParamCWProxy {
 
   TradeMarkParam show(bool show);
 
+  TradeMarkParam useArrowStyle(bool useArrowStyle);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TradeMarkParam(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -120,6 +124,7 @@ abstract class _$TradeMarkParamCWProxy {
   TradeMarkParam call({
     double spacing,
     double markerRadius,
+    double arrowSize,
     Color buyBgColor,
     Color sellBgColor,
     TextStyle buyTextStyle,
@@ -128,6 +133,7 @@ abstract class _$TradeMarkParamCWProxy {
     Color? borderColor,
     bool showQuantity,
     bool show,
+    bool useArrowStyle,
   });
 }
 
@@ -143,6 +149,9 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
   @override
   TradeMarkParam markerRadius(double markerRadius) =>
       this(markerRadius: markerRadius);
+
+  @override
+  TradeMarkParam arrowSize(double arrowSize) => this(arrowSize: arrowSize);
 
   @override
   TradeMarkParam buyBgColor(Color buyBgColor) => this(buyBgColor: buyBgColor);
@@ -175,6 +184,10 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
   TradeMarkParam show(bool show) => this(show: show);
 
   @override
+  TradeMarkParam useArrowStyle(bool useArrowStyle) =>
+      this(useArrowStyle: useArrowStyle);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TradeMarkParam(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -185,6 +198,7 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
   TradeMarkParam call({
     Object? spacing = const $CopyWithPlaceholder(),
     Object? markerRadius = const $CopyWithPlaceholder(),
+    Object? arrowSize = const $CopyWithPlaceholder(),
     Object? buyBgColor = const $CopyWithPlaceholder(),
     Object? sellBgColor = const $CopyWithPlaceholder(),
     Object? buyTextStyle = const $CopyWithPlaceholder(),
@@ -193,6 +207,7 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
     Object? borderColor = const $CopyWithPlaceholder(),
     Object? showQuantity = const $CopyWithPlaceholder(),
     Object? show = const $CopyWithPlaceholder(),
+    Object? useArrowStyle = const $CopyWithPlaceholder(),
   }) {
     return TradeMarkParam(
       spacing: spacing == const $CopyWithPlaceholder()
@@ -203,6 +218,10 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
           ? _value.markerRadius
           // ignore: cast_nullable_to_non_nullable
           : markerRadius as double,
+      arrowSize: arrowSize == const $CopyWithPlaceholder()
+          ? _value.arrowSize
+          // ignore: cast_nullable_to_non_nullable
+          : arrowSize as double,
       buyBgColor: buyBgColor == const $CopyWithPlaceholder()
           ? _value.buyBgColor
           // ignore: cast_nullable_to_non_nullable
@@ -235,6 +254,10 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
           ? _value.show
           // ignore: cast_nullable_to_non_nullable
           : show as bool,
+      useArrowStyle: useArrowStyle == const $CopyWithPlaceholder()
+          ? _value.useArrowStyle
+          // ignore: cast_nullable_to_non_nullable
+          : useArrowStyle as bool,
     );
   }
 }
@@ -251,8 +274,9 @@ extension $TradeMarkParamCopyWith on TradeMarkParam {
 
 TradeMarkParam _$TradeMarkParamFromJson(Map<String, dynamic> json) =>
     TradeMarkParam(
-      spacing: (json['spacing'] as num?)?.toDouble() ?? 4.0,
-      markerRadius: (json['markerRadius'] as num?)?.toDouble() ?? 8.0,
+      spacing: (json['spacing'] as num?)?.toDouble() ?? 2.0,
+      markerRadius: (json['markerRadius'] as num?)?.toDouble() ?? 5.0,
+      arrowSize: (json['arrowSize'] as num?)?.toDouble() ?? 6.0,
       buyBgColor: json['buyBgColor'] == null
           ? const Color(0xff03a66d)
           : const ColorConverter().fromJson(json['buyBgColor'] as String),
@@ -262,28 +286,30 @@ TradeMarkParam _$TradeMarkParamFromJson(Map<String, dynamic> json) =>
       buyTextStyle: json['buyTextStyle'] == null
           ? const TextStyle(
               color: Color(0xFFFFFFFF),
-              fontSize: 12.0,
+              fontSize: 8.0,
               fontWeight: FontWeight.bold)
           : const TextStyleConverter()
               .fromJson(json['buyTextStyle'] as Map<String, dynamic>),
       sellTextStyle: json['sellTextStyle'] == null
           ? const TextStyle(
               color: Color(0xFFFFFFFF),
-              fontSize: 12.0,
+              fontSize: 8.0,
               fontWeight: FontWeight.bold)
           : const TextStyleConverter()
               .fromJson(json['sellTextStyle'] as Map<String, dynamic>),
-      borderWidth: (json['borderWidth'] as num?)?.toDouble() ?? 1.0,
+      borderWidth: (json['borderWidth'] as num?)?.toDouble() ?? 0.0,
       borderColor: _$JsonConverterFromJson<String, Color>(
           json['borderColor'], const ColorConverter().fromJson),
       showQuantity: json['showQuantity'] as bool? ?? false,
       show: json['show'] as bool? ?? true,
+      useArrowStyle: json['useArrowStyle'] as bool? ?? true,
     );
 
 Map<String, dynamic> _$TradeMarkParamToJson(TradeMarkParam instance) =>
     <String, dynamic>{
       'spacing': instance.spacing,
       'markerRadius': instance.markerRadius,
+      'arrowSize': instance.arrowSize,
       'buyBgColor': const ColorConverter().toJson(instance.buyBgColor),
       'sellBgColor': const ColorConverter().toJson(instance.sellBgColor),
       'buyTextStyle': const TextStyleConverter().toJson(instance.buyTextStyle),
@@ -294,6 +320,7 @@ Map<String, dynamic> _$TradeMarkParamToJson(TradeMarkParam instance) =>
           instance.borderColor, const ColorConverter().toJson),
       'showQuantity': instance.showQuantity,
       'show': instance.show,
+      'useArrowStyle': instance.useArrowStyle,
     };
 
 Value? _$JsonConverterFromJson<Json, Value>(
