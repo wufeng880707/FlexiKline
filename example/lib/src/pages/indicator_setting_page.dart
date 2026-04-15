@@ -25,6 +25,8 @@ import 'settings/main_indicators/ema_setting_page.dart';
 import 'settings/main_indicators/ma_setting_page.dart';
 import 'settings/main_indicators/sar_setting_page.dart';
 import 'settings/sub_indicators/boll_setting_page.dart';
+import 'settings/sub_indicators/cci_setting_page.dart';
+import 'settings/sub_indicators/obv_setting_page.dart';
 import 'settings/sub_indicators/kdj_setting_page.dart';
 import 'settings/sub_indicators/macd_setting_page.dart';
 import 'settings/sub_indicators/rsi_setting_page.dart';
@@ -147,6 +149,20 @@ class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
               theme: theme,
               onTap: () => _pushPage(
                 RSISettingPage(controller: widget.controller),
+              ),
+            ),
+            _buildIndicatorTile(
+              title: 'CCI(顺势指标)',
+              theme: theme,
+              onTap: () => _pushPage(
+                CCISettingPage(controller: widget.controller),
+              ),
+            ),
+            _buildIndicatorTile(
+              title: 'OBV(能量潮)',
+              theme: theme,
+              onTap: () => _pushPage(
+                OBVSettingPage(controller: widget.controller),
               ),
             ),
             SizedBox(height: 20.r),

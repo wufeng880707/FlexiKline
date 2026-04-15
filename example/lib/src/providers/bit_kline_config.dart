@@ -653,6 +653,12 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
       defLogger.d('✅ Using ${_cachedSubIndicatorBuilders!.length} default sub indicators (bit theme)');
     }
 
+    // 4. 合并代码默认配置中缓存缺失的指标（确保新增指标始终可用）
+    final defaults = getDefaultSubIndicators();
+    for (final entry in defaults.entries) {
+      _cachedSubIndicatorBuilders!.putIfAbsent(entry.key, () => entry.value);
+    }
+
     // 合并super指标并返回
     final result = Map<IIndicatorKey, IndicatorBuilder>.from(_cachedSubIndicatorBuilders!);
     final superBuilders = super.subIndicatorBuilders;
@@ -1016,6 +1022,32 @@ extension BitFlexiKlineConfigurationParse on BitFlexiKlineConfiguration {
               tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
             );
 
+      case 'cci':
+        return (setting) => CCIIndicator(
+              height: (config['height'] as num?)?.toDouble() ?? 100.r,
+              calcParam: _parseCCIParam(config['config']) ?? const CCIParam(
+                lines: [
+                  CCILineConfig(
+                    id: 'cci14',
+                    enabled: true,
+                    period: 14,
+                    color: Color(0xFF00BCD4),
+                    width: 1.0,
+                  ),
+                ],
+              ),
+              tipsPadding: theme.tipsPadding,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
+            );
+
+      case 'obv':
+        return (setting) => OBVIndicator(
+              height: (config['height'] as num?)?.toDouble() ?? 100.r,
+              calcParam: _parseOBVParam(config['config']) ?? const OBVParam(),
+              tipsPadding: theme.tipsPadding,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
+            );
+
       case 'macd':
         return (setting) => MACDIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 120.r,
@@ -1120,6 +1152,30 @@ extension BitFlexiKlineConfigurationParse on BitFlexiKlineConfiguration {
   KDJParam? _parseKDJParam(dynamic config) {
     if (config is Map<String, dynamic>) {
       return KDJParam.fromJsonConfig(config);
+    }
+    return null;
+  }
+
+  // 解析 CCIParam
+  CCIParam? _parseCCIParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return CCIParam.fromJson(config);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // 解析 OBVParam
+  OBVParam? _parseOBVParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return OBVParam.fromJson(config);
+      } catch (_) {
+        return null;
+      }
     }
     return null;
   }
@@ -1357,7 +1413,25 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
       // KDJ 随机指标 - 副图指标
       const DataIndicatorKey('kdj'): (json) => KDJIndicator(
             height: theme.subIndicatorHeight,
-            calcParam: const KDJParam(), // 使用默认参数
+            calcParam: const KDJParam(),
+            tipsPadding: theme.tipsPadding,
+            tickCount: 5,
+          ),
+
+      // CCI 顺势指标 - 副图指标
+      const DataIndicatorKey('cci'): (json) => CCIIndicator(
+            height: theme.subIndicatorHeight,
+            calcParam: const CCIParam(
+              lines: [
+                CCILineConfig(
+                  id: 'cci14',
+                  enabled: true,
+                  period: 14,
+                  color: Color(0xFF00BCD4),
+                  width: 1.0,
+                ),
+              ],
+            ),
             tipsPadding: theme.tipsPadding,
             tickCount: 5,
           ),
@@ -1398,11 +1472,18 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
             tickCount: 5,
           ),
 
-      // 交易标记 - 主图叠加层
-      tradeMarkIndicatorKey: (json) => TradeMarkIndicator(
-            calcParam: const TradeMarkParam(
-              show: true,
+      // OBV 能量潮指标 - 副图指标
+      const DataIndicatorKey('obv'): (json) => OBVIndicator(
+            height: theme.subIndicatorHeight,
+            calcParam: const OBVParam(
+              obvLine: OBVLineConfig(
+                enabled: true,
+                color: Color(0xFFFF9800),
+                width: 1.0,
+              ),
             ),
+            tipsPadding: theme.tipsPadding,
+            tickCount: 5,
           ),
     };
   }

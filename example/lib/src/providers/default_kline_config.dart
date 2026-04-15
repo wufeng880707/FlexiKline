@@ -217,6 +217,11 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       final cachedIndicators = _loadSubIndicatorsFromCache();
       if (cachedIndicators.isNotEmpty) {
         defLogger.d('Loaded ${cachedIndicators.length} sub indicators from cache');
+        // 合并代码默认配置中缓存缺失的指标（确保新增指标始终可用）
+        final defaults = super.subIndicatorBuilders;
+        for (final entry in defaults.entries) {
+          cachedIndicators.putIfAbsent(entry.key, () => entry.value);
+        }
         return cachedIndicators;
       }
     } catch (err, stack) {
@@ -578,6 +583,32 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
               tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
             );
 
+      case 'cci':
+        return (setting) => CCIIndicator(
+              height: (config['height'] as num?)?.toDouble() ?? 100.r,
+              calcParam: _parseCCIParam(config['config']) ?? const CCIParam(
+                lines: [
+                  CCILineConfig(
+                    id: 'cci14',
+                    enabled: true,
+                    period: 14,
+                    color: Color(0xFF00BCD4),
+                    width: 1.0,
+                  ),
+                ],
+              ),
+              tipsPadding: theme.tipsPadding,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
+            );
+
+      case 'obv':
+        return (setting) => OBVIndicator(
+              height: (config['height'] as num?)?.toDouble() ?? 100.r,
+              calcParam: _parseOBVParam(config['config']) ?? const OBVParam(),
+              tipsPadding: theme.tipsPadding,
+              tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
+            );
+
       case 'macd':
         return (setting) => MACDIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 120.r,
@@ -692,6 +723,30 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   KDJParam? _parseKDJParam(dynamic config) {
     if (config is Map<String, dynamic>) {
       return KDJParam.fromJsonConfig(config);
+    }
+    return null;
+  }
+
+  // 解析 CCIParam
+  CCIParam? _parseCCIParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return CCIParam.fromJson(config);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // 解析 OBVParam
+  OBVParam? _parseOBVParam(dynamic config) {
+    if (config is Map<String, dynamic>) {
+      try {
+        return OBVParam.fromJson(config);
+      } catch (_) {
+        return null;
+      }
     }
     return null;
   }
