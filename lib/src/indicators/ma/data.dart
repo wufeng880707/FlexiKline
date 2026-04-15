@@ -20,6 +20,13 @@ extension on FlexiCandleModel {
     List<FlexiNum?>? list = getList<FlexiNum>(dataIndex);
     if (list == null && paramLen != null && paramLen > 0) {
       list = getOrInitList<FlexiNum>(dataIndex, paramLen);
+    } else if (list != null && paramLen != null && list.length < paramLen) {
+      final newList = List<FlexiNum?>.filled(paramLen, null);
+      for (int i = 0; i < list.length; i++) {
+        newList[i] = list[i];
+      }
+      setList(dataIndex, newList);
+      list = newList;
     }
     return list;
   }
@@ -31,6 +38,8 @@ extension on FlexiCandleModel {
   MinMax? getMaListMinmax(int dataIndex) {
     return MinMax.getMinMaxByList(getMaList(dataIndex));
   }
+
+  void cleanMa(int dataIndex) => clean(dataIndex);
 }
 
 mixin MaDataMixin<T extends MAIndicator> on DataPaintObject<T> {
@@ -103,6 +112,13 @@ mixin MaDataMixin<T extends MAIndicator> on DataPaintObject<T> {
   }) {
     final enabledLines = param.enabledLines;
     if (klineData.isEmpty || enabledLines.isEmpty) return;
+
+    if (reset) {
+      for (final m in klineData.list) {
+        m.cleanMa(dataIndex);
+      }
+    }
+
     final paramLen = enabledLines.length;
     for (int i = 0; i < paramLen; i++) {
       final lineConfig = enabledLines[i];

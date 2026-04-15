@@ -59,7 +59,7 @@ class _LineWidthSelectorState extends ConsumerState<LineWidthSelector> {
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          color: Colors.red,
+          color: theme.cardBg,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(color: theme.dividerLine, width: 0.5),
         ),
@@ -121,8 +121,7 @@ class _LineWidthSelectorState extends ConsumerState<LineWidthSelector> {
 
     // 计算面板尺寸（水平排列）- 精确计算防止溢出
     final int itemCount = widget.availableWidths.length.clamp(1, 7); // 最多显示7个
-    final double panelWidth =
-        (panelPadding * 2 + itemCount * itemWidth + (itemCount - 1) * itemSpacing + 2.0).ceilToDouble(); // 加2px缓冲
+    final double panelWidth = (panelPadding * 2 + itemCount * itemWidth + (itemCount - 1) * itemSpacing + 2.0).ceilToDouble(); // 加2px缓冲
     final double panelHeight = panelPadding * 2 + itemHeight;
     const double margin = 16.0;
 

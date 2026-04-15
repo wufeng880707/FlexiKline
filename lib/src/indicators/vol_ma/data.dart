@@ -20,6 +20,13 @@ extension on FlexiCandleModel {
     List<FlexiNum?>? list = getList<FlexiNum>(dataIndex);
     if (list == null && paramLen != null && paramLen > 0) {
       list = getOrInitList<FlexiNum>(dataIndex, paramLen);
+    } else if (list != null && paramLen != null && list.length < paramLen) {
+      final newList = List<FlexiNum?>.filled(paramLen, null);
+      for (int i = 0; i < list.length; i++) {
+        newList[i] = list[i];
+      }
+      setList(dataIndex, newList);
+      list = newList;
     }
     return list;
   }
@@ -27,6 +34,8 @@ extension on FlexiCandleModel {
   bool isValidVolMaList(int dataIndex) => getVolMaList(dataIndex)?.any((e) => e != null) ?? false;
 
   MinMax? getVolMaListMinmax(int dataIndex) => MinMax.getMinMaxByList(getVolMaList(dataIndex));
+
+  void cleanVolMa(int dataIndex) => clean(dataIndex);
 }
 
 mixin VolmaDataMixin<T extends VolMaIndicator> on DataPaintObject<T> {
@@ -38,7 +47,7 @@ mixin VolmaDataMixin<T extends VolMaIndicator> on DataPaintObject<T> {
       calcParam,
       start: range.start,
       end: range.end,
-      // reset: reset,
+      reset: reset,
     );
   }
 
@@ -96,9 +105,17 @@ mixin VolmaDataMixin<T extends VolMaIndicator> on DataPaintObject<T> {
     VolMaParam param, {
     required int start,
     required int end,
+    bool reset = false,
   }) {
     final enabledLines = param.enabledLines;
     if (klineData.isEmpty || enabledLines.isEmpty) return;
+
+    if (reset) {
+      for (final m in klineData.list) {
+        m.cleanVolMa(dataIndex);
+      }
+    }
+
     final paramLen = enabledLines.length;
     for (int i = 0; i < paramLen; i++) {
       final lineConfig = enabledLines[i];

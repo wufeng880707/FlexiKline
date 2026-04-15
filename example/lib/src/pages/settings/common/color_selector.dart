@@ -57,10 +57,7 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
       child: Container(
         height: widget.height,
         width: widget.width,
-        decoration: BoxDecoration(
-            border: Border.all(color: theme.dividerLine),
-            borderRadius: BorderRadius.circular(4),
-            color: Colors.red),
+        decoration: BoxDecoration(border: Border.all(color: theme.dividerLine), borderRadius: BorderRadius.circular(4), color: theme.cardBg),
         child: Row(
           // mainAxisSize: MainAxisSize.min,
           children: [
@@ -111,8 +108,7 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
     const int itemsPerRow = 5;
 
     // 计算颜色块大小（与_buildColorPanel中的计算保持一致）
-    final double availableWidth =
-        panelWidthBase - panelPadding * 2 - (itemsPerRow - 1) * itemSpacing;
+    final double availableWidth = panelWidthBase - panelPadding * 2 - (itemsPerRow - 1) * itemSpacing;
     final double colorSize = (availableWidth / itemsPerRow) - 0.5; // 减少0.5px确保不会溢出
 
     // 计算总行数
@@ -120,8 +116,7 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
     final int rowCount = (totalColors / itemsPerRow).ceil(); // 计算需要的行数
 
     // 面板高度 = 上下内边距 + 行数*颜色块高度 + (行数-1)*行间距
-    final double panelHeight =
-        (panelPadding * 4 + rowCount * colorSize + (rowCount - 1) * itemSpacing);
+    final double panelHeight = (panelPadding * 4 + rowCount * colorSize + (rowCount - 1) * itemSpacing);
     const double margin = 16.0;
 
     final Size screenSize = MediaQuery.of(context).size;

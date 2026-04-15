@@ -20,8 +20,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../theme/flexi_theme.dart';
 import '../widgets/right_arrow.dart';
 import 'settings/main_indicators/avl_setting_page.dart';
+import 'settings/main_indicators/boll_setting_page.dart';
+import 'settings/main_indicators/ema_setting_page.dart';
 import 'settings/main_indicators/ma_setting_page.dart';
+import 'settings/main_indicators/sar_setting_page.dart';
+import 'settings/sub_indicators/boll_setting_page.dart';
+import 'settings/sub_indicators/kdj_setting_page.dart';
 import 'settings/sub_indicators/macd_setting_page.dart';
+import 'settings/sub_indicators/rsi_setting_page.dart';
+import 'settings/sub_indicators/sar_setting_page.dart';
 import 'settings/sub_indicators/vol_ma_setting_page.dart';
 
 class IndicatorSettingPage extends ConsumerStatefulWidget {
@@ -33,10 +40,17 @@ class IndicatorSettingPage extends ConsumerStatefulWidget {
   final FlexiKlineController controller;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _IndicatorSettingPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _IndicatorSettingPageState();
 }
 
 class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
+  void _pushPage(Widget page) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => page),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
@@ -55,151 +69,112 @@ class _IndicatorSettingPageState extends ConsumerState<IndicatorSettingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsetsDirectional.symmetric(
-                horizontal: 16.r,
-                vertical: 12.r,
-              ),
-              child: Text(
-                '主图指标',
-                style: theme.t2s14w400,
+            _buildSectionHeader('主图指标', theme),
+            _buildIndicatorTile(
+              title: 'MA(移动平均线)',
+              theme: theme,
+              onTap: () => _pushPage(
+                MASettingPage(controller: widget.controller),
               ),
             ),
-            ListTile(
-              onTap: () {},
-              title: Text(
-                'VOL(成交量)',
-                style: theme.t1s16w400,
+            _buildIndicatorTile(
+              title: 'EMA(指数移动平均线)',
+              theme: theme,
+              onTap: () => _pushPage(
+                EMASettingPage(controller: widget.controller),
               ),
-              trailing: const RightArrow(),
             ),
-            ListTile(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const MASettingPage(),
-                  ),
-                );
-              },
-              title: Text(
-                'MA(移动平均线)',
-                style: theme.t1s16w400,
+            _buildIndicatorTile(
+              title: 'BOLL(布林线)',
+              theme: theme,
+              onTap: () => _pushPage(
+                BOLLSettingPage(controller: widget.controller),
               ),
-              trailing: const RightArrow(),
             ),
-            ListTile(
-              onTap: () {},
-              title: Text(
-                'EMA(指数移动平均线)',
-                style: theme.t1s16w400,
+            _buildIndicatorTile(
+              title: 'SAR(抛物线转向指标)',
+              theme: theme,
+              onTap: () => _pushPage(
+                SARSettingPage(controller: widget.controller),
               ),
-              trailing: const RightArrow(),
             ),
-            ListTile(
-              onTap: () {},
-              title: Text(
-                'BOLL(布林线)',
-                style: theme.t1s16w400,
+            _buildIndicatorTile(
+              title: 'AVL(均价线指标)',
+              theme: theme,
+              onTap: () => _pushPage(
+                AVLSettingPage(controller: widget.controller),
               ),
-              trailing: const RightArrow(),
-            ),
-            ListTile(
-              onTap: () {},
-              title: Text(
-                'SAR(抛物线转向指标)',
-                style: theme.t1s16w400,
-              ),
-              trailing: const RightArrow(),
-            ),
-            ListTile(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => AVLSettingPage(controller: widget.controller),
-                  ),
-                );
-              },
-              title: Text(
-                'AVL(均价线指标)',
-                style: theme.t1s16w400,
-              ),
-              trailing: const RightArrow(),
             ),
             Container(height: 0.5.r, color: theme.dividerLine),
-            Padding(
-              padding: EdgeInsetsDirectional.symmetric(
-                horizontal: 16.r,
-                vertical: 12.r,
-              ),
-              child: Text(
-                '副图指标',
-                style: theme.t2s14w400,
+            _buildSectionHeader('副图指标', theme),
+            _buildIndicatorTile(
+              title: 'VOLMA(成交量移动平均线)',
+              theme: theme,
+              onTap: () => _pushPage(
+                VolMASettingPage(controller: widget.controller),
               ),
             ),
-            ListTile(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const VolMASettingPage(),
-                  ),
-                );
-              },
-              title: Text(
-                'VOLMA(成交量移动平均线)',
-                style: theme.t1s16w400,
+            _buildIndicatorTile(
+              title: 'MACD(指数平滑异同移动平均线)',
+              theme: theme,
+              onTap: () => _pushPage(
+                MACDSettingPage(controller: widget.controller),
               ),
-              trailing: const RightArrow(),
             ),
-            ListTile(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const MACDSettingPage(),
-                  ),
-                );
-              },
-              title: Text(
-                'MACD(指数平滑异同移动平均线)',
-                style: theme.t1s16w400,
+            _buildIndicatorTile(
+              title: 'KDJ(随机指标)',
+              theme: theme,
+              onTap: () => _pushPage(
+                KDJSettingPage(controller: widget.controller),
               ),
-              trailing: const RightArrow(),
             ),
-            ListTile(
-              onTap: () {},
-              title: Text(
-                'KDJ(随机指标)',
-                style: theme.t1s16w400,
+            _buildIndicatorTile(
+              title: 'BOLL(布林线)',
+              theme: theme,
+              onTap: () => _pushPage(
+                SubBOLLSettingPage(controller: widget.controller),
               ),
-              trailing: const RightArrow(),
             ),
-            ListTile(
-              onTap: () {},
-              title: Text(
-                'BOLL(布林线)',
-                style: theme.t1s16w400,
+            _buildIndicatorTile(
+              title: 'SAR(抛物线转向指标)',
+              theme: theme,
+              onTap: () => _pushPage(
+                SubSARSettingPage(controller: widget.controller),
               ),
-              trailing: const RightArrow(),
             ),
-            ListTile(
-              onTap: () {},
-              title: Text(
-                'SAR(抛物线转向指标)',
-                style: theme.t1s16w400,
+            _buildIndicatorTile(
+              title: 'RSI(相对强弱指标)',
+              theme: theme,
+              onTap: () => _pushPage(
+                RSISettingPage(controller: widget.controller),
               ),
-              trailing: const RightArrow(),
             ),
-            ListTile(
-              onTap: () {},
-              title: Text(
-                'RSI(相对强弱指标)',
-                style: theme.t1s16w400,
-              ),
-              trailing: const RightArrow(),
-            ),
-            SizedBox(height: 20.r)
+            SizedBox(height: 20.r),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, FKTheme theme) {
+    return Padding(
+      padding: EdgeInsetsDirectional.symmetric(
+        horizontal: 16.r,
+        vertical: 12.r,
+      ),
+      child: Text(title, style: theme.t2s14w400),
+    );
+  }
+
+  Widget _buildIndicatorTile({
+    required String title,
+    required FKTheme theme,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      title: Text(title, style: theme.t1s16w400),
+      trailing: const RightArrow(),
     );
   }
 }

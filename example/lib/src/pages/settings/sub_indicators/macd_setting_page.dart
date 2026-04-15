@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../providers/kline_controller_state_provider.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
@@ -24,59 +25,70 @@ import '../common/kline_style_selector.dart';
 import '../common/style_selector_row.dart';
 
 class MACDSettingPage extends BaseIndicatorSettingPage {
-  const MACDSettingPage({super.key});
+  // 需要传入 controller，不能使用 const 构造。
+  // ignore: prefer_const_constructors_in_immutables
+  MACDSettingPage({
+    super.key,
+    required this.controller,
+  });
+
+  final FlexiKlineController controller;
 
   @override
   ConsumerState<MACDSettingPage> createState() => _MACDSettingPageState();
 }
 
-class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPage> {
-  late MACDParam macdParam;
+class _MACDSettingPageState
+    extends BaseIndicatorSettingPageState<MACDSettingPage> {
+  static const _macdKey = DataIndicatorKey('macd');
 
-  // MACD参数
-  late int shortPeriod; // 短周期
-  late int longPeriod; // 长周期
-  late int signalPeriod; // 移动平均周期
-
-  // DIF线样式
-  late LineStyle difLineStyle;
-  late Color difColor;
-
-  // DEA线样式
-  late LineStyle deaLineStyle;
-  late Color deaColor;
-
-  // MACD柱状图样式
-  late BarStyle macdBarStyle;
-  late Color macdBullishColor; // 多头（增）
-  late Color macdBearishColor; // 空头（减）
+  late MACDParam _currentParam;
+  late bool _enabled;
 
   @override
   void initState() {
     super.initState();
-    _initializeSettings();
+    _loadCurrentSettings();
   }
 
-  void _initializeSettings() {
-    // 初始化MACD参数
-    shortPeriod = 12;
-    longPeriod = 26;
-    signalPeriod = 9;
+  void _loadCurrentSettings() {
+    final klineState = ref.read(klineStateProvider(widget.controller));
+    final controller = klineState.controller;
+    try {
+      _enabled = controller.mainIndicatorKeys.contains(_macdKey) ||
+          controller.subIndicatorKeys.contains(_macdKey);
+      final indicator = controller.getIndicator<MACDIndicator>(_macdKey);
+      if (indicator != null) {
+        _currentParam = indicator.calcParam;
+      } else {
+        _currentParam = const MACDParam(s: 12, l: 26, m: 9);
+      }
+    } catch (e) {
+      debugPrint('获取MACD配置失败: $e');
+      _currentParam = const MACDParam(s: 12, l: 26, m: 9);
+      _enabled = false;
+    }
+  }
 
-    // DIF线样式
-    difLineStyle = LineStyle.solid;
-    difColor = const Color(0xFFFFEB3B); // 黄色
+  static BarStyle _barStyleFromHistogram(HistogramStyle style) =>
+      style == HistogramStyle.hollow ? BarStyle.hollow : BarStyle.filled;
 
-    // DEA线样式
-    deaLineStyle = LineStyle.solid;
-    deaColor = const Color(0xFF9C27B0); // 紫色
+  static HistogramStyle _histogramStyleFromBarStyle(BarStyle style) =>
+      style == BarStyle.hollow ? HistogramStyle.hollow : HistogramStyle.solid;
 
-    // MACD柱状图样式
-    macdBarStyle = BarStyle.hollow;
-    macdBullishColor = const Color(0xFF4CAF50); // 绿色（增）
-    macdBearishColor = const Color(0xFFf44336); // 红色（减）
-
-    macdParam = MACDParam(s: shortPeriod, l: longPeriod, m: signalPeriod);
+  void _applyHistogramStyle(HistogramStyle style) {
+    setState(() {
+      _currentParam = _currentParam.copyWith(
+        bullishIncreasing:
+            _currentParam.bullishIncreasing.copyWith(style: style),
+        bullishDecreasing:
+            _currentParam.bullishDecreasing.copyWith(style: style),
+        bearishIncreasing:
+            _currentParam.bearishIncreasing.copyWith(style: style),
+        bearishDecreasing:
+            _currentParam.bearishDecreasing.copyWith(style: style),
+      );
+    });
   }
 
   @override
@@ -88,153 +100,173 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
   @override
   List<Widget> buildSettingItems(FKTheme theme) {
     return [
-      // 基础参数设置
       buildSectionTitle('基础参数', theme),
-      buildNumberItem(
-        title: '短周期',
-        value: shortPeriod.toDouble(),
-        onChanged: (value) {
-          setState(() {
-            shortPeriod = value.toInt();
-          });
-        },
-        theme: theme,
-        min: 1,
-        max: 60,
-        decimalPlaces: 0,
+      KeyedSubtree(
+        key: ValueKey('macd_s_${_currentParam.s}'),
+        child: buildNumberItem(
+          title: '短周期',
+          value: _currentParam.s.toDouble(),
+          onChanged: (value) {
+            setState(() {
+              _currentParam = _currentParam.copyWith(s: value.toInt());
+            });
+          },
+          theme: theme,
+          min: 1,
+          max: 60,
+          decimalPlaces: 0,
+        ),
       ),
-
-      buildNumberItem(
-        title: '长周期',
-        value: longPeriod.toDouble(),
-        onChanged: (value) {
-          setState(() {
-            longPeriod = value.toInt();
-          });
-        },
-        theme: theme,
-        min: 1,
-        max: 100,
-        decimalPlaces: 0,
+      KeyedSubtree(
+        key: ValueKey('macd_l_${_currentParam.l}'),
+        child: buildNumberItem(
+          title: '长周期',
+          value: _currentParam.l.toDouble(),
+          onChanged: (value) {
+            setState(() {
+              _currentParam = _currentParam.copyWith(l: value.toInt());
+            });
+          },
+          theme: theme,
+          min: 1,
+          max: 100,
+          decimalPlaces: 0,
+        ),
       ),
-
-      buildNumberItem(
-        title: '移动平均周期',
-        value: signalPeriod.toDouble(),
-        onChanged: (value) {
-          setState(() {
-            signalPeriod = value.toInt();
-          });
-        },
-        theme: theme,
-        min: 1,
-        max: 50,
-        decimalPlaces: 0,
+      KeyedSubtree(
+        key: ValueKey('macd_m_${_currentParam.m}'),
+        child: buildNumberItem(
+          title: '移动平均周期',
+          value: _currentParam.m.toDouble(),
+          onChanged: (value) {
+            setState(() {
+              _currentParam = _currentParam.copyWith(m: value.toInt());
+            });
+          },
+          theme: theme,
+          min: 1,
+          max: 50,
+          decimalPlaces: 0,
+        ),
       ),
-
       SizedBox(height: 16.r),
-
-      // 指标线设置
       buildSectionTitle('指标线', theme),
-
-      // DIF线设置
       _buildIndicatorLineRow(
         title: 'DIF',
-        enabled: true,
-        lineStyle: difLineStyle,
-        color: difColor,
-        onLineStyleChanged: (style) {
+        lineConfig: _currentParam.difLine,
+        onEnabledChanged: (enabled) {
           setState(() {
-            difLineStyle = style;
+            _currentParam = _currentParam.copyWith(
+              difLine: _currentParam.difLine.copyWith(enabled: enabled),
+            );
+          });
+        },
+        onLineWidthChanged: (width) {
+          setState(() {
+            _currentParam = _currentParam.copyWith(
+              difLine: _currentParam.difLine.copyWith(width: width),
+            );
           });
         },
         onColorChanged: (color) {
           setState(() {
-            difColor = color;
+            _currentParam = _currentParam.copyWith(
+              difLine: _currentParam.difLine.copyWith(color: color),
+            );
           });
         },
         theme: theme,
       ),
-
       SizedBox(height: 8.r),
-
-      // DEA线设置
       _buildIndicatorLineRow(
         title: 'DEA',
-        enabled: true,
-        lineStyle: deaLineStyle,
-        color: deaColor,
-        onLineStyleChanged: (style) {
+        lineConfig: _currentParam.deaLine,
+        onEnabledChanged: (enabled) {
           setState(() {
-            deaLineStyle = style;
+            _currentParam = _currentParam.copyWith(
+              deaLine: _currentParam.deaLine.copyWith(enabled: enabled),
+            );
+          });
+        },
+        onLineWidthChanged: (width) {
+          setState(() {
+            _currentParam = _currentParam.copyWith(
+              deaLine: _currentParam.deaLine.copyWith(width: width),
+            );
           });
         },
         onColorChanged: (color) {
           setState(() {
-            deaColor = color;
+            _currentParam = _currentParam.copyWith(
+              deaLine: _currentParam.deaLine.copyWith(color: color),
+            );
           });
         },
         theme: theme,
       ),
-
       SizedBox(height: 16.r),
-
-      // MACD柱状图设置
       buildSectionTitle('MACD柱状图', theme),
-
       _buildMACDBarRow(
         title: 'MACD',
-        barStyle: macdBarStyle,
-        onBarStyleChanged: (style) {
+        histogramEnabled: _currentParam.histogramEnabled,
+        barStyle: _barStyleFromHistogram(_currentParam.bullishIncreasing.style),
+        onHistogramEnabledChanged: (enabled) {
           setState(() {
-            macdBarStyle = style;
+            _currentParam =
+                _currentParam.copyWith(histogramEnabled: enabled);
           });
+        },
+        onBarStyleChanged: (style) {
+          _applyHistogramStyle(_histogramStyleFromBarStyle(style));
         },
         theme: theme,
       ),
-
       SizedBox(height: 8.r),
-
-      // 多头/空头颜色设置
       _buildBarColorRow(
         title: '多头（增）',
-        color: macdBullishColor,
+        color: _currentParam.bullishIncreasing.color,
         onColorChanged: (color) {
           setState(() {
-            macdBullishColor = color;
+            _currentParam = _currentParam.copyWith(
+              bullishIncreasing:
+                  _currentParam.bullishIncreasing.copyWith(color: color),
+              bullishDecreasing:
+                  _currentParam.bullishDecreasing.copyWith(color: color),
+            );
           });
         },
         theme: theme,
       ),
-
       SizedBox(height: 8.r),
-
       _buildBarColorRow(
         title: '空头（减）',
-        color: macdBearishColor,
+        color: _currentParam.bearishIncreasing.color,
         onColorChanged: (color) {
           setState(() {
-            macdBearishColor = color;
+            _currentParam = _currentParam.copyWith(
+              bearishIncreasing:
+                  _currentParam.bearishIncreasing.copyWith(color: color),
+              bearishDecreasing:
+                  _currentParam.bearishDecreasing.copyWith(color: color),
+            );
           });
         },
         theme: theme,
       ),
-
       SizedBox(height: 16.r),
     ];
   }
 
-  /// 构建指标线行
   Widget _buildIndicatorLineRow({
     required String title,
-    required bool enabled,
-    required LineStyle lineStyle,
-    required Color color,
-    required ValueChanged<LineStyle> onLineStyleChanged,
+    required MACDLineConfig lineConfig,
+    required ValueChanged<bool> onEnabledChanged,
+    required ValueChanged<double> onLineWidthChanged,
     required ValueChanged<Color> onColorChanged,
     required FKTheme theme,
   }) {
     return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.r, vertical: 2.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: theme.cardBg,
@@ -243,15 +275,17 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
       ),
       child: Row(
         children: [
-          // 启用开关
-          Icon(
-            enabled ? Icons.check_box : Icons.check_box_outline_blank,
-            color: enabled ? theme.long : theme.t2,
-            size: 20.r,
+          GestureDetector(
+            onTap: () => onEnabledChanged(!lineConfig.enabled),
+            child: Icon(
+              lineConfig.enabled
+                  ? Icons.check_box
+                  : Icons.check_box_outline_blank,
+              color: lineConfig.enabled ? theme.long : theme.t2,
+              size: 20.r,
+            ),
           ),
           SizedBox(width: 8.r),
-
-          // 标题
           Text(
             title,
             style: TextStyle(
@@ -260,31 +294,29 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
               fontWeight: FontWeight.w500,
             ),
           ),
-
           const Spacer(),
-
-          // 样式选择器
           StyleSelectorRow(
-            lineStyle: lineStyle,
-            onLineStyleChanged: onLineStyleChanged,
-            color: color,
+            showLineStyle: false,
+            color: lineConfig.color,
             onColorChanged: onColorChanged,
-            showLineStyle: true,
-            showBarStyle: false,
+            lineWidth: lineConfig.width,
+            onLineWidthChanged: onLineWidthChanged,
           ),
         ],
       ),
     );
   }
 
-  /// 构建MACD柱状图行
   Widget _buildMACDBarRow({
     required String title,
+    required bool histogramEnabled,
     required BarStyle barStyle,
+    required ValueChanged<bool> onHistogramEnabledChanged,
     required ValueChanged<BarStyle> onBarStyleChanged,
     required FKTheme theme,
   }) {
     return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.r, vertical: 2.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: theme.cardBg,
@@ -293,15 +325,17 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
       ),
       child: Row(
         children: [
-          // 启用开关（MACD柱状图总是启用）
-          Icon(
-            Icons.check_box,
-            color: theme.long,
-            size: 20.r,
+          GestureDetector(
+            onTap: () => onHistogramEnabledChanged(!histogramEnabled),
+            child: Icon(
+              histogramEnabled
+                  ? Icons.check_box
+                  : Icons.check_box_outline_blank,
+              color: histogramEnabled ? theme.long : theme.t2,
+              size: 20.r,
+            ),
           ),
           SizedBox(width: 8.r),
-
-          // 标题
           Text(
             title,
             style: TextStyle(
@@ -310,10 +344,7 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
               fontWeight: FontWeight.w500,
             ),
           ),
-
           const Spacer(),
-
-          // 样式选择器
           Text(
             '样式',
             style: TextStyle(
@@ -322,7 +353,6 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
             ),
           ),
           SizedBox(width: 8.r),
-
           BarStyleSelector(
             value: barStyle,
             onChanged: onBarStyleChanged,
@@ -334,7 +364,6 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
     );
   }
 
-  /// 构建柱状图颜色行
   Widget _buildBarColorRow({
     required String title,
     required Color color,
@@ -342,6 +371,7 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
     required FKTheme theme,
   }) {
     return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.r, vertical: 2.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: theme.cardBg,
@@ -350,9 +380,7 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
       ),
       child: Row(
         children: [
-          SizedBox(width: 28.r), // 对齐空间
-
-          // 标题
+          SizedBox(width: 28.r),
           Text(
             title,
             style: TextStyle(
@@ -361,10 +389,7 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
               fontWeight: FontWeight.w400,
             ),
           ),
-
           const Spacer(),
-
-          // 颜色选择器
           Text(
             '颜色',
             style: TextStyle(
@@ -373,7 +398,6 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
             ),
           ),
           SizedBox(width: 8.r),
-
           ColorSelector(
             value: color,
             onChanged: onColorChanged,
@@ -387,23 +411,34 @@ class _MACDSettingPageState extends BaseIndicatorSettingPageState<MACDSettingPag
 
   @override
   Future<void> saveSettings() async {
-    // 更新macdParam
-    macdParam = MACDParam(s: shortPeriod, l: longPeriod, m: signalPeriod);
-
-    // TODO: 保存到配置中，包括样式信息
-    debugPrint('保存MACD设置:');
-    debugPrint('  短周期: $shortPeriod, 长周期: $longPeriod, 移动平均周期: $signalPeriod');
-    debugPrint('  DIF样式: $difLineStyle, 颜色: #${difColor.value.toRadixString(16).padLeft(8, '0')}');
-    debugPrint('  DEA样式: $deaLineStyle, 颜色: #${deaColor.value.toRadixString(16).padLeft(8, '0')}');
-    debugPrint('  MACD柱状图样式: $macdBarStyle');
-    debugPrint('  多头颜色: #${macdBullishColor.value.toRadixString(16).padLeft(8, '0')}');
-    debugPrint('  空头颜色: #${macdBearishColor.value.toRadixString(16).padLeft(8, '0')}');
+    try {
+      final klineState = ref.read(klineStateProvider(widget.controller));
+      final controller = klineState.controller;
+      if (_enabled) {
+        final oldIndicator = controller.getIndicator<MACDIndicator>(_macdKey);
+        if (oldIndicator != null) {
+          final newIndicator = MACDIndicator(
+            height: oldIndicator.height,
+            padding: oldIndicator.padding,
+            calcParam: _currentParam,
+            difTips: oldIndicator.difTips,
+            deaTips: oldIndicator.deaTips,
+            macdTips: oldIndicator.macdTips,
+            tipsPadding: oldIndicator.tipsPadding,
+            tickCount: oldIndicator.tickCount,
+          );
+          controller.updateIndicator(newIndicator);
+        }
+      }
+    } catch (e) {
+      debugPrint('保存MACD设置失败: $e');
+    }
   }
 
   @override
   Future<void> resetToDefault() async {
     setState(() {
-      _initializeSettings();
+      _currentParam = const MACDParam(s: 12, l: 26, m: 9);
     });
   }
 }

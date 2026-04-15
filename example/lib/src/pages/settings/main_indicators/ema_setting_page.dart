@@ -23,12 +23,9 @@ import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
 import '../common/line_width_selector.dart';
-import '../common/style_selector_row.dart';
 
-class RSISettingPage extends BaseIndicatorSettingPage {
-  // FlexiKlineController 非编译期常量，不能使用 const 构造。
-  // ignore: prefer_const_constructors_in_immutables
-  RSISettingPage({
+class EMASettingPage extends BaseIndicatorSettingPage {
+  const EMASettingPage({
     super.key,
     required this.controller,
   });
@@ -36,39 +33,51 @@ class RSISettingPage extends BaseIndicatorSettingPage {
   final FlexiKlineController controller;
 
   @override
-  ConsumerState<RSISettingPage> createState() => _RSISettingPageState();
+  ConsumerState<EMASettingPage> createState() => _EMASettingPageState();
 }
 
-class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage> {
-  static const _rsiKey = DataIndicatorKey('rsi');
+class _EMASettingPageState
+    extends BaseIndicatorSettingPageState<EMASettingPage> {
+  static const _emaKey = DataIndicatorKey('ema');
 
-  static const _defaultParam = RsiParam(
+  static const _defaultColors = [
+    Color(0xFF2196F3),
+    Color(0xFFFF9800),
+    Color(0xFF9C27B0),
+    Color(0xFF4CAF50),
+    Color(0xFFf44336),
+    Color(0xFF00BCD4),
+    Color(0xFF795548),
+    Color(0xFF607D8B),
+  ];
+
+  static const _defaultParam = EmaParam(
     lines: [
-      RSILineConfig(
-        id: 'rsi_6',
+      EMALineConfig(
+        id: 'ema5',
         enabled: true,
-        period: 6,
+        period: 5,
         color: Color(0xFF2196F3),
-        width: 1.5,
+        width: 1.0,
       ),
-      RSILineConfig(
-        id: 'rsi_12',
+      EMALineConfig(
+        id: 'ema10',
         enabled: true,
-        period: 12,
+        period: 10,
         color: Color(0xFFFF9800),
-        width: 1.5,
+        width: 1.0,
       ),
-      RSILineConfig(
-        id: 'rsi_24',
-        enabled: false,
-        period: 24,
+      EMALineConfig(
+        id: 'ema20',
+        enabled: true,
+        period: 20,
         color: Color(0xFF9C27B0),
-        width: 1.5,
+        width: 1.0,
       ),
     ],
   );
 
-  late RsiParam _currentParam;
+  late EmaParam _currentParam;
   late bool _enabled;
   final List<TextEditingController> _periodControllers = [];
 
@@ -105,55 +114,43 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
   void _loadCurrentSettings() {
     final klineState = ref.read(klineStateProvider(widget.controller));
     final controller = klineState.controller;
+
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_rsiKey) ||
-          controller.subIndicatorKeys.contains(_rsiKey);
-      final indicator = controller.getIndicator<RSIIndicator>(_rsiKey);
+      _enabled = controller.mainIndicatorKeys.contains(_emaKey) ||
+          controller.subIndicatorKeys.contains(_emaKey);
+
+      final indicator = controller.getIndicator<EMAIndicator>(_emaKey);
       if (indicator != null && indicator.calcParam.lines.isNotEmpty) {
         _currentParam = indicator.calcParam;
       } else {
         _currentParam = _defaultParam;
       }
     } catch (e) {
+      debugPrint('获取EMA配置失败: $e');
       _currentParam = _defaultParam;
       _enabled = false;
     }
     _syncPeriodControllers();
   }
 
-  LineStyle _referenceLineStyle(RSIReferenceConfig r) =>
-      r.dashWidth > 0 ? LineStyle.dashed : LineStyle.solid;
-
-  void _setReferenceLineStyle(LineStyle style) {
-    setState(() {
-      _currentParam = _currentParam.copyWith(
-        reference: _currentParam.reference.copyWith(
-          dashWidth: style == LineStyle.solid ? 0 : 2.0,
-        ),
-      );
-    });
-  }
+  @override
+  String get indicatorName => 'EMA';
 
   @override
-  String get indicatorName => 'RSI';
-
-  @override
-  String get indicatorTitle => 'RSI相对强弱指标';
+  String get indicatorTitle => 'EMA指数移动平均线';
 
   @override
   List<Widget> buildSettingItems(FKTheme theme) {
     final lines = _currentParam.lines;
-    final refCfg = _currentParam.reference;
-
     return [
-      buildSectionTitle('RSI线条设置', theme),
+      buildSectionTitle('指标线设置', theme),
 
       _buildLineTableHeader(theme),
 
       ...lines.asMap().entries.map((entry) {
         final index = entry.key;
         final line = entry.value;
-        return _buildRSILineRow(index, line, theme);
+        return _buildEMALineRow(index, line, theme);
       }),
 
       SizedBox(height: 8.r),
@@ -163,7 +160,7 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
         child: ElevatedButton.icon(
           onPressed: _addNewLine,
           icon: const Icon(Icons.add),
-          label: const Text('添加新的RSI线'),
+          label: const Text('添加新的EMA线'),
           style: ElevatedButton.styleFrom(
             backgroundColor: theme.long.withValues(alpha: 0.1),
             foregroundColor: theme.long,
@@ -172,57 +169,6 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
           ),
         ),
       ),
-
-      SizedBox(height: 16.r),
-
-      buildSectionTitle('参考线设置', theme),
-      buildSwitchItem(
-        title: '显示超买超卖线',
-        subtitle: '显示超买与超卖的参考线',
-        value: refCfg.enabled,
-        onChanged: (value) {
-          setState(() {
-            _currentParam = _currentParam.copyWith(
-              reference: refCfg.copyWith(enabled: value),
-            );
-          });
-        },
-        theme: theme,
-      ),
-
-      if (refCfg.enabled) ...[
-        buildNumberItem(
-          title: '超买线位置',
-          value: refCfg.overbought,
-          onChanged: (value) {
-            setState(() {
-              _currentParam = _currentParam.copyWith(
-                reference: refCfg.copyWith(overbought: value),
-              );
-            });
-          },
-          theme: theme,
-          min: 60,
-          max: 90,
-          decimalPlaces: 0,
-        ),
-        buildNumberItem(
-          title: '超卖线位置',
-          value: refCfg.oversold,
-          onChanged: (value) {
-            setState(() {
-              _currentParam = _currentParam.copyWith(
-                reference: refCfg.copyWith(oversold: value),
-              );
-            });
-          },
-          theme: theme,
-          min: 10,
-          max: 40,
-          decimalPlaces: 0,
-        ),
-        _buildRefLineRow(theme),
-      ],
 
       SizedBox(height: 16.r),
     ];
@@ -255,7 +201,7 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
     );
   }
 
-  Widget _buildRSILineRow(int index, RSILineConfig line, FKTheme theme) {
+  Widget _buildEMALineRow(int index, EMALineConfig line, FKTheme theme) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.r, vertical: 2.r),
       padding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 8.r),
@@ -284,7 +230,7 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
                 SizedBox(width: 4.r),
                 Flexible(
                   child: Text(
-                    'RSI${index + 1}',
+                    'EMA${index + 1}',
                     style: TextStyle(
                       color: line.color,
                       fontSize: 14.sp,
@@ -296,6 +242,7 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
               ],
             ),
           ),
+
           Expanded(
             flex: 2,
             child: Center(
@@ -335,16 +282,14 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
                   onChanged: (text) {
                     final val = int.tryParse(text);
                     if (val != null && val > 0) {
-                      _updateLineQuietly(
-                        index,
-                        line.copyWith(period: val),
-                      );
+                      _updateLineQuietly(index, line.copyWith(period: val));
                     }
                   },
                 ),
               ),
             ),
           ),
+
           Expanded(
             flex: 2,
             child: Center(
@@ -359,6 +304,7 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
               ),
             ),
           ),
+
           Expanded(
             flex: 2,
             child: Center(
@@ -372,6 +318,7 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
               ),
             ),
           ),
+
           SizedBox(
             width: 24.r,
             child: _currentParam.lines.length > 1
@@ -390,91 +337,22 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
     );
   }
 
-  Widget _buildRefLineRow(FKTheme theme) {
-    final refCfg = _currentParam.reference;
-    return Container(
-      padding: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: theme.cardBg,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: theme.dividerLine),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '参考线样式',
-            style: TextStyle(
-              color: theme.t1,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 12.r),
-          Wrap(
-            spacing: 8.r,
-            runSpacing: 8.r,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              StyleSelectorRow(
-                showLineStyle: false,
-                lineWidth: refCfg.lineWidth,
-                onLineWidthChanged: (width) {
-                  setState(() {
-                    _currentParam = _currentParam.copyWith(
-                      reference: refCfg.copyWith(lineWidth: width),
-                    );
-                  });
-                },
-                color: refCfg.color,
-                onColorChanged: (color) {
-                  setState(() {
-                    _currentParam = _currentParam.copyWith(
-                      reference: refCfg.copyWith(color: color),
-                    );
-                  });
-                },
-              ),
-              SegmentedButton<LineStyle>(
-                segments: const [
-                  ButtonSegment(
-                    value: LineStyle.solid,
-                    label: Text('实线'),
-                  ),
-                  ButtonSegment(
-                    value: LineStyle.dashed,
-                    label: Text('虚线'),
-                  ),
-                ],
-                selected: {_referenceLineStyle(refCfg)},
-                onSelectionChanged: (selection) {
-                  if (selection.isEmpty) return;
-                  _setReferenceLineStyle(selection.first);
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   void _toggleLine(int index) {
-    final lines = List<RSILineConfig>.from(_currentParam.lines);
+    final lines = List<EMALineConfig>.from(_currentParam.lines);
     lines[index] = lines[index].copyWith(enabled: !lines[index].enabled);
     setState(() {
       _currentParam = _currentParam.copyWith(lines: lines);
     });
   }
 
-  void _updateLineQuietly(int index, RSILineConfig newLine) {
-    final lines = List<RSILineConfig>.from(_currentParam.lines);
+  void _updateLineQuietly(int index, EMALineConfig newLine) {
+    final lines = List<EMALineConfig>.from(_currentParam.lines);
     lines[index] = newLine;
     _currentParam = _currentParam.copyWith(lines: lines);
   }
 
-  void _updateLine(int index, RSILineConfig newLine) {
-    final lines = List<RSILineConfig>.from(_currentParam.lines);
+  void _updateLine(int index, EMALineConfig newLine) {
+    final lines = List<EMALineConfig>.from(_currentParam.lines);
     lines[index] = newLine;
     setState(() {
       _currentParam = _currentParam.copyWith(lines: lines);
@@ -482,7 +360,7 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
   }
 
   void _removeLine(int index) {
-    final lines = List<RSILineConfig>.from(_currentParam.lines);
+    final lines = List<EMALineConfig>.from(_currentParam.lines);
     lines.removeAt(index);
     setState(() {
       _currentParam = _currentParam.copyWith(lines: lines);
@@ -491,21 +369,20 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
   }
 
   void _addNewLine() {
-    final lines = List<RSILineConfig>.from(_currentParam.lines);
+    final lines = List<EMALineConfig>.from(_currentParam.lines);
     final maxPeriod = lines.isEmpty
         ? 0
         : lines.map((e) => e.period).reduce((a, b) => a > b ? a : b);
-    final newPeriod = maxPeriod + 6;
+    final newPeriod = maxPeriod + 10;
+    final nextColor = _defaultColors[lines.length % _defaultColors.length];
 
-    lines.add(
-      RSILineConfig(
-        id: 'rsi_$newPeriod',
-        enabled: true,
-        period: newPeriod,
-        color: _getNextColor(lines.length),
-        width: 1.5,
-      ),
-    );
+    lines.add(EMALineConfig(
+      id: 'ema_$newPeriod',
+      enabled: true,
+      period: newPeriod,
+      color: nextColor,
+      width: 1.0,
+    ));
 
     setState(() {
       _currentParam = _currentParam.copyWith(lines: lines);
@@ -513,40 +390,27 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
     });
   }
 
-  Color _getNextColor(int lineCount) {
-    const colors = [
-      Color(0xFF2196F3),
-      Color(0xFFFF9800),
-      Color(0xFF9C27B0),
-      Color(0xFF4CAF50),
-      Color(0xFFf44336),
-      Color(0xFF00BCD4),
-      Color(0xFF795548),
-      Color(0xFF607D8B),
-    ];
-    return colors[lineCount % colors.length];
-  }
-
   @override
   Future<void> saveSettings() async {
     try {
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
+
       if (_enabled) {
-        final oldIndicator = controller.getIndicator<RSIIndicator>(_rsiKey);
+        final oldIndicator = controller.getIndicator<EMAIndicator>(_emaKey);
         if (oldIndicator != null) {
-          final newIndicator = RSIIndicator(
+          final newIndicator = EMAIndicator(
             height: oldIndicator.height,
             padding: oldIndicator.padding,
             calcParam: _currentParam,
             tipsPadding: oldIndicator.tipsPadding,
-            tickCount: oldIndicator.tickCount,
           );
           controller.updateIndicator(newIndicator);
+          debugPrint('EMA指标参数已更新');
         }
       }
     } catch (e) {
-      debugPrint('保存RSI设置失败: $e');
+      debugPrint('保存EMA设置失败: $e');
     }
   }
 

@@ -23,8 +23,8 @@ import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
 import '../common/line_width_selector.dart';
 
-class BOLLSettingPage extends BaseIndicatorSettingPage {
-  const BOLLSettingPage({
+class SubBOLLSettingPage extends BaseIndicatorSettingPage {
+  const SubBOLLSettingPage({
     super.key,
     required this.controller,
   });
@@ -32,11 +32,11 @@ class BOLLSettingPage extends BaseIndicatorSettingPage {
   final FlexiKlineController controller;
 
   @override
-  ConsumerState<BOLLSettingPage> createState() => _BOLLSettingPageState();
+  ConsumerState<SubBOLLSettingPage> createState() => _SubBOLLSettingPageState();
 }
 
-class _BOLLSettingPageState
-    extends BaseIndicatorSettingPageState<BOLLSettingPage> {
+class _SubBOLLSettingPageState
+    extends BaseIndicatorSettingPageState<SubBOLLSettingPage> {
   static const _bollKey = DataIndicatorKey('boll');
 
   late BOLLParam _currentParam;
@@ -119,6 +119,8 @@ class _BOLLSettingPageState
       SizedBox(height: 16.r),
 
       buildSectionTitle('线条设置', theme),
+
+      _buildLineTableHeader(theme),
 
       _buildBollLineRow(
         title: '上轨(UB)',
@@ -233,6 +235,28 @@ class _BOLLSettingPageState
     ];
   }
 
+  Widget _buildLineTableHeader(FKTheme theme) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.r),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text('指标线', style: theme.t2s12w400),
+          ),
+          Expanded(
+            flex: 2,
+            child: Center(child: Text('线宽', style: theme.t2s12w400)),
+          ),
+          Expanded(
+            flex: 2,
+            child: Center(child: Text('颜色', style: theme.t2s12w400)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBollLineRow({
     required String title,
     required BOLLLineConfig lineConfig,
@@ -240,8 +264,8 @@ class _BOLLSettingPageState
     required FKTheme theme,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.r),
-      padding: EdgeInsets.all(12.r),
+      margin: EdgeInsets.symmetric(horizontal: 16.r, vertical: 2.r),
+      padding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 8.r),
       decoration: BoxDecoration(
         color: theme.cardBg,
         borderRadius: BorderRadius.circular(8.r),
@@ -249,50 +273,65 @@ class _BOLLSettingPageState
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () {
-              onChanged(lineConfig.copyWith(enabled: !lineConfig.enabled));
-            },
-            child: Icon(
-              lineConfig.enabled
-                  ? Icons.check_box
-                  : Icons.check_box_outline_blank,
-              color: lineConfig.enabled ? theme.long : theme.t2,
-              size: 20.r,
+          Expanded(
+            flex: 3,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    onChanged(
+                        lineConfig.copyWith(enabled: !lineConfig.enabled));
+                  },
+                  child: Icon(
+                    lineConfig.enabled
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                    color: lineConfig.enabled ? theme.long : theme.t2,
+                    size: 20.r,
+                  ),
+                ),
+                SizedBox(width: 4.r),
+                Flexible(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: lineConfig.color,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(width: 8.r),
-
-          Text(
-            title,
-            style: TextStyle(
-              color: lineConfig.color,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            flex: 2,
+            child: Center(
+              child: LineWidthSelector(
+                value: lineConfig.width,
+                onChanged: (width) {
+                  onChanged(lineConfig.copyWith(width: width));
+                },
+                color: lineConfig.color,
+                width: 72,
+                height: 30,
+              ),
             ),
           ),
-
-          const Spacer(),
-
-          LineWidthSelector(
-            value: lineConfig.width,
-            onChanged: (width) {
-              onChanged(lineConfig.copyWith(width: width));
-            },
-            color: lineConfig.color,
-            width: 80,
-            height: 32,
-          ),
-
-          SizedBox(width: 8.r),
-
-          ColorSelector(
-            value: lineConfig.color,
-            onChanged: (color) {
-              onChanged(lineConfig.copyWith(color: color));
-            },
-            width: 80,
-            height: 32,
+          Expanded(
+            flex: 2,
+            child: Center(
+              child: ColorSelector(
+                value: lineConfig.color,
+                onChanged: (color) {
+                  onChanged(lineConfig.copyWith(color: color));
+                },
+                width: 72,
+                height: 30,
+              ),
+            ),
           ),
         ],
       ),
@@ -317,7 +356,6 @@ class _BOLLSettingPageState
             tickCount: oldIndicator.tickCount,
           );
           controller.updateIndicator(newIndicator);
-          debugPrint('BOLL指标参数已更新');
         }
       }
     } catch (e) {
