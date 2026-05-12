@@ -15,6 +15,7 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:flutter/painting.dart';
 
+import '../../constant.dart';
 import '../../framework/serializers.dart';
 
 part 'magnifier_config.g.dart';
@@ -24,13 +25,13 @@ part 'magnifier_config.g.dart';
 class MagnifierConfig {
   const MagnifierConfig({
     this.enable = true,
-    this.margin = EdgeInsets.zero,
+    this.margin = const EdgeInsets.all(1),
     this.size = const Size(80, 80),
     this.magnificationScale = 2,
     this.clipBehavior = Clip.none,
     this.decorationOpacity = 1.0,
     this.decorationShadows,
-    this.shapeSide = BorderSide.none,
+    this.shapeSide = defaultBorderSide,
   });
 
   /// 是否启用放大镜

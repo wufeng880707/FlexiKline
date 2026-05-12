@@ -17,6 +17,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../constant.dart';
 import '../extension/basic_type_ext.dart';
 import '../extension/functions_ext.dart';
 import '../extension/geometry_ext.dart';
@@ -110,7 +111,7 @@ class FlexiKlineWidget extends StatefulWidget {
   State<FlexiKlineWidget> createState() => _FlexiKlineWidgetState();
 }
 
-class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBindingObserver, KlineLog {
+class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBindingObserver, FlexiLog {
   @override
   String get logTag => 'FlexiKlineWidget';
 
@@ -132,7 +133,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
   void initState() {
     super.initState();
 
-    loggerDelegate = controller.loggerDelegate;
+    logger = controller.logger;
 
     controller.initState();
     if (widget.mainSize != null) {
@@ -225,7 +226,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
       alignment: widget.alignment,
       width: canvasRect.width,
       height: canvasRect.height,
-      decoration: widget.decoration,
+      decoration: widget.decoration ?? BoxDecoration(color: controller.theme.chartBg),
       foregroundDecoration: widget.foregroundDecoration,
       child: Stack(
         children: <Widget>[
@@ -233,7 +234,9 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
             Positioned.fromRect(
               key: const ValueKey('MainBackground'),
               rect: mainRect,
-              child: widget.mainBackgroundView!,
+              child: IgnorePointer(
+                child: widget.mainBackgroundView!,
+              ),
             ),
           RepaintBoundary(
             key: const ValueKey('GridAndChartLayer'),
@@ -302,19 +305,20 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
     }
 
     return ValueListenableBuilder(
-      valueListenable: controller.candleRequestListener,
-      builder: (context, request, child) {
+      valueListenable: controller.loadingStateListener,
+      builder: (context, loadingState, child) {
+        final loadingConfig = controller.settingConfig.loading;
         return Offstage(
-          offstage: !(request.state.showLoading && controller.settingConfig.autoLoadMoreData),
+          offstage: !(loadingState.showLoading && controller.settingConfig.autoLoadMoreData),
           child: Center(
             key: const ValueKey('loadingView'),
             child: SizedBox.square(
-              dimension: controller.settingConfig.loading.size,
+              dimension: loadingConfig.size,
               child: CircularProgressIndicator(
-                strokeWidth: controller.settingConfig.loading.strokeWidth,
-                backgroundColor: controller.settingConfig.loading.background,
+                strokeWidth: loadingConfig.strokeWidth,
+                backgroundColor: loadingConfig.backgroundColor ?? controller.theme.tooltipBg,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  controller.settingConfig.loading.valueColor,
+                  loadingConfig.valueColor ?? controller.theme.textColor,
                 ),
               ),
             ),
@@ -473,13 +477,29 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
               key: const ValueKey('KlineRawMagnifier'),
               decoration: MagnifierDecoration(
                 opacity: config.decorationOpacity,
-                shadows: config.decorationShadows,
+                shadows: config.decorationShadows ??
+                    [
+                      BoxShadow(
+                        offset: const Offset(0.1, 0.1),
+                        blurRadius: 2,
+                        spreadRadius: 3,
+                        color: controller.theme.gridLineColor.withAlpha(0.1.alpha),
+                      ),
+                    ],
                 shape: widget.magnifierDecorationShapeBuilder?.call(
                       context,
                       config.shapeSide,
                     ) ??
                     CircleBorder(
-                      side: config.shapeSide,
+                      side: BorderSide(
+                        color: config.shapeSide.color == transparent
+                            ? controller.theme.gridLineColor
+                            : config.shapeSide.color,
+                        width: config.shapeSide.width <= 0 ? 1 : config.shapeSide.width,
+                        style: config.shapeSide.style == BorderStyle.none
+                            ? BorderStyle.solid
+                            : config.shapeSide.style,
+                      ),
                     ),
               ),
               size: config.size,
@@ -514,7 +534,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  side: BorderSide(color: theme.gridLine, width: 1),
+                  side: BorderSide(color: theme.gridLineColor, width: 1),
                 ),
                 icon: const Text('A', style: TextStyle(fontSize: 12)),
               ),

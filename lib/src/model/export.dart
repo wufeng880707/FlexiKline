@@ -13,12 +13,12 @@
 // limitations under the License.
 
 export 'candle_model/candle_model.dart';
-export 'candle_req/candle_req.dart';
 export 'flexi_candle_model.dart';
 export 'flexi_num.dart';
 export 'gesture_data.dart';
+export 'kline_spec/kline_spec.dart';
 export 'layout_mode.dart';
 export 'minmax.dart';
 export 'range.dart';
-export 'time_bar.dart';
+export 'time_interval.dart';
 export 'tooltip_info/tooltip_info.dart';

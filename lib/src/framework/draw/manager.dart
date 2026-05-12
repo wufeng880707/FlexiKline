@@ -14,19 +14,13 @@
 
 part of 'overlay.dart';
 
-/// [OverlayObject]管理
-/// 主要负责:
-/// 1. Overly持久化与加载
-/// 2. 当KlineData的[CandleReq]切换时, 切换Overly配置
-/// 3. 向DrawController提供待绘制的[Overlay]列表.
-/// 4. HitTest列表管理
-/// 5. 管理[IDrawType]对应的[DrawObjectBuilder]构造器
-final class OverlayDrawObjectManager with KlineLog {
+/// Overlay 管理：持久化/加载、品种切换时保存/恢复、HitTest 列表、DrawObjectBuilder 注册
+final class OverlayDrawObjectManager with FlexiLog {
   OverlayDrawObjectManager({
     required this.configuration,
-    ILogger? logger,
+    IFlexiLogger? logger,
   }) {
-    loggerDelegate = logger;
+    this.logger = logger;
     final drawObjectbuilders = configuration.drawObjectBuilders;
     for (final MapEntry(key: type, value: builder) in drawObjectbuilders.entries) {
       registerDrawOverlayObjectBuilder(type, builder);
@@ -34,6 +28,8 @@ final class OverlayDrawObjectManager with KlineLog {
   }
 
   final IConfiguration configuration;
+
+  IFlexiKlineTheme get theme => configuration.theme;
 
   @override
   String get logTag => 'OverlayDrawObjectManager';
@@ -85,17 +81,17 @@ final class OverlayDrawObjectManager with KlineLog {
 
   bool get hasObject => _overlayObjectList.isNotEmpty;
 
-  /// KlineData数据切换回调
-  void onChangeCandleRequest(CandleReq request, DrawConfig config) {
-    if (request.instId.isEmpty || request.instId == _instId) return;
-    logd('onChangeCandleRequest $_instId => ${request.instId}');
+  /// 品种切换时保存旧 Overlay 并加载新品种的 Overlay
+  void onSymbolChanged(KlineSpec spec, DrawConfig config) {
+    if (spec.symbol.isEmpty || spec.symbol == _instId) return;
+    logd('onSymbolChanged $_instId => ${spec.symbol}');
     // 缓存上一次OverlayObject到本地.
     if (_instId.isNotEmpty && hasObject) {
       storeAndCleanAllDrawObject();
     }
     // 加载新的OverlayObject.
     _overlayObjectList.clear();
-    _instId = request.instId;
+    _instId = spec.symbol;
     final list = configuration.getDrawOverlayList(_instId);
     for (final overlay in list) {
       final object = generateDrawObject(overlay, config);
@@ -150,7 +146,7 @@ final class OverlayDrawObjectManager with KlineLog {
       Overlay.fromType(
         key: _instId,
         type: type,
-        line: drawConfig.drawLine,
+        line: drawConfig.drawLine.ensure(theme.drawToolColor),
       ),
       drawConfig,
     );

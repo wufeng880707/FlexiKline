@@ -19,34 +19,130 @@ part of 'candle.dart';
 class CandleIndicator extends CandleBaseIndicator {
   CandleIndicator({
     super.zIndex = -1,
-    required super.height,
+    super.height = defaultMainIndicatorHeight,
     super.padding = defaultMainIndicatorPadding,
 
     // 最高价
-    required this.high,
+    this.high = const MarkConfig(
+      spacing: 2,
+      line: LineConfig(
+        type: LineType.solid,
+        length: 20,
+        paint: PaintConfig(
+          strokeWidth: 0.5,
+        ),
+      ),
+      text: TextAreaConfig(
+        style: TextStyle(
+          fontSize: defaultTextSize,
+          overflow: TextOverflow.ellipsis,
+          height: defaultTextHeight,
+        ),
+      ),
+    ),
     // 最低价
-    required this.low,
+    this.low = const MarkConfig(
+      spacing: 2,
+      line: LineConfig(
+        type: LineType.solid,
+        length: 20,
+        paint: PaintConfig(
+          strokeWidth: 0.5,
+        ),
+      ),
+      text: TextAreaConfig(
+        style: TextStyle(
+          fontSize: defaultTextSize,
+          overflow: TextOverflow.ellipsis,
+          height: defaultTextHeight,
+        ),
+      ),
+    ),
 
     /// 最后价: 当最新蜡烛不在可视区域时使用.
     /// 注: 如果其中线的配置颜色透明度为0(默认为0) 且useCandleColorAsLatestBg为true,则会采用涨跌色
-    required this.last,
+    this.last = const MarkConfig(
+      show: true,
+      spacing: 1,
+      line: LineConfig(
+        type: LineType.dashed,
+        dashes: [3, 3],
+        paint: PaintConfig(
+          strokeWidth: 0.5,
+        ),
+      ),
+      hitTestMargin: 4,
+      text: TextAreaConfig(
+        style: TextStyle(
+          fontSize: defaultTextSize,
+          overflow: TextOverflow.ellipsis,
+          height: defaultTextHeight,
+          textBaseline: TextBaseline.alphabetic,
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: 4,
+          vertical: 2,
+        ),
+        border: defaultBorderSide,
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+    ),
 
     /// 最新价: 当最新蜡烛在可视区域时使用.
     /// 注: 如果其中线的配置颜色透明度为0(默认为0) 且useCandleColorAsLatestBg为true,则会采用涨跌色
-    required this.latest,
-    this.latestPoint,
+    this.latest = const MarkConfig(
+      show: true,
+      spacing: 1,
+      line: LineConfig(
+        type: LineType.dashed,
+        dashes: [3, 3],
+        paint: PaintConfig(
+          strokeWidth: 0.5,
+        ),
+      ),
+      text: TextAreaConfig(
+        style: TextStyle(
+          fontSize: defaultTextSize,
+          overflow: TextOverflow.ellipsis,
+          height: defaultTextHeight,
+        ),
+        textAlign: TextAlign.center,
+        padding: EdgeInsets.all(2),
+        border: BorderSide(
+          color: transparent,
+          width: 0.5,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(2)),
+      ),
+    ),
+
+    /// 最新蜡烛点: 仅在线图中使用.
     this.showLatestPoint = true,
+    this.latestPoint = const PointConfig(
+      radius: 2,
+      width: 0,
+      borderWidth: 2,
+    ),
 
     /// 使用蜡烛颜色做为Latest的背景
     this.useCandleColorAsLatestBg = true,
 
     /// 倒计时, 在latest最新价之下展示
     this.showCountDown = true,
-    required this.countDown,
-    required this.chartType,
+    this.countDown = const TextAreaConfig(
+      style: TextStyle(
+        fontSize: defaultTextSize,
+        overflow: TextOverflow.ellipsis,
+        height: defaultTextHeight,
+      ),
+      textAlign: TextAlign.center,
+      padding: EdgeInsets.all(2),
+      borderRadius: BorderRadius.all(Radius.circular(2)),
+    ),
+    this.chartType = FlexiChartType.barSolid,
     this.minWidthLineType,
-    this.timeBarChartTypes = const {},
-    this.hideIndicatorsWhenLineChart = false,
+    this.intervalChartTypes = const {},
+    this.hideIndicatorsWhenLineChart = true,
     this.longColor,
     this.shortColor,
     this.lineColor,
@@ -91,8 +187,9 @@ class CandleIndicator extends CandleBaseIndicator {
   /// 指定时间周期使用的图表类型映射
   /// Key: 时间周期，Value: 对应的图表类型
   /// 优先级高于 minWidthLineType
-  /// 匹配规则：基于 milliseconds 匹配，支持 TimeBar 和 FlexiTimeBar 互相等效
-  final Map<ITimeBar, FlexiChartType>? timeBarChartTypes;
+  /// 匹配规则：基于 milliseconds 匹配，支持不同 [ITimeInterval] 实现互相等效
+  @IntervalChartTypesConverter()
+  final Map<ITimeInterval, FlexiChartType>? intervalChartTypes;
 
   /// 当图表类型为线图时，是否隐藏主区的技术指标（如 MA 等）
   /// 用于避免主线图与技术指标线重合，影响可读性
@@ -127,10 +224,10 @@ class CandleIndicator extends CandleBaseIndicator {
 class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject<T>
     with PaintYAxisTicksOnCrossMixin, PaintCandleHelperMixin {
   @override
-  Color get longColor => indicator.longColor ?? theme.long;
+  Color get longColor => indicator.longColor ?? theme.longColor;
 
   @override
-  Color get shortColor => indicator.shortColor ?? theme.short;
+  Color get shortColor => indicator.shortColor ?? theme.shortColor;
 
   FlexiNum? _maxHigh, _minLow;
 
@@ -140,11 +237,11 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
   @override
   FlexiChartType getChartType() {
     // 1. 优先检查时间周期映射（基于 milliseconds 匹配）
-    final timeBar = klineData.timeBar;
-    final chartTypes = indicator.timeBarChartTypes;
+    final interval = klineData.interval;
+    final chartTypes = indicator.intervalChartTypes;
     if (chartTypes != null && chartTypes.isNotEmpty) {
       for (final entry in chartTypes.entries) {
-        if (entry.key.milliseconds == timeBar.milliseconds) {
+        if (entry.key.milliseconds == interval.milliseconds) {
           return entry.value;
         }
       }
@@ -190,7 +287,6 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
               ),
               gradient: indicator.lineGradientConfig?.createGradient(
                 baseColor: indicator.lineColor ?? theme.lineChartColor,
-                transparentColor: theme.transparent,
               ),
             );
             paintLatestCandlePoint(canvas, size);
@@ -203,11 +299,9 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
               shortLinePaint: getLinePaint(color: shortColor),
               longGradient: indicator.longGradientConfig?.createGradient(
                 baseColor: longColor,
-                transparentColor: theme.transparent,
               ),
               shortGradient: indicator.shortGradientConfig?.createGradient(
                 baseColor: shortColor,
-                transparentColor: theme.transparent,
               ),
             );
             paintLatestCandlePoint(canvas, size);
@@ -337,14 +431,12 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     canvas.drawLine(
       offset,
       endOffset,
-      markConfig.line.of(paintColor: theme.markLineColor).linePaint,
+      markConfig.line.getLinePaint(theme.markLineColor),
     );
-
-    final markText = markConfig.text.of(textColor: theme.textColor);
 
     endOffset = Offset(
       endOffset.dx + flag * markConfig.spacing,
-      endOffset.dy - (markText.areaHeight) / 2,
+      endOffset.dy - markConfig.text.areaHeight / 2,
     );
 
     final text = formatPrice(val.toDecimal(), precision: klineData.precision);
@@ -353,7 +445,8 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
       offset: endOffset,
       drawDirection: flag < 0 ? DrawDirection.rtl : DrawDirection.ltr,
       text: text,
-      textConfig: markText,
+      textConfig: markConfig.text,
+      themeTextColor: theme.textColor,
     );
   }
 
@@ -390,6 +483,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
         drawableRect: drawableRect,
         text: text,
         textConfig: ticksText,
+        themeTextColor: theme.ticksTextColor,
       );
 
       if (size.width > maxTickWidth) maxTickWidth = size.width;
@@ -453,30 +547,15 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     if (paintDxOffset < latestTextOffset) {
       lastTextSize = null;
       // 绘制最新价和倒计时
-      MarkConfig latest = indicator.latest;
+      final MarkConfig latest = indicator.latest;
       if (!latest.show) return;
 
       ldx = startCandleDx;
 
-      if (indicator.useCandleColorAsLatestBg) {
-        final updownColor = model.close >= model.open ? longColor : shortColor;
-        latest = latest.of(
-          paintColor: latest.lineColor.a == 0 ? updownColor : null,
-          textColor: const Color(0xFFFFFFFF),
-          background: updownColor,
-          borderColor: theme.transparent,
-        );
-      } else {
-        latest = latest.of(
-          paintColor: latest.lineColor.a == 0 ? theme.markLineColor : null,
-          textColor: theme.textColor,
-          background: theme.latestPriceTextBg,
-          borderColor: theme.markLineColor,
-        );
-      }
+      final useCandleColor = indicator.useCandleColorAsLatestBg;
+      final updownColor = model.close >= model.open ? longColor : shortColor;
 
-      final textConfig = latest.text;
-      final background = textConfig.background;
+      final textConfig = indicator.latest.text;
       BorderRadius? borderRadius = textConfig.borderRadius;
 
       final halfHeight = textConfig.areaHeight / 2;
@@ -492,21 +571,22 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
       latestPath.lineTo(ldx, dy);
       canvas.drawLineByConfig(
         latestPath,
-        latest.line,
+        indicator.latest.line,
+        themeColor: useCandleColor ? updownColor : theme.markLineColor,
       );
 
       /// 最新价文本和样式配置
       final text = formatPrice(
         model.close.toDecimal(),
-        precision: klineData.req.precision,
+        precision: klineData.precision,
         cutInvalidZero: false,
       );
 
       /// 倒计时Text
       String? countDownText;
       // 时间周期 > 1秒时才显示倒计时
-      if (indicator.showCountDown && klineData.timeBar.milliseconds > Duration.millisecondsPerSecond) {
-        final nextUpdateDateTime = model.nextUpdateDateTime(klineData.req.timeBar);
+      if (indicator.showCountDown && klineData.interval.milliseconds > Duration.millisecondsPerSecond) {
+        final nextUpdateDateTime = model.nextUpdateDateTime(klineData.interval);
         if (nextUpdateDateTime != null &&
             nextUpdateDateTime.millisecondsSinceEpoch > DateTime.now().millisecondsSinceEpoch) {
           countDownText = nextUpdateDateTime.diffAsCountdown();
@@ -534,27 +614,16 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
         drawableRect: drawableRect,
         text: text,
         textConfig: textConfig,
-        backgroundColor: background,
+        themeTextColor: useCandleColor ? white : theme.textColor,
+        themeBackgroundColor: useCandleColor ? updownColor : theme.latestPriceBg,
+        themeBorderColor: useCandleColor ? null : theme.markLineColor,
         borderRadius: borderRadius,
+        borderSide: useCandleColor ? textConfig.border?.copyWith(color: transparent) : null,
       );
       latestTextOffset = -(size.width + latest.spacing);
 
       if (countDownText != null) {
-        TextAreaConfig countDown;
-        if (indicator.useCandleColorAsLatestBg) {
-          countDown = indicator.countDown.of(
-            textColor: theme.textColor,
-            background: theme.countDownTextBg,
-            borderColor: theme.transparent,
-          );
-        } else {
-          countDown = indicator.countDown.of(
-            textColor: theme.textColor,
-            background: theme.countDownTextBg,
-            borderColor: theme.markLineColor,
-          );
-        }
-
+        final countDown = indicator.countDown;
         // 展示倒计时, 倒计时radius始终使用最新价的, 且保留底部radius
         borderRadius = borderRadius?.copyWith(
           topLeft: const Radius.circular(0),
@@ -573,6 +642,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
           drawableRect: drawableRect,
           text: countDownText,
           style: countDown.style.copyWith(
+            color: theme.textColor,
             // 修正倒计时文本区域高度:
             // 由于倒计时使用了固定宽度(最新价的size.width), 保持与最新价同宽.
             // 此处无法再为countDown设置padding, 固在此处修正
@@ -581,9 +651,12 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
           textAlign: countDown.textAlign,
           textWidth: size.width,
           // padding: countDown.padding,
-          backgroundColor: countDown.background,
+          backgroundColor: theme.countDownBg,
           borderRadius: borderRadius,
-          borderSide: countDown.border,
+          borderSide: BorderSide(
+            color: useCandleColor ? transparent : theme.markLineColor,
+            width: countDown.border?.width ?? 0.5,
+          ),
           maxLines: countDown.maxLines ?? 1,
         );
       }
@@ -594,12 +667,7 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
 
       ldx = 0;
 
-      final lastText = last.text.of(
-        textColor: theme.lastPriceTextColor,
-        background: theme.lastPriceTextBg,
-      );
-
-      final halfHeight = lastText.areaHeight / 2;
+      final halfHeight = last.text.areaHeight / 2;
       // 修正dy位置
       dy = dy.clamp(
         drawableRect.top + halfHeight,
@@ -620,7 +688,8 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
       }
       canvas.drawLineByConfig(
         lastPath,
-        last.line.of(paintColor: theme.markLineColor),
+        last.line,
+        themeColor: theme.markLineColor,
       );
 
       final text = formatPrice(
@@ -638,7 +707,9 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
         drawDirection: DrawDirection.rtl,
         drawableRect: drawableRect,
         text: '$text ▸', // ➤➤▹►▸▶︎≻
-        textConfig: lastText,
+        textConfig: last.text,
+        themeTextColor: theme.lastPriceColor,
+        themeBackgroundColor: theme.lastPriceBg,
       );
     }
   }
@@ -666,6 +737,8 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     canvas.drawCirclePoint(
       offset,
       point,
+      themeColor: theme.lineChartColor,
+      themeBorderColor: theme.lineChartColor.withAlpha(0x7F),
     );
   }
 

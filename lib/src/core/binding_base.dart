@@ -14,7 +14,10 @@
 
 part of 'core.dart';
 
-abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext, IDrawContext {
+abstract class KlineBindingBase with FlexiLog implements ISetting, IPaintContext, IDrawContext {
+  @override
+  String get logTag => 'Controller';
+
   final IConfiguration configuration;
 
   /// 对于Kline的操作是否自动保存到本地配置中.
@@ -37,7 +40,7 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
     required this.configuration,
     this.autoSave = true,
     int subIndicatorMaxCount = defaultSubIndicatorMaxCount,
-    ILogger? logger,
+    IFlexiLogger? logger,
     this.klineDataCacheCapacity,
   })  : _paintObjectManager = IndicatorPaintObjectManager(
           configuration: configuration,
@@ -49,7 +52,7 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
           logger: logger,
         ) {
     logd('construct');
-    loggerDelegate = logger;
+    this.logger = logger;
     init();
   }
 
@@ -79,7 +82,9 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
   @mustCallSuper
   void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
     logd('onThemeChanged base');
-    _paintObjectManager.refreshFlexiKlineConfig(this);
+    // 先保存配置, 再重新获取配置. 后续优化掉.
+    storeFlexiKlineConfig();
+    _paintObjectManager.refreshFlexiKlineConfig(this, refreshConfig: false);
   }
 
   @protected
@@ -90,8 +95,8 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
 
   @protected
   @mustCallSuper
-  void onRequestChanged(CandleReq oldRequest) {
-    logd('onRequestChanged base');
+  void onKlineSpecChanged(KlineSpec oldSpec) {
+    logd('onKlineSpecChanged base');
   }
 
   @protected

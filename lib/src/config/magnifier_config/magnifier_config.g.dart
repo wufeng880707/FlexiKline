@@ -144,7 +144,7 @@ MagnifierConfig _$MagnifierConfigFromJson(Map<String, dynamic> json) =>
     MagnifierConfig(
       enable: json['enable'] as bool? ?? true,
       margin: json['margin'] == null
-          ? EdgeInsets.zero
+          ? const EdgeInsets.all(1)
           : const EdgeInsetsConverter()
               .fromJson(json['margin'] as Map<String, dynamic>),
       size: json['size'] == null
@@ -161,7 +161,7 @@ MagnifierConfig _$MagnifierConfigFromJson(Map<String, dynamic> json) =>
               const BoxShadowConverter().fromJson(e as Map<String, dynamic>))
           .toList(),
       shapeSide: json['shapeSide'] == null
-          ? BorderSide.none
+          ? defaultBorderSide
           : const BorderSideConvert()
               .fromJson(json['shapeSide'] as Map<String, dynamic>),
     );

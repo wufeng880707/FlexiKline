@@ -28,11 +28,11 @@ part 'tolerance_config.g.dart';
 @FlexiConfigSerializable
 class ToleranceConfig {
   ToleranceConfig({
-    this.maxDuration = 2000,
-    this.distanceFactor = 0.6,
+    this.maxDuration = 3000,
+    this.distanceFactor = 0.8,
     this.curvestr = 'easeOutCubic',
     this.panSmoothFactor = 0.15,
-    this.convergenceRatio = 0.7,
+    this.convergenceRatio = 0.85,
   }) : _curve = parseCurve(curvestr);
 
   final int maxDuration;
@@ -56,8 +56,7 @@ class ToleranceConfig {
 
   @override
   String toString() {
-    return 'Tolerance($maxDuration, $distanceFactor, $curvestr, '
-        'panSmoothFactor: $panSmoothFactor, convergenceRatio: $convergenceRatio)';
+    return 'Tolerance($maxDuration, $distanceFactor, $curvestr, $panSmoothFactor, $convergenceRatio)';
   }
 
   factory ToleranceConfig.fromJson(Map<String, dynamic> json) => _$ToleranceConfigFromJson(json);

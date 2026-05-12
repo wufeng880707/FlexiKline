@@ -109,11 +109,11 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
   }
 
   @override
-  void onRequestChanged(CandleReq oldRequest) {
-    super.onRequestChanged(oldRequest);
-    final request = curKlineData.req;
-    if (request.instId != oldRequest.instId) {
-      _drawObjectManager.onChangeCandleRequest(request, drawConfig);
+  void onKlineSpecChanged(KlineSpec oldSpec) {
+    super.onKlineSpecChanged(oldSpec);
+    final spec = curKlineData.spec;
+    if (spec.symbol != oldSpec.symbol) {
+      _drawObjectManager.onSymbolChanged(spec, drawConfig);
       exitDraw();
     }
   }
@@ -203,8 +203,8 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
       if (object.isEditing) {
         logi('onDrawConfirm ${object.type} draw completed!');
         updateDrawObjectPointsData(object);
-        // 绘制完成, 使用drawLine配置绘制实线.
-        object.setDrawLineConfig(drawConfig.drawLine);
+        // 绘制完成, 使用line配置绘制实线.
+        object.setDrawLineConfig(object.line);
         _drawObjectManager.addDrawObject(object, addToTop: true);
         if (drawContinuousListener.value) {
           final nextObj = _drawObjectManager.generateDrawObject(
@@ -475,7 +475,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding implements IDraw {
     for (final object in _drawObjectManager.overlayObjectList) {
       if (object.moving) continue;
 
-      // TODO: 待优化,
+      // 待优化,
       // 1. 检测points中每个value是否有效.
       // 2. 当发生图表移动/缩放/数据源发生变化时, 需要initPoint
       final succeed = object.initPoints(this);

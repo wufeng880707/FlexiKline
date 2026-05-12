@@ -17,8 +17,14 @@
 import 'package:flexi_formatter/date_time.dart';
 import 'package:flutter/painting.dart';
 
-import 'model/time_bar.dart';
+import 'model/time_interval.dart';
 import 'types.dart';
+
+/// 透明色
+const Color transparent = Color(0x00000000);
+
+/// 白色
+const Color white = Color(0xFFFFFFFF);
 
 /// double类型的计算精度误差
 const double precisionError = 0.000001;
@@ -71,14 +77,29 @@ const double defaultTipsTextHeight = 1.2;
 // 默认Tips文本区域的Padding: 左边缩进8个单位
 const EdgeInsets defaultTipsPadding = EdgeInsets.only(left: 8);
 
-const invalidTimeBar = FlexiTimeBar('', 0, TimeUnit.millisecond);
+/// 配置默认 BorderSide 哨兵值
+///
+/// 与 Flutter `BorderSide.none` 的区别：
+/// 后者 `color` 默认为 `0xFF000000`（黑），会被误判为"用户设置了黑色"；
+/// 这里显式使用 `transparent`，配合"颜色透明视为未设置"的配置色原则，
+/// 使渲染端能正确回退到主题色。
+const BorderSide defaultBorderSide = BorderSide(
+  color: transparent,
+  width: 0,
+  style: BorderStyle.none,
+);
 
-/// 内置: 时间粒度
-const timeBar1s = FlexiTimeBar('1s', 1, TimeUnit.second);
-const timeBar1m = FlexiTimeBar('1m', 1, TimeUnit.minute);
-const timeBar1H = FlexiTimeBar('1H', 1, TimeUnit.hour);
-const timeBar1D = FlexiTimeBar('1D', 1, TimeUnit.day);
-const timeBar1W = FlexiTimeBar('1W', 1, TimeUnit.week);
+const invalidInterval = FlexiTimeInterval(0, TimeUnit.millisecond);
+
+/// 内置: 时间周期
+const interval1s = FlexiTimeInterval(1, TimeUnit.second);
+const interval1m = FlexiTimeInterval(1, TimeUnit.minute);
+const interval5m = FlexiTimeInterval(5, TimeUnit.minute);
+const interval15m = FlexiTimeInterval(15, TimeUnit.minute);
+const interval1H = FlexiTimeInterval(1, TimeUnit.hour);
+const interval4H = FlexiTimeInterval(4, TimeUnit.hour);
+const interval1D = FlexiTimeInterval(1, TimeUnit.day);
+const interval1W = FlexiTimeInterval(1, TimeUnit.week);
 
 /// 内置TooltipLabel默认文本
 const Map<TooltipLabel, String> defaultTooltipLabels = {

@@ -16,6 +16,8 @@ import 'package:decimal/decimal.dart';
 import 'package:flexi_formatter/flexi_formatter.dart';
 import 'package:flutter/widgets.dart';
 
+import '../constant.dart';
+
 int valueToInt(dynamic value) {
   return parseInt(value) ?? 0;
 }
@@ -317,10 +319,10 @@ String? convertTextLeadingDistribution(TextLeadingDistribution? distribution) {
 }
 
 BorderSide parseBorderSide(Map<String, dynamic>? json) {
-  if (json == null || json.isEmpty) return BorderSide.none;
+  if (json == null || json.isEmpty) return defaultBorderSide;
   final style = json['style']?.toString() ?? BorderStyle.solid.name;
   return BorderSide(
-    color: parseHexColor(json['color']) ?? const Color(0xFF000000),
+    color: parseHexColor(json['color']) ?? transparent,
     width: parseDouble(json['width']) ?? 1.0,
     style: BorderStyle.values.firstWhere(
       (e) => e.name == style,
@@ -361,7 +363,7 @@ dynamic convertRadius(Radius radius) {
 }
 
 // Ref: https://api.flutter.dev/flutter/animation/Curves-class.html
-Curve parseCurve(String curvestr) {
+Curve parseCurve(String curvestr, [Curve defaultCurve = Curves.easeOutCubic]) {
   switch (curvestr) {
     case 'decelerate':
       return Curves.decelerate;
@@ -446,7 +448,7 @@ Curve parseCurve(String curvestr) {
     case 'bounceOut':
       return Curves.bounceOut;
   }
-  return Curves.decelerate;
+  return defaultCurve;
 }
 
 /// 解析 Alignment 对象
@@ -520,4 +522,12 @@ TileMode? parseTileMode(String? modeStr) {
 /// 将 TileMode 转换为字符串
 String convertTileMode(TileMode mode) {
   return mode.name;
+}
+
+/// 按指定分隔符拆分字符串。
+///
+/// 未传 [pattern] 时按加密货币交易对常见分隔符拆分：`-`、`_`、`|`、`/`、空格（正则 `[-_|/ ]+`），并去掉空段。
+Iterable<String> splitPair(String value, [Pattern? pattern]) {
+  final p = pattern ?? RegExp(r'[-_|/ ]+');
+  return value.split(p).where((s) => s.isNotEmpty);
 }

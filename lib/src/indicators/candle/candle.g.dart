@@ -21,9 +21,9 @@ abstract class _$CandleIndicatorCWProxy {
 
   CandleIndicator latest(MarkConfig latest);
 
-  CandleIndicator latestPoint(PointConfig? latestPoint);
-
   CandleIndicator showLatestPoint(bool showLatestPoint);
+
+  CandleIndicator latestPoint(PointConfig? latestPoint);
 
   CandleIndicator useCandleColorAsLatestBg(bool useCandleColorAsLatestBg);
 
@@ -35,8 +35,8 @@ abstract class _$CandleIndicatorCWProxy {
 
   CandleIndicator minWidthLineType(FlexiLineChartType? minWidthLineType);
 
-  CandleIndicator timeBarChartTypes(
-      Map<ITimeBar, FlexiChartType>? timeBarChartTypes);
+  CandleIndicator intervalChartTypes(
+      Map<ITimeInterval, FlexiChartType>? intervalChartTypes);
 
   CandleIndicator hideIndicatorsWhenLineChart(bool hideIndicatorsWhenLineChart);
 
@@ -66,14 +66,14 @@ abstract class _$CandleIndicatorCWProxy {
     MarkConfig low,
     MarkConfig last,
     MarkConfig latest,
-    PointConfig? latestPoint,
     bool showLatestPoint,
+    PointConfig? latestPoint,
     bool useCandleColorAsLatestBg,
     bool showCountDown,
     TextAreaConfig countDown,
     FlexiChartType chartType,
     FlexiLineChartType? minWidthLineType,
-    Map<ITimeBar, FlexiChartType>? timeBarChartTypes,
+    Map<ITimeInterval, FlexiChartType>? intervalChartTypes,
     bool hideIndicatorsWhenLineChart,
     Color? longColor,
     Color? shortColor,
@@ -112,12 +112,12 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
   CandleIndicator latest(MarkConfig latest) => this(latest: latest);
 
   @override
-  CandleIndicator latestPoint(PointConfig? latestPoint) =>
-      this(latestPoint: latestPoint);
-
-  @override
   CandleIndicator showLatestPoint(bool showLatestPoint) =>
       this(showLatestPoint: showLatestPoint);
+
+  @override
+  CandleIndicator latestPoint(PointConfig? latestPoint) =>
+      this(latestPoint: latestPoint);
 
   @override
   CandleIndicator useCandleColorAsLatestBg(bool useCandleColorAsLatestBg) =>
@@ -140,9 +140,9 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
       this(minWidthLineType: minWidthLineType);
 
   @override
-  CandleIndicator timeBarChartTypes(
-          Map<ITimeBar, FlexiChartType>? timeBarChartTypes) =>
-      this(timeBarChartTypes: timeBarChartTypes);
+  CandleIndicator intervalChartTypes(
+          Map<ITimeInterval, FlexiChartType>? intervalChartTypes) =>
+      this(intervalChartTypes: intervalChartTypes);
 
   @override
   CandleIndicator hideIndicatorsWhenLineChart(
@@ -186,14 +186,14 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
     Object? low = const $CopyWithPlaceholder(),
     Object? last = const $CopyWithPlaceholder(),
     Object? latest = const $CopyWithPlaceholder(),
-    Object? latestPoint = const $CopyWithPlaceholder(),
     Object? showLatestPoint = const $CopyWithPlaceholder(),
+    Object? latestPoint = const $CopyWithPlaceholder(),
     Object? useCandleColorAsLatestBg = const $CopyWithPlaceholder(),
     Object? showCountDown = const $CopyWithPlaceholder(),
     Object? countDown = const $CopyWithPlaceholder(),
     Object? chartType = const $CopyWithPlaceholder(),
     Object? minWidthLineType = const $CopyWithPlaceholder(),
-    Object? timeBarChartTypes = const $CopyWithPlaceholder(),
+    Object? intervalChartTypes = const $CopyWithPlaceholder(),
     Object? hideIndicatorsWhenLineChart = const $CopyWithPlaceholder(),
     Object? longColor = const $CopyWithPlaceholder(),
     Object? shortColor = const $CopyWithPlaceholder(),
@@ -231,14 +231,14 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
           ? _value.latest
           // ignore: cast_nullable_to_non_nullable
           : latest as MarkConfig,
-      latestPoint: latestPoint == const $CopyWithPlaceholder()
-          ? _value.latestPoint
-          // ignore: cast_nullable_to_non_nullable
-          : latestPoint as PointConfig?,
       showLatestPoint: showLatestPoint == const $CopyWithPlaceholder()
           ? _value.showLatestPoint
           // ignore: cast_nullable_to_non_nullable
           : showLatestPoint as bool,
+      latestPoint: latestPoint == const $CopyWithPlaceholder()
+          ? _value.latestPoint
+          // ignore: cast_nullable_to_non_nullable
+          : latestPoint as PointConfig?,
       useCandleColorAsLatestBg:
           useCandleColorAsLatestBg == const $CopyWithPlaceholder()
               ? _value.useCandleColorAsLatestBg
@@ -260,10 +260,10 @@ class _$CandleIndicatorCWProxyImpl implements _$CandleIndicatorCWProxy {
           ? _value.minWidthLineType
           // ignore: cast_nullable_to_non_nullable
           : minWidthLineType as FlexiLineChartType?,
-      timeBarChartTypes: timeBarChartTypes == const $CopyWithPlaceholder()
-          ? _value.timeBarChartTypes
+      intervalChartTypes: intervalChartTypes == const $CopyWithPlaceholder()
+          ? _value.intervalChartTypes
           // ignore: cast_nullable_to_non_nullable
-          : timeBarChartTypes as Map<ITimeBar, FlexiChartType>?,
+          : intervalChartTypes as Map<ITimeInterval, FlexiChartType>?,
       hideIndicatorsWhenLineChart:
           hideIndicatorsWhenLineChart == const $CopyWithPlaceholder()
               ? _value.hideIndicatorsWhenLineChart
@@ -310,36 +310,106 @@ extension $CandleIndicatorCopyWith on CandleIndicator {
 CandleIndicator _$CandleIndicatorFromJson(Map<String, dynamic> json) =>
     CandleIndicator(
       zIndex: (json['zIndex'] as num?)?.toInt() ?? -1,
-      height: (json['height'] as num).toDouble(),
+      height:
+          (json['height'] as num?)?.toDouble() ?? defaultMainIndicatorHeight,
       padding: json['padding'] == null
           ? defaultMainIndicatorPadding
           : const EdgeInsetsConverter()
               .fromJson(json['padding'] as Map<String, dynamic>),
-      high: MarkConfig.fromJson(json['high'] as Map<String, dynamic>),
-      low: MarkConfig.fromJson(json['low'] as Map<String, dynamic>),
-      last: MarkConfig.fromJson(json['last'] as Map<String, dynamic>),
-      latest: MarkConfig.fromJson(json['latest'] as Map<String, dynamic>),
-      latestPoint: json['latestPoint'] == null
-          ? null
-          : PointConfig.fromJson(json['latestPoint'] as Map<String, dynamic>),
+      high: json['high'] == null
+          ? const MarkConfig(
+              spacing: 2,
+              line: LineConfig(
+                  type: LineType.solid,
+                  length: 20,
+                  paint: PaintConfig(strokeWidth: 0.5)),
+              text: TextAreaConfig(
+                  style: TextStyle(
+                      fontSize: defaultTextSize,
+                      overflow: TextOverflow.ellipsis,
+                      height: defaultTextHeight)))
+          : MarkConfig.fromJson(json['high'] as Map<String, dynamic>),
+      low: json['low'] == null
+          ? const MarkConfig(
+              spacing: 2,
+              line: LineConfig(
+                  type: LineType.solid,
+                  length: 20,
+                  paint: PaintConfig(strokeWidth: 0.5)),
+              text: TextAreaConfig(
+                  style: TextStyle(
+                      fontSize: defaultTextSize,
+                      overflow: TextOverflow.ellipsis,
+                      height: defaultTextHeight)))
+          : MarkConfig.fromJson(json['low'] as Map<String, dynamic>),
+      last: json['last'] == null
+          ? const MarkConfig(
+              show: true,
+              spacing: 1,
+              line: LineConfig(
+                  type: LineType.dashed,
+                  dashes: [3, 3],
+                  paint: PaintConfig(strokeWidth: 0.5)),
+              hitTestMargin: 4,
+              text: TextAreaConfig(
+                  style: TextStyle(
+                      fontSize: defaultTextSize,
+                      overflow: TextOverflow.ellipsis,
+                      height: defaultTextHeight,
+                      textBaseline: TextBaseline.alphabetic),
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  border: defaultBorderSide,
+                  borderRadius: BorderRadius.all(Radius.circular(10))))
+          : MarkConfig.fromJson(json['last'] as Map<String, dynamic>),
+      latest: json['latest'] == null
+          ? const MarkConfig(
+              show: true,
+              spacing: 1,
+              line: LineConfig(
+                  type: LineType.dashed,
+                  dashes: [3, 3],
+                  paint: PaintConfig(strokeWidth: 0.5)),
+              text: TextAreaConfig(
+                  style: TextStyle(
+                      fontSize: defaultTextSize,
+                      overflow: TextOverflow.ellipsis,
+                      height: defaultTextHeight),
+                  textAlign: TextAlign.center,
+                  padding: EdgeInsets.all(2),
+                  border: BorderSide(color: transparent, width: 0.5),
+                  borderRadius: BorderRadius.all(Radius.circular(2))))
+          : MarkConfig.fromJson(json['latest'] as Map<String, dynamic>),
       showLatestPoint: json['showLatestPoint'] as bool? ?? true,
+      latestPoint: json['latestPoint'] == null
+          ? const PointConfig(radius: 2, width: 0, borderWidth: 2)
+          : PointConfig.fromJson(json['latestPoint'] as Map<String, dynamic>),
       useCandleColorAsLatestBg:
           json['useCandleColorAsLatestBg'] as bool? ?? true,
       showCountDown: json['showCountDown'] as bool? ?? true,
-      countDown:
-          TextAreaConfig.fromJson(json['countDown'] as Map<String, dynamic>),
-      chartType: const FlexiChartTypeConverter()
-          .fromJson(json['chartType'] as Map<String, dynamic>),
+      countDown: json['countDown'] == null
+          ? const TextAreaConfig(
+              style: TextStyle(
+                  fontSize: defaultTextSize,
+                  overflow: TextOverflow.ellipsis,
+                  height: defaultTextHeight),
+              textAlign: TextAlign.center,
+              padding: EdgeInsets.all(2),
+              borderRadius: BorderRadius.all(Radius.circular(2)))
+          : TextAreaConfig.fromJson(json['countDown'] as Map<String, dynamic>),
+      chartType: json['chartType'] == null
+          ? FlexiChartType.barSolid
+          : const FlexiChartTypeConverter()
+              .fromJson(json['chartType'] as Map<String, dynamic>),
       minWidthLineType:
           _$JsonConverterFromJson<Map<String, dynamic>, FlexiLineChartType>(
               json['minWidthLineType'],
               const LineChartTypeConverter().fromJson),
-      timeBarChartTypes: json['timeBarChartTypes'] == null
+      intervalChartTypes: json['intervalChartTypes'] == null
           ? const {}
-          : const TimeBarChartTypesConverter()
-              .fromJson(json['timeBarChartTypes'] as List?),
+          : const IntervalChartTypesConverter()
+              .fromJson(json['intervalChartTypes'] as List?),
       hideIndicatorsWhenLineChart:
-          json['hideIndicatorsWhenLineChart'] as bool? ?? false,
+          json['hideIndicatorsWhenLineChart'] as bool? ?? true,
       longColor: _$JsonConverterFromJson<String, Color>(
           json['longColor'], const ColorConverter().fromJson),
       shortColor: _$JsonConverterFromJson<String, Color>(
@@ -378,8 +448,8 @@ Map<String, dynamic> _$CandleIndicatorToJson(CandleIndicator instance) =>
       'minWidthLineType':
           _$JsonConverterToJson<Map<String, dynamic>, FlexiLineChartType>(
               instance.minWidthLineType, const LineChartTypeConverter().toJson),
-      'timeBarChartTypes':
-          const TimeBarChartTypesConverter().toJson(instance.timeBarChartTypes),
+      'intervalChartTypes': const IntervalChartTypesConverter()
+          .toJson(instance.intervalChartTypes),
       'hideIndicatorsWhenLineChart': instance.hideIndicatorsWhenLineChart,
       'longColor': _$JsonConverterToJson<String, Color>(
           instance.longColor, const ColorConverter().toJson),
