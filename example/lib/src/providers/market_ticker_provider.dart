@@ -74,7 +74,7 @@ final marketTickerProvider = FutureProvider.autoDispose.family<MarketTicker?, St
       // 记录错误但不抛出异常
       if (!resp.success) {
         // TODO: 可以在这里添加日志记录
-        // logger.w('Failed to fetch market ticker for $instId: ${resp.message}');
+        // logger.w('Failed to fetch market ticker for $symbol: ${resp.message}');
       }
       
       return null;

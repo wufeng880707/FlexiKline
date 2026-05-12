@@ -5,11 +5,11 @@ import 'package:flutter/foundation.dart';
 
 /// 交易标记数据管理
 ///
-/// 负责原始交易数据的存储、按 timeBar 分组，以及注入到 controller。
+/// 负责原始交易数据的存储、按 interval 分组，以及注入到 controller。
 /// 使用方式:
 /// 1. 创建 TradeMarkDataManager 实例
 /// 2. 调用 setRawMarks() 设置原始数据
-/// 3. 监听 controller.timeBarListener，timeBar 变化时调用 regroup()
+/// 3. 监听 controller.intervalListener，interval 变化时调用 regroup()
 /// 4. 分组结果自动通过 setBusinessData 注入到 controller
 class TradeMarkDataManager {
   TradeMarkDataManager(this._controller);
@@ -17,13 +17,13 @@ class TradeMarkDataManager {
   final FlexiKlineController _controller;
 
   List<TradeMarkData> _rawMarks = [];
-  ITimeBar? _currentTimeBar;
+  ITimeInterval? _currentTimeBar;
   Map<int, CandleTradeMarks> _groupedMarks = const {};
 
   List<TradeMarkData> get rawMarks => _rawMarks;
   Map<int, CandleTradeMarks> get groupedMarks => _groupedMarks;
 
-  /// 设置原始交易标记数据并按当前 timeBar 分组
+  /// 设置原始交易标记数据并按当前 interval 分组
   void setRawMarks(List<TradeMarkData> marks) {
     _rawMarks = marks;
     _regroup();
@@ -36,22 +36,22 @@ class TradeMarkDataManager {
     _controller.removeBusinessData(tradeMarkIndicatorKey);
   }
 
-  /// 当 timeBar 变化时调用，重新分组并注入
-  void onTimeBarChanged(ITimeBar? timeBar) {
-    if (timeBar == null || timeBar == _currentTimeBar) return;
-    _currentTimeBar = timeBar;
+  /// 当 interval 变化时调用，重新分组并注入
+  void onTimeBarChanged(ITimeInterval? interval) {
+    if (interval == null || interval == _currentTimeBar) return;
+    _currentTimeBar = interval;
     _regroup();
   }
 
   void _regroup() {
-    final timeBar = _currentTimeBar;
-    if (timeBar == null || _rawMarks.isEmpty) {
+    final interval = _currentTimeBar;
+    if (interval == null || _rawMarks.isEmpty) {
       _groupedMarks = const {};
       _controller.removeBusinessData(tradeMarkIndicatorKey);
       return;
     }
 
-    _groupedMarks = groupTradeMarksByTimeBar(_rawMarks, timeBar);
+    _groupedMarks = groupTradeMarksByTimeBar(_rawMarks, interval);
     _controller.setBusinessData(tradeMarkIndicatorKey, _groupedMarks);
   }
 
@@ -61,14 +61,14 @@ class TradeMarkDataManager {
   }
 }
 
-/// 按 timeBar 分组交易标记数据（纯函数，可在 isolate 中执行）
+/// 按 interval 分组交易标记数据（纯函数，可在 isolate 中执行）
 Map<int, CandleTradeMarks> groupTradeMarksByTimeBar(
   List<TradeMarkData> marks,
-  ITimeBar timeBar,
+  ITimeInterval interval,
 ) {
   if (marks.isEmpty) return const {};
 
-  final ms = timeBar.milliseconds;
+  final ms = interval.milliseconds;
   final result = <int, CandleTradeMarks>{};
 
   for (final mark in marks) {
@@ -156,7 +156,7 @@ List<TradeMarkData> createTestTradeMarks(KlineData klineData) {
   debugPrint(
     '[TradeMark] 生成 ${marks.length} 笔模拟订单 '
     '(K线范围: ${list.length} 根, '
-    'timeBar: ${klineData.req.timeBar.bar})',
+    'interval: ${klineData.spec.interval.debugLabel})',
   );
   return marks;
 }

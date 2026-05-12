@@ -116,7 +116,7 @@ class FibExpansionDrawObject extends DrawObject {
     final fibRates = params.rates;
     final fibText = config.ticksText;
     final fibBgOpacity = params.bgOpacity;
-    final colors = [line.paint.color];
+    final colors = [lineColor];
     int i = 0;
     List<Offset> linePoints = [];
 

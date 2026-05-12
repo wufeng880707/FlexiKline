@@ -438,9 +438,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
       valueListenable: controller.drawPointerListener,
       builder: (context, pointer, child) {
         final pointerOffset = pointer?.offset;
-        final bool visible = pointerOffset != null &&
-            pointerOffset.isFinite &&
-            drawRect.contains(pointerOffset);
+        final bool visible = pointerOffset != null && pointerOffset.isFinite && drawRect.contains(pointerOffset);
 
         double left = config.margin.left;
         double top = config.margin.top;
@@ -451,12 +449,8 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
             left = config.margin.left;
             top = config.margin.top;
           } else {
-            final valueTxtWidth =
-                controller.drawState.object?.valueTicksSize?.width ?? 0;
-            left = drawRect.width -
-                config.margin.right -
-                config.size.width -
-                valueTxtWidth;
+            final valueTxtWidth = controller.drawState.object?.valueTicksSize?.width ?? 0;
+            left = drawRect.width - config.margin.right - config.size.width - valueTxtWidth;
             top = config.margin.top;
           }
           final magnifierCenter = Offset(
@@ -465,6 +459,14 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
           );
           focalPosition = pointerOffset - magnifierCenter;
         }
+
+        final theme = controller.theme;
+        final magnifierColor = controller.drawState.object?.line.paint.color ?? theme.drawToolColor;
+        final magnifierSide = BorderSide(
+          color: config.shapeSide.color == transparent ? magnifierColor : config.shapeSide.color,
+          width: config.shapeSide.width <= 0 ? 1 : config.shapeSide.width,
+          style: config.shapeSide.style == BorderStyle.none ? BorderStyle.solid : config.shapeSide.style,
+        );
 
         return Positioned(
           key: const ValueKey('MagnifierPositioned'),
@@ -475,6 +477,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
             visible: visible,
             child: RawMagnifier(
               key: const ValueKey('KlineRawMagnifier'),
+              clipBehavior: config.clipBehavior == Clip.none ? Clip.hardEdge : config.clipBehavior,
               decoration: MagnifierDecoration(
                 opacity: config.decorationOpacity,
                 shadows: config.decorationShadows ??
@@ -483,24 +486,14 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
                         offset: const Offset(0.1, 0.1),
                         blurRadius: 2,
                         spreadRadius: 3,
-                        color: controller.theme.gridLineColor.withAlpha(0.1.alpha),
+                        color: magnifierColor.withAlpha(0.2.alpha),
                       ),
                     ],
                 shape: widget.magnifierDecorationShapeBuilder?.call(
                       context,
-                      config.shapeSide,
+                      magnifierSide,
                     ) ??
-                    CircleBorder(
-                      side: BorderSide(
-                        color: config.shapeSide.color == transparent
-                            ? controller.theme.gridLineColor
-                            : config.shapeSide.color,
-                        width: config.shapeSide.width <= 0 ? 1 : config.shapeSide.width,
-                        style: config.shapeSide.style == BorderStyle.none
-                            ? BorderStyle.solid
-                            : config.shapeSide.style,
-                      ),
-                    ),
+                    CircleBorder(side: magnifierSide),
               ),
               size: config.size,
               focalPointOffset: focalPosition,

@@ -75,11 +75,11 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
           widget.instId,
         );
 
-    final timeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.bar == '15m');
+    final interval = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '15m');
 
-    req = CandleReq(
-      instId: widget.instId,
-      timeBar: timeBar,
+    req = KlineSpec(
+      symbol: widget.instId,
+      interval: interval,
       precision: p ?? 2,
       limit: 300,
     );
@@ -101,7 +101,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     _positionManager = PositionDataManager(controller);
 
     controller.onBusinessOverlayAction = _onBusinessOverlayAction;
-    controller.timeBarListener.addListener(_onTimeBarChanged);
+    controller.intervalListener.addListener(_onTimeBarChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       initKlineData(req);
@@ -109,7 +109,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
   }
 
   void _onTimeBarChanged() {
-    _tradeMarkManager.onTimeBarChanged(controller.timeBarListener.value);
+    _tradeMarkManager.onTimeBarChanged(controller.intervalListener.value);
   }
 
   void _onBusinessOverlayAction(
@@ -146,7 +146,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
 
   @override
   void dispose() {
-    controller.timeBarListener.removeListener(_onTimeBarChanged);
+    controller.intervalListener.removeListener(_onTimeBarChanged);
     _tradeMarkManager.dispose();
     _pendingOrderManager.dispose();
     _positionManager.dispose();
@@ -155,7 +155,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
   }
 
   @override
-  Future<void> initKlineData(CandleReq request, {bool reset = false}) async {
+  Future<void> initKlineData(KlineSpec request, {bool reset = false}) async {
     await super.initKlineData(request, reset: reset);
     _injectTestBusinessData();
   }
@@ -169,7 +169,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
       controller.addMainIndicator(tradeMarkIndicatorKey);
     }
     final marks = createTestTradeMarks(klineData);
-    _tradeMarkManager.onTimeBarChanged(klineData.req.timeBar);
+    _tradeMarkManager.onTimeBarChanged(klineData.spec.interval);
     _tradeMarkManager.setRawMarks(marks);
 
     // PendingOrder (新 BusinessOverlay 体系)
@@ -185,7 +185,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
       'tradeMark=${marks.length}笔, '
       'pendingOrder=${orders.length}笔, '
       'position=${positions.length}笔, '
-      'timeBar=${klineData.req.timeBar.bar}',
+      'interval=${klineData.spec.interval.debugLabel}',
     );
   }
 
@@ -201,7 +201,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     final isUpdate = await context.pushNamed(
       'landscapeKline',
       extra: {
-        "candleReq": controller.curKlineData.req.toInitReq(),
+        "candleReq": controller.curKlineData.spec.initial(),
         "configuration": controller.configuration,
       },
     );
@@ -229,7 +229,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
           child: const Icon(Icons.menu_outlined),
         ),
         title: TradingPairSelectTitle(
-          instId: req.instId,
+          instId: req.symbol,
           onChangeTradingPair: onChangeTradingSymbol,
           long: klineTheme.long,
           short: klineTheme.short,
@@ -238,7 +238,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
       ),
       body: EasyRefresh(
         onRefresh: () async {
-          req = req.copyWith(after: null, before: null);
+          req = req.copyWith(from: null, to: null);
           // reset = false: 下拉刷新不清理当前数据, 等新数据回来后再更新.
           await initKlineData(req, reset: false);
         },
@@ -247,7 +247,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               MarketTickerView(
-                instId: req.instId,
+                instId: req.symbol,
                 precision: req.precision,
                 long: klineTheme.long,
                 short: klineTheme.short,
@@ -328,10 +328,10 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
         ),
         Positioned(
           child: ValueListenableBuilder(
-            valueListenable: controller.candleRequestListener,
-            builder: (context, request, child) {
+            valueListenable: controller.loadingStateListener,
+            builder: (context, loadingState, child) {
               return Offstage(
-                offstage: !request.state.showLoading,
+                offstage: !loadingState.showLoading,
                 child: Container(
                   key: const ValueKey('loadingView'),
                   alignment: AlignmentDirectional.center,
@@ -340,9 +340,9 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
                     dimension: controller.settingConfig.loading.size,
                     child: CircularProgressIndicator(
                       strokeWidth: controller.settingConfig.loading.strokeWidth,
-                      backgroundColor: controller.settingConfig.loading.background,
+                      backgroundColor: controller.settingConfig.loading.backgroundColor,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        controller.settingConfig.loading.valueColor,
+                        controller.settingConfig.loading.valueColor ?? controller.theme.textColor,
                       ),
                     ),
                   ),
@@ -372,7 +372,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
       TooltipInfo(
         label: s.tooltipTime,
         labelStyle: lableStyle,
-        value: current.formatDateTime(req.timeBar),
+        value: current.formatDateTime(req.interval),
         valueStyle: valueStyle,
       ),
       TooltipInfo(

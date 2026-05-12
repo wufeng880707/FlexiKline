@@ -57,7 +57,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
     final isUpdate = await ref.read(routerProvider).pushNamed(
       'landscapeKline',
       extra: {
-        "candleReq": widget.controller.curKlineData.req.toInitReq(),
+        "candleReq": widget.controller.curKlineData.spec.initial(),
         "configuration": widget.controller.configuration,
       },
     );

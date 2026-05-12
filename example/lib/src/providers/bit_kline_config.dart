@@ -28,30 +28,66 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-abstract class BaseBitFlexiKlineTheme with FlexiKlineThemeTextStyle implements IFlexiKlineTheme {
+abstract class BaseBitFlexiKlineTheme implements IFlexiKlineTheme {
   abstract String key;
 
 // 添加构造函数接收动态颜色
   BaseBitFlexiKlineTheme({
-    required this.long,
-    required this.short,
-  });
+    required Color long,
+    required Color short,
+  })  : longColor = long,
+        shortColor = short;
 
   @override
-  final Color long;
+  final Color longColor;
 
   @override
-  final Color short;
+  final Color shortColor;
+
+  Color get long => longColor;
+  Color get short => shortColor;
+
+  Color get countDownTextBg;
+  Color get latestPriceTextBg;
+  Color get lastPriceTextBg;
+  Color get gridLine;
+  Color get crossColor => const Color(0xFFF6A701);
+  Color get drawColor => Colors.blueAccent;
+  Color get drawTextBg => Colors.blue;
+  Color get drawTextColor => const Color(0xFFFFFFFF);
+  Color get themeColor;
+  Color get lastPriceTextColor;
+
+  Color transparent = Colors.transparent;
+
+  @override
+  Color get latestPriceBg => latestPriceTextBg;
+
+  @override
+  Color get lastPriceBg => lastPriceTextBg;
+
+  @override
+  Color get countDownBg => countDownTextBg;
+
+  @override
+  Color get gridLineColor => gridLine;
+
+  @override
+  Color get crosshairColor => crossColor;
+
+  @override
+  Color get drawToolColor => drawColor;
+
+  @override
+  Color get lastPriceColor => lastPriceTextColor;
 
   double? _scale;
-  @override
   double get scale => _scale ??= math.min(
         ScreenUtil().scaleWidth,
         ScreenUtil().scaleHeight,
       );
 
   double? _pixel;
-  @override
   double get pixel {
     if (_pixel != null) return _pixel!;
     double? ratio = ScreenUtil().pixelRatio;
@@ -60,31 +96,9 @@ abstract class BaseBitFlexiKlineTheme with FlexiKlineThemeTextStyle implements I
     return _pixel!;
   }
 
-  @override
   double setDp(num size) => ScreenUtil().radius(size);
 
-  @override
   double setSp(num fontSize) => ScreenUtil().setSp(fontSize);
-
-  // @override
-  // Color long = const Color(0xFF21B26D);
-
-  // @override
-  // Color short = const Color(0xFFEE4549);
-
-  @override
-  Color transparent = Colors.transparent;
-
-  @override
-  Color crossColor = const Color(0xFFF6A701);
-
-  @override
-  Color get drawColor => Colors.blueAccent;
-
-  Color get drawTextBg => Colors.blue;
-
-  @override
-  Color get drawTextColor => const Color(0xFFFFFFFF);
 }
 
 class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
@@ -363,15 +377,6 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   }
 
   @override
-  LoadingConfig genInnerLoadingConfig([LoadingConfig? loading]) {
-    final theme = ref.read(bitFlexiKlineThemeProvider);
-    return super.genInnerLoadingConfig(loading).copyWith(
-          background: theme.countDownTextBg,
-          valueColor: theme.crossColor,
-        );
-  }
-
-  @override
   CrossConfig genCrossConfig([CrossConfig? cross]) {
     return super.genCrossConfig(cross).copyWith(
           moveByCandleInBlank: true,
@@ -387,15 +392,21 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
 
   @override
   SettingConfig genSettingConfig([SettingConfig? setting]) {
+    final theme = ref.read(bitFlexiKlineThemeProvider);
+    final config = super.genSettingConfig(setting);
     return super.genSettingConfig(setting).copyWith(
           candleFixedSpacing: null,
           candleSpacingParts: 7,
+          loading: config.loading.copyWith(
+            backgroundColor: theme.countDownTextBg,
+            valueColor: theme.crossColor,
+          ),
         );
   }
 
   @override
-  TimeIndicator genTimeIndicator(TimeIndicator? instance) {
-    return super.genTimeIndicator(instance).copyWith(
+  IndicatorBuilder<TimeIndicator> get timeIndicatorBuilder {
+    return (json) => super.timeIndicatorBuilder(json).copyWith(
           position: DrawPosition.bottom,
         );
   }
@@ -416,10 +427,10 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
   }
 
   // 时间周期配置缓存
-  List<ITimeBar>? _cachedTimeBarConfigs;
+  List<ITimeInterval>? _cachedTimeBarConfigs;
 
   /// 获取时间周期配置列表
-  List<ITimeBar> getTimeBarConfigs() {
+  List<ITimeInterval> getTimeBarConfigs() {
     if (_cachedTimeBarConfigs != null) {
       return _cachedTimeBarConfigs!;
     }
@@ -429,31 +440,31 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     return _cachedTimeBarConfigs!;
   }
 
-  List<ITimeBar> _getDefaultTimeBarConfigs() {
+  List<ITimeInterval> _getDefaultTimeBarConfigs() {
     // 返回常用的时间周期列表
     return [
-      const FlexiTimeBar('1m', 1, TimeUnit.minute),
-      const FlexiTimeBar('3m', 3, TimeUnit.minute),
-      const FlexiTimeBar('5m', 5, TimeUnit.minute),
-      const FlexiTimeBar('15m', 15, TimeUnit.minute),
-      const FlexiTimeBar('30m', 30, TimeUnit.minute),
-      const FlexiTimeBar('1H', 1, TimeUnit.hour),
-      const FlexiTimeBar('2H', 2, TimeUnit.hour),
-      const FlexiTimeBar('4H', 4, TimeUnit.hour),
-      const FlexiTimeBar('6H', 6, TimeUnit.hour),
-      const FlexiTimeBar('12H', 12, TimeUnit.hour),
-      const FlexiTimeBar('1D', 1, TimeUnit.day),
-      const FlexiTimeBar('2D', 2, TimeUnit.day),
-      const FlexiTimeBar('3D', 3, TimeUnit.day),
-      const FlexiTimeBar('1W', 1, TimeUnit.week),
-      const FlexiTimeBar('1M', 1, TimeUnit.month),
-      const FlexiTimeBar('3M', 3, TimeUnit.month),
+      const FlexiTimeInterval(1, TimeUnit.minute),
+      const FlexiTimeInterval(3, TimeUnit.minute),
+      const FlexiTimeInterval(5, TimeUnit.minute),
+      const FlexiTimeInterval(15, TimeUnit.minute),
+      const FlexiTimeInterval(30, TimeUnit.minute),
+      const FlexiTimeInterval(1, TimeUnit.hour),
+      const FlexiTimeInterval(2, TimeUnit.hour),
+      const FlexiTimeInterval(4, TimeUnit.hour),
+      const FlexiTimeInterval(6, TimeUnit.hour),
+      const FlexiTimeInterval(12, TimeUnit.hour),
+      const FlexiTimeInterval(1, TimeUnit.day),
+      const FlexiTimeInterval(2, TimeUnit.day),
+      const FlexiTimeInterval(3, TimeUnit.day),
+      const FlexiTimeInterval(1, TimeUnit.week),
+      const FlexiTimeInterval(1, TimeUnit.month),
+      const FlexiTimeInterval(3, TimeUnit.month),
       // UTC 时间周期
-      const FlexiTimeBar('6Hutc', 6, TimeUnit.hour),
-      const FlexiTimeBar('12Hutc', 12, TimeUnit.hour),
-      const FlexiTimeBar('1Dutc', 1, TimeUnit.day),
-      const FlexiTimeBar('1Wutc', 1, TimeUnit.week),
-      const FlexiTimeBar('1Mutc', 1, TimeUnit.month),
+      const FlexiTimeInterval(6, TimeUnit.hour),
+      const FlexiTimeInterval(12, TimeUnit.hour),
+      const FlexiTimeInterval(1, TimeUnit.day),
+      const FlexiTimeInterval(1, TimeUnit.week),
+      const FlexiTimeInterval(1, TimeUnit.month),
     ];
   }
 
@@ -746,7 +757,7 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
         _cachedMainIndicatorBuilders = null;
       } else if (key == 'subIndicatorBuilders') {
         _cachedSubIndicatorBuilders = null;
-      } else if (key == 'timeBarConfigs') {
+      } else if (key == 'intervalConfigs') {
         _cachedTimeBarConfigs = null;
       }
 

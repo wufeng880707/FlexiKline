@@ -23,12 +23,12 @@ import 'package:flutter/foundation.dart';
 /// 生成自定义的蜡烛数据
 /// 
 /// [count] 生成数据的数量，默认7条
-/// [timeBar] 时间粒度配置，用于计算时间戳
+/// [interval] 时间粒度配置，用于计算时间戳
 /// 
 /// 返回包含固定价格数据的K线数据列表，主要用于测试和演示
 Future<List<CandleModel>> genCustomCandleList({
   int count = 7,
-  required ITimeBar timeBar,
+  required ITimeInterval interval,
 }) async {
   DateTime dateTime = DateTime.now();
   return <CandleModel>[
@@ -114,7 +114,7 @@ Future<List<CandleModel>> genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-  required ITimeBar timeBar,
+  required ITimeInterval interval,
   DateTime? dateTime,
   bool isHistory = true,
 }) async {
@@ -127,7 +127,7 @@ Future<List<CandleModel>> genRandomCandleList({
         range: list[2],
         initalVol: list[3],
         rangeVol: list[4],
-        timeBar: list[5],
+        interval: list[5],
         dateTime: list[6],
         isHistory: list[7],
       );
@@ -139,7 +139,7 @@ Future<List<CandleModel>> genRandomCandleList({
       range,
       initalVol,
       rangeVol,
-      timeBar,
+      interval,
       dateTime,
       isHistory,
     ]);
@@ -150,7 +150,7 @@ Future<List<CandleModel>> genRandomCandleList({
     range: range,
     initalVol: initalVol,
     rangeVol: rangeVol,
-    timeBar: timeBar,
+    interval: interval,
     dateTime: dateTime,
     isHistory: isHistory,
   );
@@ -162,7 +162,7 @@ Future<List<CandleModel>> _genRandomCandleList({
   double range = 100,
   double initalVol = 100,
   double rangeVol = 50,
-  required ITimeBar timeBar,
+  required ITimeInterval interval,
   DateTime? dateTime,
   bool isHistory = true,
 }) async {
@@ -198,7 +198,7 @@ Future<List<CandleModel>> _genRandomCandleList({
     v = genVal(v, rangeVol);
     m = CandleModel(
       timestamp: dateTime
-          .add(Duration(milliseconds: flag * i * timeBar.milliseconds))
+          .add(Duration(milliseconds: flag * i * interval.milliseconds))
           .millisecondsSinceEpoch,
       high: h.d,
       open: o.d,

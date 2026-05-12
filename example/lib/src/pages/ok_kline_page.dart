@@ -71,11 +71,11 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId,
         );
-    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.bar == '15m');
+    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '15m');
 
-    req = CandleReq(
-      instId: widget.instId,
-      timeBar: m15TimeBar,
+    req = KlineSpec(
+      symbol: widget.instId,
+      interval: m15TimeBar,
       precision: p ?? 2,
       limit: 300,
     );
@@ -85,7 +85,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     controller.onLoadMoreCandles = loadMoreCandles;
 
     _tradeMarkManager = TradeMarkDataManager(controller);
-    controller.timeBarListener.addListener(_onTimeBarChanged);
+    controller.intervalListener.addListener(_onTimeBarChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       initKlineData(req);
@@ -93,12 +93,12 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
   }
 
   void _onTimeBarChanged() {
-    _tradeMarkManager.onTimeBarChanged(controller.timeBarListener.value);
+    _tradeMarkManager.onTimeBarChanged(controller.intervalListener.value);
   }
 
   @override
   void dispose() {
-    controller.timeBarListener.removeListener(_onTimeBarChanged);
+    controller.intervalListener.removeListener(_onTimeBarChanged);
     _tradeMarkManager.dispose();
     controller.dispose();
     super.dispose();
@@ -128,14 +128,14 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
           child: const Icon(Icons.menu_outlined),
         ),
         title: TradingPairSelectTitle(
-          instId: req.instId,
+          instId: req.symbol,
           onChangeTradingPair: onChangeTradingSymbol,
         ),
         centerTitle: true,
       ),
       body: EasyRefresh(
         onRefresh: () async {
-          req = req.copyWith(after: null, before: null);
+          req = req.copyWith(from: null, to: null);
           await initKlineData(req, reset: true);
         },
         child: LayoutBuilder(
@@ -154,7 +154,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
                   Visibility(
                     visible: !isFullScreen,
                     child: MarketTickerView(
-                      instId: req.instId,
+                      instId: req.symbol,
                       precision: req.precision,
                     ),
                   ),
@@ -268,13 +268,13 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
 
         /// Loading
         ValueListenableBuilder(
-          valueListenable: controller.candleRequestListener,
-          builder: (context, request, child) {
+          valueListenable: controller.loadingStateListener,
+          builder: (context, loadingState, child) {
             return Offstage(
-              offstage: !request.state.showLoading,
+              offstage: !loadingState.showLoading,
               child: Container(
                 key: const ValueKey('loadingView'),
-                alignment: request.state == RequestState.initLoading
+                alignment: loadingState == KlineLoadingState.initLoading
                     ? AlignmentDirectional.center
                     : AlignmentDirectional.centerStart,
                 padding: EdgeInsetsDirectional.all(32.r),
@@ -295,7 +295,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
   }
 
   @override
-  Future<void> initKlineData(CandleReq request, {bool reset = false}) async {
+  Future<void> initKlineData(KlineSpec request, {bool reset = false}) async {
     await super.initKlineData(request, reset: reset);
     _injectTestTradeMarks();
   }
@@ -309,7 +309,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     }
 
     final marks = createTestTradeMarks(klineData);
-    _tradeMarkManager.onTimeBarChanged(klineData.req.timeBar);
+    _tradeMarkManager.onTimeBarChanged(klineData.spec.interval);
     _tradeMarkManager.setRawMarks(marks);
   }
 }

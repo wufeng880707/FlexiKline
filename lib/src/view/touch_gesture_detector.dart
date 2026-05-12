@@ -213,6 +213,14 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
 
   /// 点击
   void onTapUp(TapUpDetails details) {
+    // Business Overlay 编辑态优先消费点击：空白处只退出编辑，不继续触发绘图。
+    if (controller.businessOverlayState.isEditing &&
+        controller.onBusinessOverlayTap(details.localPosition)) {
+      logd('onTapUp business overlay handled before draw! :$details');
+      controller.cancelCross();
+      return;
+    }
+
     if (controller.isDrawVisibility) {
       switch (drawState) {
         case Drawing():
@@ -294,7 +302,12 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       return;
     }
 
-    if (controller.isDrawVisibility && drawState.isOngoing) {
+    if (details.pointerCount == 1 &&
+        controller.businessOverlayState.isEditing &&
+        controller.onBusinessDragStart(details.localFocalPoint)) {
+      logd('onScaleStart business drag > details:$details');
+      _panScaleData = GestureData.pan(details.localFocalPoint);
+    } else if (controller.isDrawVisibility && drawState.isOngoing) {
       if (drawState.isDrawing) {
         // 未完成的暂不允许移动
         return;
@@ -307,11 +320,6 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         _panScaleData?.end();
         _panScaleData = null;
       }
-    } else if (details.pointerCount == 1 &&
-        controller.businessOverlayState.isEditing &&
-        controller.onBusinessDragStart(details.localFocalPoint)) {
-      logd('onScaleStart business drag > details:$details');
-      _panScaleData = GestureData.pan(details.localFocalPoint);
     } else if (gestureConfig.enableScale && details.pointerCount > 1) {
       ScalePosition position = _panScaleData?.initPosition ?? gestureConfig.scalePosition;
       if (position == ScalePosition.auto) {

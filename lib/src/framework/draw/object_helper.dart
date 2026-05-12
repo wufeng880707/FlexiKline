@@ -112,6 +112,7 @@ mixin DrawConfigMixin on OverlayObject {
 
 mixin DrawObjectMixin on DrawStateObject {
   void doDidChangeTheme(IFlexiKlineTheme theme) {
+    setDrawLineConfig(line.ensure(theme.drawToolColor));
     didChangeTheme(theme);
   }
 

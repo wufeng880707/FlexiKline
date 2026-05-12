@@ -37,7 +37,7 @@ void main() {
   });
 
   group('FlexiStopwatch', () {
-    final ILogger defaultLogger = LogPrintImpl(tag: 'FlexiStopwatch');
+    final LogPrintImpl defaultLogger = LogPrintImpl(tag: 'FlexiStopwatch');
     final FlexiStopwatch stopwatch = FlexiStopwatch();
 
     setUp(() {
@@ -73,7 +73,7 @@ void main() {
           }
         },
         label: 'sync',
-        logger: defaultLogger.logd,
+        logger: (msg, {wrapWidth}) => defaultLogger.logd(msg ?? ''),
       );
       expect(stopwatch.isRunning, true);
       debugPrint('runSync end');
@@ -83,7 +83,7 @@ void main() {
       await stopwatch.exec(
         () => Future.delayed(Duration(milliseconds: 1000)),
         label: 'async',
-        logger: defaultLogger.logd,
+        logger: (msg, {wrapWidth}) => defaultLogger.logd(msg ?? ''),
       );
       expect(stopwatch.isRunning, true);
       debugPrint('runAsync end');

@@ -29,7 +29,7 @@ class MarketTooltipCustomView extends ConsumerWidget {
     this.data,
   });
 
-  final CandleReq candleReq;
+  final KlineSpec candleReq;
   final FlexiCandleModel? data;
 
   int get p => candleReq.precision;

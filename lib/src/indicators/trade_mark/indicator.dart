@@ -153,8 +153,10 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
     );
     if (groupedMarks == null || groupedMarks.isEmpty) return;
 
-    final startIndex = klineData.start;
-    final endIndex = klineData.end;
+    final startIndex = math.max(0, klineData.start);
+    final endIndex = math.min(klineData.end, klineData.list.length - 1);
+    if (startIndex > endIndex) return;
+
     final paint = Paint()..style = PaintingStyle.fill;
     final param = indicator.calcParam;
 

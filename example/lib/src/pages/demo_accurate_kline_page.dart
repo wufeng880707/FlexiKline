@@ -41,8 +41,8 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
   late final FlexiKlineController controller2;
   late final DefaultFlexiKlineConfiguration configuration;
 
-  late CandleReq req1;
-  late CandleReq req2;
+  late KlineSpec req1;
+  late KlineSpec req2;
 
   final logger = LogPrintImpl(
     debug: kDebugMode,
@@ -53,16 +53,16 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
   void initState() {
     super.initState();
     configuration = DefaultFlexiKlineConfiguration(ref: ref);
-    final timeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.bar == '1H');
+    final interval = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '1H');
 
-    req1 = CandleReq(
-      instId: 'SATS-USDT',
-      timeBar: timeBar,
+    req1 = KlineSpec(
+      symbol: 'SATS-USDT',
+      interval: interval,
       precision: 33,
     );
-    req2 = CandleReq(
-      instId: 'SATS-USDT',
-      timeBar: timeBar,
+    req2 = KlineSpec(
+      symbol: 'SATS-USDT',
+      interval: interval,
       precision: 4,
     );
     controller1 = FlexiKlineController(
@@ -85,34 +85,34 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
   }
 
   /// 初始化加载K线蜡烛数据.
-  Future<void> initKlineData1(CandleReq request) async {
+  Future<void> initKlineData1(KlineSpec request) async {
     controller1.switchKlineData(request);
     final list = await genLocalMinusculeCandleList();
     await controller1.updateKlineData(request, list);
   }
 
   /// 初始化加载K线蜡烛数据.
-  Future<void> initKlineData2(CandleReq request) async {
+  Future<void> initKlineData2(KlineSpec request) async {
     controller2.switchKlineData(request);
     final list = await genLocalCandleList();
     await controller2.updateKlineData(request, list);
   }
 
-  Future<void> loadMoreCandles(CandleReq request) async {
+  Future<void> loadMoreCandles(KlineSpec request) async {
     SmartDialog.showToast('This is a simulation operation!');
   }
 
-  void onTapTimeBar1(ITimeBar timeBar) {
-    if (timeBar != req1.timeBar) {
-      req1 = req1.copyWith(timeBar: timeBar);
+  void onTapTimeBar1(ITimeInterval interval) {
+    if (interval != req1.interval) {
+      req1 = req1.copyWith(interval: interval);
       setState(() {});
       initKlineData1(req1);
     }
   }
 
-  void onTapTimeBar2(ITimeBar timeBar) {
-    if (timeBar != req2.timeBar) {
-      req2 = req2.copyWith(timeBar: timeBar);
+  void onTapTimeBar2(ITimeInterval interval) {
+    if (interval != req2.interval) {
+      req2 = req2.copyWith(interval: interval);
       setState(() {});
       initKlineData2(req2);
     }

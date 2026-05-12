@@ -32,7 +32,7 @@ class FibFansDrawObject extends DrawObject {
   FibFansParams getDrawParams(IDrawContext context) {
     return FibFansParams(
       params: const [0.382, 0.5, 0.618],
-      gridColor: line.paint.color.withValues(alpha: 0.3),
+      gridColor: lineColor.withValues(alpha: 0.3),
     );
   }
 
@@ -101,7 +101,7 @@ class FibFansDrawObject extends DrawObject {
     final fibText = config.ticksText;
     final fibGridColor = drawParams.gridColor;
     final isDrawGrid = true;
-    final colors = [line.paint.color];
+    final colors = [lineColor];
     int i = 0;
 
     final dxLen = B.dx - A.dx;

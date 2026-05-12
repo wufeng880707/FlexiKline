@@ -87,7 +87,7 @@ class RectangleDrawObject extends DrawObject {
     canvas.drawPath(
       Path()..addRect(rect),
       line.linePaint
-        ..color = line.paint.color.withValues(
+        ..color = lineColor.withValues(
           alpha: getDrawParams(context).bgOpacity,
         )
         ..style = PaintingStyle.fill,

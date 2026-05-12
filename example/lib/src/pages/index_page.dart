@@ -48,7 +48,7 @@ class IndexPage extends ConsumerStatefulWidget {
 
 class _IndexPageState extends ConsumerState<IndexPage> with WideScreenMixin {
   List<Destination> get destinations => <Destination>[
-        Destination(Icons.bar_chart_rounded, S.current.demo),
+        Destination(Icons.candlestick_chart_rounded, S.current.demo),
         Destination(Icons.view_comfy_alt_rounded, S.current.ok),
         Destination(Icons.pets_rounded, S.current.bit),
       ];

@@ -293,10 +293,7 @@ class _DrawToolbarContent extends StatelessWidget {
   /// 获取当前绘制颜色
   Color _getCurrentPaintColor(LineConfig lineStyle) {
     final currentColor = lineStyle.paint.color;
-    if (flexiKlinePaintColors.contains(currentColor)) {
-      return currentColor;
-    }
-    return flexiKlinePaintColors.first;
+    return currentColor ?? flexiKlinePaintColors.first;
   }
 
   /// 获取当前线条粗细

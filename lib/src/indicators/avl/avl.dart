@@ -23,7 +23,6 @@ import 'package:flexi_formatter/flexi_formatter.dart';
 import 'avl_param.dart';
 export 'avl_param.dart';
 import '../../constant.dart';
-import '../../core/core.dart';
 import '../../extension/export.dart';
 import '../../framework/export.dart';
 import '../../model/export.dart';

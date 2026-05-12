@@ -18,7 +18,7 @@ import 'package:flutter/widgets.dart';
 import 'data/kline_data.dart';
 import 'framework/configuration.dart';
 import 'kline_controller.dart';
-import 'model/candle_req/candle_req.dart';
+import 'model/export.dart';
 
 abstract interface class IFlexiKlinePage {
   FlexiKlineController get klineController;
@@ -27,13 +27,13 @@ abstract interface class IFlexiKlinePage {
   bool get isResume;
 
   /// 刷新K线数据
-  /// @param [request] 刷新请求, 其中的 [before] 时间戳代表请求此时间戳之后（更新的数据）的数据.
+  /// @param [spec] 刷新规格.
   /// @param [reset] 是否重置当前KlineData所有数据
-  Future<void> refreshKlineData(CandleReq request, {bool reset = false});
+  Future<void> refreshKlineData(KlineSpec spec, {bool reset = false});
 
   /// 更新历史行情的蜡烛数据
-  /// [request] 请求[after]时间戳之前（更旧的数据）的分页内容
-  Future<void> loadMoreCandles(CandleReq request);
+  /// [spec] 请求 [to] 时间戳之前（更旧的数据）的分页内容
+  Future<void> loadMoreCandles(KlineSpec spec);
 
   /// 暂停K线数据推送
   Future<void> stopKlineDataPush() async {}
@@ -52,8 +52,8 @@ mixin FlexiKlinePageMixin<T extends StatefulWidget> on State<T> implements IFlex
   /// 当前KlineData
   KlineData get curKlineData => klineController.curKlineData;
 
-  /// 当前KlineData的刷新请求
-  CandleReq get refreshRequest => curKlineData.getRefreshRequest(isResetKlineDataWhenResume);
+  /// 当前KlineData的刷新规格
+  KlineSpec get refreshSpec => curKlineData.getRefreshSpec(isResetKlineDataWhenResume);
 
   /// 当回到前台时，是否需要重置当前KlineData所有数据
   bool get isResetKlineDataWhenResume => false;
@@ -94,7 +94,7 @@ mixin FlexiKlinePageMixin<T extends StatefulWidget> on State<T> implements IFlex
   /// 回到前台(可见)
   void onShow() {
     log('onShow');
-    refreshKlineData(refreshRequest, reset: isResetKlineDataWhenResume);
+    refreshKlineData(refreshSpec, reset: isResetKlineDataWhenResume);
   }
 
   /// 退出前台(完全不可见)

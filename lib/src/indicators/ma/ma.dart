@@ -24,7 +24,6 @@ import 'package:flutter/painting.dart';
 import 'ma_param.dart';
 export 'ma_param.dart';
 import '../../constant.dart';
-import '../../core/core.dart';
 import '../../extension/export.dart';
 import '../../framework/export.dart';
 import '../../model/export.dart';

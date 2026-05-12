@@ -12,9 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:math' as math;
+
+import 'package:flexi_formatter/date_time.dart' show TimeUnit;
 import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show EdgeInsets;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:logger/logger.dart';
 
 // 是否启用实时更新Kline数据.
@@ -55,115 +60,96 @@ final defLogger = Logger(
   output: null, // Use the default LogOutput (-> send everything to console)
 );
 
-class LoggerImpl implements ILogger {
-  final String? tag;
-  bool debug;
-  final Logger logger;
-
+class LoggerImpl implements IFlexiLogger {
   LoggerImpl({
     this.tag,
     this.debug = false,
     Logger? logger,
   }) : logger = logger ?? defLogger;
 
-  @override
-  String? get logTag => tag;
+  final String? tag;
+  final bool debug;
+  final Logger logger;
 
   @override
-  bool get isDebug => debug;
+  bool get debugMode => debug;
 
   @override
-  void logd(
+  void log(
+    FlexiLogLevel level,
+    String tag,
     String msg, {
-    DateTime? time,
     Object? error,
     StackTrace? stackTrace,
   }) {
-    logger.d(msg, time: time, error: error, stackTrace: stackTrace);
-  }
-
-  @override
-  void logi(
-    String msg, {
-    DateTime? time,
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
-    logger.i(msg, time: time, error: error, stackTrace: stackTrace);
-  }
-
-  @override
-  void logw(
-    String msg, {
-    DateTime? time,
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
-    logger.w(msg, time: time, error: error, stackTrace: stackTrace);
-  }
-
-  @override
-  void loge(
-    String msg, {
-    DateTime? time,
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
-    logger.e(msg, time: time, error: error, stackTrace: stackTrace);
+    final text = this.tag == null ? '[$tag] $msg' : '[${this.tag}][$tag] $msg';
+    switch (level) {
+      case FlexiLogLevel.debug:
+        logger.d(text, error: error, stackTrace: stackTrace);
+      case FlexiLogLevel.info:
+        logger.i(text, error: error, stackTrace: stackTrace);
+      case FlexiLogLevel.warn:
+        logger.w(text, error: error, stackTrace: stackTrace);
+      case FlexiLogLevel.error:
+        logger.e(text, error: error, stackTrace: stackTrace);
+    }
   }
 }
 
-class LogPrintImpl implements ILogger {
-  final String? tag;
-  bool debug;
-
-  LogPrintImpl({
+class LogPrintImpl implements IFlexiLogger {
+  const LogPrintImpl({
     this.tag,
     this.debug = false,
   });
-  @override
-  bool get isDebug => debug;
+
+  final String? tag;
+  final bool debug;
 
   @override
-  String? get logTag => tag;
+  bool get debugMode => debug;
 
   @override
-  void logd(
+  void log(
+    FlexiLogLevel level,
+    String tag,
     String msg, {
-    DateTime? time,
     Object? error,
     StackTrace? stackTrace,
   }) {
-    debugPrint("zp:::Debug $logTag\t$msg");
+    final levelLabel = switch (level) {
+      FlexiLogLevel.debug => 'Debug',
+      FlexiLogLevel.info => 'Info',
+      FlexiLogLevel.warn => 'Warn',
+      FlexiLogLevel.error => 'Error',
+    };
+    final prefix = this.tag == null ? 'zp:::$levelLabel [$tag]' : 'zp:::$levelLabel ${this.tag}[$tag]';
+    debugPrint('$prefix\t$msg');
   }
+}
 
-  @override
-  void logi(
-    String msg, {
-    DateTime? time,
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
-    debugPrint("zp:::Info $logTag\t$msg");
-  }
+extension KlineThemeUiExt on IFlexiKlineTheme {
+  double get scale => math.min(ScreenUtil().scaleWidth, ScreenUtil().scaleHeight);
+  double get normalTextSize => ScreenUtil().setSp(defaultTextSize);
+  EdgeInsets get mainIndicatorPadding => EdgeInsets.only(top: 20 * scale, bottom: 20 * scale);
+  double get mainIndicatorHeight => 300.r;
+  double get subIndicatorHeight => 100.r;
+  EdgeInsets get tipsPadding => EdgeInsets.only(left: 8 * scale);
+  EdgeInsets get textPadding => EdgeInsets.all(2 * scale);
+}
 
-  @override
-  void logw(
-    String msg, {
-    DateTime? time,
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
-    debugPrint("zp:::Warn $logTag\t$msg");
-  }
-
-  @override
-  void loge(
-    String msg, {
-    DateTime? time,
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
-    debugPrint("zp:::Error $logTag\t$msg");
+extension KlineIntervalExt on ITimeInterval {
+  String get bar {
+    final suffix = switch (unit) {
+      TimeUnit.second => 's',
+      TimeUnit.minute => 'm',
+      TimeUnit.hour => 'H',
+      TimeUnit.day => 'D',
+      TimeUnit.week => 'W',
+      TimeUnit.month => 'M',
+      TimeUnit.year => 'Y',
+      TimeUnit.millisecond => 'ms',
+      TimeUnit.microsecond => 'us',
+    };
+    return '$multiplier$suffix';
   }
 }

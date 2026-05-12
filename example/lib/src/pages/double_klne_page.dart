@@ -37,8 +37,8 @@ class DoubleKlinePage extends ConsumerStatefulWidget {
 }
 
 class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
-  late CandleReq req1;
-  late CandleReq req2;
+  late KlineSpec req1;
+  late KlineSpec req2;
   late final FlexiKlineController controller1;
   late final FlexiKlineController controller2;
   late final DefaultFlexiKlineConfiguration configuration;
@@ -60,17 +60,17 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
           widget.instId2,
         );
 
-    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.bar == '15m');
+    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '15m');
 
-    req1 = CandleReq(
-      instId: widget.instId1,
-      timeBar: m15TimeBar,
+    req1 = KlineSpec(
+      symbol: widget.instId1,
+      interval: m15TimeBar,
       precision: p1 ?? 2,
       limit: 300,
     );
-    req2 = CandleReq(
-      instId: widget.instId2,
-      timeBar: m15TimeBar,
+    req2 = KlineSpec(
+      symbol: widget.instId2,
+      interval: m15TimeBar,
       precision: p2 ?? 2,
       limit: 300,
     );

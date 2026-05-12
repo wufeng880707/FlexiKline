@@ -159,7 +159,7 @@ class _KlineSettingPageState extends ConsumerState<KlineSettingPage> {
       ChartBarStyle.allHollow => Icons.candlestick_chart_outlined,
       ChartBarStyle.upHollow => Icons.candlestick_chart,
       ChartBarStyle.downHollow => Icons.candlestick_chart_outlined,
-      ChartBarStyle.ohlc => Icons.bar_chart,
+      ChartBarStyle.ohlc => Icons.candlestick_chart,
     };
   }
 

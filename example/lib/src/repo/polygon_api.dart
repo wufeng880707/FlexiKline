@@ -85,14 +85,14 @@ List<CandleModel> _dataToCandleList(dynamic data) {
 }
 
 Future<ApiResult<List<CandleModel>>> getHistoryKlineData(
-  CandleReq req, {
+  KlineSpec req, {
   CancelToken? cancelToken,
 }) {
-  final stocksTicker = req.instId;
-  final multiplier = req.timeBar?.multiplier;
-  final timespan = req.timeBar?.bar;
-  final from = req.after;
-  final to = req.before;
+  final stocksTicker = req.symbol;
+  final multiplier = req.interval.multiplier;
+  final timespan = req.interval.debugLabel;
+  final from = req.from;
+  final to = req.to;
   return polygonHttpClient.request(
     '/v2/aggs/ticker/$stocksTicker/range/$multiplier/$timespan/$from/$to',
     _dataToCandleList,

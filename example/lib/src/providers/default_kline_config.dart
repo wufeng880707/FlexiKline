@@ -43,49 +43,94 @@ Map<TooltipLabel, String> tooltipLables() {
   };
 }
 
-class DefaultFlexiKlineTheme extends BaseFlexiKlineTheme with FlexiKlineThemeTextStyle {
+class DefaultFlexiKlineTheme implements IFlexiKlineTheme {
   final FKTheme theme;
 
   DefaultFlexiKlineTheme({
     required this.theme,
-  }) : super(
-          dragBg: theme.translucentBg,
-          latestPriceTextBg: theme.translucentBg,
-          lineChartColor: const Color(0xFF2196F3),
-          markLineColor: theme.t1,
-          long: theme.long,
-          short: theme.short,
-          chartBg: theme.pageBg,
-          tooltipBg: theme.markBg,
-          countDownTextBg: theme.markBg,
-          crossTextBg: theme.lightBg,
-          transparent: theme.transparent,
-          lastPriceTextBg: theme.translucentBg,
-          gridLine: theme.gridLine,
-          crossColor: theme.t1,
-          drawColor: Colors.blueAccent,
-          drawTextColor: theme.t1,
-          themeColor: theme.themeColor,
-          textColor: theme.t1,
-          ticksTextColor: theme.t2,
-          lastPriceTextColor: theme.t1,
-          crossTextColor: theme.themeColor,
-          tooltipTextColor: theme.t1,
-        );
+  });
 
   String get key {
     return 'flexi_kline_config_key-${theme.brightness.name}';
   }
 
-  double? _scale;
+  Color get transparent => theme.transparent;
+  Color get long => theme.long;
+  Color get short => theme.short;
+  Color get latestPriceTextBg => theme.translucentBg;
+  Color get countDownTextBg => theme.markBg;
+  Color get lastPriceTextBg => theme.translucentBg;
+  Color get gridLine => theme.gridLine;
+  Color get crossColor => theme.t1;
+  Color get drawColor => Colors.blueAccent;
+  Color get drawTextColor => theme.t1;
+  Color get themeColor => theme.themeColor;
+  Color get lastPriceTextColor => theme.t1;
+
   @override
+  Color get longColor => long;
+
+  @override
+  Color get shortColor => short;
+
+  @override
+  Color get chartBg => theme.pageBg;
+
+  @override
+  Color get tooltipBg => theme.markBg;
+
+  @override
+  Color get crossTextBg => theme.lightBg;
+
+  @override
+  Color get latestPriceBg => latestPriceTextBg;
+
+  @override
+  Color get lastPriceBg => lastPriceTextBg;
+
+  @override
+  Color get countDownBg => countDownTextBg;
+
+  @override
+  Color get dragBg => theme.translucentBg;
+
+  @override
+  Color get gridLineColor => gridLine;
+
+  @override
+  Color get crosshairColor => crossColor;
+
+  @override
+  Color get drawToolColor => drawColor;
+
+  @override
+  Color get markLineColor => theme.t1;
+
+  @override
+  Color get lineChartColor => const Color(0xFF2196F3);
+
+  @override
+  Color get textColor => theme.t1;
+
+  @override
+  Color get ticksTextColor => theme.t2;
+
+  @override
+  Color get lastPriceColor => lastPriceTextColor;
+
+  @override
+  Color get crossTextColor => theme.themeColor;
+
+  @override
+  Color get tooltipTextColor => theme.t1;
+
+  double? _scale;
   double get scale => _scale ??= math.min(
         ScreenUtil().scaleWidth,
         ScreenUtil().scaleHeight,
       );
 
   double? _pixel;
-  @override
   double get pixel {
     if (_pixel != null) return _pixel!;
     double? ratio = ScreenUtil().pixelRatio;
@@ -94,10 +139,8 @@ class DefaultFlexiKlineTheme extends BaseFlexiKlineTheme with FlexiKlineThemeTex
     return _pixel!;
   }
 
-  @override
   double setDp(num size) => ScreenUtil().radius(size);
 
-  @override
   double setSp(num fontSize) => ScreenUtil().setSp(fontSize);
 }
 
@@ -479,22 +522,22 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   // ========== 时间周期配置 ==========
 
   /// 获取时间周期配置列表
-  List<ITimeBar> getTimeBarConfigs() {
+  List<ITimeInterval> getTimeBarConfigs() {
     // 返回常用的时间周期列表
     return [
-      const FlexiTimeBar('1m', 1, TimeUnit.minute),
-      const FlexiTimeBar('3m', 3, TimeUnit.minute),
-      const FlexiTimeBar('5m', 5, TimeUnit.minute),
-      const FlexiTimeBar('15m', 15, TimeUnit.minute),
-      const FlexiTimeBar('30m', 30, TimeUnit.minute),
-      const FlexiTimeBar('1H', 1, TimeUnit.hour),
-      const FlexiTimeBar('2H', 2, TimeUnit.hour),
-      const FlexiTimeBar('4H', 4, TimeUnit.hour),
-      const FlexiTimeBar('6H', 6, TimeUnit.hour),
-      const FlexiTimeBar('12H', 12, TimeUnit.hour),
-      const FlexiTimeBar('1D', 1, TimeUnit.day),
-      const FlexiTimeBar('1W', 1, TimeUnit.week),
-      const FlexiTimeBar('1M', 1, TimeUnit.month),
+      const FlexiTimeInterval(1, TimeUnit.minute),
+      const FlexiTimeInterval(3, TimeUnit.minute),
+      const FlexiTimeInterval(5, TimeUnit.minute),
+      const FlexiTimeInterval(15, TimeUnit.minute),
+      const FlexiTimeInterval(30, TimeUnit.minute),
+      const FlexiTimeInterval(1, TimeUnit.hour),
+      const FlexiTimeInterval(2, TimeUnit.hour),
+      const FlexiTimeInterval(4, TimeUnit.hour),
+      const FlexiTimeInterval(6, TimeUnit.hour),
+      const FlexiTimeInterval(12, TimeUnit.hour),
+      const FlexiTimeInterval(1, TimeUnit.day),
+      const FlexiTimeInterval(1, TimeUnit.week),
+      const FlexiTimeInterval(1, TimeUnit.month),
     ];
   }
 

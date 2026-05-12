@@ -27,7 +27,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
   });
 
   final FlexiKlineController controller;
-  final ValueChanged<ITimeBar> onTapTimeBar;
+  final ValueChanged<ITimeInterval> onTapTimeBar;
   final VoidCallback? onTapDraw;
 
   @override
@@ -64,23 +64,23 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
   }
 
   /// 获取时间周期配置列表
-  List<ITimeBar> _getTimeBarConfigs() {
+  List<ITimeInterval> _getTimeBarConfigs() {
     return (controller.configuration as dynamic).getTimeBarConfigs()
-        as List<ITimeBar>;
+        as List<ITimeInterval>;
   }
 
   Widget _buildPreferTimeBarList(BuildContext context, WidgetRef ref) {
     return ValueListenableBuilder(
-      valueListenable: controller.timeBarListener,
+      valueListenable: controller.intervalListener,
       builder: (context, value, child) {
         final theme = ref.watch(themeProvider);
         return Row(
-          children: _getTimeBarConfigs().map((timeBar) {
-            final selected = value == timeBar;
+          children: _getTimeBarConfigs().map((interval) {
+            final selected = value == interval;
             return GestureDetector(
-              onTap: () => onTapTimeBar(timeBar),
+              onTap: () => onTapTimeBar(interval),
               child: Container(
-                key: ValueKey(timeBar),
+                key: ValueKey(interval),
                 constraints: BoxConstraints(minWidth: 28.r),
                 alignment: AlignmentDirectional.center,
                 decoration: BoxDecoration(
@@ -93,7 +93,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
                 ),
                 margin: EdgeInsetsDirectional.symmetric(horizontal: 6.r),
                 child: Text(
-                  timeBar.bar,
+                  interval.debugLabel,
                   style: selected ? theme.t1s14w700 : theme.t1s14w400,
                 ),
               ),

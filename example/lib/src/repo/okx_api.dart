@@ -71,9 +71,23 @@ List<CandleModel> _dataToCandleList(dynamic data) {
   return const [];
 }
 
+extension _OkxKlineSpecParams on KlineSpec {
+  Map<String, dynamic> toRequestParams() {
+    return {
+      'instId': symbol,
+      'bar': interval.debugLabel,
+      'limit': limit.toString(),
+      if (from != null) 'after': from.toString(),
+      if (to != null) 'before': to.toString(),
+    };
+  }
+
+  Map<String, dynamic> toLoadMoreJson() => toRequestParams();
+}
+
 /// 获取K线数据。K线数据按请求的粒度分组返回，K线数据每个粒度最多可获取最近1,440条。
 Future<ApiResult<List<CandleModel>>> getMarketCandles(
-  CandleReq req, {
+  KlineSpec req, {
   CancelToken? cancelToken,
 }) {
   return okxHttpClient.request(
@@ -87,7 +101,7 @@ Future<ApiResult<List<CandleModel>>> getMarketCandles(
 
 /// 获取最近几年的历史k线数据(1s k线支持查询最近3个月的数据)
 Future<ApiResult<List<CandleModel>>> getHistoryCandles(
-  CandleReq req, {
+  KlineSpec req, {
   CancelToken? cancelToken,
 }) {
   return okxHttpClient.request(

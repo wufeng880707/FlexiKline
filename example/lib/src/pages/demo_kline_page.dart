@@ -45,7 +45,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
   late final FlexiKlineController controller;
   late final DefaultFlexiKlineConfiguration configuration;
 
-  late CandleReq req;
+  late KlineSpec req;
   CancelToken? cancelToken;
   bool isFullScreen = false;
 
@@ -65,16 +65,16 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
       logger: logger,
     );
 
-    final timeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.bar == '15m');
+    final interval = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '15m');
     final now = DateTime.now().millisecondsSinceEpoch;
-    final before = now - (now % timeBar.milliseconds);
-    final after = before - count * timeBar.milliseconds;
-    req = CandleReq(
-      instId: 'AAPL',
-      timeBar: timeBar,
+    final before = now - (now % interval.milliseconds);
+    final after = before - count * interval.milliseconds;
+    req = KlineSpec(
+      symbol: 'AAPL',
+      interval: interval,
       precision: 2,
-      after: after,
-      before: before,
+      from: after,
+      to: before,
     );
 
     controller.onCrossCustomTooltip = onCrossCustomTooltip;
@@ -87,13 +87,13 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
   }
 
   /// 初始化加载K线蜡烛数据.
-  Future<void> initKlineData(CandleReq request) async {
+  Future<void> initKlineData(KlineSpec request) async {
     controller.switchKlineData(request);
     List<CandleModel>? list;
 
     // list = await genRandomCandleList(
     //   count: 500,
-    //   bar: request.timeBar!,
+    //   bar: request.interval!,
     // );
 
     // list = genETHUSDT1DLimit100List();
@@ -112,7 +112,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
     emitLatestMarketCandle();
   }
 
-  Future<void> loadMoreCandles(CandleReq request) async {
+  Future<void> loadMoreCandles(KlineSpec request) async {
     // // await Future.delayed(const Duration(milliseconds: 2000)); // 模拟延时, 展示loading
     // final resp = await api.getHistoryKlineData(
     //   request,
@@ -154,9 +154,9 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
     }
   }
 
-  void onTapTimeBar(ITimeBar bar) {
-    if (bar != req.timeBar) {
-      req = req.copyWith(timeBar: bar);
+  void onTapTimeBar(ITimeInterval bar) {
+    if (bar != req.interval) {
+      req = req.copyWith(interval: bar);
       setState(() {});
       initKlineData(req);
     }
@@ -187,7 +187,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
               style: theme.t1s18w700,
             ),
             Text(
-              req.instId,
+              req.symbol,
               style: theme.t1s12w400,
             ),
           ],
@@ -243,7 +243,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
           final newList = await genRandomCandleList(
             count: 3,
             dateTime: dateTime,
-            timeBar: controller.curKlineData.req.timeBar,
+            interval: controller.curKlineData.spec.interval,
             isHistory: false,
           );
 

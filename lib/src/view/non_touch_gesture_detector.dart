@@ -381,6 +381,14 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
   /// 点击
   void onTapUp(TapUpDetails details) {
+    // Business Overlay 编辑态优先消费点击：空白处只退出编辑，不继续触发绘图。
+    if (controller.businessOverlayState.isEditing &&
+        controller.onBusinessOverlayTap(details.localPosition)) {
+      logd('onTapUp business overlay handled before draw! :$details');
+      controller.cancelCross();
+      return;
+    }
+
     if (controller.isDrawVisibility) {
       switch (drawState) {
         case Drawing():
@@ -452,7 +460,11 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       return;
     }
     final position = details.localPosition;
-    if (controller.isDrawVisibility && drawState.isOngoing) {
+    if (controller.businessOverlayState.isEditing &&
+        controller.onBusinessDragStart(position)) {
+      logd('onPanStart business drag > details:$details');
+      _panData = GestureData.pan(position);
+    } else if (controller.isDrawVisibility && drawState.isOngoing) {
       if (drawState.isDrawing) {
         // 未完成的暂不允许移动
         return;
@@ -465,10 +477,6 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         _panData?.end();
         _panData = null;
       }
-    } else if (controller.businessOverlayState.isEditing &&
-        controller.onBusinessDragStart(position)) {
-      logd('onPanStart business drag > details:$details');
-      _panData = GestureData.pan(position);
     } else {
       logd('onPanStart pan local:$position');
       if (controller.isStartZoomChart) {

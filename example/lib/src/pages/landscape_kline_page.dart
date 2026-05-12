@@ -35,7 +35,7 @@ class LandscapeKlinePage extends ConsumerStatefulWidget {
     this.configuration,
   });
 
-  final CandleReq candleReq;
+  final KlineSpec candleReq;
   final IConfiguration? configuration;
 
   @override
@@ -102,10 +102,10 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
           leading: const SizedBox.shrink(),
           leadingWidth: 4.r,
           title: MarketTickerLandscapeView(
-            instId: req.instId,
+            instId: req.symbol,
             precision: req.precision,
-            long: controller.theme.long,
-            short: controller.theme.short,
+            long: controller.theme.longColor,
+            short: controller.theme.shortColor,
           ),
           centerTitle: false,
           titleSpacing: 0,
@@ -139,9 +139,9 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
               return Center(
                 child: CircularProgressIndicator(
                   strokeWidth: controller.settingConfig.loading.strokeWidth,
-                  backgroundColor: controller.settingConfig.loading.background,
+                  backgroundColor: controller.settingConfig.loading.backgroundColor,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    controller.settingConfig.loading.valueColor,
+                    controller.settingConfig.loading.valueColor ?? controller.theme.textColor,
                   ),
                 ),
               );
@@ -199,13 +199,13 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
 
   Widget _buildKlineMainForgroundView(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller.candleRequestListener,
-      builder: (context, request, child) {
+      valueListenable: controller.loadingStateListener,
+      builder: (context, loadingState, child) {
         return Offstage(
-          offstage: !request.state.showLoading,
+          offstage: !loadingState.showLoading,
           child: Container(
             key: const ValueKey('loadingView'),
-            alignment: request.state == RequestState.initLoading
+            alignment: loadingState == KlineLoadingState.initLoading
                 ? AlignmentDirectional.center
                 : AlignmentDirectional.centerStart,
             padding: EdgeInsetsDirectional.all(32.r),
@@ -213,9 +213,9 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
               dimension: controller.settingConfig.loading.size,
               child: CircularProgressIndicator(
                 strokeWidth: controller.settingConfig.loading.strokeWidth,
-                backgroundColor: controller.settingConfig.loading.background,
+                backgroundColor: controller.settingConfig.loading.backgroundColor,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  controller.settingConfig.loading.valueColor,
+                  controller.settingConfig.loading.valueColor ?? controller.theme.textColor,
                 ),
               ),
             ),

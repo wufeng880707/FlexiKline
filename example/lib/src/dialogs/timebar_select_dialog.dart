@@ -29,20 +29,20 @@ class TimerBarSelectDialog extends ConsumerWidget {
   });
 
   /// 获取时间周期配置列表（兼容不同配置类型）
-  List<ITimeBar> _getTimeBarConfigs(IConfiguration configuration) {
-    return (configuration as dynamic).getTimeBarConfigs() as List<ITimeBar>;
+  List<ITimeInterval> _getTimeBarConfigs(IConfiguration configuration) {
+    return (configuration as dynamic).getTimeBarConfigs() as List<ITimeInterval>;
   }
 
   final FlexiKlineController controller;
-  final ValueChanged<ITimeBar> onTapTimeBar;
-  final List<ITimeBar> preferTimeBarList;
+  final ValueChanged<ITimeInterval> onTapTimeBar;
+  final List<ITimeInterval> preferTimeBarList;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context);
     final theme = ref.watch(themeProvider);
     final screenWidth = ScreenUtil().screenWidth;
-    final timeBarWidth = (screenWidth - 2 * 16.r - 4 * 12.r) / 5;
+    final intervalWidth = (screenWidth - 2 * 16.r - 4 * 12.r) / 5;
     return Container(
       width: screenWidth,
       margin: EdgeInsetsDirectional.all(16.r),
@@ -56,14 +56,14 @@ class TimerBarSelectDialog extends ConsumerWidget {
               style: theme.t1s20w700,
             ),
             SizedBox(height: 10.r),
-            _buildPreferTimeBarList(context, ref, barWidth: timeBarWidth),
+            _buildPreferTimeBarList(context, ref, barWidth: intervalWidth),
             SizedBox(height: 20.r),
             Text(
               s.intervals,
               style: theme.t1s20w700,
             ),
             SizedBox(height: 10.r),
-            _buildAllTimeBarList(context, ref, barWidth: timeBarWidth),
+            _buildAllTimeBarList(context, ref, barWidth: intervalWidth),
             SizedBox(height: 10.r),
           ],
         ),
@@ -77,7 +77,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
     required double barWidth,
   }) {
     return ValueListenableBuilder(
-      valueListenable: controller.timeBarListener,
+      valueListenable: controller.intervalListener,
       builder: (context, value, child) {
         final theme = ref.read(themeProvider);
         return Wrap(
@@ -94,7 +94,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
                 onPressed: () => onTapTimeBar(bar),
                 child: FittedBox(
                   child: Text(
-                    bar.bar,
+                    bar.debugLabel,
                     style: theme.t2s12w400.copyWith(
                       color: theme.t1,
                       fontWeight: selected ? FontWeight.bold : null,
@@ -115,24 +115,24 @@ class TimerBarSelectDialog extends ConsumerWidget {
     required double barWidth,
   }) {
     return ValueListenableBuilder(
-      valueListenable: controller.timeBarListener,
+      valueListenable: controller.intervalListener,
       builder: (context, value, child) {
         final theme = ref.read(themeProvider);
         return Wrap(
           alignment: WrapAlignment.start,
           spacing: 12.r,
           runSpacing: 8.r,
-          children: _getTimeBarConfigs(controller.configuration).map((timeBar) {
-            final selected = value == timeBar;
+          children: _getTimeBarConfigs(controller.configuration).map((interval) {
+            final selected = value == interval;
             return SizedBox(
               width: barWidth,
               child: TextButton(
-                key: ValueKey(timeBar),
+                key: ValueKey(interval),
                 style: theme.outlinedBtnStyle(showOutlined: selected),
-                onPressed: () => onTapTimeBar(timeBar),
+                onPressed: () => onTapTimeBar(interval),
                 child: FittedBox(
                   child: Text(
-                    timeBar.bar,
+                    interval.debugLabel,
                     style: theme.t2s12w400.copyWith(
                       color: theme.t1,
                       fontWeight: selected ? FontWeight.bold : null,

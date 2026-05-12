@@ -26,7 +26,6 @@ class LogPrintImpl implements ILogger {
   @override
   bool get isDebug => debug;
 
-  @override
   String? get logTag => tag;
 
   @override

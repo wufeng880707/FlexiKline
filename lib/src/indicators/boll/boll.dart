@@ -23,7 +23,6 @@ import 'package:flutter/painting.dart';
 import 'boll_param.dart';
 export 'boll_param.dart';
 import '../../constant.dart';
-import '../../core/core.dart';
 import '../../extension/export.dart';
 import '../../framework/export.dart';
 import '../../model/export.dart';

@@ -19,7 +19,6 @@ import 'package:flutter/material.dart' hide Overlay;
 
 class TestFlexiKlineTheme implements IFlexiKlineTheme {
   double? _scale;
-  @override
   double get scale {
     if (_scale != null) return _scale!;
     final view = PlatformDispatcher.instance.implicitView;
@@ -31,7 +30,6 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   }
 
   double? _pixel;
-  @override
   double get pixel {
     if (_pixel != null) return _pixel!;
     final view = PlatformDispatcher.instance.implicitView;
@@ -39,17 +37,19 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
     return _pixel!;
   }
 
-  @override
   double setDp(num size) => size * scale;
 
-  @override
   double setSp(num fontSize) => fontSize * scale;
 
-  @override
   Color long = const Color(0xFF33BD65);
 
-  @override
   Color short = const Color(0xFFE84E74);
+
+  @override
+  Color get longColor => long;
+
+  @override
+  Color get shortColor => short;
 
   @override
   Color chartBg = const Color(0xFFFFFFFF);
@@ -57,8 +57,10 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color tooltipBg = const Color(0xFFF2F2F2);
 
-  @override
   Color countDownTextBg = const Color(0xFFBDBDBD);
+
+  @override
+  Color get countDownBg => countDownTextBg;
 
   @override
   Color crossTextBg = const Color(0xFF111111);
@@ -66,28 +68,24 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   // @override
   // Color drawTextBg = Colors.blue;
 
-  @override
   Color transparent = Colors.transparent;
 
-  @override
   Color lastPriceTextBg = Colors.black54;
 
   @override
+  Color get lastPriceBg => lastPriceTextBg;
+
   Color gridLine = const Color(0xffE9EDF0);
 
-  @override
   Color crossColor = const Color(0xFF000000);
 
-  @override
   Color get drawColor => Colors.blue;
 
-  @override
   Color get drawTextColor => const Color(0xFFFFFFFF);
 
   @override
   Color markLineColor = Colors.blue;
 
-  @override
   Color get themeColor => Colors.white;
 
   @override
@@ -96,8 +94,10 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color ticksTextColor = const Color(0xFF949494);
 
-  @override
   Color lastPriceTextColor = const Color(0xFF5F5F5F);
+
+  @override
+  Color get lastPriceColor => lastPriceTextColor;
 
   @override
   Color crossTextColor = const Color(0xFFFFFFFF);
@@ -105,14 +105,25 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color tooltipTextColor = const Color(0xFF949494);
 
-  @override
   Color get latestPriceTextBg => const Color(0xFF000000);
+
+  @override
+  Color get latestPriceBg => latestPriceTextBg;
 
   @override
   Color get dragBg => const Color(0x33000000);
 
   @override
   Color get lineChartColor => const Color(0xFF2196F3);
+
+  @override
+  Color get gridLineColor => gridLine;
+
+  @override
+  Color get crosshairColor => crossColor;
+
+  @override
+  Color get drawToolColor => drawColor;
 }
 
 class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {

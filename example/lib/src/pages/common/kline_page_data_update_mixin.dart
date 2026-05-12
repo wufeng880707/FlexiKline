@@ -31,7 +31,7 @@ abstract interface class IKlinePage {
 
 mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T>
     implements IKlinePage {
-  late CandleReq req;
+  late KlineSpec req;
 
   CancelToken? cancelToken;
 
@@ -46,7 +46,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
   }
 
   Future<void> initKlineData(
-    CandleReq request, {
+    KlineSpec request, {
     bool reset = false,
   }) async {
     flexiKlineController.switchKlineData(request, useCacheFirst: !reset);
@@ -60,7 +60,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
     if (resp.success && resp.data != null && resp.data!.isNotEmpty) {
       await flexiKlineController.updateKlineData(request, resp.data!);
       if (realTimeUpdateKlineData) {
-        _startMockPushTimer(flexiKlineController.curKlineData.req); // 假装推送
+        _startMockPushTimer(flexiKlineController.curKlineData.spec); // 假装推送
       }
     } else if (resp.msg.isNotEmpty) {
       SmartDialog.showToast(resp.msg);
@@ -69,7 +69,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
 
   /// 更新历史行情的蜡烛数据
   /// [request] 请求[after]时间戳之前（更旧的数据）的分页内容
-  Future<void> loadMoreCandles(CandleReq request) async {
+  Future<void> loadMoreCandles(KlineSpec request) async {
     // await Future.delayed(const Duration(milliseconds: 2000)); // 模拟延时, 展示loading
     final resp = await api.getHistoryCandles(
       request,
@@ -84,7 +84,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
   }
 
   /// 启动模拟推送定时器
-  void _startMockPushTimer(CandleReq request) {
+  void _startMockPushTimer(KlineSpec request) {
     _mockPushTimer?.cancel();
     _mockPushTimer = Timer(
       Duration(milliseconds: random.nextInt(5000)),
@@ -96,11 +96,11 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
   }
 
   /// 更新最新行情的蜡烛数据
-  Future<void> updateLatestCandles(CandleReq request) async {
-    if (request.before == null || request.timeBar == null) return;
+  Future<void> updateLatestCandles(KlineSpec request) async {
+    if (request.to == null) return;
     request = request.copyWith(
-      after: null,
-      before: request.before! - request.timeBar.milliseconds,
+      from: null,
+      to: request.to! - request.interval.milliseconds,
     );
     final resp = await api.getMarketCandles(
       request,
@@ -118,9 +118,9 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
     final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           ticker.instId,
         );
-    req = CandleReq(
-      instId: ticker.instId,
-      timeBar: req.timeBar,
+    req = KlineSpec(
+      symbol: ticker.instId,
+      interval: req.interval,
       precision: p ?? ticker.precision,
     );
     initKlineData(req);
@@ -128,9 +128,9 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
   }
 
   /// TimerBar变更回调
-  void onTapTimerBar(ITimeBar timeBar) {
+  void onTapTimerBar(ITimeInterval interval) {
     try {
-      req = req.copyWith(timeBar: timeBar);
+      req = req.copyWith(interval: interval);
       print('copyWith 执行成功');
       setState(() {});
       initKlineData(req);

@@ -261,10 +261,10 @@ class KlineStateNotifier extends ChangeNotifier {
   }
 
   /// 看涨颜色
-  Color get longColor => controller.configuration.theme.long;
+  Color get longColor => controller.configuration.theme.longColor;
 
   /// 看跌颜色
-  Color get shortColor => controller.configuration.theme.short;
+  Color get shortColor => controller.configuration.theme.shortColor;
 
   /// 缩放位置
   ScalePosition get scalePosition {
