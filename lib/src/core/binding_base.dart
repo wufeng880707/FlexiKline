@@ -129,11 +129,14 @@ abstract class KlineBindingBase with KlineLog implements ISetting, IPaintContext
     final old = _businessDataMap[key];
     if (identical(old, data)) return;
     _businessDataMap[key] = data;
+    requestRepaint();
   }
 
   /// 清除 [key] 指定的业务数据
   void removeBusinessData(IIndicatorKey key) {
-    _businessDataMap.remove(key);
+    if (_businessDataMap.remove(key) != null) {
+      requestRepaint();
+    }
   }
 
   @override

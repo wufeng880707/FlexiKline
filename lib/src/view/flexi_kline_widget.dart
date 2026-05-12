@@ -249,6 +249,15 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
             ),
           ),
           RepaintBoundary(
+            key: const ValueKey('BusinessOverlayLayer'),
+            child: CustomPaint(
+              size: canvasSize,
+              painter: BusinessOverlayPainter(
+                controller: controller,
+              ),
+            ),
+          ),
+          RepaintBoundary(
             key: const ValueKey('DrawAndCrossLayer'),
             child: CustomPaint(
               size: canvasSize,
@@ -413,6 +422,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
     // );
   }
 
+  /// 业务叠加层工具条
   /// 放大镜
   Widget _buildMagnifier(BuildContext context, Rect drawRect) {
     final config = controller.drawConfig.magnifier;
@@ -554,6 +564,29 @@ class ChartPainter extends CustomPainter {
     // }
 
     Timeline.finishSync();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return oldDelegate != this;
+  }
+}
+
+class BusinessOverlayPainter extends CustomPainter {
+  BusinessOverlayPainter({
+    required this.controller,
+  }) : super(
+          repaint: Listenable.merge([
+            controller.repaintChart,
+            controller.repaintBusinessOverlay,
+          ]),
+        );
+
+  final FlexiKlineController controller;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    controller.paintBusinessOverlay(canvas, size);
   }
 
   @override

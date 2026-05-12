@@ -27,6 +27,8 @@ import '../config.dart';
 import '../constants/images.dart';
 import '../providers/bit_kline_config.dart';
 import '../providers/instruments_provider.dart';
+import '../providers/pending_order_provider.dart';
+import '../providers/tp_sl_provider.dart';
 import '../providers/trade_mark_provider.dart';
 import '../theme/flexi_theme.dart';
 import '../utils/device_util.dart';
@@ -56,6 +58,8 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
   late final FlexiKlineController controller;
   late final BitFlexiKlineConfiguration configuration;
   late final TradeMarkDataManager _tradeMarkManager;
+  late final PendingOrderDataManager _pendingOrderManager;
+  late final PositionDataManager _positionManager;
 
   @override
   FlexiKlineController get flexiKlineController => controller;
@@ -93,6 +97,10 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     controller.onLoadMoreCandles = loadMoreCandles;
 
     _tradeMarkManager = TradeMarkDataManager(controller);
+    _pendingOrderManager = PendingOrderDataManager(controller);
+    _positionManager = PositionDataManager(controller);
+
+    controller.onBusinessOverlayAction = _onBusinessOverlayAction;
     controller.timeBarListener.addListener(_onTimeBarChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -104,10 +112,44 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     _tradeMarkManager.onTimeBarChanged(controller.timeBarListener.value);
   }
 
+  void _onBusinessOverlayAction(
+    BusinessOverlayObject object,
+    BusinessOverlayAction action,
+    FlexiNum? newValue,
+  ) {
+    debugPrint('[BusinessOverlay] action: $action, object: ${object.id}, newValue: $newValue');
+    switch (action) {
+      case BusinessOverlayAction.close:
+      case BusinessOverlayAction.delete:
+        if (object is PendingOrderOverlay) {
+          _pendingOrderManager.removeOrder(object.id);
+        } else if (object is PositionOverlay) {
+          _positionManager.removePosition(object.id);
+        }
+        break;
+      case BusinessOverlayAction.editPrice:
+        if (newValue != null) {
+          final price = newValue.toDouble();
+          if (object is PendingOrderOverlay) {
+            _pendingOrderManager.updateOrderPrice(object.id, price);
+          }
+        }
+        break;
+      case BusinessOverlayAction.tpSl:
+        debugPrint('[BusinessOverlay] 止盈止损设置: ${object.id}');
+        break;
+      case BusinessOverlayAction.menu:
+        debugPrint('[BusinessOverlay] 菜单: ${object.id}');
+        break;
+    }
+  }
+
   @override
   void dispose() {
     controller.timeBarListener.removeListener(_onTimeBarChanged);
     _tradeMarkManager.dispose();
+    _pendingOrderManager.dispose();
+    _positionManager.dispose();
     controller.dispose();
     super.dispose();
   }
@@ -115,30 +157,35 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
   @override
   Future<void> initKlineData(CandleReq request, {bool reset = false}) async {
     await super.initKlineData(request, reset: reset);
-    _injectTestTradeMarks();
+    _injectTestBusinessData();
   }
 
-  void _injectTestTradeMarks() {
+  void _injectTestBusinessData() {
     final klineData = controller.curKlineData;
     if (!klineData.canPaintChart) return;
 
-    // 确保 TradeMark 指标已添加到主图
+    // TradeMark (保留在 indicator 体系中)
     if (!controller.hasAddedMainIndicator(tradeMarkIndicatorKey)) {
       controller.addMainIndicator(tradeMarkIndicatorKey);
-      debugPrint('[TradeMark] 添加到主图 children');
     }
-
     final marks = createTestTradeMarks(klineData);
     _tradeMarkManager.onTimeBarChanged(klineData.req.timeBar);
     _tradeMarkManager.setRawMarks(marks);
 
+    // PendingOrder (新 BusinessOverlay 体系)
+    final orders = createTestPendingOrders(klineData);
+    _pendingOrderManager.setOrders(orders);
+
+    // Position (新 BusinessOverlay 体系)
+    final positions = createTestPositions(klineData);
+    _positionManager.setPositions(positions);
+
     debugPrint(
-      '[TradeMark] 注入完成: '
-      '${marks.length} 笔原始订单 → '
-      '${_tradeMarkManager.groupedMarks.length} 根K线有标记, '
-      'timeBar=${klineData.req.timeBar.bar}, '
-      'hasIndicator=${controller.hasAddedMainIndicator(tradeMarkIndicatorKey)}, '
-      'show=${controller.getIndicator<TradeMarkIndicator>(tradeMarkIndicatorKey)?.calcParam.show}',
+      '[BusinessOverlay] 注入完成: '
+      'tradeMark=${marks.length}笔, '
+      'pendingOrder=${orders.length}笔, '
+      'position=${positions.length}笔, '
+      'timeBar=${klineData.req.timeBar.bar}',
     );
   }
 

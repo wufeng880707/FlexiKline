@@ -430,7 +430,13 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       }
     }
 
-    // 这里检测是否命中指标图定制位置
+    // Business Overlay: tap 选中/取消选中
+    if (controller.onBusinessOverlayTap(details.localPosition)) {
+      logd('onTapUp business overlay handled! :$details');
+      controller.cancelCross();
+      return;
+    }
+
     final ret = controller.onTap(details.localPosition);
     if (ret) {
       logd('onTapUp handled! :$details');
@@ -459,6 +465,10 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         _panData?.end();
         _panData = null;
       }
+    } else if (controller.businessOverlayState.isEditing &&
+        controller.onBusinessDragStart(position)) {
+      logd('onPanStart business drag > details:$details');
+      _panData = GestureData.pan(position);
     } else {
       logd('onPanStart pan local:$position');
       if (controller.isStartZoomChart) {
@@ -481,6 +491,16 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
     //   logd('onPanUpdate move> ${DateTime.now().millisecond} > $details');
     //   return true;
     // }());
+    if (controller.isDraggingBusinessOverlay) {
+      final prev = _panData!.offset;
+      _panData!.update(details.localPosition);
+      controller.onBusinessDragUpdate(
+        details.localPosition,
+        details.localPosition - prev,
+      );
+      return;
+    }
+
     if (controller.isDrawVisibility && drawState.isOngoing) {
       _panData!.update(details.localPosition.clamp(controller.mainRect));
       controller.onDrawMoveUpdate(_panData!);
@@ -498,6 +518,13 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   void onPanEnd(DragEndDetails details) {
     if (_panData == null) {
       logd('onPanEnd panData is empty! details:$details');
+      return;
+    }
+
+    if (controller.isDraggingBusinessOverlay) {
+      controller.onBusinessDragEndAction();
+      _panData?.end();
+      _panData = null;
       return;
     }
 
@@ -674,7 +701,6 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
     if (controller.isDrawVisibility && drawState.isOngoing) {
       if (drawState.isDrawing) {
-        // 未完成的暂不允许移动
         return;
       }
       if (drawState.object?.lock == true) return;
@@ -687,6 +713,13 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       } else {
         setCursorToNone();
       }
+    } else if (controller.businessOverlayState.isEditing &&
+        controller.onBusinessDragStart(details.localPosition)) {
+      logd('onLongPressStart business drag > details:$details');
+      _longData = GestureData.long(details.localPosition);
+    } else if (controller.businessOverlayState.isEditing) {
+      logd('onLongPressStart ignore: in business editing state');
+      return;
     } else if (controller.onGridMoveStart(details.localPosition)) {
       _longData = GestureData.long(details.localPosition);
       controller.cancelCross();
@@ -709,10 +742,15 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
     if (!gestureConfig.enableLongPress || _longData == null) {
       return;
     }
-    // assert(() {
-    //   logd("onLongPressMoveUpdate ${DateTime.now().millisecond} > details:$details");
-    //   return true;
-    // }());
+    if (controller.isDraggingBusinessOverlay) {
+      final prev = _longData!.offset;
+      _longData!.update(details.localPosition);
+      controller.onBusinessDragUpdate(
+        details.localPosition,
+        details.localPosition - prev,
+      );
+      return;
+    }
     if (controller.isDrawVisibility && drawState.isOngoing) {
       _longData!.update(details.localPosition);
       controller.onDrawMoveUpdate(_longData!);
@@ -730,10 +768,12 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       logd('onLongPressEnd ignore! > details:$details');
       return;
     }
-    // assert(() {
-    //   logd("onLongPressEnd details:$details");
-    //   return true;
-    // }());
+    if (controller.isDraggingBusinessOverlay) {
+      controller.onBusinessDragEndAction();
+      _longData?.end();
+      _longData = null;
+      return;
+    }
     if (controller.isDrawVisibility && drawState.isOngoing) {
       controller.onDrawMoveEnd();
       if (drawState.isEditing) setCursorToClick();
@@ -741,7 +781,6 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       controller.onGridMoveEnd();
       setCursorToPrecise();
     } else {
-      // 长按结束, 尝试取消Cross事件.
       controller.cancelCross();
       setCursorToPrecise();
     }

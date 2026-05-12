@@ -131,3 +131,4 @@ abstract interface class IBusinessPainter extends IPaintObject {
   /// 子类按需 override 实现具体加载逻辑。
   void loadBusinessData();
 }
+

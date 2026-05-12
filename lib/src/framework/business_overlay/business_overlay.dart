@@ -12,22 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'core/core.dart';
+library;
 
-class FlexiKlineController extends KlineBindingBase
-    with
-        SettingBinding,
-        StateBinding,
-        GridBinding,
-        ChartBinding,
-        CrossBinding,
-        DrawBinding,
-        BusinessOverlayBinding {
-  FlexiKlineController({
-    required super.configuration,
-    super.autoSave,
-    super.subIndicatorMaxCount,
-    super.logger,
-    super.klineDataCacheCapacity,
-  });
-}
+import 'dart:ui';
+
+import '../../model/export.dart';
+
+part 'context.dart';
+part 'manager.dart';
+part 'object.dart';
+part 'state.dart';

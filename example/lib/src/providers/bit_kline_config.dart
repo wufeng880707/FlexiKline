@@ -493,9 +493,8 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     if (instance?.children != null) {
       children.addAll(instance!.children);
     }
-    // 始终包含TradeMarkIndicator，状态由calcParam.show控制
     children.add(tradeMarkIndicatorKey);
-    
+
     return MainPaintObjectIndicator(
       size: Size(ScreenUtil().screenWidth, 300.r),
       padding: theme.mainIndicatorPadding,
@@ -553,7 +552,6 @@ class BitFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin implemen
     final superBuilders = super.mainIndicatorBuilders;
     result.addAll(superBuilders);
 
-    // 确保 TradeMarkIndicator builder 始终存在
     result[tradeMarkIndicatorKey] ??= (json) => _parseTradeMarkIndicator(json);
 
     return result;
@@ -1351,7 +1349,6 @@ extension BitFlexiKlineConfigurationDefault on BitFlexiKlineConfiguration {
             tickCount: 5,
           ),
 
-      // 交易标记 - 主图指标
       tradeMarkIndicatorKey: (json) => _parseTradeMarkIndicator(json),
     };
   }

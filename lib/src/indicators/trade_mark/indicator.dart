@@ -96,30 +96,35 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
     final param = indicator.calcParam;
     final markPixelHeight = _estimateMarkHeight(param);
 
-    final availableHeight = chartRect.height;
+    // padding 区域（topRect/bottomRect）已经为箭头提供了视觉空间，
+    // 只补充 padding 覆盖不足的部分，避免顶部/底部出现双重空白。
+    final topPaddingPx = chartRect.top - drawableRect.top;
+    final bottomPaddingPx = drawableRect.bottom - chartRect.bottom;
+
+    final extraTopPx = hasVisibleSell
+        ? math.max(0.0, markPixelHeight - topPaddingPx)
+        : 0.0;
+    final extraBottomPx = hasVisibleBuy
+        ? math.max(0.0, markPixelHeight - bottomPaddingPx)
+        : 0.0;
+
+    // padding 已足够容纳箭头，无需扩展 minMax
+    if (extraTopPx == 0 && extraBottomPx == 0) return null;
+
+    final availableHeight = chartRect.height - extraTopPx - extraBottomPx;
     if (availableHeight <= 0) return null;
 
     final priceRange = candleMinMax.diffDivisor.toDouble();
     if (priceRange <= 0) return null;
 
-    // 精确求解：padding_price = markPx * range / (chartH - totalMarkPx)
-    // 避免循环依赖（dyFactor 依赖 MinMax，MinMax 依赖 padding）
-    final totalMarkPx =
-        (hasVisibleBuy ? markPixelHeight : 0.0) +
-        (hasVisibleSell ? markPixelHeight : 0.0);
-    final denominator = availableHeight - totalMarkPx;
-    if (denominator <= 0) return null;
-
-    final pricePerMarkPx = priceRange / denominator;
+    final pricePerPx = priceRange / availableHeight;
 
     return MinMax(
-      min: hasVisibleBuy
-          ? candleMinMax.min -
-              FlexiNum.fromNum(pricePerMarkPx * markPixelHeight)
+      min: extraBottomPx > 0
+          ? candleMinMax.min - FlexiNum.fromNum(pricePerPx * extraBottomPx)
           : candleMinMax.min,
-      max: hasVisibleSell
-          ? candleMinMax.max +
-              FlexiNum.fromNum(pricePerMarkPx * markPixelHeight)
+      max: extraTopPx > 0
+          ? candleMinMax.max + FlexiNum.fromNum(pricePerPx * extraTopPx)
           : candleMinMax.max,
     );
   }

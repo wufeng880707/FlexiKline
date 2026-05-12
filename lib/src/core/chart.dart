@@ -419,4 +419,5 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     }
     return false;
   }
+
 }

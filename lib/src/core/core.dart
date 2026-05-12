@@ -32,6 +32,7 @@ import '../types.dart';
 import '../utils/platform_util.dart';
 
 part 'binding_base.dart';
+part 'business_overlay.dart';
 part 'chart.dart';
 part 'state.dart';
 part 'setting.dart';

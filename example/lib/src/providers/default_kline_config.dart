@@ -436,9 +436,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     if (instance?.children != null) {
       children.addAll(instance!.children);
     }
-    // 始终包含TradeMarkIndicator，状态由calcParam.show控制
     children.add(tradeMarkIndicatorKey);
-    
+
     return MainPaintObjectIndicator(
       size: Size(ScreenUtil().screenWidth, 300.r),
       padding: theme.mainIndicatorPadding,

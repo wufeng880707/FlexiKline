@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+export 'business_overlay/business_overlay.dart';
 export 'chart/indicator.dart';
 export 'chart_type.dart';
 export 'collection/fifo_hash_map.dart';
