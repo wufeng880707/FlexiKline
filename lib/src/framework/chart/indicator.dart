@@ -14,6 +14,7 @@
 
 library;
 
+import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:copy_with_extension/copy_with_extension.dart';
@@ -26,9 +27,8 @@ import '../../constant.dart';
 import '../../core/core.dart';
 import '../../data/kline_data.dart';
 import '../../extension/export.dart';
-import '../../model/export.dart';
+import '../../model/export.dart' show FlexiCandleModel, FlexiNum, KlineSpec, MinMax, NumFlexiNumExt, Range;
 import '../../utils/algorithm_util.dart';
-import '../../utils/platform_util.dart';
 import '../chart_type.dart';
 import '../collection/fixed_hash_queue.dart';
 import '../collection/sortable_hash_set.dart';

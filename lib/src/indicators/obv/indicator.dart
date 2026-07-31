@@ -50,7 +50,7 @@ class OBVPaintObject<T extends OBVIndicator> extends DataPaintObject<T>
   OBVPaintObject();
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
     return calcuObvMinmax(
       indicator.calcParam,

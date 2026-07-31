@@ -14,12 +14,9 @@
 
 part of 'indicator.dart';
 
-/// [PaintObject]管理
-/// 主要负责:
-/// 1. 根据配置初始化指标绘制对象.
-/// 2. 管理所有指标构造器
-/// 3. 负责指标对象的创建/销毁
-/// 4. 管理副图指标绘制对象队列
+/// [PaintObject] 管理器。
+///
+/// 负责声明指标缓存、激活对象创建，以及 ComputedIndicator slot 分配。
 final class IndicatorPaintObjectManager with FlexiLog {
   IndicatorPaintObjectManager({
     required this.configuration,
@@ -27,18 +24,6 @@ final class IndicatorPaintObjectManager with FlexiLog {
     IFlexiLogger? logger,
   }) {
     this.logger = logger;
-    // 注册指标构造器(仅在构建时, 使用一次)
-    _indicatorDataIndexs.clear();
-    final mainIndicators = configuration.mainIndicatorBuilders;
-    for (final MapEntry(key: key, value: builder) in mainIndicators.entries) {
-      _registerMainIndicatorBuilder(key, builder);
-    }
-    if (subIndicatorMaxCount > 0) {
-      final subIndicators = configuration.subIndicatorBuilders;
-      for (final MapEntry(key: key, value: builder) in subIndicators.entries) {
-        _registerSubIndicatorBuilder(key, builder);
-      }
-    }
     _flexiKlineConfig = configuration.getFlexiKlineConfig();
     _subPaintObjectQueue = FixedHashQueue<PaintObject>(subIndicatorMaxCount);
   }
@@ -47,14 +32,28 @@ final class IndicatorPaintObjectManager with FlexiLog {
   String get logTag => 'IndicatorPaintObjectManager';
 
   final IConfiguration configuration;
+  bool _isInitialized = false;
+  bool get isInitialized => _isInitialized;
   late FlexiKlineConfig _flexiKlineConfig;
   FlexiKlineConfig get flexiKlineConfig => _flexiKlineConfig;
 
-  /// 动态维护指标计算数据存储位置
+  /// ComputedIndicator 计算数据的 slot 映射。
   ///
-  /// 仅对 [DataIndicatorKey]（数据指标）分配 slot。
-  /// 注：仅能通过 [configuration] 配置去计算指标计算数据存储位置。
-  final Map<DataIndicatorKey, int> _indicatorDataIndexs = {};
+  /// 仅对 [ComputedIndicatorKey]（数据指标）分配 slot。
+  final Map<ComputedIndicatorKey, int> _computedDataIndexes = {};
+
+  /// 已回收的 slot，按 FIFO 复用。
+  final Queue<int> _recycledSlots = Queue<int>();
+
+  /// 已分配过的 slot 容量，只增不减（高水位）。
+  ///
+  /// 回收 slot 只放回 [_recycledSlots]，不缩减此容量，
+  /// 以保证 [computedDataCapacity] 始终大于任意存活指标的 slot 索引。
+  int _computedDataCapacity = 0;
+
+  /// keepAlive 常驻对象缓存，按 key 管理。
+  /// PaintObject 在 hide 时若 keepAlive=true，则进入此缓存供下次 show 复用。
+  final Map<IIndicatorKey, PaintObject> _keepAlivePaintObjects = {};
 
   late final FixedHashQueue<PaintObject> _subPaintObjectQueue;
 
@@ -78,20 +77,20 @@ final class IndicatorPaintObjectManager with FlexiLog {
     }
   }
 
-  /// 主区指标配置构造器
-  final Map<IIndicatorKey, IndicatorBuilder> _mainIndicatorBuilders = {};
+  /// 主区指标声明注册表。
+  final Map<IIndicatorKey, Indicator> _mainIndicatorRegistry = {};
 
-  /// 副区指标配置构造器
-  final Map<IIndicatorKey, IndicatorBuilder> _subIndicatorBuilders = {};
+  /// 副区指标声明注册表。
+  final Map<IIndicatorKey, Indicator> _subIndicatorRegistry = {};
 
   Iterable<IIndicatorKey>? _supportMainIndicatorKeys;
   Iterable<IIndicatorKey> get supportMainIndicatorKeys {
-    return _supportMainIndicatorKeys ??= _mainIndicatorBuilders.keys;
+    return _supportMainIndicatorKeys ??= _mainIndicatorRegistry.keys;
   }
 
   Iterable<IIndicatorKey>? _supportSubIndicatorKeys;
   Iterable<IIndicatorKey> get supportSubIndicatorKeys {
-    return _supportSubIndicatorKeys ??= _subIndicatorBuilders.keys;
+    return _supportSubIndicatorKeys ??= _subIndicatorRegistry.keys;
   }
 
   Iterable<IIndicatorKey> get mainIndicatorKeys {
@@ -102,219 +101,353 @@ final class IndicatorPaintObjectManager with FlexiLog {
     return _subPaintObjectQueue.map((obj) => obj.key);
   }
 
-  void _registerMainIndicatorBuilder(
-    IIndicatorKey key,
-    IndicatorBuilder builder,
-  ) {
-    _mainIndicatorBuilders[key] = builder;
-    _supportMainIndicatorKeys = null;
-    // 仅对 DataIndicatorKey 分配 slot
-    if (key is DataIndicatorKey && !_indicatorDataIndexs.containsKey(key)) {
-      logi('registerMainIndicatorBuilder $key:${_indicatorDataIndexs.length}');
-      _indicatorDataIndexs[key] = _indicatorDataIndexs.length;
-    }
-  }
-
-  void _registerSubIndicatorBuilder(
-    IIndicatorKey key,
-    IndicatorBuilder builder,
-  ) {
-    _subIndicatorBuilders[key] = builder;
-    _supportSubIndicatorKeys = null;
-    // 仅对 DataIndicatorKey 分配 slot
-    if (key is DataIndicatorKey && !_indicatorDataIndexs.containsKey(key)) {
-      logi('registerSubIndicatorBuilder $key:${_indicatorDataIndexs.length}');
-      _indicatorDataIndexs[key] = _indicatorDataIndexs.length;
-    }
-  }
-
   bool hasRegisteredInMain(IIndicatorKey key) {
-    return _mainIndicatorBuilders.containsKey(key) || key == candleIndicatorKey;
+    return _mainIndicatorRegistry.containsKey(key) || key == candleIndicatorKey;
   }
 
   bool hasRegisteredInSub(IIndicatorKey key) {
-    return _subIndicatorBuilders.containsKey(key) || key == timeIndicatorKey;
+    return _subIndicatorRegistry.containsKey(key) || key == timeIndicatorKey;
   }
 
-  int? getIndicatorDataIndex(DataIndicatorKey key) {
-    return _indicatorDataIndexs[key];
+  T? getIndicator<T extends Indicator>(IIndicatorKey key) {
+    if (_isInitialized) {
+      if (key == candleIndicatorKey && candlePaintObject.indicator is T) {
+        return candlePaintObject.indicator as T;
+      }
+      if (key == timeIndicatorKey && timePaintObject.indicator is T) {
+        return timePaintObject.indicator as T;
+      }
+      final mainObject = getMainPaintObject(key, includeKeepAlive: true);
+      if (mainObject?.indicator case final T indicator) return indicator;
+      final subObject = getSubPaintObject(key, includeKeepAlive: true);
+      if (subObject?.indicator case final T indicator) return indicator;
+    }
+
+    final declared = _mainIndicatorRegistry[key] ?? _subIndicatorRegistry[key];
+    if (declared is T) return declared;
+    return null;
   }
 
-  int get indicatorCount => _indicatorDataIndexs.length;
+  bool updateIndicator<T extends Indicator>(T indicator) {
+    if (!_isInitialized) return false;
 
-  /// 创建并初始化 PaintObject
-  PaintObject _createAndInitPaintObject<T extends Indicator>(
-    T indicator,
-    IPaintContext context,
-  ) {
-    final paintObject = indicator.createPaintObject();
-
-    paintObject._indicator = indicator;
-    paintObject.__context = context;
-
-    // paintObject 已经混入了 KlineLog，所以直接设置
-    if (context is FlexiLog) {
-      paintObject.logger = (context as FlexiLog).logger;
+    if (indicator.key == candleIndicatorKey && indicator is CandleBaseIndicator) {
+      _candlePaintObject.doDidUpdateIndicator(indicator);
+      return true;
+    }
+    if (indicator.key == timeIndicatorKey && indicator is TimeBaseIndicator) {
+      _timePaintObject.doDidUpdateIndicator(indicator);
+      return true;
     }
 
-    return paintObject;
+    var updated = false;
+    if (_mainIndicatorRegistry.containsKey(indicator.key)) {
+      _mainIndicatorRegistry[indicator.key] = indicator;
+      getMainPaintObject(indicator.key, includeKeepAlive: true)?.doDidUpdateIndicator(indicator);
+      updated = true;
+    }
+    if (_subIndicatorRegistry.containsKey(indicator.key)) {
+      _subIndicatorRegistry[indicator.key] = indicator;
+      getSubPaintObject(indicator.key, includeKeepAlive: true)?.doDidUpdateIndicator(indicator);
+      updated = true;
+    }
+    return updated;
   }
 
-  /// 初始化主区/副区指标
-  /// 1. 初始化主区绘制对象（MainPaintObject）及蜡烛图、时间轴绘制对象
-  /// 2. 从配置中加载缓存的主/副区指标.
-  void init(IPaintContext context) {
-    final mainIndicator = flexiKlineConfig.mainIndicator;
-    _mainPaintObject = MainPaintObject();
-    _mainPaintObject._indicator = mainIndicator.copyWith();
-    _mainPaintObject.__context = context;
-    // _mainPaintObject 已经混入了 KlineLog，所以直接设置
-    if (context is FlexiLog) {
-      _mainPaintObject.logger = (context as FlexiLog).logger;
+  int? getComputedDataIndex(ComputedIndicatorKey key) {
+    return _computedDataIndexes[key];
+  }
+
+  /// 已分配的 computed data slot 容量（高水位），而非当前存活声明数量。
+  ///
+  /// 用于给新蜡烛的 slots 数组定长；容量只增不减，
+  /// 确保删除中间指标后，仍存活的高位 slot 不会越界。
+  int get computedDataCapacity => _computedDataCapacity;
+
+  /// 注册 [ComputedIndicatorKey] 列表，为每个 key 分配 slot。
+  ///
+  /// 优先从 [_recycledSlots] 复用已回收的 slot index；
+  /// 已注册的 key 会被跳过。
+  int allocateComputedDataIndexes(List<ComputedIndicatorKey> keys) {
+    for (final key in keys) {
+      if (_computedDataIndexes.containsKey(key)) continue;
+      final int slot;
+      if (_recycledSlots.isNotEmpty) {
+        slot = _recycledSlots.removeFirst();
+      } else {
+        slot = _computedDataCapacity++;
+      }
+      _computedDataIndexes[key] = slot;
+      logi('allocateComputedDataIndex $key:$slot');
+    }
+    return _computedDataIndexes.length;
+  }
+
+  /// 回收 [ComputedIndicatorKey] 的 slot。
+  ///
+  /// 将 slot index 加入 [_recycledSlots] 以供后续复用，
+  /// 不清理蜡烛数据中对应位置的值（惰性清理，下次复用时自然覆盖）。
+  void releaseComputedDataIndex(ComputedIndicatorKey key) {
+    final index = _computedDataIndexes.remove(key);
+    if (index != null) {
+      _recycledSlots.addLast(index);
+      logi('releaseComputedDataIndex $key:$index');
+    }
+  }
+
+  /// 挂载 Widget 声明的指标，并恢复已激活的主区/副区指标。
+  void mountIndicators({
+    required PaintContext context,
+    required CandleBaseIndicator candle,
+    required TimeBaseIndicator time,
+    required List<Indicator> mainIndicators,
+    required List<Indicator> subIndicators,
+  }) {
+    if (_isInitialized) {
+      logw('mountIndicators: already initialized, skip re-mount.');
+      return;
+    }
+    // 收集 ComputedIndicatorKey 并分配 slot。
+    final dataKeys = <ComputedIndicatorKey>[
+      for (final indicator in mainIndicators)
+        if (indicator.key is ComputedIndicatorKey) indicator.key as ComputedIndicatorKey,
+      for (final indicator in subIndicators)
+        if (indicator.key is ComputedIndicatorKey) indicator.key as ComputedIndicatorKey,
+    ];
+    allocateComputedDataIndexes(dataKeys);
+
+    // 缓存声明层指标。
+    for (final indicator in mainIndicators) {
+      _mainIndicatorRegistry[indicator.key] = indicator;
+    }
+    for (final indicator in subIndicators) {
+      _subIndicatorRegistry[indicator.key] = indicator;
     }
 
-    /// 配置默认指标蜡烛图指标和时间指标
-    try {
-      final candle = configuration.candleIndicatorBuilder.call(
-        configuration.getConfig(candleIndicatorKey.id),
-      );
-      _candlePaintObject = _createAndInitPaintObject(candle, context) as CandleBasePaintObject;
-      _mainPaintObject.appendPaintObject(_candlePaintObject);
+    // 创建系统级 PaintObject。
+    _candlePaintObject = _inflateIndicator<CandleBaseIndicator, CandleBasePaintObject>(candle, context);
+    _timePaintObject = _inflateIndicator<TimeBaseIndicator, TimeBasePaintObject>(time, context);
 
-      final time = configuration.timeIndicatorBuilder.call(
-        configuration.getConfig(timeIndicatorKey.id),
-      );
-      _timePaintObject = _createAndInitPaintObject(time, context) as TimeBasePaintObject;
-    } catch (error, stack) {
-      loge(
-        'init catch an exception!',
-        error: error,
-        stackTrace: stack,
-      );
+    // 隔离运行时 indicator，避免布局更新污染配置尺寸。
+    final mainIndicator = flexiKlineConfig.mainIndicator.copyWith();
+    _mainPaintObject = _inflateIndicator<MainPaintObjectIndicator, MainPaintObject>(mainIndicator, context);
+
+    // 恢复已激活指标：持久化恢复的 key ∪ autoActivate 声明，去重后入树。
+    _mainPaintObject.appendPaintObject(_candlePaintObject);
+
+    final autoMainKeys = mainIndicators.where((i) => i.autoActivate).map((i) => i.key);
+    for (final key in {...mainIndicator.children, ...autoMainKeys}) {
+      if (key == candleIndicatorKey) continue; // candle 已单独挂载
+      if (_mainPaintObject.getChildPaintObject(key) == null) {
+        addMainPaintObject(key, context);
+      }
     }
 
-    /// 加载历史选中过的指标
-    for (final key in mainIndicator.children) {
-      addMainPaintObject(key, context);
-    }
-    for (final key in flexiKlineConfig.sub) {
+    final autoSubKeys = subIndicators.where((i) => i.autoActivate).map((i) => i.key);
+    for (final key in {...flexiKlineConfig.sub, ...autoSubKeys}) {
+      if (_subPaintObjectQueue.any((object) => object.key == key)) continue;
       addSubPaintObject(key, context);
     }
+    _isInitialized = true;
   }
 
-  /// 更新FlexiKline配置与指标配置.
-  void updateFlexiKlineConfig(
-    IPaintContext context, {
-    bool updateIndicator = true,
+  /// 按 Widget 新旧声明增量同步指标。
+  ({List<IIndicatorKey> main, List<IIndicatorKey> sub}) updateIndicators({
+    required PaintContext context,
+    required CandleBaseIndicator oldCandle,
+    required CandleBaseIndicator newCandle,
+    required TimeBaseIndicator oldTime,
+    required TimeBaseIndicator newTime,
+    required List<Indicator> oldMainIndicators,
+    required List<Indicator> newMainIndicators,
+    required List<Indicator> oldSubIndicators,
+    required List<Indicator> newSubIndicators,
   }) {
-    _flexiKlineConfig = configuration.getFlexiKlineConfig();
-    if (!updateIndicator) return;
+    // candle/time 无条件更新。
+    _candlePaintObject.doDidUpdateIndicator(newCandle);
 
-    /// 配置默认指标蜡烛图指标和时间指标
-    final mainIndicator = flexiKlineConfig.mainIndicator;
-    try {
-      final newMainIndicator = mainIndicator.copyWith(
-        size: mainPaintObject.size,
-      );
-      mainPaintObject._indicator = newMainIndicator; // 手动更新
-      mainPaintObject.doDidUpdateIndicator(newMainIndicator);
+    _timePaintObject.doDidUpdateIndicator(newTime);
 
-      final candle = configuration.candleIndicatorBuilder.call(
-        configuration.getConfig(candleIndicatorKey.id),
-      );
-      candlePaintObject._indicator = candle; // 手动更新
-      candlePaintObject.doDidUpdateIndicator(candle);
+    // 同步主区声明集合。
+    final mainKeys = _mainDiffAndSync(
+      context: context,
+      oldIndicators: oldMainIndicators,
+      newIndicators: newMainIndicators,
+    );
 
-      final time = configuration.timeIndicatorBuilder.call(
-        configuration.getConfig(timeIndicatorKey.id),
-      );
-      timePaintObject._indicator = time; // 手动更新
-      timePaintObject.doDidUpdateIndicator(time);
-    } catch (error, stack) {
-      loge(
-        'updateFlexiKlineConfig catch an exception!',
-        error: error,
-        stackTrace: stack,
-      );
-    }
+    // 同步副区声明集合。
+    final subKeys = _subDiffAndSync(
+      context: context,
+      oldIndicators: oldSubIndicators,
+      newIndicators: newSubIndicators,
+    );
 
-    final newMainKeys = mainIndicator.children;
-    for (final key in supportMainIndicatorKeys) {
-      if (newMainKeys.contains(key)) {
-        addMainPaintObject(key, context, reset: true);
-      } else {
-        removeMainPaintObject(key);
-      }
-    }
-
-    final newSubKeys = flexiKlineConfig.sub;
-    for (final key in supportSubIndicatorKeys) {
-      if (newSubKeys.contains(key)) {
-        addSubPaintObject(key, context, reset: true);
-      } else {
-        removeSubPaintObject(key);
-      }
-    }
+    logi('updateIndicators 完成: computedDataCapacity=$computedDataCapacity');
+    return (main: mainKeys, sub: subKeys);
   }
 
-  /// 刷新FlexiKline配置与指标配置.
-  /// 
-  /// 过渡方案: 支持跳过 Config 重建(refreshConfig: false), 仅进行 indicator rebuild
-  /// 正常情况下 refreshConfig 为 true (默认值)
-  /// v3.1 后 indicator rebuild 部分将被移除
-  void refreshFlexiKlineConfig(
-    IPaintContext context, {
-    bool refreshConfig = true,
-    bool refreshIndicator = true,
+  /// 同步主区声明集合；新增只缓存，不自动激活。
+  ///
+  /// 返回本轮需激活的 key（autoActivate 的新增声明，或由 false 翻转为 true 且未激活的更新声明）。
+  List<IIndicatorKey> _mainDiffAndSync({
+    required PaintContext context,
+    required List<Indicator> oldIndicators,
+    required List<Indicator> newIndicators,
   }) {
-    if (refreshConfig) {
-      _flexiKlineConfig = configuration.getFlexiKlineConfig();
-    }
-    if (!refreshIndicator) return;
+    final toActivate = <IIndicatorKey>[];
+    final oldMap = {for (final ind in oldIndicators) ind.key: ind};
+    final newMap = {for (final ind in newIndicators) ind.key: ind};
 
-    /// 配置默认指标蜡烛图指标和时间指标
-    try {
-      final candle = configuration.candleIndicatorBuilder.call(
-        configuration.getConfig(candleIndicatorKey.id),
-      );
-      candlePaintObject.doDidUpdateIndicator(candle);
+    // 移除：回收 slot、删除缓存和已激活对象。
+    for (final key in oldMap.keys) {
+      if (newMap.containsKey(key)) continue;
 
-      final time = configuration.timeIndicatorBuilder.call(
-        configuration.getConfig(timeIndicatorKey.id),
-      );
-      timePaintObject.doDidUpdateIndicator(time);
-    } catch (error, stack) {
-      loge(
-        'updateFlexiKlineConfig catch an exception!',
-        error: error,
-        stackTrace: stack,
-      );
+      if (key is ComputedIndicatorKey) {
+        releaseComputedDataIndex(key);
+      }
+
+      _mainIndicatorRegistry.remove(key);
+
+      final result = disposeMainPaintObject(key);
+
+      logi('_mainDiffAndSync: 移除指标 $key > $result');
     }
 
-    final mainKeys = mainIndicatorKeys.toSet();
-    for (final key in supportMainIndicatorKeys) {
-      if (mainKeys.contains(key)) {
-        addMainPaintObject(key, context, reset: true);
+    // 新增或更新：维护声明缓存，已激活对象同步配置。
+    for (final entry in newMap.entries) {
+      final key = entry.key;
+      final newIndicator = entry.value;
+
+      if (!oldMap.containsKey(key)) {
+        if (key is ComputedIndicatorKey) {
+          allocateComputedDataIndexes([key]);
+        }
+        _mainIndicatorRegistry[key] = newIndicator;
+        if (newIndicator.autoActivate) toActivate.add(key);
+        logi('_mainDiffAndSync: 新增指标 $key $computedDataCapacity');
       } else {
-        removeMainPaintObject(key);
+        final oldIndicator = oldMap[key]!;
+        _mainIndicatorRegistry[key] = newIndicator;
+        final paintObject = getMainPaintObject(key, includeKeepAlive: true);
+        if (paintObject != null) {
+          paintObject.doDidUpdateIndicator(newIndicator);
+          logi('_mainDiffAndSync: 更新指标 $key');
+        }
+        if (!oldIndicator.autoActivate &&
+            newIndicator.autoActivate &&
+            _mainPaintObject.getChildPaintObject(key) == null) {
+          toActivate.add(key);
+        }
       }
     }
 
-    final subKeys = subIndicatorKeys.toSet();
-    for (final key in supportSubIndicatorKeys) {
-      if (subKeys.contains(key)) {
-        addSubPaintObject(key, context, reset: true);
-      } else {
-        removeSubPaintObject(key);
-      }
-    }
+    return toActivate;
   }
 
-  /// 主区指标操作 ///
-  /// 在主区中添加[key]指定的指标
+  /// 同步副区声明集合；新增只缓存，不自动激活。
+  ///
+  /// 返回本轮需激活的 key（autoActivate 的新增声明，或由 false 翻转为 true 且未激活的更新声明）。
+  List<IIndicatorKey> _subDiffAndSync({
+    required List<Indicator> oldIndicators,
+    required List<Indicator> newIndicators,
+    required PaintContext context,
+  }) {
+    final toActivate = <IIndicatorKey>[];
+    final oldMap = {for (final ind in oldIndicators) ind.key: ind};
+    final newMap = {for (final ind in newIndicators) ind.key: ind};
+
+    // 移除：回收 slot、删除缓存和已激活对象。
+    for (final key in oldMap.keys) {
+      if (newMap.containsKey(key)) continue;
+
+      if (key is ComputedIndicatorKey) {
+        releaseComputedDataIndex(key);
+      }
+
+      _subIndicatorRegistry.remove(key);
+
+      final result = disposeSubPaintObject(key);
+
+      logi('_subDiffAndSync: 移除指标 $key > $result');
+    }
+
+    // 新增或更新：维护声明缓存，已激活对象同步配置。
+    for (final entry in newMap.entries) {
+      final key = entry.key;
+      final newIndicator = entry.value;
+
+      if (!oldMap.containsKey(key)) {
+        if (key is ComputedIndicatorKey) {
+          allocateComputedDataIndexes([key]);
+        }
+        _subIndicatorRegistry[key] = newIndicator;
+        if (newIndicator.autoActivate) toActivate.add(key);
+        logi('_subDiffAndSync: 新增指标 $key $computedDataCapacity');
+      } else {
+        final oldIndicator = oldMap[key]!;
+        _subIndicatorRegistry[key] = newIndicator;
+        final paintObject = getSubPaintObject(key, includeKeepAlive: true);
+        if (paintObject != null) {
+          paintObject.doDidUpdateIndicator(newIndicator);
+          logi('_subDiffAndSync: 更新指标 $key');
+        }
+        if (!oldIndicator.autoActivate &&
+            newIndicator.autoActivate &&
+            _subPaintObjectQueue.every((object) => object.key != key)) {
+          toActivate.add(key);
+        }
+      }
+    }
+
+    return toActivate;
+  }
+
+  /// 将 [Indicator] 实例化为 [PaintObject] 并挂载。
+  P _inflateIndicator<T extends Indicator, P extends PaintObject>(
+    T indicator,
+    PaintContext context,
+  ) {
+    final paintObject = indicator.createPaintObject();
+    paintObject.mount(indicator, context);
+    paintObject.doInitState();
+    return paintObject as P;
+  }
+
+  /// 解析激活对象来源：缓存命中复用常驻对象，否则现场 inflate。
+  PaintObject? _resolvePaintObject(Indicator indicator, PaintContext context) {
+    final cached = _keepAlivePaintObjects[indicator.key];
+    if (cached != null) return cached;
+    return _inflateIndicator(indicator, context);
+  }
+
+  /// 查找主区指标 [key] 的 PaintObject。
+  ///
+  /// 优先返回主区绘制树中的激活对象；[includeKeepAlive] 为 true 时，
+  /// 若树中没有则回退到 keepAlive 缓存（可能是已 detach 的常驻对象）。
+  PaintObject? getMainPaintObject(IIndicatorKey key, {bool includeKeepAlive = false}) {
+    final obj = _mainPaintObject.getChildPaintObject(key);
+    if (obj != null) return obj;
+    return includeKeepAlive ? _keepAlivePaintObjects[key] : null;
+  }
+
+  /// 强制销毁主区指标 [key]（含缓存中已 detach 的 keepAlive 对象），不受 [PaintObject.keepAlive] 影响。
+  ///
+  /// 用于声明移除等需要彻底销毁的场景；与 [removeMainPaintObject] 的隐藏保活相区别。
+  bool disposeMainPaintObject(IIndicatorKey key) {
+    final obj = getMainPaintObject(key, includeKeepAlive: true);
+    final removed = _mainPaintObject.removePaintObject(key);
+    _keepAlivePaintObjects.remove(key);
+    if (obj != null && !obj.isDisposed) obj.dispose();
+    return obj != null || removed;
+  }
+
+  /// 在主区中添加 [key] 指定的指标。
+  ///
+  /// 从 [_mainIndicatorRegistry] 中获取 Indicator，inflate 后追加到主区绘制队列。
+  /// key 未注册时静默跳过并记录警告。
   PaintObject? addMainPaintObject(
     IIndicatorKey key,
-    IPaintContext context, {
+    PaintContext context, {
     bool reset = false,
   }) {
     if (!hasRegisteredInMain(key)) {
@@ -332,27 +465,50 @@ final class IndicatorPaintObjectManager with FlexiLog {
       }
     }
 
-    final indicator = configuration.getIndicator(
-      key,
-      builder: _mainIndicatorBuilders[key],
-    );
+    final indicator = _mainIndicatorRegistry[key];
     if (indicator == null) return null;
 
-    final newObj = _createAndInitPaintObject(indicator, context);
+    final newObj = _resolvePaintObject(indicator, context);
+    if (newObj == null) return null;
     _mainPaintObject.appendPaintObject(newObj);
     return newObj;
   }
 
-  /// 在已载入主区绘制对象中, 删除[key]指定的绘制对象
+  /// 删除已激活的主区指标。
   bool removeMainPaintObject(IIndicatorKey key) {
-    return _mainPaintObject.deletePaintObject(key);
+    final obj = _mainPaintObject.getChildPaintObject(key);
+    if (obj != null && obj.keepAlive) _keepAlivePaintObjects[key] = obj;
+    return _mainPaintObject.removePaintObject(key);
   }
 
-  /// 副区指标操作 ///
-  /// 在副区中添加[key]指定的指标
+  /// 查找副区指标 [key] 的 PaintObject。
+  ///
+  /// 优先返回副区绘制队列中的激活对象；[includeKeepAlive] 为 true 时，
+  /// 若队列中没有则回退到 keepAlive 缓存（可能是已 detach 的常驻对象）。
+  PaintObject? getSubPaintObject(IIndicatorKey key, {bool includeKeepAlive = false}) {
+    final obj = _subPaintObjectQueue.firstWhereOrNull((object) => object.key == key);
+    if (obj != null) return obj;
+    return includeKeepAlive ? _keepAlivePaintObjects[key] : null;
+  }
+
+  /// 强制销毁副区指标 [key]（含缓存中已 detach 的 keepAlive 对象），不受 [PaintObject.keepAlive] 影响。
+  ///
+  /// 用于声明移除等需要彻底销毁的场景；与 [removeSubPaintObject] 的隐藏保活相区别。
+  bool disposeSubPaintObject(IIndicatorKey key) {
+    final obj = getSubPaintObject(key, includeKeepAlive: true);
+    final removed = removeSubPaintObject(key);
+    _keepAlivePaintObjects.remove(key);
+    if (obj != null && !obj.isDisposed) obj.dispose();
+    return obj != null || removed;
+  }
+
+  /// 在副区中添加 [key] 指定的指标。
+  ///
+  /// 从 [_subIndicatorRegistry] 中获取 Indicator，inflate 后追加到副区绘制队列。
+  /// key 未注册时静默跳过并记录警告。
   PaintObject? addSubPaintObject(
     IIndicatorKey key,
-    IPaintContext context, {
+    PaintContext context, {
     bool reset = false,
   }) {
     if (!hasRegisteredInSub(key)) {
@@ -372,25 +528,38 @@ final class IndicatorPaintObjectManager with FlexiLog {
       }
     }
 
-    final indicator = configuration.getIndicator(
-      key,
-      builder: _subIndicatorBuilders[key],
-    );
+    final indicator = _subIndicatorRegistry[key];
     if (indicator == null) return null;
 
-    final newObj = _createAndInitPaintObject(indicator, context);
+    final newObj = _resolvePaintObject(indicator, context);
+    if (newObj == null) return null;
     flexiKlineConfig.sub.add(key);
+    // 容量满且新元素不在队列时，队首将被驱逐；FixedHashQueue 不返回被驱逐项，需先退树。
+    if (_subPaintObjectQueue.length >= _subPaintObjectQueue.fixedCapacity && !_subPaintObjectQueue.contains(newObj)) {
+      if (_subPaintObjectQueue.isNotEmpty) {
+        final evicted = _subPaintObjectQueue.first;
+        if (evicted.keepAlive) _keepAlivePaintObjects[evicted.key] = evicted;
+        evicted.onExitTree();
+      }
+    }
     final oldObj = _subPaintObjectQueue.append(newObj);
-    oldObj?.dispose();
+    // 就地替换：keepAlive=false 走 dispose，keepAlive=true 入缓存保活。
+    if (oldObj != null) {
+      if (oldObj.keepAlive) _keepAlivePaintObjects[oldObj.key] = oldObj;
+      oldObj.onExitTree();
+    }
+    // 进树钩子：external 触发 didAttach。
+    newObj.onEnterTree();
     return newObj;
   }
 
-  /// 在已载入副区绘制对象中, 删除[key]指定的绘制对象
+  /// 删除已激活的副区指标。
   bool removeSubPaintObject(IIndicatorKey key) {
     bool hasRemove = false;
     _subPaintObjectQueue.removeWhere((obj) {
       if (obj.indicator.key == key) {
-        obj.dispose();
+        if (obj.keepAlive) _keepAlivePaintObjects[key] = obj;
+        obj.onExitTree();
         hasRemove = true;
         flexiKlineConfig.sub.remove(key);
         return true;
@@ -400,88 +569,6 @@ final class IndicatorPaintObjectManager with FlexiLog {
     return hasRemove;
   }
 
-  /// 获取[key]指定的指标配置实例（先查主区, 再查副区）
-  /// 1. 先从当前载入的绘制对象中查找
-  /// 2. 如果未载入, 则从配置缓存中加载[key]对应的指标
-  T? getIndicator<T extends Indicator>(IIndicatorKey key) {
-    if (hasRegisteredInMain(key)) {
-      Indicator? indicator = mainPaintObject.getChildIndicator(key);
-      indicator ??= configuration.getIndicator(
-        key,
-        builder: _mainIndicatorBuilders[key],
-      );
-      return indicator is T ? indicator : null;
-    } else if (hasRegisteredInSub(key)) {
-      final object = subPaintObjects.firstWhereOrNull((obj) => obj.key == key);
-      var indicator = object?.indicator;
-      indicator ??= configuration.getIndicator(
-        key,
-        builder: _subIndicatorBuilders[key],
-      );
-      return indicator is T ? indicator : null;
-    }
-    return null;
-  }
-
-  /// 更新[indicator]指标配置
-  /// 1. 如果已载入, 则更新当前绘制对象的指标
-  /// 2. 如果未载入, 则保存到本地缓存中, 以备后续使用
-  /// [forceSave] 是否强制保存到本地缓存中
-  /// 注: 如果[forceSave]为true, 当指标被动加载时, 强制使用最新配置.
-  /// 返回: 是否更新成功
-  bool updateIndicator<T extends Indicator>(T indicator, [bool forceSave = false]) {
-    final key = indicator.key;
-    if (hasRegisteredInMain(key)) {
-      bool updated = mainPaintObject.updateChildIndicator(indicator);
-      if (!updated || forceSave) {
-        updated = configuration.saveIndicator(indicator) || updated;
-      }
-      return updated;
-    } else if (hasRegisteredInSub(key)) {
-      final object = subPaintObjects.firstWhereOrNull((obj) => obj.key == key);
-      if (object != null) {
-        object.doDidUpdateIndicator(indicator);
-        if (forceSave) {
-          return configuration.saveIndicator(indicator);
-        }
-        return true;
-      } else {
-        return configuration.saveIndicator(indicator);
-      }
-    }
-    return false;
-  }
-
-  bool restoreIndicator(IIndicatorKey key) {
-    configuration.delIndicator(key);
-    final indicator = configuration.getIndicator(key);
-    if (indicator != null) {
-      return updateIndicator(indicator);
-    }
-    return false;
-  }
-
-  bool restoreAllIndicator() {
-    bool result = false;
-    for (final key in [...supportMainIndicatorKeys, ...supportSubIndicatorKeys]) {
-      result = restoreIndicator(key) && result;
-    }
-    return result;
-  }
-
-  /// 收集当前指标的计算参数
-  /// 考虑在主区/副区同时存在的指标.
-  // @Deprecated('废弃, 由PaintObject执行precompute')
-  // Map<IIndicatorKey, dynamic> getIndicatorCalcParams() {
-  //   final calcParams = mainPaintObject.getCalcParams();
-  //   for (final object in subPaintObjects) {
-  //     final params = object.getCalcParams();
-  //     if (params.isEmpty) continue;
-  //     calcParams.addAll(params);
-  //   }
-  //   return calcParams;
-  // }
-
   void restoreHeight() {
     mainPaintObject.restoreSize();
     for (final object in subPaintObjects) {
@@ -489,36 +576,42 @@ final class IndicatorPaintObjectManager with FlexiLog {
     }
   }
 
-  /// 保存所有FlexiKline配置及主区和副区的指标设置.
-  /// [storeIndicators] 是否存储主区指标和副区指标的设置.
-  /// [layoutMode] 布局模式; 注: 仅保存NormalLayoutMode模式下的宽高 和 非移动设备时AdaptLayoutMode模式下的宽高.
-  void storeFlexiKlineConfig({
-    bool storeIndicators = true,
-    required LayoutMode layoutMode,
-  }) {
+  /// 保存当前激活状态和已同步的布局配置。
+  void storeFlexiKlineConfig() {
+    if (!_isInitialized) return;
     flexiKlineConfig.sub = subIndicatorKeys.toSet();
-    final configMainSize = flexiKlineConfig.mainIndicator.size;
     flexiKlineConfig.mainIndicator = mainPaintObject.indicator.copyWith(
-      size: switch (layoutMode) {
-        NormalLayoutMode() => mainPaintObject.size,
-        AdaptLayoutMode() => PlatformUtil.isMobile ? configMainSize : mainPaintObject.size,
-        FixedLayoutMode() => configMainSize,
-      },
+      size: flexiKlineConfig.mainIndicator.size,
     );
     configuration.saveFlexiKlineConfig(_flexiKlineConfig);
-    if (storeIndicators) {
-      mainPaintObject.doStoreConfig();
-      for (final object in subPaintObjects) {
-        object.doStoreConfig();
-      }
+  }
+
+  /// K 线 spec.key 变化时，通知 attached 树对象与 detached keepAlive 常驻对象（去重）。
+  void notifySpecChanged(KlineSpec oldSpec) {
+    // 未初始化时尚无任何 PaintObject（含 late 的 _mainPaintObject），直接跳过。
+    if (!_isInitialized) return;
+    final targets = <PaintObject>{
+      ..._mainPaintObject.children,
+      ..._subPaintObjectQueue,
+      ..._keepAlivePaintObjects.values,
+    };
+    for (final obj in targets) {
+      obj.doDidChangeDependencies(oldSpec);
     }
   }
 
   void dispose() {
+    if (!_isInitialized) return;
+    _isInitialized = false;
     mainPaintObject.dispose();
     for (final object in subPaintObjects) {
       object.dispose();
     }
     _subPaintObjectQueue.clear();
+    // keepAlive 常驻缓存：跳过已在绘制树释放阶段 dispose 的对象，避免重复。
+    for (final obj in _keepAlivePaintObjects.values) {
+      if (!obj.isDisposed) obj.dispose();
+    }
+    _keepAlivePaintObjects.clear();
   }
 }

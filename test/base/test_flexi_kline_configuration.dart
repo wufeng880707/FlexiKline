@@ -22,9 +22,7 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   double get scale {
     if (_scale != null) return _scale!;
     final view = PlatformDispatcher.instance.implicitView;
-    final size = view != null
-        ? view.physicalSize / view.devicePixelRatio
-        : const Size(393, 852);
+    final size = view != null ? view.physicalSize / view.devicePixelRatio : const Size(393, 852);
     _scale = size.shortestSide / 393;
     return _scale!;
   }
@@ -60,7 +58,9 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   Color countDownTextBg = const Color(0xFFBDBDBD);
 
   @override
-  Color get countDownBg => countDownTextBg;
+  Color get countdownBg => countDownTextBg;
+
+  Color get countDownBg => countdownBg;
 
   @override
   Color crossTextBg = const Color(0xFF111111);

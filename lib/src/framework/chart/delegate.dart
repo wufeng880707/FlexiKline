@@ -16,7 +16,7 @@ part of 'indicator.dart';
 
 extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
   void setHeight(double height) {
-    if (isAllowUpdateHeight) {
+    if (context.canUpdateLayoutHeight) {
       _tmpHeight = null;
       // indicator中只保留正常布局模式/适配模式下的高度, 其他模式会根据当前父布局自适应.
       indicator.height = height;
@@ -54,15 +54,15 @@ extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
     return hasChange;
   }
 
-  MinMax? doInitState(
-    int newSlot, {
+  MinMax? doUpdateVisibleMinMax(
+    int newPaneIndex, {
     required int start,
     required int end,
     bool reset = false,
     double panSmoothFactor = 1.0,
   }) {
-    if (reset || newSlot != slot) {
-      resetPaintBounding(slot: newSlot);
+    if (reset || newPaneIndex != paneIndex) {
+      resetPaintBounding(paneIndex: newPaneIndex);
       _minMax = null;
       _dyFactor = null;
     }
@@ -76,7 +76,7 @@ extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
     _start = start;
     _end = end;
     _minMax = null;
-    final ret = initState(start, end);
+    final ret = computeVisibleMinMax(start, end);
 
     if (ret != null) {
       setMinMax(ret);
@@ -88,9 +88,9 @@ extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
   }
 
   void doPaintChart(Canvas canvas, Size size) {
-    paintChart(canvas, size);
+    paint(canvas, size);
 
-    if (!isCrossing) {
+    if (!context.isCrossing) {
       paintTips(
         canvas,
         model: klineData.latest,
@@ -99,12 +99,12 @@ extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
     }
   }
 
-  void doPaintExtraAboveChart(Canvas canvas, Size size) {
-    paintExtraAboveChart(canvas, size);
+  void doPaintOverlay(Canvas canvas, Size size) {
+    paintOverlay(canvas, size);
   }
 
-  void doOnCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
-    onCross(canvas, offset);
+  void doPaintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
+    paintCross(canvas, offset, model: model);
 
     paintTips(
       canvas,
@@ -124,15 +124,47 @@ extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
     didChangeTheme();
   }
 
-  Future<bool> doStoreConfig() {
-    return _context.setConfig(key.id, indicator.toJson());
+  /// 框架内部：保证 initState 仅触发一次。
+  void doInitState() {
+    if (_initialized) return;
+    _initialized = true;
+    initState();
+  }
+
+  /// 框架内部：进树触发 didAttach（带去重）。
+  void doAttach() {
+    if (_attached) return;
+    _attached = true;
+    didAttach();
+  }
+
+  /// 框架内部：出树触发 didDetach（仅在已 attach 时）。
+  void doDetach() {
+    if (!_attached) return;
+    _attached = false;
+    didDetach();
+  }
+
+  /// 框架内部：被加入绘制树时调用。
+  void onEnterTree() => doAttach();
+
+  /// 框架内部：被移出绘制树时调用。
+  /// 先触发 didDetach，再按 [keepAlive] 决定是否真销毁。
+  void onExitTree() {
+    doDetach();
+    if (!keepAlive) dispose();
+  }
+
+  /// 框架内部：转发依赖变化。
+  void doDidChangeDependencies(KlineSpec oldSpec) {
+    didChangeDependencies(oldSpec);
   }
 }
 
 extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintObject<T> {
   @protected
   void setSize(Size size) {
-    if (isAllowUpdateHeight) {
+    if (context.canUpdateLayoutHeight) {
       _tmpSize = null;
       indicator.size = size;
     } else {
@@ -190,15 +222,15 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintO
     return hasChange;
   }
 
-  MinMax? doInitState(
-    int newSlot, {
+  MinMax? doUpdateVisibleMinMax(
+    int newPaneIndex, {
     required int start,
     required int end,
     bool reset = false,
     double panSmoothFactor = 1.0,
   }) {
-    if (reset || newSlot != slot) {
-      resetPaintBounding(slot: newSlot);
+    if (reset || newPaneIndex != paneIndex) {
+      resetPaintBounding(paneIndex: newPaneIndex);
       _minMax = null;
       _dyFactor = null;
     }
@@ -214,10 +246,10 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintO
     _minMax = null;
     for (final object in paintableChildren) {
       // 平滑活跃时, 子对象的 _minMax 已被 setMinMax(smoothed) 污染为平滑值,
-      // 必须清除以强制 initState 重算精确值, 否则 smoothMinMax 的收敛目标是错的
+      // 必须清除以强制重新计算可见区间 MinMax, 否则 smoothMinMax 的收敛目标是错的
       if (_smoothMinMax != null) object._minMax = null;
-      final ret = object.doInitState(
-        newSlot,
+      final ret = object.doUpdateVisibleMinMax(
+        newPaneIndex,
         start: start,
         end: end,
         reset: reset,
@@ -243,13 +275,13 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintO
   /// 1. drawBelowTipsArea标识为true
   /// 2. 当前不处在Zooming中时
   bool get isFirstDrawTipsArea {
-    return indicator.drawBelowTipsArea && !_context.isStartZoomChart;
+    return indicator.drawBelowTipsArea && !context.isChartZooming;
   }
 
   void doPaintChart(Canvas canvas, Size size) {
     if (isFirstDrawTipsArea) {
       // 如果设置总是要在Tips区域下绘制指标图, 则要首先绘制完所有Tips.
-      if (!isCrossing) {
+      if (!context.isCrossing) {
         final tipsHeight = doPaintTips(canvas, model: klineData.latest);
 
         if (indicator.padding.top + tipsHeight > padding.top) {
@@ -261,27 +293,27 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintO
         }
       }
       for (final object in paintableChildren) {
-        object.paintChart(canvas, size);
+        object.paint(canvas, size);
       }
     } else {
       for (final object in paintableChildren) {
-        object.paintChart(canvas, size);
+        object.paint(canvas, size);
       }
-      if (!isCrossing) {
+      if (!context.isCrossing) {
         doPaintTips(canvas, model: klineData.latest);
       }
     }
   }
 
-  void doPaintExtraAboveChart(Canvas canvas, Size size) {
+  void doPaintOverlay(Canvas canvas, Size size) {
     for (final object in paintableChildren) {
-      object.paintExtraAboveChart(canvas, size);
+      object.paintOverlay(canvas, size);
     }
   }
 
-  void doOnCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
+  void doPaintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     if (isFirstDrawTipsArea) {
-      if (isCrossing) {
+      if (context.isCrossing) {
         final tipsHeight = doPaintTips(canvas, offset: offset, model: model);
 
         if (indicator.padding.top + tipsHeight > padding.top) {
@@ -293,13 +325,13 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintO
         }
       }
       for (final object in paintableChildren) {
-        object.onCross(canvas, offset);
+        object.paintCross(canvas, offset, model: model);
       }
     } else {
       for (final object in paintableChildren) {
-        object.onCross(canvas, offset);
+        object.paintCross(canvas, offset, model: model);
       }
-      if (isCrossing) {
+      if (context.isCrossing) {
         doPaintTips(canvas, offset: offset, model: model);
       }
     }
@@ -329,8 +361,7 @@ extension MainPaintManagerExt<T extends MainPaintObjectIndicator> on MainPaintOb
   }
 
   void appendPaintObject(PaintObject object) {
-    // 使用前先解绑: 释放[paintObject]parentObject与数据.
-    object.dispose();
+    // 使用前先解绑父级（不销毁，external 需保活）。
     object._parent = this;
     // 重置object布局参数为MainPaintObject的
     object.doUpdateLayout(
@@ -339,18 +370,28 @@ extension MainPaintManagerExt<T extends MainPaintObjectIndicator> on MainPaintOb
     );
     final old = children.append(object);
     indicator.children.add(object.key);
-    old?.dispose();
+    // 被替换对象走多态退树：普通指标 dispose，external 仅 detach 保活。
+    old?.onExitTree();
+    // 进树钩子：external 触发 didAttach，普通指标 no-op。
+    object.onEnterTree();
+    // 子指标增删后必须让主区下一帧走完整 [doUpdateVisibleMinMax]。
+    // 否则在 start/end 未变时 [MainPaintObject.doUpdateVisibleMinMax] 会早退，新子对象收不到 [setMinMax]，
+    // combine 指标（如 MA）仍用默认 [MinMax.zero]，[valueToDy] 会把所有点画在底部一条线上。
+    _minMax = null;
+    _smoothMinMax = null;
   }
 
-  bool deletePaintObject(IIndicatorKey key) {
+  bool removePaintObject(IIndicatorKey key) {
     bool hasRemove = false;
     children.removeWhere((object) {
       if (object.key == key) {
-        object.dispose();
+        object.onExitTree();
         indicator.children.remove(object.key);
         hasRemove = true;
         _tmpHeight = null;
         _tmpPadding = null;
+        _minMax = null;
+        _smoothMinMax = null;
         return true;
       }
       return false;
@@ -373,12 +414,5 @@ extension MainPaintManagerExt<T extends MainPaintObjectIndicator> on MainPaintOb
       return true;
     }
     return false;
-  }
-
-  void doStoreConfig() {
-    _context.setConfig(key.id, indicator.toJson());
-    for (final object in children) {
-      object.doStoreConfig();
-    }
   }
 }

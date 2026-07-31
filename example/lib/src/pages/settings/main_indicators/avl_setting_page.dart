@@ -36,11 +36,12 @@ class AVLSettingPage extends BaseIndicatorSettingPage {
   ConsumerState<AVLSettingPage> createState() => _AVLSettingPageState();
 }
 
-class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage> {
+class _AVLSettingPageState
+    extends BaseIndicatorSettingPageState<AVLSettingPage> {
   // AVL参数
   late AVLParam _originalParam;
   late AVLParam _currentParam;
-  
+
   // UI状态
   late bool enabled;
   late Color lineColor;
@@ -56,19 +57,19 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
   void _loadCurrentSettings() {
     final klineState = ref.read(klineStateProvider(widget.controller));
     final controller = klineState.controller;
-    
+
     try {
       // 检查AVL指标是否存在
       const avlKey = DataIndicatorKey('avl');
       enabled = controller.mainIndicatorKeys.contains(avlKey);
-      
+
       if (enabled) {
         // 获取当前AVL指标配置
         final avlIndicator = controller.getIndicator<AVLIndicator>(avlKey);
         if (avlIndicator != null) {
           _originalParam = avlIndicator.calcParam;
           _currentParam = _originalParam;
-          
+
           // 从参数中提取UI状态
           lineColor = _currentParam.appearance.color;
           lineWidth = _currentParam.appearance.lineWidth;
@@ -102,102 +103,100 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
   @override
   List<Widget> buildSettingItems(FKTheme theme) {
     return [
-
       // 均价线设置
-        buildSectionTitle('均价线样式', theme),
+      buildSectionTitle('均价线样式', theme),
 
-        Container(
-          padding: EdgeInsets.all(16.r),
-          decoration: BoxDecoration(
-            color: theme.cardBg,
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(color: theme.dividerLine),
-          ),
-          child: // 控制器行
-              Row(
-            children: [
-              Text(
-                'AVL',
+      Container(
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: theme.cardBg,
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: theme.dividerLine),
+        ),
+        child: // 控制器行
+            Row(
+          children: [
+            Text(
+              'AVL',
+              style: TextStyle(
+                color: theme.t1,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            // 线宽选择器
+            LineWidthSelector(
+              value: lineWidth,
+              onChanged: (width) {
+                setState(() {
+                  lineWidth = width;
+                  // 更新当前参数
+                  _currentParam = _currentParam.copyWith(
+                    appearance: _currentParam.appearance.copyWith(
+                      lineWidth: width,
+                    ),
+                  );
+                });
+              },
+              color: lineColor,
+              width: 80,
+              height: 32,
+            ),
+
+            SizedBox(width: 26.r),
+
+            // 颜色选择器 - 透明覆盖层实现
+            ColorSelector(
+              value: lineColor,
+              onChanged: (color) {
+                setState(() {
+                  lineColor = color;
+                  // 更新当前参数
+                  _currentParam = _currentParam.copyWith(
+                    appearance: _currentParam.appearance.copyWith(
+                      color: color,
+                    ),
+                  );
+                });
+              },
+              width: 80,
+              height: 32,
+            ),
+          ],
+        ),
+      ),
+
+      SizedBox(height: 16.r),
+
+      // 说明文字
+      Container(
+        padding: EdgeInsets.all(12.r),
+        decoration: BoxDecoration(
+          color: theme.long.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: theme.long.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: theme.long,
+              size: 16.r,
+            ),
+            SizedBox(width: 8.r),
+            Expanded(
+              child: Text(
+                'AVL均价线：显示当前价格的平均值线，帮助判断价格趋势',
                 style: TextStyle(
-                  color: theme.t1,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w500,
+                  color: theme.long,
+                  fontSize: 12.sp,
                 ),
               ),
-              const Spacer(),
-              // 线宽选择器
-              LineWidthSelector(
-                value: lineWidth,
-                onChanged: (width) {
-                  setState(() {
-                    lineWidth = width;
-                    // 更新当前参数
-                    _currentParam = _currentParam.copyWith(
-                      appearance: _currentParam.appearance.copyWith(
-                        lineWidth: width,
-                      ),
-                    );
-                  });
-                },
-                color: lineColor,
-                width: 80,
-                height: 32,
-              ),
-
-              SizedBox(width: 26.r),
-
-              // 颜色选择器 - 透明覆盖层实现
-              ColorSelector(
-                value: lineColor,
-                onChanged: (color) {
-                  setState(() {
-                    lineColor = color;
-                    // 更新当前参数
-                    _currentParam = _currentParam.copyWith(
-                      appearance: _currentParam.appearance.copyWith(
-                        color: color,
-                      ),
-                    );
-                  });
-                },
-                width: 80,
-                height: 32,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-
-        SizedBox(height: 16.r),
-
-        // 说明文字
-        Container(
-          padding: EdgeInsets.all(12.r),
-          decoration: BoxDecoration(
-            color: theme.long.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(color: theme.long.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.info_outline,
-                color: theme.long,
-                size: 16.r,
-              ),
-              SizedBox(width: 8.r),
-              Expanded(
-                child: Text(
-                  'AVL均价线：显示当前价格的平均值线，帮助判断价格趋势',
-                  style: TextStyle(
-                    color: theme.long,
-                    fontSize: 12.sp,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
+      ),
     ];
   }
 
@@ -207,12 +206,12 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
     debugPrint('  线条颜色: ${lineColor.toString()}');
     debugPrint('  线条宽度: $lineWidth');
     debugPrint('  当前参数: $_currentParam');
-    
+
     try {
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
       const avlKey = DataIndicatorKey('avl');
-      
+
       if (enabled && controller.mainIndicatorKeys.contains(avlKey)) {
         // 更新现有的AVL指标
         final oldIndicator = controller.getIndicator<AVLIndicator>(avlKey);
@@ -224,10 +223,10 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
             tipsPadding: oldIndicator.tipsPadding,
             tickCount: oldIndicator.tickCount,
           );
-          
+
           // 使用controller的updateIndicator方法更新
           controller.updateIndicator(newIndicator);
-          
+
           debugPrint('AVL指标参数已更新');
         } else {
           debugPrint('AVL指标未找到，无法更新');
@@ -237,10 +236,9 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
         controller.addMainIndicator(avlKey);
         debugPrint('AVL指标已启用');
       }
-      
+
       // 保存原始参数为新的参考值
       _originalParam = _currentParam;
-      
     } catch (e) {
       debugPrint('保存AVL设置失败: $e');
     }
@@ -249,28 +247,29 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
   @override
   Future<void> resetToDefault() async {
     debugPrint('重置AVL设置为默认值');
-    
+
     try {
       // 创建默认配置实例
       final defaultConfig = DefaultFlexiKlineConfiguration(ref: ref);
-      
-       widget.controller.configuration;
+
+      widget.controller.configuration;
       // 从默认主指标配置中获取AVL指标
       const avlKey = DataIndicatorKey('avl');
-      final defaultMainIndicators = defaultConfig.getDefaultMainIndicatorBuilders();
+      final defaultMainIndicators =
+          defaultConfig.getDefaultMainIndicatorBuilders();
       final avlBuilder = defaultMainIndicators[avlKey];
-      
+
       if (avlBuilder != null) {
         // 创建默认的AVL指标实例
-        final defaultIndicator = avlBuilder(null) as AVLIndicator;
+        final defaultIndicator = avlBuilder(const {}) as AVLIndicator;
         final defaultParam = defaultIndicator.calcParam;
-        
+
         setState(() {
           _currentParam = defaultParam;
           lineColor = _currentParam.appearance.color;
           lineWidth = _currentParam.appearance.lineWidth;
         });
-        
+
         debugPrint('AVL指标已重置为默认配置: $_currentParam');
       } else {
         // 如果没有找到默认配置，使用硬编码的默认值
@@ -279,7 +278,7 @@ class _AVLSettingPageState extends BaseIndicatorSettingPageState<AVLSettingPage>
           lineColor = _currentParam.appearance.color;
           lineWidth = _currentParam.appearance.lineWidth;
         });
-        
+
         debugPrint('使用硬编码默认值重置AVL指标');
       }
     } catch (e) {

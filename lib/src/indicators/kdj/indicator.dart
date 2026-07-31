@@ -50,7 +50,7 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
   KDJPaintObject();
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
 
     return calcuKdjMinmax(

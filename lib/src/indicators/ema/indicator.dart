@@ -41,7 +41,7 @@ class EMAPaintObject<T extends EMAIndicator> extends DataPaintObject<T> with Ema
   EMAPaintObject();
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
     return calcuEmaMinmax(
       indicator.calcParam,

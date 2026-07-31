@@ -16,8 +16,8 @@ import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final klineStateProvider =
-    ChangeNotifierProvider.autoDispose.family<KlineStateNotifier, FlexiKlineController>(
+final klineStateProvider = ChangeNotifierProvider.autoDispose
+    .family<KlineStateNotifier, FlexiKlineController>(
   (ref, controller) => KlineStateNotifier(ref, controller),
   name: 'klineState',
 );
@@ -31,12 +31,17 @@ class KlineStateNotifier extends ChangeNotifier {
   final Ref ref;
   final FlexiKlineController controller;
 
-  Set<IIndicatorKey> get supportMainIndicatorKeys => 
-      controller.supportMainIndicatorKeys.where((key) => key != tradeMarkIndicatorKey).toSet();
-  Set<IIndicatorKey> get supportSubIndicatorKeys => controller.supportSubIndicatorKeys.toSet();
-  Set<IIndicatorKey> get mainIndicatorKeys => 
-      controller.mainIndicatorKeys.where((key) => key != tradeMarkIndicatorKey).toSet();
-  Set<IIndicatorKey> get subIndicatorKeys => controller.subIndicatorKeys.toSet();
+  Set<IIndicatorKey> get supportMainIndicatorKeys =>
+      controller.supportMainIndicatorKeys
+          .where((key) => key != tradeMarkIndicatorKey)
+          .toSet();
+  Set<IIndicatorKey> get supportSubIndicatorKeys =>
+      controller.supportSubIndicatorKeys.toSet();
+  Set<IIndicatorKey> get mainIndicatorKeys => controller.mainIndicatorKeys
+      .where((key) => key != tradeMarkIndicatorKey)
+      .toSet();
+  Set<IIndicatorKey> get subIndicatorKeys =>
+      controller.subIndicatorKeys.toSet();
 
   void onTapMainIndicator(IIndicatorKey key) {
     if (controller.mainIndicatorKeys.contains(key)) {
@@ -61,7 +66,7 @@ class KlineStateNotifier extends ChangeNotifier {
     try {
       // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
       final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
-      return candleIndicator.latest.show;
+      return candleIndicator.inViewPriceMark.show;
     } catch (e) {
       return true;
     }
@@ -73,7 +78,9 @@ class KlineStateNotifier extends ChangeNotifier {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
       final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       final updatedIndicator = candleIndicator.copyWith(
-        latest: candleIndicator.latest.copyWith(show: isShow),
+        inViewPriceMark: candleIndicator.inViewPriceMark.copyWith(show: isShow),
+        offViewPriceMark:
+            candleIndicator.offViewPriceMark.copyWith(show: isShow),
       );
       // 使用controller的updateIndicator方法更新
       controller.updateIndicator(updatedIndicator);
@@ -88,7 +95,7 @@ class KlineStateNotifier extends ChangeNotifier {
     try {
       // 通过开放的candlePaintObject直接访问CandleIndicator，需要类型转换
       final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
-      return candleIndicator.showCountDown;
+      return candleIndicator.showCountdown;
     } catch (e) {
       return true;
     }
@@ -99,7 +106,7 @@ class KlineStateNotifier extends ChangeNotifier {
     try {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
       final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
-      final updatedIndicator = candleIndicator.copyWith(showCountDown: isShow);
+      final updatedIndicator = candleIndicator.copyWith(showCountdown: isShow);
       // 使用controller的updateIndicator方法更新
       controller.updateIndicator(updatedIndicator);
     } catch (e) {
@@ -177,7 +184,8 @@ class KlineStateNotifier extends ChangeNotifier {
   /// 是否展示买卖标记
   bool get isShowTradeMark {
     try {
-      final tradeMarkIndicator = controller.getIndicator<TradeMarkIndicator>(tradeMarkIndicatorKey);
+      final tradeMarkIndicator =
+          controller.getIndicator<TradeMarkIndicator>(tradeMarkIndicatorKey);
       return tradeMarkIndicator?.calcParam.show ?? false;
     } catch (e) {
       return false;
@@ -323,8 +331,10 @@ class KlineStateNotifier extends ChangeNotifier {
         controller.gestureConfig = controller.gestureConfig.copyWith(
           enableInertialPan: isEnable,
           tolerance: controller.gestureConfig.tolerance.copyWith(
-            maxDuration: maxDuration ?? controller.gestureConfig.tolerance.maxDuration,
-            distanceFactor: distanceFactor ?? controller.gestureConfig.tolerance.distanceFactor,
+            maxDuration:
+                maxDuration ?? controller.gestureConfig.tolerance.maxDuration,
+            distanceFactor: distanceFactor ??
+                controller.gestureConfig.tolerance.distanceFactor,
           ),
         );
         notifyListeners();

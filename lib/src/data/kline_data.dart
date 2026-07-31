@@ -16,7 +16,6 @@ library;
 
 import 'package:flutter/foundation.dart';
 
-import '../constant.dart';
 import '../extension/export.dart';
 import '../framework/chart/indicator.dart';
 import '../framework/logger.dart';
@@ -31,8 +30,7 @@ part 'indicator.dart';
 
 class KlineData extends BaseData with KlineSpecData, CandleListData, PaintDrawData, IndicatorData {
   KlineData(
-    super.spec,
-    super.indicatorCount, {
+    super.spec, {
     super.loadingState,
     super.list,
     super.computeMode,
@@ -41,18 +39,31 @@ class KlineData extends BaseData with KlineSpecData, CandleListData, PaintDrawDa
 
   final FlexiStopwatch stopwatch = FlexiStopwatch();
 
+  /// 重建所有蜡烛的 slots 到新容量
+  ///
+  /// 遍历 [_list] 中每条蜡烛，调用 [FlexiCandleModel.rebuildSlots] 并写回
+  /// （extension type 值语义要求必须写回）。
+  /// 当 [computedDataCapacity] 增加导致需要扩容时，由 StateBinding 调用此方法。
+  void rebuildSlots(int newCount) {
+    for (int i = 0; i < _list.length; i++) {
+      _list[i] = _list[i].rebuildSlots(newCount);
+    }
+  }
+
   static final KlineData empty = KlineData(
     const KlineSpec(symbol: '', interval: invalidInterval),
-    0,
     list: List.empty(growable: false),
   );
 
   /// 预计算Kline指标数据
+  ///
+  /// [slotCount] 指定新蜡烛模型的 slots 数量，传递给 [mergeCandleData]
   /// [newList] 新增的蜡烛数据
   /// [mainPaintObjects] 主区待计算的指标集合
   /// [subPaintObjects] 副区待计算的指标集合
   /// [reset] 是否重置; 如果有, 忽略之前的计算结果.
   Future<void> precomputeKlineData({
+    required int slotCount,
     required List<ICandleModel> newList,
     required Iterable<PaintObject> mainPaintObjects,
     required Iterable<PaintObject> subPaintObjects,
@@ -72,7 +83,7 @@ class KlineData extends BaseData with KlineSpecData, CandleListData, PaintDrawDa
       /// 1. 合并数据
       final data = newList.isEmpty ? _waitingData : [newList, ..._waitingData];
       Range? range = stopwatch.run(
-        () => mergeCandleData(data),
+        () => mergeCandleData(data, slotCount: slotCount),
         label: '$logTag-mergeCandleData-${data.length}',
       );
       _waitingData.clear();
@@ -91,17 +102,17 @@ class KlineData extends BaseData with KlineSpecData, CandleListData, PaintDrawDa
 
       /// 3. 计算指标数据
       logd('precomputeKlineData Start Main $reset-$range');
-      for (final computable in mainPaintObjects.whereType<IComputablePainter>()) {
+      for (final computable in mainPaintObjects.whereType<IComputedPainter>()) {
         await stopwatch.exec(
-          () => computable.precompute(range!, reset: reset),
+          () => computable.compute(range!, reset: reset),
           label: '$logTag-Main-precompute:${computable.key}-$range',
         );
       }
 
       logd('precomputeKlineData Start Sub $reset-$range');
-      for (final computable in subPaintObjects.whereType<IComputablePainter>()) {
+      for (final computable in subPaintObjects.whereType<IComputedPainter>()) {
         await stopwatch.exec(
-          () => computable.precompute(range!, reset: reset),
+          () => computable.compute(range!, reset: reset),
           label: '$logTag-Sub-precompute:${computable.key}-$range',
         );
       }
@@ -112,6 +123,7 @@ class KlineData extends BaseData with KlineSpecData, CandleListData, PaintDrawDa
       stopwatch.stop();
       if (_waitingData.isNotEmpty) {
         precomputeKlineData(
+          slotCount: slotCount,
           newList: [],
           mainPaintObjects: mainPaintObjects,
           subPaintObjects: subPaintObjects,
@@ -127,7 +139,7 @@ class KlineData extends BaseData with KlineSpecData, CandleListData, PaintDrawDa
 /// [data]的序列化反序列化耗时较大, 暂不使用此方式.
 // Future<KlineData> precomputeKlineDataByCompute(
 //   KlineData data, {
-//   required int indicatorCount,
+//   required int computedDataCount,
 //   required List<CandleModel> newList,
 //   required Map<IIndicatorKey, dynamic> calcParams,
 //   bool reset = false,
@@ -147,14 +159,14 @@ class KlineData extends BaseData with KlineSpecData, CandleListData, PaintDrawDa
 //       (List<dynamic> params) async {
 //         final newData = await KlineData.precomputeKlineData(
 //           params[0],
-//           indicatorCount: params[1],
+//           computedDataCount: params[1],
 //           newList: params[2],
 //           calcParams: params[3],
 //           reset: params[4],
 //         );
 //         return newData;
 //       },
-//       [data, indicatorCount, newList, calcParams, reset],
+//       [data, computedDataCount, newList, calcParams, reset],
 //       debugLabel: debugLabel,
 //     );
 //     logger?.logd('compute End:${DateTime.now()}');

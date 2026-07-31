@@ -1,3 +1,56 @@
+## 2.3.1
+* Add optional `TipsConfig.lineWidth` to override the width of the indicator line a tips represents (color still derived from `style`); when null it falls back to the indicator-level `lineWidth`.
+* Add `defaultAuxiliaryLineWidth` constant (0.5) and apply it to auxiliary lines (crosshair, grid, high/low and latest-price mark lines), replacing scattered `0.5` literals and distinguishing them from data lines (`defaultIndicatorLineWidth`).
+* Simplify magnifier `CircleBorder` resolution: only the border color falls back to the theme grid-line color when transparent; the configured `width` and `style` are now respected (previously `width <= 0` was forced to `1` and `BorderStyle.none` to solid). `MagnifierConfig.shapeSide` default is now `BorderSide(color: transparent, width: 0.5)`.
+* Fix `TooltipConfig` JSON deserialization to default `hitTestMargin` to `2`, matching the constructor default.
+
+## 2.3.0
+* Improve `FlexiLayoutMode.fixed` canvas size resolution: resolve width and height independently (parent constraints first, `fixedSize` fallback) to cover more constraint combinations.
+* Relax `initialFixedSize` assert in fixed layout mode: only `height` must be finite when provided; width can be resolved from parent constraints.
+* Add `isMounted` guard in `paintChart` to prevent accessing uninitialized PaintObjects during early render frames.
+* Align paint naming by drawing position: rename indicator top-bar hook `paintTooltip` to `paintTips`; Cross-layer floating box APIs (`TooltipInfo`, `TooltipConfig`, `CrossBinding.paintTooltip`) remain unchanged (Breaking Changes).
+* Rename `allowPaintExtraOutsideMainRect` to `allowOverlayOutsideMainRect` in `SettingConfig` and JSON serialization (Breaking Changes).
+* Add default no-op `paintTips` implementation on base `PaintObject`.
+* Remove redundant `computeVisibleMinMax` and `paintTips` overrides from `TimePaintObject`.
+* Add `Indicator.autoActivate` to control auto-show on mount or false→true update; Direct/Computed default `false`, External default `true`, Candle/Time/Main fixed `true`; turning to `false` does not auto-hide (Breaking Changes).
+* Defer PaintObject creation to activation time: External indicators are no longer eagerly created on declaration; `keepAlive` only controls dispose-on-hide (Breaking Changes).
+* `mountIndicators` now activates the deduplicated union of persisted keys and `autoActivate` declarations; `updateIndicators` returns pending activation keys for `showMainIndicator`/`showSubIndicator`.
+* Fix computed slot capacity as a high-water mark so deleting middle indicators does not shrink `slots` array below surviving high-index data.
+* Add `FlexiKlineController.moveToDateTime(DateTime)` with animated viewport positioning; add `KlineData.indexAtOrBefore` for nearest loaded candle lookup.
+* Unify Cross tooltip rendering via `Canvas.drawTooltipInfos` for aligned two-column layout; add `TooltipInfo.onTap` with configurable `TooltipConfig.hitTestMargin` and `TooltipConfig.spacing` (Breaking Changes).
+* Remove `TooltipInfo.riseOrFall` in favor of `valueStyle` at the data layer (Breaking Changes).
+* Stabilize tooltip width during crossing via session-level `minContentWidth` tracking.
+
+## 2.2.0
+* Redesign widget-level indicator declaration: `FlexiKlineWidget` now accepts `candle`, `time`, `mainIndicators`, `subIndicators` directly; add `FlexiKlineWidget.indicator` named constructor for `IIndicatorConfig` (Breaking Changes).
+* Simplify `IConfiguration` interface: remove `configKey`, `candleIndicatorBuilder`, `timeIndicatorBuilder`, `mainIndicatorBuilders`, `subIndicatorBuilders`; retain only `theme`, `generateFlexiKlineConfig`, `drawObjectBuilders` (Breaking Changes).
+* Introduce `IIndicatorConfig` interface to decouple indicator provision from framework configuration; user-owned storage replaces built-in persistence (Breaking Changes).
+* Rename indicator taxonomy: Normal→Direct, Data→Computed, Business→External; `NormalIndicatorKey`→`DirectIndicatorKey`, `DataIndicatorKey`→`ComputedIndicatorKey`, `BusinessIndicatorKey`→`ExternalIndicatorKey` (Breaking Changes).
+* Rename PaintObject base classes: `DataPaintObject`→`ComputedPaintObject`, `BusinessPaintObject`→`ExternalPaintObject`, `NormalPaintObject`→`DirectPaintObject` (Breaking Changes).
+* Introduce `IPaintLifecycle` interface with unified lifecycle hooks: `initState`, `didChangeDependencies`, `didAttach`, `didDetach` (Breaking Changes).
+* Replace `syncAllIndicators()`/`init()` with `mountIndicators()`; rename `syncIndicators()` to `updateIndicators()` (Breaking Changes).
+* Replace `LayoutMode` class hierarchy with `FlexiLayoutMode` enum (`adapt`/`fixed`); add `FlexiKlineController.initialLayoutMode` parameter (Breaking Changes).
+* Replace `autoAdaptLayout` bool on `FlexiKlineWidget` with `FlexiLayoutType` enum (`adapt`/`fixed`/`normal`) (Breaking Changes).
+* Split `IPaintContext` into scoped interfaces: `PaintEnvironment`, `PaintDataScope`, `PaintGeometryScope`, `PaintRuntimeScope` (Breaking Changes).
+* Split `IDrawContext` into scoped interfaces: `DrawEnvironment`, `DrawDataScope`, `DrawGeometryScope`, `DrawRuntimeScope` (Breaking Changes).
+* Rename `curKlineData` to `klineData`; rename `cancelCross` to `requestCancelCross` (Breaking Changes).
+* Rename `FlexiKlineThemeConfigurationMixin` to `FlexiKlineConfigurationMixin` (Breaking Changes).
+* Add `FlexiKlineLifecycle` enum (`initial`/`mounted`/`disposed`) with `lifecycleListenable` for controller state observation.
+* Add `PaintObject.mount()` lifecycle method (mirrors Flutter `Element.mount`); inject indicator/context/logger at mount time.
+* Add `isMounted` guards to controller APIs (`setCanvasSize`, `setMainSize`, `onThemeChanged`, etc.) to prevent late-field access before `mountIndicators` completes.
+* Add `FlexiStateNotifier.setSilently` for build-phase value initialization without triggering subscriber `setState`.
+* Move grid/chart/cross/draw repaint triggers onto `KlineBindingBase`; internalize layer repaint APIs.
+
+## 2.1.1
+* Optimize `mergeCandleList` performance: add in-place fast paths for head/tail aligned updates to reduce unnecessary list copies on hot path.
+* Fix `getLoadMoreSpec()` from/to direction for loading more historical data.
+* Fix combine sub-indicator (e.g. MA) min/max not refreshed after add/remove, which caused lines to be drawn at chart bottom.
+* Fix candle interval chart-type lookup to use `ITimeInterval` equality instead of milliseconds comparison.
+* Expose `chartZoomSlideBarRect` on `IPaintContext` and indicator paint context for custom hit-testing or overlay layout.
+* Remove built-in interval constants (`interval1m`, `interval1D`, etc.) from `constant.dart`; use `FlexiTimeInterval` or custom `ITimeInterval` implementations instead (Breaking Changes).
+* `KlineSpec.interval` is now required; default `limit` changed from 100 to 200.
+* Default `CandleIndicator` no longer pre-configures line chart for 1s/1m intervals.
+
 ## 2.1.0
 * Simplify configuration system: config color fields are now nullable, theme colors are injected at paint time via .ensure() pattern (Breaking Changes).
 * Decouple theme colors from config objects: replace hardcoded color defaults with lazy injection mechanism (Breaking Changes).

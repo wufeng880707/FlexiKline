@@ -255,6 +255,10 @@ final class HttpClient {
           msg = S.current.responseTimeout;
           code = errorCodeTimeout;
           break;
+        case DioExceptionType.transformTimeout:
+          msg = S.current.responseTimeout;
+          code = errorCodeTimeout;
+          break;
         case DioExceptionType.cancel:
           code = errorCodeCancel;
           msg = S.current.canceled;

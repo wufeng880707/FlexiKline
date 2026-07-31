@@ -55,7 +55,7 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
   MACDPaintObject();
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
     return calcuMacdMinmax(
       indicator.calcParam,

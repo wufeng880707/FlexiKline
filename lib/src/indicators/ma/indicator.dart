@@ -43,7 +43,7 @@ class MAPaintObject<T extends MAIndicator> extends DataPaintObject<T> with MaDat
   MAPaintObject();
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
 
     return calcuMaMinmax(

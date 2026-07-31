@@ -14,10 +14,8 @@
 
 // ignore_for_file: constant_identifier_names
 
-import 'package:flexi_formatter/date_time.dart';
 import 'package:flutter/painting.dart';
 
-import 'model/time_interval.dart';
 import 'types.dart';
 
 /// 透明色
@@ -59,6 +57,10 @@ const int defaultSubTickCount = 3;
 // 默认指标线图的宽度
 const double defaultIndicatorLineWidth = 1;
 
+/// 默认辅助线宽度（十字线、网格线、价格标注线等）。
+/// 0.5 为有意的半像素细线。
+const double defaultAuxiliaryLineWidth = 0.5;
+
 // 默认文本配置
 const double defaultTextSize = 10;
 
@@ -88,18 +90,6 @@ const BorderSide defaultBorderSide = BorderSide(
   width: 0,
   style: BorderStyle.none,
 );
-
-const invalidInterval = FlexiTimeInterval(0, TimeUnit.millisecond);
-
-/// 内置: 时间周期
-const interval1s = FlexiTimeInterval(1, TimeUnit.second);
-const interval1m = FlexiTimeInterval(1, TimeUnit.minute);
-const interval5m = FlexiTimeInterval(5, TimeUnit.minute);
-const interval15m = FlexiTimeInterval(15, TimeUnit.minute);
-const interval1H = FlexiTimeInterval(1, TimeUnit.hour);
-const interval4H = FlexiTimeInterval(4, TimeUnit.hour);
-const interval1D = FlexiTimeInterval(1, TimeUnit.day);
-const interval1W = FlexiTimeInterval(1, TimeUnit.week);
 
 /// 内置TooltipLabel默认文本
 const Map<TooltipLabel, String> defaultTooltipLabels = {

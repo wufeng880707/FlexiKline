@@ -15,7 +15,7 @@
 part of 'core.dart';
 
 /// 负责绘制蜡烛图以及相关指标图
-mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements IChart {
+mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding {
   @override
   void init() {
     super.init();
@@ -45,8 +45,18 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   @override
   void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
     super.onThemeChanged(oldTheme);
+    if (!isMounted) return;
     for (final paintObject in [mainPaintObject, ...subPaintObjects]) {
       paintObject.doDidChangeTheme();
+    }
+  }
+
+  @override
+  void onKlineSpecChanged(KlineSpec oldSpec) {
+    super.onKlineSpecChanged(oldSpec);
+    // 仅 symbol/interval（spec.key）变化才通知 external 重载业务数据。
+    if (klineData.spec.key != oldSpec.key) {
+      _paintObjectManager.notifySpecChanged(oldSpec);
     }
   }
 
@@ -59,15 +69,16 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     _repaintChart.value++;
   }
 
-  ValueListenable<bool> get isStartZoomChartListener => _isChartStartZoom;
+  ValueListenable<bool> get isChartZoomingListenable => _isChartStartZoom;
 
   @override
-  bool get isStartZoomChart => isStartZoomChartListener.value;
+  bool get isChartZooming => isChartZoomingListenable.value;
 
-  ValueListenable<Rect> get chartZoomSlideBarRectListener {
+  ValueListenable<Rect> get chartZoomSlideBarRectListenable {
     return _chartZoomSlideBarRect;
   }
 
+  @override
   Rect get chartZoomSlideBarRect => _chartZoomSlideBarRect.value;
 
   /// Latest Price ///
@@ -79,7 +90,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     _markRepaintChart();
   }
 
-  /// 控制doInitState操作是否重置计算结果
+  /// 控制 doUpdateVisibleMinMax 操作是否重置计算结果
   bool _reset = false;
 
   /// 平移过程中Y轴平滑插值因子
@@ -90,7 +101,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   @override
   @protected
   void markRepaintChart({bool reset = false}) {
-    _reset = reset;
+    _reset = _reset || reset;
     _markRepaintChart();
   }
 
@@ -118,24 +129,24 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
 
   void paintChart(Canvas canvas, Size size) {
     // logd('$diffTime paintChart >>>>');
-    if (!curKlineData.canPaintChart) {
+    if (!isMounted || !klineData.canPaintChart) {
       logd('chartBinding paintChart data is being prepared!');
       return;
     }
 
     calculatePaintChartRange();
-    int solt = mainIndicatorSlot;
+    int paneIndex = mainPaneIndex;
 
-    /// 绘制额外内容是否在允许在主图绘制区域之外
-    final allowPaintExtraOutsideMainRect = settingConfig.allowPaintExtraOutsideMainRect;
+    /// overlay 是否允许绘制在主图 rect 之外
+    final allowOverlayOutsideMainRect = settingConfig.allowOverlayOutsideMainRect;
     try {
       /// 保存画布状态
       canvas.save();
       canvas.clipRect(_panSmoothFactor >= 1.0 ? mainRect : canvasRect);
-      mainPaintObject.doInitState(
-        solt++,
-        start: curKlineData.start,
-        end: curKlineData.end,
+      mainPaintObject.doUpdateVisibleMinMax(
+        paneIndex++,
+        start: klineData.start,
+        end: klineData.end,
         reset: _reset,
         panSmoothFactor: _panSmoothFactor,
       );
@@ -144,8 +155,8 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
         size,
       );
 
-      if (!allowPaintExtraOutsideMainRect) {
-        mainPaintObject.doPaintExtraAboveChart(canvas, size);
+      if (!allowOverlayOutsideMainRect) {
+        mainPaintObject.doPaintOverlay(canvas, size);
       }
     } finally {
       /// 恢复画布状态
@@ -153,11 +164,11 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     }
 
     for (final paintObject in subPaintObjects) {
-      /// 初始化副区指标数据.
-      paintObject.doInitState(
-        solt++,
-        start: curKlineData.start,
-        end: curKlineData.end,
+      /// 更新副区指标可见区间状态.
+      paintObject.doUpdateVisibleMinMax(
+        paneIndex++,
+        start: klineData.start,
+        end: klineData.end,
         reset: _reset,
         panSmoothFactor: _panSmoothFactor,
       );
@@ -165,11 +176,11 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
       /// 绘制副区的指标图
       paintObject.doPaintChart(canvas, size);
 
-      paintObject.doPaintExtraAboveChart(canvas, size);
+      paintObject.doPaintOverlay(canvas, size);
     }
 
-    if (allowPaintExtraOutsideMainRect) {
-      mainPaintObject.doPaintExtraAboveChart(canvas, size);
+    if (allowOverlayOutsideMainRect) {
+      mainPaintObject.doPaintOverlay(canvas, size);
     }
 
     if (_reset) _reset = false;
@@ -183,7 +194,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     double? panDistance,
     int? panDuration,
   }) {
-    final oldState = curKlineData.loadingState;
+    final oldState = klineData.loadingState;
     if (oldState == KlineLoadingState.initLoading) {
       logw('checkAndLoadMoreCandlesWhenPanEnd currently in init, no loadMore');
       return;
@@ -195,7 +206,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
         gestureConfig.loadMoreWhenNoEnoughDistance ?? gestureConfig.loadMoreWhenNoEnoughCandles * candleActualWidth;
 
     logd(
-      'checkAndLoadMoreCandlesWhenPanEnd(panDistance:$panDistance, panDuration:$panDuration) => length:${curKlineData.length}, paintDxOffset:$paintDxOffset, maxPaintDxOffset:$maxPaintDxOffset, loadMoreDistanceOffset:$loadMoreDistanceOffset',
+      'checkAndLoadMoreCandlesWhenPanEnd(panDistance:$panDistance, panDuration:$panDuration) => length:${klineData.length}, paintDxOffset:$paintDxOffset, maxPaintDxOffset:$maxPaintDxOffset, loadMoreDistanceOffset:$loadMoreDistanceOffset',
     );
 
     final destination = paintDxOffset + panDistance;
@@ -214,22 +225,22 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
       newState = KlineLoadingState.none;
     }
 
-    curKlineData.updateState(state: newState);
+    klineData.updateState(state: newState);
     logd('checkAndLoadMoreCandlesWhenPanEnd new loading state:$newState');
 
     if (newState == KlineLoadingState.loadingMore && panDuration != null) {
       Future.delayed(
         // Duration(milliseconds: panDuration),
         Duration.zero,
-        () => _notifyLoadingState(newState, curDataKey),
+        () => _notifyLoadingState(newState, klineDataKey),
       );
     } else {
-      _notifyLoadingState(newState, curDataKey);
+      _notifyLoadingState(newState, klineDataKey);
     }
 
     if (!oldState.isLoadMore && newState.isLoadMore) {
       if (settingConfig.autoLoadMoreData) {
-        onLoadMoreCandles?.call(curKlineData.getLoadMoreSpec());
+        onLoadMoreCandles?.call(klineData.getLoadMoreSpec());
       }
     }
   }
@@ -366,6 +377,13 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
     }
   }
 
+  @override
+  void reportChartZoomSlideBarRect(Rect rect) {
+    if (!gestureConfig.isManualSetZoomRect) {
+      setChartZoomSlideBarRect(rect);
+    }
+  }
+
   /// 检测是否开始指标图缩放
   /// [isConvert] 是否转换为canvas区域坐标
   bool onChartZoomStart(Offset position, [bool isConvert = true]) {
@@ -378,7 +396,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding implements 
   void onChartZoomUpdate(GestureData data) {
     double delta = data.dyDelta / 2;
     if (delta == 0) return;
-    if (delta > 0 && (!canSetMainSize() || mainMinSize.height > (mainChartHeight + mainOriginPadding.height))) {
+    if (delta > 0 && (!canSetMainSize(mainSize) || mainMinSize.height > (mainChartHeight + mainOriginPadding.height))) {
       logw(
         'onChartZoomUpdate > cannot zoom($delta), mainSize:$mainSize is smaller than the minSize:$mainMinSize',
       );

@@ -50,7 +50,7 @@ class CCIPaintObject<T extends CCIIndicator> extends DataPaintObject<T>
   CCIPaintObject();
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
     return calcuCciMinmax(
       indicator.calcParam,

@@ -103,14 +103,14 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       controller.setMultiTouch(true);
     }
     final position = event.localPosition;
-    if (controller.isDrawVisibility && drawState.isOngoing) {
+    if (controller.isDrawVisible && drawState.isOngoing) {
       // 优化Drawing的处理
     } else if (controller.isCrossing) {
       // 优化Crossing的处理
     } else if (gestureConfig.enableZoom && _zoomData == null && controller.chartZoomSlideBarRect.include(position)) {
       logd('onPointerDown zoom > position:$position');
       _zoomData = GestureData.zoom(position);
-    } else if (_zoomData == null && controller.isStartZoomChart && controller.mainRect.include(position)) {
+    } else if (_zoomData == null && controller.isChartZooming && controller.mainRect.include(position)) {
       logd('onPointerDown position:$position');
       _moveData = GestureData.move(position);
     }
@@ -119,7 +119,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   /// 原始移动
   /// 当原始移动时, 当前如果正处在crossing或drawing中时, 发生冲突, 清理手势竞技场, 响应Cross/Draw指针平移事件
   void onPointerMove(PointerMoveEvent event) {
-    if (controller.isDrawVisibility && drawState.isOngoing) {
+    if (controller.isDrawVisible && drawState.isOngoing) {
       if (drawState.isEditing) {
         /// 已完成的DrawObject通过平移[_panScaleData]或长按[_longData]事件进行修正.
         return;
@@ -175,7 +175,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       } else {
         controller.onChartZoomUpdate(_zoomData!);
       }
-    } else if (controller.isStartZoomChart && _moveData != null) {
+    } else if (controller.isChartZooming && _moveData != null) {
       if (!isSweeped) {
         logi('onPointerMove currently in zooming, need clear the gesture arena!');
         isSweeped = true;
@@ -217,11 +217,11 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     if (controller.businessOverlayState.isEditing &&
         controller.onBusinessOverlayTap(details.localPosition)) {
       logd('onTapUp business overlay handled before draw! :$details');
-      controller.cancelCross();
+      controller.requestCancelCross();
       return;
     }
 
-    if (controller.isDrawVisibility) {
+    if (controller.isDrawVisible) {
       switch (drawState) {
         case Drawing():
           final pointerOffset = drawState.pointerOffset;
@@ -272,7 +272,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     // Business Overlay: tap 选中/取消选中
     if (controller.onBusinessOverlayTap(details.localPosition)) {
       logd('onTapUp business overlay handled! :$details');
-      controller.cancelCross();
+      controller.requestCancelCross();
       return;
     }
 
@@ -307,7 +307,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         controller.onBusinessDragStart(details.localFocalPoint)) {
       logd('onScaleStart business drag > details:$details');
       _panScaleData = GestureData.pan(details.localFocalPoint);
-    } else if (controller.isDrawVisibility && drawState.isOngoing) {
+    } else if (controller.isDrawVisible && drawState.isOngoing) {
       if (drawState.isDrawing) {
         // 未完成的暂不允许移动
         return;
@@ -361,7 +361,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       return;
     }
 
-    if (controller.isDrawVisibility && drawState.isOngoing) {
+    if (controller.isDrawVisible && drawState.isOngoing) {
       if (_panScaleData!.isPan) {
         _panScaleData!.update(
           details.localFocalPoint,
@@ -409,7 +409,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       return;
     }
 
-    if (controller.isDrawVisibility && drawState.isOngoing) {
+    if (controller.isDrawVisible && drawState.isOngoing) {
       if (_panScaleData!.isPan) {
         controller.onDrawMoveEnd();
       }
@@ -434,7 +434,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     final velocity = details.velocity.pixelsPerSecond.dx;
 
     if (!gestureConfig.enableInertialPan ||
-        controller.curKlineData.isEmpty ||
+        controller.klineData.isEmpty ||
         (velocity < 0 && !controller.canPanRTL) ||
         (velocity > 0 && !controller.canPanLTR)) {
       logd('onScaleEnd currently can not pan!');
@@ -501,7 +501,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       return;
     }
 
-    if (controller.isDrawVisibility && drawState.isOngoing) {
+    if (controller.isDrawVisible && drawState.isOngoing) {
       if (drawState.isDrawing) {
         return;
       }
@@ -520,7 +520,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     } else if (controller.businessOverlayState.isEditing) {
       logd('onLongPressStart ignore: in business editing state');
       return;
-    } else if (!controller.isCrossing && controller.onGridMoveStart(details.localPosition)) {
+    } else if (!controller.isCrossing && controller.onGridResizeStart(details.localPosition)) {
       logd('onLongPressStart move > details:$details');
       _longData = GestureData.long(details.localPosition);
     } else {
@@ -547,12 +547,12 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       );
       return;
     }
-    if (controller.isDrawVisibility && drawState.isOngoing) {
+    if (controller.isDrawVisible && drawState.isOngoing) {
       _longData!.update(details.localPosition);
       controller.onDrawMoveUpdate(_longData!);
     } else if (controller.isStartDragGrid) {
       _longData!.update(details.localPosition);
-      controller.onGridMoveUpdate(_longData!);
+      controller.onGridResizeUpdate(_longData!);
     } else {
       _longData!.update(details.localPosition);
       controller.onCrossUpdate(_longData!);
@@ -570,12 +570,13 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       _longData = null;
       return;
     }
-    if (controller.isDrawVisibility && drawState.isOngoing) {
+    if (controller.isDrawVisible && drawState.isOngoing) {
       controller.onDrawMoveEnd();
     } else if (controller.isStartDragGrid) {
-      controller.onGridMoveEnd();
+      controller.onGridResizeEnd();
     } else {
-      controller.cancelCross();
+      // 长按结束, 尝试取消Cross事件.
+      controller.requestCancelCross();
     }
     _longData?.end();
     _longData = null;

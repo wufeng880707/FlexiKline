@@ -14,109 +14,92 @@
 
 part of 'indicator.dart';
 
-/// FlexiKlineController 状态/配置/接口代理
-extension IndicatorObjectExt on IndicatorObject {
-  bool get isAllowUpdateHeight {
-    // return _context.layoutMode is NormalLayoutMode || _context.layoutMode is AdaptLayoutMode;
-    return _context.isAllowUpdateLayoutHeight;
-  }
+/// 常用绘制样式与画笔。
+mixin PaintStyleMixin<T extends Indicator<IIndicatorKey>> on IndicatorObject<T> {
+  /// 主题。
+  @override
+  IFlexiKlineTheme get theme => context.theme;
 
-  /// Config
-  SettingConfig get settingConfig => _context.settingConfig;
+  /// 当前指标所使用的涨跌颜色
+  Color get longColor => theme.longColor;
+  Color get shortColor => theme.shortColor;
 
-  GridConfig get gridConfig => _context.gridConfig;
-
-  CrossConfig get crossConfig => _context.crossConfig;
-
-  GestureConfig get gestureConfig => _context.gestureConfig;
-
-  KlineData get klineData => _context.curKlineData;
-
-  bool get isCrossing => _context.isCrossing;
-
-  double get paintDxOffset => _context.paintDxOffset;
-
-  double get startCandleDx => _context.startCandleDx;
-
-  double get candleWidth => _context.candleWidth;
-
-  double get candleSpacing => _context.candleSpacing;
-
-  double get candleActualWidth => _context.candleActualWidth;
-
-  double get candleWidthHalf => _context.candleWidthHalf;
-
+  /// 蜡烛线条宽度。
   double get candleLineWidth => settingConfig.candleLineWidth;
 
-  /// Theme Color
-  IFlexiKlineTheme get theme => _context.theme;
-
-  /// 全局默认的刻度值文本配置.
+  /// 默认坐标轴刻度文本配置。
   TextAreaConfig get defTicksTextConfig => gridConfig.ticksText;
 
-  /// 指标图 涨跌 bar/line 配置
-  /// 涨跌浅色
+  /// 上涨浅色。
   Color get longTintColor => longColor.withAlpha(settingConfig.opacity.alpha);
+
+  /// 下跌浅色。
   Color get shortTintColor => shortColor.withAlpha(settingConfig.opacity.alpha);
 
-  /// 涨跌色实心柱画笔
+  /// 上涨实心柱画笔。
   Paint get defLongBarPaint => Paint()
     ..color = longColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleWidth;
+
+  /// 下跌实心柱画笔。
   Paint get defShortBarPaint => Paint()
     ..color = shortColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleWidth;
 
-  /// 涨跌浅色实心柱画笔
+  /// 上涨浅色实心柱画笔。
   Paint get defLongTintBarPaint => Paint()
     ..color = longTintColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleWidth;
+
+  /// 下跌浅色实心柱画笔。
   Paint get defShortTintBarPaint => Paint()
     ..color = shortTintColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleWidth;
 
-  /// 涨跌色空心柱画笔
+  /// 上涨空心柱画笔。
   Paint get defLongHollowBarPaint => Paint()
     ..color = longColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = settingConfig.candleHollowBarBorderWidth;
+
+  /// 下跌空心柱画笔。
   Paint get defShortHollowBarPaint => Paint()
     ..color = shortColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = settingConfig.candleHollowBarBorderWidth;
 
-  /// 涨跌色线画笔
+  /// 上涨线条画笔。
   Paint get defLongLinePaint => Paint()
     ..color = longColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleLineWidth;
+
+  /// 下跌线条画笔。
   Paint get defShortLinePaint => Paint()
     ..color = shortColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = candleLineWidth;
 
-  /// 定制线画笔
+  /// 创建自定义线条画笔。
   Paint getLinePaint({Color? color, double? strokeWidth}) => Paint()
     ..color = color ?? theme.lineChartColor
     ..style = PaintingStyle.stroke
     ..strokeWidth = strokeWidth ?? candleLineWidth;
 }
 
-/// 绘制对象混入边界计算的通用扩展
+/// 绘制对象边界计算能力。
 mixin PaintObjectBoundingMixin<T extends Indicator<IIndicatorKey>> on IndicatorObject<T> implements IPaintBounding {
-  bool get drawInMain => slot == mainIndicatorSlot;
-  bool get drawInSub => slot > mainIndicatorSlot;
+  bool get drawInMain => paneIndex == mainPaneIndex;
+  bool get drawInSub => paneIndex > mainPaneIndex;
 
-  int _slot = mainIndicatorSlot;
+  int _paneIndex = mainPaneIndex;
 
-  /// 当前指标所在位置索引
-  /// <0 代表在主图绘制
-  /// >=0 代表在副图绘制
-  int get slot => _slot;
+  /// 当前指标所在位置索引：<0 为主区，>=0 为副区。
+  int get paneIndex => _paneIndex;
 
   Rect? _drawableRect;
   Rect? _chartRect;
@@ -125,8 +108,8 @@ mixin PaintObjectBoundingMixin<T extends Indicator<IIndicatorKey>> on IndicatorO
 
   @nonVirtual
   @override
-  void resetPaintBounding({int? slot}) {
-    if (slot != null) _slot = slot;
+  void resetPaintBounding({int? paneIndex}) {
+    if (paneIndex != null) _paneIndex = paneIndex;
     _drawableRect = null;
     _chartRect = null;
     _topRect = null;
@@ -137,10 +120,10 @@ mixin PaintObjectBoundingMixin<T extends Indicator<IIndicatorKey>> on IndicatorO
   Rect get drawableRect {
     if (_drawableRect != null) return _drawableRect!;
     if (drawInMain) {
-      _drawableRect = _context.mainRect;
+      _drawableRect = context.mainRect;
     } else {
-      final top = _context.calculateIndicatorTop(slot);
-      final subRect = _context.subRect;
+      final top = context.calculatePaneTop(paneIndex);
+      final subRect = context.subRect;
       _drawableRect = Rect.fromLTRB(
         subRect.left,
         subRect.top + top,
@@ -206,10 +189,10 @@ mixin PaintObjectBoundingMixin<T extends Indicator<IIndicatorKey>> on IndicatorO
   }
 }
 
-/// 绘制对象混入状态管理的通用扩展
+/// 绘制对象几何状态与坐标映射能力。
 ///
-/// 提供 minMax 管理、坐标转换等功能。
-mixin PaintObjectStateMixin<T extends Indicator<IIndicatorKey>> on IndicatorObject<T> implements IPaintState {
+/// 提供 minMax 管理、Y 轴换算、X 轴 index/dx 映射等功能。
+mixin PaintObjectGeometryStateMixin<T extends Indicator<IIndicatorKey>> on IndicatorObject<T> implements IPaintState {
   int? _start;
   int? _end;
 
@@ -266,7 +249,7 @@ mixin PaintObjectStateMixin<T extends Indicator<IIndicatorKey>> on IndicatorObje
     return chartRect.includeDx(dx) ? dx : null;
   }
 
-  double? tsToDx(int ts, {bool check = true}) {
+  double? timestampToDx(int ts, {bool check = true}) {
     final index = klineData.tsToIndex(ts);
     if (index == null) return null;
     return indexToDx(index, check: check);
@@ -287,16 +270,16 @@ mixin PaintObjectStateMixin<T extends Indicator<IIndicatorKey>> on IndicatorObje
     return null;
   }
 
-  double valueToDyOnCandle(FlexiNum value, {bool correct = false}) {
-    return _context.valueToDyOnCandle(value, correct: correct);
+  double candleValueToDy(FlexiNum value, {bool correct = false}) {
+    return context.candleValueToDy(value, correct: correct);
   }
 
-  FlexiNum? dyToValueOnCandle(double dy, {bool check = false}) {
-    return _context.dyToValueOnCandle(dy, check: check);
+  FlexiNum? dyToCandleValue(double dy, {bool check = false}) {
+    return context.dyToCandleValue(dy, check: check);
   }
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     // 默认实现返回 null，表示使用当前 minMax
     // 子类可以 override 此方法提供自定义实现
     return null;
@@ -305,17 +288,17 @@ mixin PaintObjectStateMixin<T extends Indicator<IIndicatorKey>> on IndicatorObje
 
 /// 绘制对象混入数据预计算的扩展
 ///
-/// 提供数据预计算能力，仅用于 DataPaintObject。
-mixin PaintObjectComputableMixin<T extends DataIndicator> on PaintObject<T> {
+/// 提供数据预计算能力，仅用于 ComputedPaintObject。
+mixin PaintObjectComputedMixin<T extends ComputedIndicator> on PaintObject<T> {
   /// 判断是否需要重新预计算
   ///
   /// 当指标配置参数发生变化时，判断是否需要重新计算。
-  bool shouldPrecompute(covariant T oldIndicator) {
+  bool shouldRecompute(covariant T oldIndicator) {
     return oldIndicator.calcParam != indicator.calcParam && indicator.calcParam != null;
   }
 
   /// 数据预计算（空实现，供子类 override）
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     // 空实现
   }
 }
@@ -424,12 +407,12 @@ mixin PaintYAxisTicksOnCrossMixin<T extends Indicator> on PaintObject<T> {
   }
 }
 
-/// 绘制蜡烛图辅助Mixin
-mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
-  /// 绘制Open-high-low-close样式的蜡烛图(美国线图)
+/// 绘制基于蜡烛数据的图表能力。
+mixin PaintCandleChartMixin<T extends Indicator> on PaintObject<T> {
+  /// 绘制 Open-high-low-close 样式的蜡烛图（美国线图）
   /// 主区: 蜡烛图
   /// 副区: 用于SubBoll图和SubSar图中
-  void paintOHPLStyleCandleChart(
+  void paintOHLCStyleCandleChart(
     Canvas canvas, {
     int? start,
     int? end,
@@ -545,20 +528,22 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
 
     final points = <Offset>[];
     FlexiCandleModel m;
+    double boundDy = chartRect.bottom;
     for (var i = start; i < end; i++) {
       m = klineData[i];
+      final dy = valueToDy(m.close, correct: false);
       points.add(Offset(
         startOffset - (i - start) * candleActualWidth,
-        valueToDy(m.close, correct: false),
+        dy,
       ));
+      boundDy = math.max(boundDy, dy);
     }
 
-    // 默认策略：填充到底部
     paintLineChart(
       canvas,
       points: points,
-      boundEnd: Offset(points.last.dx, chartRect.bottom),
-      boundStart: Offset(points.first.dx, chartRect.bottom),
+      boundEnd: Offset(points.last.dx, boundDy),
+      boundStart: Offset(points.first.dx, boundDy),
       linePaint: linePaint,
       shader: gradient,
     );
@@ -578,9 +563,7 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
       linePaint,
     );
     if (boundEnd != null && boundStart != null && shader != null) {
-      points.add(boundEnd);
-      points.add(boundStart);
-      final path = Path()..addPolygon(points, true);
+      final path = Path()..addPolygon([...points, boundEnd, boundStart], true);
       canvas.drawPath(
         path,
         Paint()..shader = shader.createShader(path.getBounds()),
@@ -658,26 +641,3 @@ mixin PaintCandleHelperMixin<T extends Indicator> on PaintObject<T> {
     }
   }
 }
-
-// extension PaintObjectExt on PaintObject {
-//   /// 获取当前指标计算参数
-//   Map<IIndicatorKey, dynamic> getCalcParams() {
-//     if (calcParams != null) {
-//       return {key: calcParams};
-//     }
-//     return const <IIndicatorKey, dynamic>{};
-//   }
-// }
-
-// extension MultiPaintObjectExt on MainPaintObject {
-//   /// 收集[MainPaintObject]中子指标的计算参数
-//   Map<IIndicatorKey, dynamic> getCalcParams() {
-//     final params = <IIndicatorKey, dynamic>{};
-//     for (final object in children) {
-//       if (object.calcParams != null) {
-//         params[object.key] = object.calcParams;
-//       }
-//     }
-//     return params;
-//   }
-// }

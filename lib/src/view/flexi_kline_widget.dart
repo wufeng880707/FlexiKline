@@ -21,8 +21,11 @@ import '../constant.dart';
 import '../extension/basic_type_ext.dart';
 import '../extension/functions_ext.dart';
 import '../extension/geometry_ext.dart';
+import '../framework/chart/indicator.dart';
 import '../framework/configuration.dart';
 import '../framework/logger.dart';
+import '../indicators/candle/candle.dart';
+import '../indicators/time/time.dart';
 import '../kline_controller.dart';
 import '../model/layout_mode.dart';
 import '../utils/platform_util.dart';
@@ -35,17 +38,20 @@ typedef MagnifierDecorationShapeBuilder = ShapeBorder Function(
 );
 
 class FlexiKlineWidget extends StatefulWidget {
-  FlexiKlineWidget({
+  const FlexiKlineWidget({
     super.key,
     required this.controller,
+    this.candle,
+    this.time,
+    this.mainIndicators,
+    this.subIndicators,
+    bool? autoAdaptLayout,
     this.alignment,
     this.decoration,
     this.foregroundDecoration,
-    this.mainSize,
     this.mainForegroundViewBuilder,
     this.mainBackgroundView,
-    bool? autoAdaptLayout,
-    bool? isTouchDevice,
+    this.isTouchDevice,
     this.onDoubleTap,
     this.drawToolbar,
     this.drawToolbarInitHeight = 50,
@@ -54,18 +60,49 @@ class FlexiKlineWidget extends StatefulWidget {
     this.exitZoomButtonBuilder,
     this.exitZoomButtonAlignment = AlignmentDirectional.bottomEnd,
     this.exitZoomButtonPadding = const EdgeInsetsDirectional.all(12),
-  })  : isTouchDevice = isTouchDevice ?? PlatformUtil.isTouch,
-        autoAdaptLayout = autoAdaptLayout ?? !PlatformUtil.isMobile;
+  });
+
+  FlexiKlineWidget.indicator({
+    super.key,
+    required this.controller,
+    required IIndicatorConfig indicatorConfig,
+    this.alignment,
+    this.decoration,
+    this.foregroundDecoration,
+    this.mainForegroundViewBuilder,
+    this.mainBackgroundView,
+    this.isTouchDevice,
+    this.onDoubleTap,
+    this.drawToolbar,
+    this.drawToolbarInitHeight = 50,
+    this.keepDrawToolbarFullyVisible = true,
+    this.magnifierDecorationShapeBuilder,
+    this.exitZoomButtonBuilder,
+    this.exitZoomButtonAlignment = AlignmentDirectional.bottomEnd,
+    this.exitZoomButtonPadding = const EdgeInsetsDirectional.all(12),
+  })  : candle = indicatorConfig.candle,
+        time = indicatorConfig.time,
+        mainIndicators = indicatorConfig.mainIndicators,
+        subIndicators = indicatorConfig.subIndicators;
 
   final FlexiKlineController controller;
+
+  /// 蜡烛图指标
+  final CandleBaseIndicator? candle;
+
+  /// 时间轴指标
+  final TimeBaseIndicator? time;
+
+  /// 主区可选指标列表
+  final List<Indicator>? mainIndicators;
+
+  /// 副区可选指标列表
+  final List<Indicator>? subIndicators;
 
   /// Container属性配置
   final AlignmentGeometry? alignment;
   final BoxDecoration? decoration;
   final Decoration? foregroundDecoration;
-
-  /// 主区初始大小. 注: 仅在首次加载有效
-  final Size? mainSize;
 
   /// 主区前台View构造器
   /// 用于扩展定制Loading/自定义按钮等
@@ -87,13 +124,8 @@ class FlexiKlineWidget extends StatefulWidget {
   /// 是否保持[drawToolbar]完全可见.
   final bool keepDrawToolbarFullyVisible;
 
-  /// 是否自动适配所在布局约束.
-  /// 在可以动态调整窗口大小的设备上, 此值为true, 将会动态适配窗口的调整; 否则, 请自行控制.
-  /// 非移动设备默认为true.
-  final bool autoAdaptLayout;
-
   /// 是否是触摸设备.
-  final bool isTouchDevice;
+  final bool? isTouchDevice;
 
   /// 绘制点指针放大镜DecorationShape.
   final MagnifierDecorationShapeBuilder? magnifierDecorationShapeBuilder;
@@ -115,7 +147,9 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
   @override
   String get logTag => 'FlexiKlineWidget';
 
-  /// 绘制工具条globalKey: 用于获取其大小
+  bool get isTouchDevice => widget.isTouchDevice ?? PlatformUtil.isTouch;
+
+  /// 绘制工具条 Key，用于获取尺寸。
   GlobalKey? _drawToolbarKey;
   GlobalKey get drawToolbarKey => _drawToolbarKey ??= GlobalKey();
 
@@ -129,16 +163,48 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
 
   IFlexiKlineTheme get theme => configuration.theme;
 
+  IIndicatorConfig? get indicatorConfigOrNull {
+    final config = configuration;
+    if (config is IIndicatorConfig) {
+      return config as IIndicatorConfig;
+    }
+  }
+
+  CandleBaseIndicator resolveCandle(FlexiKlineWidget widget) {
+    return widget.candle ?? indicatorConfigOrNull?.candle ?? CandleIndicator();
+  }
+
+  TimeBaseIndicator resolveTime(FlexiKlineWidget widget) {
+    return widget.time ?? indicatorConfigOrNull?.time ?? TimeIndicator();
+  }
+
+  List<Indicator> resolveMainIndicators(FlexiKlineWidget widget) {
+    return widget.mainIndicators ?? indicatorConfigOrNull?.mainIndicators ?? const [];
+  }
+
+  List<Indicator> resolveSubIndicators(FlexiKlineWidget widget) {
+    return widget.subIndicators ?? indicatorConfigOrNull?.subIndicators ?? const [];
+  }
+
   @override
   void initState() {
     super.initState();
 
     logger = controller.logger;
 
+    // 挂载指标并恢复已激活的 PaintObject。
+    controller.mountIndicators(
+      candle: resolveCandle(widget),
+      time: resolveTime(widget),
+      mainIndicators: resolveMainIndicators(widget),
+      subIndicators: resolveSubIndicators(widget),
+    );
+
+    // 同步 controller 生命周期。
     controller.initState();
-    if (widget.mainSize != null) {
-      controller.setMainSize(widget.mainSize!);
-    }
+
+    // 处理挂载前暂存的数据。
+    controller.flushPendingKlineData();
 
     _drawToolbarPosition = ValueNotifier(
       configuration.getDrawToolbarPosition(),
@@ -149,6 +215,18 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
   void didUpdateWidget(covariant FlexiKlineWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     logd('didUpdateWidget');
+
+    // 按 Widget 新旧声明增量同步指标。
+    controller.updateIndicators(
+      oldCandle: resolveCandle(oldWidget),
+      newCandle: resolveCandle(widget),
+      oldTime: resolveTime(oldWidget),
+      newTime: resolveTime(widget),
+      oldMainIndicators: resolveMainIndicators(oldWidget),
+      newMainIndicators: resolveMainIndicators(widget),
+      oldSubIndicators: resolveSubIndicators(oldWidget),
+      newSubIndicators: resolveSubIndicators(widget),
+    );
   }
 
   @override
@@ -158,16 +236,8 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    logd('didChangeAppLifecycleState($state)');
-    // if (state == AppLifecycleState.resumed) {
-    // } else {
-    // }
-  }
-
-  @override
   void didHaveMemoryPressure() {
-    controller.cleanUnlessKlineData();
+    controller.evictInactiveKlineDataCache();
   }
 
   @override
@@ -179,32 +249,49 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
 
   @override
   Widget build(BuildContext context) {
-    if (widget.autoAdaptLayout) {
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          switch (controller.layoutMode) {
-            case FixedLayoutMode(fixedSize: final size):
-              controller.setFixedLayoutMode(Size(
-                constraints.biggest.width,
-                size.height,
-              ));
-            case NormalLayoutMode(mainSize: final size):
-            case AdaptLayoutMode(mainSize: final size):
-              controller.setAdaptLayoutMode(
-                Size(constraints.biggest.width, size.height),
-              );
-          }
-          return _buildKlineContainer(context);
-        },
-      );
-    } else {
-      return _buildKlineContainer(context);
-    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final biggest = constraints.biggest;
+        return ValueListenableBuilder<FlexiLayoutMode>(
+          valueListenable: controller.layoutModeListenable,
+          child: _buildKlineContainer(context),
+          builder: (context, layoutMode, child) {
+            if (layoutMode == FlexiLayoutMode.adapt) {
+              // adapt 只消费父约束宽度。
+              if (biggest.width.isFinite) {
+                controller.setAdaptLayoutMode(width: biggest.width);
+              }
+            } else if (layoutMode == FlexiLayoutMode.fixed) {
+              // fixed 每个维度独立决策：biggest 优先，fixedSize 补位。
+              final userSize = controller.fixedSize;
+              final w = biggest.width.isFinite ? biggest.width : userSize?.width;
+              final h = biggest.height.isFinite ? biggest.height : userSize?.height;
+
+              if (w != null && w.isFinite && h != null && h.isFinite) {
+                controller.setFixedLayoutMode(Size(w, h));
+              } else {
+                logw(
+                  'FlexiLayoutMode.fixed: cannot resolve finite canvas size. '
+                  'biggest=$biggest, fixedSize=$userSize',
+                );
+                assert(
+                  false,
+                  'FlexiLayoutMode.fixed requires a finite canvas size. '
+                  'Use a bounded parent, pass initialFixedSize, or call '
+                  'setFixedLayoutMode(size) before first fixed render in scrollable parents.',
+                );
+              }
+            }
+            return child!;
+          },
+        );
+      },
+    );
   }
 
   Widget _buildKlineContainer(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller.canvasSizeChangeListener,
+      valueListenable: controller.canvasRectListenable,
       builder: (context, canvasRect, child) {
         if (controller.drawState.isEditing) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -219,7 +306,6 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
   }
 
   Widget _buildKlineContent(BuildContext context, Rect canvasRect) {
-    // final canvasRect = controller.canvasRect;
     final canvasSize = canvasRect.size;
     final mainRect = controller.mainRect;
     return Container(
@@ -273,7 +359,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
               isComplex: true,
             ),
           ),
-          widget.isTouchDevice
+          isTouchDevice
               ? TouchGestureDetector(
                   key: const ValueKey('TouchGestureDetector'),
                   controller: controller,
@@ -305,7 +391,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
     }
 
     return ValueListenableBuilder(
-      valueListenable: controller.loadingStateListener,
+      valueListenable: controller.loadingStateListenable,
       builder: (context, loadingState, child) {
         final loadingConfig = controller.settingConfig.loading;
         return Offstage(
@@ -348,7 +434,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
     return _drawToolbarPosition.value = newPosition;
   }
 
-  /// 绘制DrawToolBar
+  /// 绘制工具条。
   Widget _buildDrawToolbar(BuildContext flexiKlineContext, Rect canvasRect) {
     if (widget.drawToolbar == null) return const SizedBox.shrink();
     final drawToolbarWrapper = SizedBox(
@@ -356,14 +442,14 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
       child: widget.drawToolbar!,
     );
     return ValueListenableBuilder(
-      valueListenable: controller.drawStateListener,
+      valueListenable: controller.drawStateListenable,
       builder: (context, state, child) => Visibility(
         visible: state.isEditing,
         child: ValueListenableBuilder(
           valueListenable: _drawToolbarPosition,
           builder: (context, position, child) {
             if (position == Offset.infinite || !canvasRect.contains(position)) {
-              // 如果position无效, 则重置其为当前canvas区域左下角.
+              // 无效位置重置到画布左下角。
               position = Offset(0, canvasRect.height - widget.drawToolbarInitHeight);
             }
             return Positioned(
@@ -390,40 +476,6 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
         ),
       ),
     );
-    // return ValueListenableBuilder(
-    //   valueListenable: controller.drawStateListener,
-    //   builder: (context, state, child) => Visibility(
-    //     visible: state.isEditing,
-    //     child: ValueListenableBuilder(
-    //       valueListenable: _drawToolbarPosition,
-    //       builder: (context, position, child) {
-    //         if (position == Offset.infinite || !canvasRect.contains(position)) {
-    //           // 如果position无效, 则重置其为当前canvas区域左下角.
-    //           position = Offset(0, canvasRect.height - widget.drawToolbarInitHeight);
-    //         }
-    //         return Positioned(
-    //           left: position.dx,
-    //           top: position.dy,
-    //           child: MouseRegion(
-    //             cursor: SystemMouseCursors.move,
-    //             child: GestureDetector(
-    //               onPanUpdate: (DragUpdateDetails details) {
-    //                 _updateDrawToolbarPosition(position + details.delta, canvasRect);
-    //               },
-    //               onPanEnd: (event) {
-    //                 configuration.saveDrawToolbarPosition(position);
-    //               },
-    //               child: SizedBox(
-    //                 key: drawToolbarKey,
-    //                 child: widget.drawToolbar,
-    //               ),
-    //             ),
-    //           ),
-    //         );
-    //       },
-    //     ),
-    //   ),
-    // );
   }
 
   /// 业务叠加层工具条
@@ -435,7 +487,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
     }
 
     return ValueListenableBuilder(
-      valueListenable: controller.drawPointerListener,
+      valueListenable: controller.drawPointerListenable,
       builder: (context, pointer, child) {
         final pointerOffset = pointer?.offset;
         final bool visible = pointerOffset != null && pointerOffset.isFinite && drawRect.contains(pointerOffset);
@@ -462,10 +514,8 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
 
         final theme = controller.theme;
         final magnifierColor = controller.drawState.object?.line.paint.color ?? theme.drawToolColor;
-        final magnifierSide = BorderSide(
-          color: config.shapeSide.color == transparent ? magnifierColor : config.shapeSide.color,
-          width: config.shapeSide.width <= 0 ? 1 : config.shapeSide.width,
-          style: config.shapeSide.style == BorderStyle.none ? BorderStyle.solid : config.shapeSide.style,
+        final magnifierSide = config.shapeSide.copyWith(
+          color: config.shapeSide.color == transparent ? theme.gridLineColor : config.shapeSide.color,
         );
 
         return Positioned(
@@ -508,7 +558,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
   /// 退出Zoom缩放按钮
   Widget _buildExitZoomButton(BuildContext context, Rect mainRect) {
     return ValueListenableBuilder(
-      valueListenable: controller.isStartZoomChartListener,
+      valueListenable: controller.isChartZoomingListenable,
       builder: (context, isStartZomming, child) => Visibility(
         visible: isStartZomming,
         child: Container(
@@ -617,7 +667,7 @@ class DrawPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (!controller.isDrawVisibility) return;
+    if (!controller.isDrawVisible) return;
 
     try {
       canvas.save();

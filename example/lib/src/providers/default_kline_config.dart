@@ -89,7 +89,9 @@ class DefaultFlexiKlineTheme implements IFlexiKlineTheme {
   Color get lastPriceBg => lastPriceTextBg;
 
   @override
-  Color get countDownBg => countDownTextBg;
+  Color get countdownBg => countDownTextBg;
+
+  Color get countDownBg => countdownBg;
 
   @override
   Color get dragBg => theme.translucentBg;
@@ -150,7 +152,9 @@ final defaultKlineThemeProvider = StateProvider<DefaultFlexiKlineTheme>((ref) {
   );
 });
 
-class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
+class DefaultFlexiKlineConfiguration
+    with FlexiKlineThemeConfigurationMixin
+    implements IIndicatorConfig {
   final WidgetRef ref;
 
   DefaultFlexiKlineConfiguration({required this.ref});
@@ -167,8 +171,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   Future<Map<String, dynamic>?> loadIndicatorJsonConfig() async {
     try {
-      final String jsonString =
-          await rootBundle.loadString('lib/flexi_kline_indicators_configuration.json');
+      final String jsonString = await rootBundle
+          .loadString('lib/flexi_kline_indicators_configuration.json');
       final Map<String, dynamic> config = jsonDecode(jsonString);
       defLogger.d('Successfully loaded indicator JSON config');
       return config;
@@ -180,8 +184,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
   Future<Map<String, dynamic>?> loadThemeJsonConfig() async {
     try {
-      final String jsonString =
-          await rootBundle.loadString('lib/default_flexi_kline_configuration.json');
+      final String jsonString = await rootBundle
+          .loadString('lib/default_flexi_kline_configuration.json');
       final Map<String, dynamic> config = jsonDecode(jsonString);
       defLogger.d('Successfully loaded theme JSON config');
       return config;
@@ -195,10 +199,38 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
     Map<String, dynamic> config,
     IFlexiKlineTheme theme,
   ) {
-    return _createIndicatorBuilderFromConfig(config, theme as DefaultFlexiKlineTheme);
+    return _createIndicatorBuilderFromConfig(
+        config, theme as DefaultFlexiKlineTheme);
   }
 
   // ========== 默认指标配置 ==========
+
+  @override
+  CandleBaseIndicator get candle {
+    return CandleIndicator.fromJson(
+        getConfig(candleIndicatorKey.id) ?? const {});
+  }
+
+  @override
+  TimeBaseIndicator get time {
+    return TimeIndicator.fromJson(getConfig(timeIndicatorKey.id) ?? const {});
+  }
+
+  @override
+  List<Indicator> get mainIndicators {
+    return mainIndicatorBuilders.entries
+        .map((entry) => entry.value(getConfig(entry.key.id) ?? const {}))
+        .cast<Indicator>()
+        .toList(growable: false);
+  }
+
+  @override
+  List<Indicator> get subIndicators {
+    return subIndicatorBuilders.entries
+        .map((entry) => entry.value(getConfig(entry.key.id) ?? const {}))
+        .cast<Indicator>()
+        .toList(growable: false);
+  }
 
   @override
   Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders {
@@ -208,13 +240,15 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       // 1. 尝试从缓存加载
       final cachedIndicators = _loadMainIndicatorsFromCache();
       if (cachedIndicators.isNotEmpty) {
-        defLogger.d('Loaded ${cachedIndicators.length} main indicators from cache');
+        defLogger
+            .d('Loaded ${cachedIndicators.length} main indicators from cache');
         result = cachedIndicators;
       } else {
         // 2. 尝试从JSON同步加载
         final jsonIndicators = _loadMainIndicatorsFromJsonSync();
         if (jsonIndicators.isNotEmpty) {
-          defLogger.d('Loaded ${jsonIndicators.length} main indicators from JSON');
+          defLogger
+              .d('Loaded ${jsonIndicators.length} main indicators from JSON');
           _saveMainIndicatorsToCache(jsonIndicators);
           result = jsonIndicators;
         }
@@ -223,8 +257,7 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       defLogger.e('Error loading main indicators: $err', stackTrace: stack);
     }
 
-    result[tradeMarkIndicatorKey] ??= (json) =>
-        _parseTradeMarkIndicator(json);
+    result[tradeMarkIndicatorKey] ??= (json) => _parseTradeMarkIndicator(json);
 
     return result;
   }
@@ -236,7 +269,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       // 1. 尝试从JSON同步加载
       final jsonIndicators = _loadMainIndicatorsFromJsonSync();
       if (jsonIndicators.isNotEmpty) {
-        defLogger.d('Loaded ${jsonIndicators.length} default main indicators from JSON');
+        defLogger.d(
+            'Loaded ${jsonIndicators.length} default main indicators from JSON');
         // 异步保存到缓存
         _saveMainIndicatorsToCache(jsonIndicators);
         return jsonIndicators;
@@ -246,7 +280,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       defLogger.d('Using code default main indicators');
       return super.mainIndicatorBuilders;
     } catch (err, stack) {
-      defLogger.e('Error loading default main indicators: $err', stackTrace: stack);
+      defLogger.e('Error loading default main indicators: $err',
+          stackTrace: stack);
       // 3. 出错时返回代码默认值
       return super.mainIndicatorBuilders;
     }
@@ -259,7 +294,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       // 1. 尝试从缓存加载
       final cachedIndicators = _loadSubIndicatorsFromCache();
       if (cachedIndicators.isNotEmpty) {
-        defLogger.d('Loaded ${cachedIndicators.length} sub indicators from cache');
+        defLogger
+            .d('Loaded ${cachedIndicators.length} sub indicators from cache');
         // 合并代码默认配置中缓存缺失的指标（确保新增指标始终可用）
         final defaults = super.subIndicatorBuilders;
         for (final entry in defaults.entries) {
@@ -283,7 +319,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       // 1. 尝试从JSON同步加载
       final jsonIndicators = _loadSubIndicatorsFromJsonSync();
       if (jsonIndicators.isNotEmpty) {
-        defLogger.d('Loaded ${jsonIndicators.length} default sub indicators from JSON');
+        defLogger.d(
+            'Loaded ${jsonIndicators.length} default sub indicators from JSON');
         // 异步保存到缓存
         _saveSubIndicatorsToCache(jsonIndicators);
         return jsonIndicators;
@@ -293,7 +330,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       defLogger.d('Using code default sub indicators');
       return super.subIndicatorBuilders;
     } catch (err, stack) {
-      defLogger.e('Error loading default sub indicators: $err', stackTrace: stack);
+      defLogger.e('Error loading default sub indicators: $err',
+          stackTrace: stack);
       // 3. 出错时返回代码默认值
       return super.subIndicatorBuilders;
     }
@@ -313,14 +351,16 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         for (final indicatorConfig in cachedData['indicators']) {
           if (indicatorConfig is Map<String, dynamic>) {
             final key = DataIndicatorKey(indicatorConfig['key'] as String);
-            final builder = createIndicatorBuilderFromConfig(indicatorConfig, theme);
+            final builder =
+                createIndicatorBuilderFromConfig(indicatorConfig, theme);
             indicators[key] = builder;
           }
         }
         return indicators;
       }
     } catch (err, stack) {
-      defLogger.e('_loadMainIndicatorsFromCache error: $err', stackTrace: stack);
+      defLogger.e('_loadMainIndicatorsFromCache error: $err',
+          stackTrace: stack);
     }
     return {};
   }
@@ -337,7 +377,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         for (final indicatorConfig in cachedData['indicators']) {
           if (indicatorConfig is Map<String, dynamic>) {
             final key = DataIndicatorKey(indicatorConfig['key'] as String);
-            final builder = createIndicatorBuilderFromConfig(indicatorConfig, theme);
+            final builder =
+                createIndicatorBuilderFromConfig(indicatorConfig, theme);
             indicators[key] = builder;
           }
         }
@@ -360,7 +401,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         return _parseMainIndicatorsFromJson(jsonConfig['mainIndicators']);
       }
     } catch (err, stack) {
-      defLogger.e('_loadMainIndicatorsFromJsonSync error: $err', stackTrace: stack);
+      defLogger.e('_loadMainIndicatorsFromJsonSync error: $err',
+          stackTrace: stack);
     }
     return {};
   }
@@ -376,7 +418,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         return _parseSubIndicatorsFromJson(jsonConfig['subIndicators']);
       }
     } catch (err, stack) {
-      defLogger.e('_loadSubIndicatorsFromJsonSync error: $err', stackTrace: stack);
+      defLogger.e('_loadSubIndicatorsFromJsonSync error: $err',
+          stackTrace: stack);
     }
     return {};
   }
@@ -394,7 +437,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         final builder = createIndicatorBuilderFromConfig(config, theme);
         indicators[key] = builder;
       } catch (err, stack) {
-        defLogger.e('Error parsing main indicator ${entry.key}: $err', stackTrace: stack);
+        defLogger.e('Error parsing main indicator ${entry.key}: $err',
+            stackTrace: stack);
       }
     }
     return indicators;
@@ -413,14 +457,16 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
         final builder = createIndicatorBuilderFromConfig(config, theme);
         indicators[key] = builder;
       } catch (err, stack) {
-        defLogger.e('Error parsing sub indicator ${entry.key}: $err', stackTrace: stack);
+        defLogger.e('Error parsing sub indicator ${entry.key}: $err',
+            stackTrace: stack);
       }
     }
     return indicators;
   }
 
   /// 保存主指标配置到缓存
-  void _saveMainIndicatorsToCache(Map<IIndicatorKey, IndicatorBuilder> indicators) {
+  void _saveMainIndicatorsToCache(
+      Map<IIndicatorKey, IndicatorBuilder> indicators) {
     try {
       final cacheKey = '${configKey}_main_indicators';
       final indicatorsList = indicators.entries
@@ -437,7 +483,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
   }
 
   /// 保存副指标配置到缓存
-  void _saveSubIndicatorsToCache(Map<IIndicatorKey, IndicatorBuilder> indicators) {
+  void _saveSubIndicatorsToCache(
+      Map<IIndicatorKey, IndicatorBuilder> indicators) {
     try {
       final cacheKey = '${configKey}_sub_indicators';
       final indicatorsList = indicators.entries
@@ -553,14 +600,16 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       case 'volMa':
         return (setting) => VolMaIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 100.r,
-              calcParam: _parseVolMaParam(config['config']) ?? const VolMaParam(lines: []),
+              calcParam: _parseVolMaParam(config['config']) ??
+                  const VolMaParam(lines: []),
               tipsPadding: theme.tipsPadding,
             );
 
       case 'volume':
         return (setting) => VolumeIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 100.r,
-              calcParam: _parseVolumeParam(config['config']) ?? const VolumeParam(),
+              calcParam:
+                  _parseVolumeParam(config['config']) ?? const VolumeParam(),
               tipsPadding: theme.tipsPadding,
               tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
             );
@@ -568,7 +617,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       // 📈 主指标类型
       case 'ma':
         return (setting) => MAIndicator(
-              height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+              height: (config['height'] as num?)?.toDouble() ??
+                  theme.mainIndicatorHeight,
               padding: theme.mainIndicatorPadding,
               calcParam: _parseMaParam(config['config']) ?? const MaParam(),
               tipsPadding: theme.tipsPadding,
@@ -576,7 +626,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
       case 'boll':
         return (setting) => BOLLIndicator(
-              height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+              height: (config['height'] as num?)?.toDouble() ??
+                  theme.mainIndicatorHeight,
               padding: theme.mainIndicatorPadding,
               calcParam: _parseBOLLParam(config['config']) ?? const BOLLParam(),
               tipsPadding: theme.tipsPadding,
@@ -584,7 +635,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
       case 'ema':
         return (setting) => EMAIndicator(
-              height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+              height: (config['height'] as num?)?.toDouble() ??
+                  theme.mainIndicatorHeight,
               padding: theme.mainIndicatorPadding,
               calcParam: _parseEMAParam(config['config']) ?? const EmaParam(),
               tipsPadding: theme.tipsPadding,
@@ -592,7 +644,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
       case 'sar':
         return (setting) => SARIndicator(
-              height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+              height: (config['height'] as num?)?.toDouble() ??
+                  theme.mainIndicatorHeight,
               padding: theme.mainIndicatorPadding,
               calcParam: _parseSARParam(config['config']) ?? const SARParam(),
               tipsPadding: theme.tipsPadding,
@@ -601,7 +654,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
       case 'avl':
         return (setting) => AVLIndicator(
-              height: (config['height'] as num?)?.toDouble() ?? theme.mainIndicatorHeight,
+              height: (config['height'] as num?)?.toDouble() ??
+                  theme.mainIndicatorHeight,
               padding: theme.mainIndicatorPadding,
               calcParam: _parseAVLParam(config['config']) ?? const AVLParam(),
               tipsPadding: theme.tipsPadding,
@@ -612,7 +666,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       case 'rsi':
         return (setting) => RSIIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 100.r,
-              calcParam: _parseRSIParam(config['config']) ?? const RsiParam(lines: []),
+              calcParam:
+                  _parseRSIParam(config['config']) ?? const RsiParam(lines: []),
               tipsPadding: theme.tipsPadding,
               tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
             );
@@ -628,17 +683,18 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       case 'cci':
         return (setting) => CCIIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 100.r,
-              calcParam: _parseCCIParam(config['config']) ?? const CCIParam(
-                lines: [
-                  CCILineConfig(
-                    id: 'cci14',
-                    enabled: true,
-                    period: 14,
-                    color: Color(0xFF00BCD4),
-                    width: 1.0,
+              calcParam: _parseCCIParam(config['config']) ??
+                  const CCIParam(
+                    lines: [
+                      CCILineConfig(
+                        id: 'cci14',
+                        enabled: true,
+                        period: 14,
+                        color: Color(0xFF00BCD4),
+                        width: 1.0,
+                      ),
+                    ],
                   ),
-                ],
-              ),
               tipsPadding: theme.tipsPadding,
               tickCount: (config['tickCount'] as num?)?.toInt() ?? 5,
             );
@@ -654,7 +710,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
       case 'macd':
         return (setting) => MACDIndicator(
               height: (config['height'] as num?)?.toDouble() ?? 120.r,
-              calcParam: _parseMACDParam(config['config']) ?? const MACDParam(s: 12, l: 26, m: 9),
+              calcParam: _parseMACDParam(config['config']) ??
+                  const MACDParam(s: 12, l: 26, m: 9),
               difTips: _parseTipsConfig(config['difTips']) ??
                   TipsConfig(
                     label: 'DIF: ',
@@ -685,7 +742,8 @@ class DefaultFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
 
       default:
         // 对于不支持的指标类型，记录日志并返回一个默认的Volume指标
-        defLogger.w('Unsupported indicator type: $type, fallback to volume indicator');
+        defLogger.w(
+            'Unsupported indicator type: $type, fallback to volume indicator');
         return (setting) => VolumeIndicator(
               height: 100.r,
               calcParam: const VolumeParam(),

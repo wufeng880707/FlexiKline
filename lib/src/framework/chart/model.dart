@@ -20,16 +20,18 @@ part of 'indicator.dart';
 /// [key] 唯一指定 Indicator。
 /// [height] 指标图高度。
 /// [padding] 限制指标图绘制区域。
+/// [autoActivate] 是否在首次声明或从 false 变为 true 时自动激活。
 /// [paintMode] 控制多指标图一起的绘制方式。
 ///   [PaintMode.combine] 多指标时，统一使用父 Indicator 的高度和 padding。
 ///   [PaintMode.alone] 多指标时，使用自己的 height 进行绘制。
 /// [zIndex] 确定指标在绘制时的顺序，按升序排序；数值大的将会绘制在数值小的上面；
 ///   主要在 [MainPaintObjectIndicator] 中有用，确定多个指标在同一区域的绘制顺序。
-abstract class Indicator<K extends IIndicatorKey> implements IPrecomputable {
+abstract class Indicator<K extends IIndicatorKey> {
   Indicator({
     required this.key,
     required this.height,
     required this.padding,
+    required this.autoActivate,
     this.paintMode = PaintMode.combine,
     this.zIndex = 0,
   });
@@ -40,6 +42,11 @@ abstract class Indicator<K extends IIndicatorKey> implements IPrecomputable {
 
   final EdgeInsets padding;
 
+  /// 是否在首次声明或从 false 变为 true 时自动激活。
+  ///
+  /// 该属性只触发自动 show；变为 false 不会自动 hide。
+  final bool autoActivate;
+
   final PaintMode paintMode;
 
   final int zIndex;
@@ -48,72 +55,91 @@ abstract class Indicator<K extends IIndicatorKey> implements IPrecomputable {
   PaintObject<Indicator<K>> createPaintObject();
 
   Map<String, dynamic> toJson() => const {};
-
-  @override
-  dynamic get calcParam => null;
 }
 
 /// 普通指标配置基类
 ///
 /// 用于 Candle、Time、Main、Volume 等框架内置指标，不占 slot。
-/// 对应 [NormalPaintObject]。
-abstract class NormalIndicator extends Indicator<NormalIndicatorKey> {
-  NormalIndicator({
+/// 对应 [DirectPaintObject]。
+abstract class DirectIndicator extends Indicator<DirectIndicatorKey> {
+  DirectIndicator({
     required super.key,
     required super.height,
     required super.padding,
+    super.autoActivate = false,
     super.paintMode,
     super.zIndex,
   });
 
   @override
-  NormalPaintObject<NormalIndicator> createPaintObject();
+  DirectPaintObject<DirectIndicator> createPaintObject();
 }
 
 /// 数据指标配置基类
 ///
 /// 用于 KDJ、MACD、MA 等需要 precompute 并写入 FlexiCandleModel.slots 的指标。
-/// 注册时会分配 dataIndex，对应 [DataPaintObject]。
-abstract class DataIndicator extends Indicator<DataIndicatorKey> {
-  DataIndicator({
+/// 注册时会分配 dataIndex，对应 [ComputedPaintObject]。
+abstract class ComputedIndicator extends Indicator<ComputedIndicatorKey> {
+  ComputedIndicator({
     required super.key,
     required super.height,
     required super.padding,
+    super.autoActivate = false,
     super.paintMode,
     super.zIndex,
   });
 
   @override
-  DataPaintObject<DataIndicator> createPaintObject();
+  ComputedPaintObject<ComputedIndicator> createPaintObject();
+
+  /// 指标计算参数。
+  ///
+  /// 用于判断配置变化后是否需要重新预计算。
+  dynamic get calcParam => null;
+}
+
+/// 兼容 fork 旧 API；新代码使用 [ComputedIndicator]。
+typedef DataIndicator = ComputedIndicator;
+
+/// 兼容 fork 旧 API；新代码使用 [DirectIndicator]。
+typedef NormalIndicator = DirectIndicator;
+
+/// 兼容 fork 旧 API；新代码使用 [ExternalIndicator]。
+typedef BusinessIndicator = ExternalIndicator;
+
+/// 兼容 fork 旧 API；新代码让需要计算的指标继承 [ComputedIndicator]。
+abstract interface class IPrecomputable {
+  dynamic get calcParam;
 }
 
 /// 业务指标配置基类
 ///
 /// 用于 Trade 等由业务数据或用户操作驱动的指标，不占 slot。
-/// 对应 [BusinessPaintObject]。
-abstract class BusinessIndicator extends Indicator<BusinessIndicatorKey> {
-  BusinessIndicator({
+/// 对应 [ExternalPaintObject]。
+abstract class ExternalIndicator extends Indicator<ExternalIndicatorKey> {
+  ExternalIndicator({
     required super.key,
     required super.height,
     required super.padding,
+    super.autoActivate = true,
     super.paintMode,
     super.zIndex,
   });
 
   @override
-  BusinessPaintObject<BusinessIndicator> createPaintObject();
+  ExternalPaintObject<ExternalIndicator> createPaintObject();
 }
 
 /// 蜡烛指标配置基类
 ///
-/// 使用 [NormalIndicatorKey]，属于基础/系统指标，不占 slot。
-abstract class CandleBaseIndicator extends NormalIndicator {
+/// 使用 [DirectIndicatorKey]，属于基础/系统指标，不占 slot。
+abstract class CandleBaseIndicator extends DirectIndicator {
   CandleBaseIndicator({
     required super.height,
     required super.padding,
     super.paintMode,
     super.zIndex,
-  }) : super(key: candleIndicatorKey);
+  }) : super(key: candleIndicatorKey, autoActivate: true);
 
   @override
   CandleBasePaintObject<CandleBaseIndicator> createPaintObject();
@@ -121,15 +147,15 @@ abstract class CandleBaseIndicator extends NormalIndicator {
 
 /// 时间指标配置基类
 ///
-/// 使用 [NormalIndicatorKey]，属于基础/系统指标，不占 slot。
-abstract class TimeBaseIndicator extends NormalIndicator {
+/// 使用 [DirectIndicatorKey]，属于基础/系统指标，不占 slot。
+abstract class TimeBaseIndicator extends DirectIndicator {
   TimeBaseIndicator({
     required super.height,
     required super.padding,
     super.paintMode,
     super.zIndex,
     required this.position,
-  }) : super(key: timeIndicatorKey);
+  }) : super(key: timeIndicatorKey, autoActivate: true);
 
   final DrawPosition position;
 
@@ -139,7 +165,7 @@ abstract class TimeBaseIndicator extends NormalIndicator {
 
 /// MainIndicator 的配置
 ///
-/// 使用 [NormalIndicatorKey]，属于基础/系统指标，不占 slot。
+/// 使用 [DirectIndicatorKey]，属于基础/系统指标，不占 slot。
 /// [children] 存储当前主区已选中的子指标 Key 集合。
 @CopyWith()
 @FlexiIndicatorSerializable
@@ -150,7 +176,7 @@ class MainPaintObjectIndicator<T extends Indicator<IIndicatorKey>> extends Indic
     this.drawBelowTipsArea = false,
     Set<IIndicatorKey>? children,
   })  : children = children ?? <IIndicatorKey>{},
-        super(key: mainIndicatorKey, height: size.height);
+        super(key: mainIndicatorKey, height: size.height, autoActivate: true);
 
   late Size size;
 

@@ -61,7 +61,7 @@ class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
   bool get isInSub => _isInsub ??= indicator.key == const DataIndicatorKey('sar');
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
 
     MinMax? sarMinmax = calcuSarMinmax(

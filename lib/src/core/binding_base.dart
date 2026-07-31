@@ -14,21 +14,31 @@
 
 part of 'core.dart';
 
-abstract class KlineBindingBase with FlexiLog implements ISetting, IPaintContext, IDrawContext {
+abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawContext {
   @override
   String get logTag => 'Controller';
 
   final IConfiguration configuration;
 
-  /// 对于Kline的操作是否自动保存到本地配置中.
-  /// 包括: dispose; 增删指标; 调整参数等等.
+  /// 是否自动保存 Kline 配置。
   final bool autoSave;
 
-  /// klineData数据缓存容量
-  /// 一个FlexiKlineController允许最多维护的KlineData个数.
+  /// 初始布局模式。默认 [FlexiLayoutMode.adapt]（覆盖大多数场景）。
+  final FlexiLayoutMode _initialLayoutMode;
+
+  /// Fixed 模式下的初始画布尺寸（主区 + 副区），可为空。
+  ///
+  /// 父级能提供有限宽高约束时可不传；父级高度无限时（如滚动容器内），
+  /// 需传入该值或在首次 fixed 渲染前调用 `setFixedLayoutMode`。
+  final Size? _initialFixedSize;
+
+  /// KlineData 缓存容量。
   final int? klineDataCacheCapacity;
 
-  /// 指标绘制对象管理
+  /// 副区指标最大数量。
+  final int subIndicatorMaxCount;
+
+  /// 指标绘制对象管理器。
   final IndicatorPaintObjectManager _paintObjectManager;
 
   final OverlayDrawObjectManager _drawObjectManager;
@@ -39,10 +49,14 @@ abstract class KlineBindingBase with FlexiLog implements ISetting, IPaintContext
   KlineBindingBase({
     required this.configuration,
     this.autoSave = true,
-    int subIndicatorMaxCount = defaultSubIndicatorMaxCount,
+    FlexiLayoutMode initialLayoutMode = FlexiLayoutMode.adapt,
+    Size? initialFixedSize,
+    this.subIndicatorMaxCount = defaultSubIndicatorMaxCount,
     IFlexiLogger? logger,
     this.klineDataCacheCapacity,
-  })  : _paintObjectManager = IndicatorPaintObjectManager(
+  })  : _initialLayoutMode = initialLayoutMode,
+        _initialFixedSize = initialFixedSize,
+        _paintObjectManager = IndicatorPaintObjectManager(
           configuration: configuration,
           subIndicatorMaxCount: subIndicatorMaxCount,
           logger: logger,
@@ -82,9 +96,7 @@ abstract class KlineBindingBase with FlexiLog implements ISetting, IPaintContext
   @mustCallSuper
   void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
     logd('onThemeChanged base');
-    // 先保存配置, 再重新获取配置. 后续优化掉.
     storeFlexiKlineConfig();
-    _paintObjectManager.refreshFlexiKlineConfig(this, refreshConfig: false);
   }
 
   @protected
@@ -106,14 +118,12 @@ abstract class KlineBindingBase with FlexiLog implements ISetting, IPaintContext
     return false;
   }
 
-  KlineBindingBase get instance => this;
-
-  T getInstance<T extends KlineBindingBase>(T instance) {
-    return instance;
-  }
-
   @override
   IFlexiKlineTheme get theme => configuration.theme;
+
+  /// 兼容 fork 旧 API；新代码使用 [klineData]。
+  @override
+  KlineData get curKlineData => klineData;
 
   @override
   Map<String, dynamic>? getConfig(String key) {
@@ -125,10 +135,13 @@ abstract class KlineBindingBase with FlexiLog implements ISetting, IPaintContext
     return configuration.setConfig(key, value);
   }
 
+  /// 兼容 fork 旧 API；新代码使用 [requestCancelCross]。
+  void cancelCross() => requestCancelCross();
+
   /// 注入业务指标的外部数据
   ///
   /// 外部（如 Riverpod Provider）在数据变更或 timeBar 切换时调用，
-  /// 将已处理好的数据注入框架。[BusinessPaintObject] 在绘制时通过
+  /// 将已处理好的数据注入框架。[ExternalPaintObject] 在绘制时通过
   /// [getBusinessData] 获取。
   void setBusinessData<T extends Object>(IIndicatorKey key, T data) {
     final old = _businessDataMap[key];
@@ -149,9 +162,41 @@ abstract class KlineBindingBase with FlexiLog implements ISetting, IPaintContext
     final data = _businessDataMap[key];
     return data is T ? data : null;
   }
+
+  /// 保存当前 FlexiKline 配置。
+  void storeFlexiKlineConfig({
+    bool storeDrawOverlays = true,
+  });
+
+  /// 请求重绘 Grid 图层。
+  @protected
+  void markRepaintGrid();
+
+  /// 请求重绘 Chart 图层。
+  @protected
+  void markRepaintChart({bool reset = false});
+
+  /// 请求重绘 Cross 图层。
+  @protected
+  void markRepaintCross();
+
+  /// 请求重绘 Draw 图层。
+  @protected
+  void markRepaintDraw();
+
+  /// 处理 Widget 挂载前暂存的数据。由 StateBinding 实现，view 层在 initState 后调用。
+  void flushPendingKlineData();
+
+  /// 按当前 [computedDataCapacity] 重建当前 KlineData 的 slots，并使其余缓存失效。
+  ///
+  /// 在 computed 指标声明增长（slot 容量高水位上升）后调用，确保当前数据能容纳
+  /// 新增高位指标；其余缓存数据因指标声明已变、其 slot 值已陈旧，统一丢弃，
+  /// 下次切换时重新加载。由 StateBinding 实现。
+  @protected
+  void syncComputedSlotCapacity();
 }
 
-/// KlineController内部扩展
+/// KlineController 内部访问扩展。
 extension on KlineBindingBase {
   FlexiKlineConfig get flexiKlineConfig {
     return _paintObjectManager.flexiKlineConfig;
@@ -174,13 +219,43 @@ extension on KlineBindingBase {
   }
 }
 
-/// Kline状态通知
-class KlineStateNotifier<T> extends ValueNotifier<T> {
-  KlineStateNotifier(super.value);
+/// FlexiKline Controller 生命周期状态，借鉴 Flutter `_ElementLifecycle`。
+///
+/// ```
+/// initial ──mountIndicators()──▶ mounted ──dispose()──▶ disposed
+/// ```
+enum FlexiKlineLifecycle {
+  /// 构造完成，`init()` 已执行，PaintObject 尚未创建。
+  initial,
+
+  /// `mountIndicators()` 完成，PaintObject 就绪，可正常运行。
+  mounted,
+
+  /// `dispose()` 已调用，资源已释放。
+  disposed;
+
+  /// 是否处于 [FlexiKlineLifecycle.mounted] 状态。
+  bool get isMounted => this == FlexiKlineLifecycle.mounted;
+}
+
+/// Kline 状态通知。
+class FlexiStateNotifier<T> extends ValueNotifier<T> {
+  FlexiStateNotifier(super.value);
+
+  bool _silent = false;
 
   @override
   void notifyListeners() {
+    if (_silent) return;
     super.notifyListeners();
+  }
+
+  /// 静默赋值，不触发 [notifyListeners]。
+  /// 用于 build 阶段设置初始值，避免触发订阅者 setState。
+  void setSilently(T val) {
+    _silent = true;
+    value = val;
+    _silent = false;
   }
 
   void updateValue(T val) {

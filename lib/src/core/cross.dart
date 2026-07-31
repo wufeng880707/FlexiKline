@@ -36,7 +36,7 @@ typedef OnCrossI18nTooltipLabels = Map<TooltipLabel, String>? Function();
 ///
 /// 处理cross事件.
 /// Tooltip的绘制.
-mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
+mixin CrossBinding on KlineBindingBase, SettingBinding {
   @override
   void initState() {
     super.initState();
@@ -83,7 +83,18 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       _offset = _correctCrossOffset(val);
     } else {
       _offset = null;
+      _tooltipStableContentWidth = null;
     }
+    _clearTooltipHitTestData();
+  }
+
+  final List<_TooltipTapTarget> _tooltipTapTargets = [];
+
+  /// 当前 crossing 会话内观测到的最大 Tooltip 内容区宽度（不含 padding）。
+  double? _tooltipStableContentWidth;
+
+  void _clearTooltipHitTestData() {
+    _tooltipTapTargets.clear();
   }
 
   /// 矫正Cross
@@ -111,7 +122,7 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
 
   /// 启动Cross事件
   bool onCrossStart(GestureData data, {bool force = false}) {
-    if (crossConfig.enable && curKlineData.canPaintChart) {
+    if (crossConfig.enable && klineData.canPaintChart) {
       /// 如果其他手势与Cross手势事件允许共存 或者当前不在Crossing中时, 开启Cross.
       if (force || !isCrossing) {
         logd('handleTap cross > $force > ${data.offset}');
@@ -123,7 +134,7 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         return true;
       }
 
-      cancelCross();
+      requestCancelCross();
       onCrossCustomTooltip?.call(null);
       return false;
     }
@@ -138,9 +149,9 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
     }
   }
 
-  /// 取消当前Cross事件
+  /// 请求取消当前 cross。
   @override
-  void cancelCross() {
+  void requestCancelCross() {
     if (isCrossing || _offset != null) {
       _updateOffset(null);
       // 当Cross事件结束后, 调用markRepaintChart触发绘制Chart图层首根蜡烛的tips信息.
@@ -163,11 +174,11 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       if (crossConfig.showLatestTipsInBlank) {
         model = dxToCandle(offset.dx);
         // 如果当前model为空, 则根据offset.dx计算当前model是最新的, 还是最后的.
-        if (model == null && curKlineData.isNotEmpty) {
+        if (model == null && klineData.isNotEmpty) {
           if (offset.dx > startCandleDx) {
-            model = curKlineData.latest;
+            model = klineData.latest;
           } else {
-            model = curKlineData.list.last;
+            model = klineData.list.last;
           }
         }
       }
@@ -179,9 +190,9 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       paintTooltip(canvas, offset, model: model);
 
       for (final paintObject in subPaintObjects) {
-        paintObject.doOnCross(canvas, offset, model: model);
+        paintObject.doPaintCross(canvas, offset, model: model);
       }
-      mainPaintObject.doOnCross(canvas, offset, model: model);
+      mainPaintObject.doPaintCross(canvas, offset, model: model);
     }
   }
 
@@ -210,21 +221,23 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
 
   /// 绘制 Tooltip
   void paintTooltip(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
+    _clearTooltipHitTestData();
+
     final tooltipConfig = crossConfig.tooltipConfig;
     if (!tooltipConfig.show) return;
     final tooltipTextStyle = tooltipConfig.style.ensure(theme.tooltipTextColor);
 
     final index = dxToIndex(offset.dx);
     if (index == null) return;
-    model ??= curKlineData.get(index);
-    final pre = curKlineData.get(index + 1);
+    model ??= klineData.get(index);
+    final prev = klineData.get(index + 1);
     if (model == null) return;
 
     /// 准备数据
     // 1. 使用定制接口生成TooltipInfoList.
     List<TooltipInfo>? tooltipInfoList;
     if (onCrossCustomTooltip != null) {
-      tooltipInfoList = onCrossCustomTooltip!(model, prev: pre);
+      tooltipInfoList = onCrossCustomTooltip!(model, prev: prev);
     }
 
     if (tooltipInfoList == null) {
@@ -236,137 +249,70 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
       // 3. 使用FlexiKline内置(默认En)的Labels生成TooltipInfoList
       tooltipLabels ??= defaultTooltipLabels;
 
-      tooltipInfoList = genTooltipInfoListByLabels(
+      tooltipInfoList = generateTooltipInfoListByLabels(
         tooltipLabels,
         model: model,
-        pre: pre,
+        pre: prev,
       );
     }
 
     if (tooltipInfoList.isEmpty) return;
-
-    /// 初始化绘制数据
-    final labelSpanList = <TextSpan>[];
-    final valueSpanList = <TextSpan>[];
-    TooltipInfo info;
-    for (int i = 0; i < tooltipInfoList.length; i++) {
-      info = tooltipInfoList[i];
-      final br = i < tooltipInfoList.length - 1 ? '\n' : '';
-      labelSpanList.add(TextSpan(
-        text: info.label + br,
-        style: info.labelStyle?.ensure(theme.tooltipTextColor) ?? tooltipTextStyle,
-      ));
-      TextStyle valStyle = info.valueStyle?.ensure(theme.tooltipTextColor) ?? tooltipTextStyle;
-      if (info.riseOrFall > 0) {
-        valStyle = valStyle.copyWith(color: theme.longColor);
-      } else if (info.riseOrFall < 0) {
-        valStyle = valStyle.copyWith(color: theme.shortColor);
-      }
-      valueSpanList.add(TextSpan(
-        text: info.value + br,
-        style: valStyle,
-      ));
-    }
+    final list = tooltipInfoList;
 
     /// 开始绘制
     double top = tooltipConfig.margin.top;
-    if (isStartZoomChart) {
+    if (isChartZooming) {
       top += mainOriginPadding.top;
     } else {
       top += mainPadding.top;
     }
 
-    if (offset.dx > mainChartWidthHalf) {
-      // 点击区域在右边; 绘制在左边
-      final offset = Offset(
-        mainRect.left + tooltipConfig.margin.left,
-        top,
-      );
+    final drawOnLeft = offset.dx > mainChartWidthHalf;
+    final drawDirection = drawOnLeft ? DrawDirection.ltr : DrawDirection.rtl;
+    final tooltipOffset = Offset(
+      drawOnLeft ? mainRect.left + tooltipConfig.margin.left : mainRect.right - tooltipConfig.margin.right,
+      top,
+    );
 
-      final size = canvas.drawText(
-        offset: offset,
-        drawDirection: DrawDirection.ltr,
-        drawableRect: mainChartRect,
-        textSpan: TextSpan(
-          children: labelSpanList,
-          style: tooltipTextStyle,
-        ),
-        textAlign: TextAlign.start,
-        textWidthBasis: TextWidthBasis.longestLine,
-        padding: tooltipConfig.padding,
-        backgroundColor: theme.tooltipBg,
-        borderRadius: BorderRadius.only(
-          topLeft: tooltipConfig.radius.topLeft,
-          bottomLeft: tooltipConfig.radius.bottomLeft,
-        ),
-      );
+    final availableWidth = drawOnLeft ? mainChartRect.right - tooltipOffset.dx : tooltipOffset.dx - mainChartRect.left;
+    final maxContentWidth = math.max(
+      0.0,
+      availableWidth - tooltipConfig.padding.horizontal,
+    );
 
-      canvas.drawText(
-        offset: Offset(
-          offset.dx + size.width - 1,
-          offset.dy,
-        ),
-        drawDirection: DrawDirection.ltr,
-        drawableRect: mainChartRect,
-        textSpan: TextSpan(
-          children: valueSpanList,
-          style: tooltipTextStyle,
-        ),
-        textAlign: TextAlign.end,
-        textWidthBasis: TextWidthBasis.longestLine,
-        padding: tooltipConfig.padding,
-        backgroundColor: theme.tooltipBg,
-        borderRadius: BorderRadius.only(
-          topRight: tooltipConfig.radius.topRight,
-          bottomRight: tooltipConfig.radius.bottomRight,
-        ),
-      );
-    } else {
-      // 点击区域在左边; 绘制在右边
-      final offset = Offset(
-        mainRect.right - tooltipConfig.margin.right,
-        top,
-      );
+    final size = canvas.drawTooltipInfos(
+      offset: tooltipOffset,
+      tooltipInfos: list,
+      drawDirection: drawDirection,
+      drawableRect: mainChartRect,
+      defaultStyle: tooltipTextStyle,
+      minContentWidth: _tooltipStableContentWidth,
+      maxContentWidth: maxContentWidth,
+      yAxisAlign: YAxisAlign.center,
+      backgroundColor: theme.tooltipBg,
+      borderRadius: tooltipConfig.radius,
+      padding: tooltipConfig.padding,
+      spacing: tooltipConfig.spacing,
+      onLayout: (_, itemBounds) {
+        for (int index = 0; index < list.length; index++) {
+          final onTap = list[index].onTap;
+          if (onTap == null) continue;
 
-      final size = canvas.drawText(
-        offset: offset,
-        drawDirection: DrawDirection.rtl,
-        drawableRect: mainChartRect,
-        textSpan: TextSpan(
-          children: valueSpanList,
-          style: tooltipTextStyle,
-        ),
-        textAlign: TextAlign.end,
-        textWidthBasis: TextWidthBasis.longestLine,
-        padding: tooltipConfig.padding,
-        backgroundColor: theme.tooltipBg,
-        borderRadius: BorderRadius.only(
-          topRight: tooltipConfig.radius.topRight,
-          bottomRight: tooltipConfig.radius.bottomRight,
-        ),
-      );
+          _tooltipTapTargets.add(
+            _TooltipTapTarget(
+              bounds: itemBounds[index],
+              onTap: onTap,
+            ),
+          );
+        }
+      },
+    );
 
-      canvas.drawText(
-        offset: Offset(
-          offset.dx - size.width + 1,
-          offset.dy,
-        ),
-        drawDirection: DrawDirection.rtl,
-        drawableRect: mainChartRect,
-        textSpan: TextSpan(
-          children: labelSpanList,
-          style: tooltipTextStyle,
-        ),
-        textAlign: TextAlign.start,
-        textWidthBasis: TextWidthBasis.longestLine,
-        padding: tooltipConfig.padding,
-        backgroundColor: theme.tooltipBg,
-        borderRadius: BorderRadius.only(
-          topLeft: tooltipConfig.radius.topLeft,
-          bottomLeft: tooltipConfig.radius.bottomLeft,
-        ),
-      );
-    }
+    final contentWidth = size.width - tooltipConfig.padding.horizontal;
+    _tooltipStableContentWidth = math.max(
+      _tooltipStableContentWidth ?? 0,
+      contentWidth,
+    );
   }
 
   /// Tooltip定制回调
@@ -379,21 +325,31 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
   OnCrossI18nTooltipLabels? onCrossI18nTooltipLabels;
 
   /// 根据TooltipLabels生成TooltipInfoList.
-  List<TooltipInfo> genTooltipInfoListByLabels(
+  List<TooltipInfo> generateTooltipInfoListByLabels(
     Map<TooltipLabel, String> tooltipLabels, {
     required FlexiCandleModel model,
     FlexiCandleModel? pre,
   }) {
     if (tooltipLabels.isEmpty) return const [];
-    final p = curKlineData.precision;
+    final p = klineData.precision;
+
+    final tooltipTextStyle = crossConfig.tooltipConfig.style;
+    TextStyle? getValueStyle(num signum) {
+      if (signum > 0) {
+        return tooltipTextStyle.ensure(theme.longColor);
+      } else if (signum < 0) {
+        return tooltipTextStyle.ensure(theme.shortColor);
+      }
+      return null;
+    }
 
     final list = <TooltipInfo>[];
     tooltipLabels.forEach((key, label) {
       String? value;
-      num riseOrFall = 0;
+      TextStyle? valueStyle;
       switch (key) {
         case TooltipLabel.time:
-          final interval = curKlineData.interval;
+          final interval = klineData.interval;
           value = model.formatDateTime(interval);
           break;
         case TooltipLabel.open:
@@ -410,16 +366,19 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
           break;
         case TooltipLabel.chg:
           value = formatPrice(model.change.toDecimal(), precision: p, cutInvalidZero: false);
+          valueStyle = getValueStyle(model.change.signum);
           break;
         case TooltipLabel.chgRate:
-          value = formatPercentage(NumFlexiNumExt(model.changeRate).toDecimal(), precision: 2);
-          riseOrFall = model.change.signum;
+          value = formatPercentage(model.changeRate.toDecimal(), precision: 2);
+          valueStyle = getValueStyle(model.change.signum);
           break;
         case TooltipLabel.range:
           if (pre != null) {
-            value = formatPercentage(NumFlexiNumExt(model.rangeRate(pre)).toDecimal(), precision: 2);
+            value = formatPercentage(model.rangeRate(pre).toDecimal(), precision: 2);
+            valueStyle = getValueStyle(model.rangeRate(pre));
           } else {
             value = formatPrice(model.range.toDecimal(), precision: p, cutInvalidZero: false);
+            valueStyle = getValueStyle(model.range.signum);
           }
           break;
         case TooltipLabel.amount:
@@ -435,10 +394,40 @@ mixin CrossBinding on KlineBindingBase, SettingBinding implements ICross {
         list.add(TooltipInfo(
           label: label,
           value: value,
-          riseOrFall: riseOrFall,
+          valueStyle: valueStyle,
         ));
       }
     });
     return list;
   }
+
+  @override
+  bool onTap(Offset position) {
+    if (_handleTooltipTap(position)) return true;
+    return super.onTap(position);
+  }
+
+  bool _handleTooltipTap(Offset position) {
+    if (!isCrossing) return false;
+    final hitTestMargin = crossConfig.tooltipConfig.hitTestMargin;
+    for (final target in _tooltipTapTargets.reversed) {
+      final bounds = hitTestMargin > 0 ? target.bounds.inflate(hitTestMargin) : target.bounds;
+      if (bounds.contains(position)) {
+        target.onTap();
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+/// 最近一次 Cross Tooltip 绘制产生的单项点击目标。
+class _TooltipTapTarget {
+  const _TooltipTapTarget({
+    required this.bounds,
+    required this.onTap,
+  });
+
+  final Rect bounds;
+  final VoidCallback onTap;
 }

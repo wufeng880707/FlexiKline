@@ -18,7 +18,6 @@ class TradeMarkIndicator extends BusinessIndicator {
   }) : super(key: tradeMarkIndicatorKey);
 
   /// 样式参数
-  @override
   final TradeMarkParam calcParam;
 
   @override
@@ -69,7 +68,7 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
   TradeMarkPaintObject();
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
     if (!indicator.calcParam.show) return null;
 

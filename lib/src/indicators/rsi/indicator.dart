@@ -43,7 +43,7 @@ class RSIPaintObject<T extends RSIIndicator> extends DataPaintObject<T>
   RSIPaintObject();
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
 
     return calcuRsiMinmax(

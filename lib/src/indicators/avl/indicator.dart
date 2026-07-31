@@ -58,7 +58,7 @@ class AVLPaintObject<T extends AVLIndicator> extends DataPaintObject<T>
   bool get isInSub => _isInsub ??= indicator.key.id == 'subAvl';
 
   @override
-  MinMax? initState(int start, int end) {
+  MinMax? computeVisibleMinMax(int start, int end) {
     if (!klineData.canPaintChart) return null;
 
     MinMax? avlMinmax = calcuAvlMinmax(

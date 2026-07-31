@@ -26,7 +26,7 @@ FlexiKline 是一个高度灵活且可定制的 Flutter 金融 K 线图表框架
 
 ```yaml
 dependencies:
-  flexi_kline: ^2.1.0
+  flexi_kline: ^2.3.1
 ```
 
 然后运行：
@@ -39,29 +39,15 @@ flutter pub get
 
 ### 1. 实现 IConfiguration 接口
 
-自定义配置类，实现主题、指标构建器和绘制工具的定义。推荐混入 [FlexiKlineThemeConfigurationMixin](https://github.com/FlexiKline/FlexiKline/blob/main/lib/src/config/default_config.dart) 获取默认配置。
+自定义配置类，实现主题和全局配置。推荐混入 [FlexiKlineConfigurationMixin](https://github.com/FlexiKline/FlexiKline/blob/main/lib/src/config/default_config.dart) 获取默认配置。
 
 ```dart
 abstract interface class IConfiguration implements IStorage {
   /// 当前配置主题
   IFlexiKlineTheme get theme;
 
-  String get configKey;
-
   /// 生成FlexiKline配置
   FlexiKlineConfig generateFlexiKlineConfig([FlexiKlineConfig? origin]);
-
-  /// 蜡烛指标配置构造器(主区)
-  IndicatorBuilder<CandleBaseIndicator> get candleIndicatorBuilder;
-
-  /// 时间指标配置构造器(副区)
-  IndicatorBuilder<TimeBaseIndicator> get timeIndicatorBuilder;
-
-  /// 主区指标配置定制
-  Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders;
-
-  /// 副区指标配置定制
-  Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders;
 
   /// 绘制工具定制
   Map<IDrawType, DrawObjectBuilder> get drawObjectBuilders;
@@ -83,8 +69,9 @@ controller = FlexiKlineController(
 ### 3. 使用 FlexiKlineWidget
 
 ```dart
-FlexiKlineWidget(
+FlexiKlineWidget.indicator(
   controller: controller,
+  indicatorConfig: indicatorConfig,
   mainBackgroundView: FlexiKlineMarkView(),
   mainForegroundViewBuilder: _buildKlineMainForgroundView,
   onDoubleTap: setFullScreen,
@@ -92,34 +79,75 @@ FlexiKlineWidget(
 )
 ```
 
+也可直接传入指标实例：
+
+```dart
+FlexiKlineWidget(
+  controller: controller,
+  candle: CandleIndicator(),
+  time: TimeIndicator(),
+  mainIndicators: [maIndicator, bollIndicator],
+  subIndicators: [macdIndicator, kdjIndicator],
+)
+```
+
 ### 4. 更新数据
 
 ```dart
-/// 切换数据源（如切换时间周期时）
+import 'package:flexi_kline/flexi_kline.dart';
+import 'package:flexi_formatter/date_time.dart' show TimeUnit;
+
+/// 定义 K 线规格（symbol、周期等）
+final spec = KlineSpec(
+  symbol: 'BTC-USDT',
+  interval: const FlexiTimeInterval(1, TimeUnit.day),
+);
+
+/// 切换数据源（如切换交易对或周期）
 controller.switchKlineData(spec);
 
 /// 更新指定规格的数据
 controller.updateKlineData(spec, list);
+
+/// 跳转到指定日期（动画滚动到最近一根已加载蜡烛）
+controller.moveToDateTime(DateTime(2024, 6, 15));
 ```
 
 ## 自定义指标
 
-v2.0.0 引入了类型化的指标体系，通过 `IIndicatorKey` sealed class 区分三类指标：
+v2.2.0 引入了类型化的指标体系，通过 `IIndicatorKey` sealed class 区分三类指标：
 
-| 指标类型 | Key 类型 | Indicator 基类 | PaintObject 基类 | 说明 |
-|---------|----------|---------------|-----------------|------|
-| 普通指标 | `NormalIndicatorKey` | `NormalIndicator` | `NormalPaintObject` | 不占 slot，无需预计算；内置 Candle、Time 等均基于此，可自定义继承 |
-| 数据指标 | `DataIndicatorKey` | `DataIndicator` | `DataPaintObject` | 需要 precompute，占 slot |
-| 业务指标 | `BusinessIndicatorKey` | `BusinessIndicator` | `BusinessPaintObject` | 由业务数据驱动，不占 slot |
+| 指标类型     | Key 类型               | Indicator 基类      | PaintObject 基类      | 说明                                                            |
+| ------------ | ---------------------- | ------------------- | --------------------- | --------------------------------------------------------------- |
+| 直接绘制指标 | `DirectIndicatorKey`   | `DirectIndicator`   | `DirectPaintObject`   | 直接基于当前 K 线数据和绘制上下文绘制，不占 computed data index |
+| 计算型指标   | `ComputedIndicatorKey` | `ComputedIndicator` | `ComputedPaintObject` | 需要提前计算，并将结果写入 `FlexiCandleModel.slots`             |
+| 外部数据指标 | `ExternalIndicatorKey` | `ExternalIndicator` | `ExternalPaintObject` | 由外部数据或用户操作驱动，默认 `autoActivate: true`             |
+
+### PaintObject 生命周期
+
+三类指标共享同一套生命周期回调（参照 Flutter `State`）：
+
+| 回调 | 触发时机 |
+| ---- | -------- |
+| `initState` | mount 后一次（此时绘制布局尚未绑定，勿依赖 `drawableRect` / `minMax`） |
+| `didChangeDependencies` | `spec.key`（symbol / interval）变化 |
+| `didUpdateIndicator` | 指标配置变化 |
+| `didChangeTheme` | 主题变化（仅 attached 对象） |
+| `didAttach` / `didDetach` | 进入 / 离开绘制树（几何首次有效） |
+| `dispose` | 实例销毁 |
+
+- **Direct / Computed**：`autoActivate` 默认 `false`；show 时创建、hide 时销毁（`keepAlive` 可保活复用）。
+- **External**：`autoActivate` 默认 `true`，首次激活时创建；`initState` 默认调用 `loadBusinessData()` 加载业务数据。
+- 继承 `ComputedPaintObject` 时，覆写 `didUpdateIndicator` 需调用 `super` 以触发重算。
 
 ### 示例：自定义数据指标
 
 ```dart
 /// 指标 Key
-const maIndicatorKey = DataIndicatorKey('MA', label: 'MA');
+const maIndicatorKey = ComputedIndicatorKey('MA', label: 'MA');
 
 /// 指标配置
-class MAIndicator extends DataIndicator {
+class MAIndicator extends ComputedIndicator {
   MAIndicator({
     super.zIndex = 0,
     required super.height,
@@ -134,7 +162,7 @@ class MAIndicator extends DataIndicator {
   final double lineWidth;
 
   @override
-  DataPaintObject<MAIndicator> createPaintObject() => MAPaintObject();
+  ComputedPaintObject<MAIndicator> createPaintObject() => MAPaintObject();
 
   @override
   Map<String, dynamic> toJson() {
@@ -143,41 +171,74 @@ class MAIndicator extends DataIndicator {
 }
 
 /// 指标绘制对象
-class MAPaintObject extends DataPaintObject<MAIndicator> {
+class MAPaintObject extends ComputedPaintObject<MAIndicator> {
 
   @override
-  bool shouldPrecompute(MAIndicator oldIndicator) {
-    // 判断新旧指标配置的变化是否需要执行预计算
+  bool shouldRecompute(MAIndicator oldIndicator) {
+    // 判断新旧指标配置的变化是否需要重新计算
   }
 
   @override
-  void precompute(Range range, {bool reset = false}) {
-    // 针对 [range] 范围内的数据进行预计算（仅在数据更新时回调）
+  void didUpdateIndicator(MAIndicator oldIndicator) {
+    super.didUpdateIndicator(oldIndicator); // 必须调用 super 以触发重算
   }
 
   @override
-  MinMax? initState(int start, int end) {
+  void compute(Range range, {bool reset = false}) {
+    // 针对 [range] 范围内的数据进行计算（仅在数据更新时回调）
+  }
+
+  @override
+  MinMax? computeVisibleMinMax(int start, int end) {
     // 返回 [start ~ end) 之间的指标最大最小值
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     // 绘制指标线
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
-    // 十字线移动时回调
+  void paintOverlay(Canvas canvas, Size size) {
+    // 主图绘制完成后叠加绘制（如最新价标记等），与 Cross 图层无关
+  }
+
+  @override
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
+    // Cross 状态下绘制指标附加内容
   }
 
   @override
   Size? paintTips(
     Canvas canvas, {
-    CandleModel? model,
+    FlexiCandleModel? model,
     Offset? offset,
     Rect? tipsRect,
   }) {
-    // 绘制顶部 Tips 信息
+    // 绘制顶部 Tips 信息条
+  }
+}
+```
+
+### 示例：自定义外部数据指标
+
+```dart
+class TradePaintObject extends ExternalPaintObject<TradeIndicator> {
+  @override
+  void loadBusinessData() {
+    // initState 默认调用；也可 override initState / didChangeDependencies 等
+  }
+
+  @override
+  void didChangeDependencies(KlineSpec oldSpec) {
+    // symbol / interval 变化时重新加载
+    loadBusinessData();
+    setState();
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 绘制业务 overlay
   }
 }
 ```
@@ -189,12 +250,12 @@ class RayLineDrawObject extends DrawObject {
   RayLineDrawObject(super.overlay, super.config);
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     // 判断 [position] 是否命中当前绘制对象
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     // 绘制图形
   }
 }

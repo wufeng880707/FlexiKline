@@ -117,7 +117,7 @@ mixin DrawObjectMixin on DrawStateObject {
   }
 
   /// 绘制[points]中所有点.
-  void drawPoints(IDrawContext context, Canvas canvas) {
+  void drawPoints(DrawContext context, Canvas canvas) {
     for (final point in points) {
       if (point == null) continue;
       if (point == pointer || point.index == pointer?.index) {
@@ -133,7 +133,7 @@ mixin DrawObjectMixin on DrawStateObject {
   }
 
   /// 绘制选择圆和选择绘制线
-  void drawConnectingLine(IDrawContext context, Canvas canvas, Size size) {
+  void drawConnectingLine(DrawContext context, Canvas canvas, Size size) {
     Offset? last;
     for (final point in points) {
       if (point != null) {
@@ -158,7 +158,7 @@ mixin DrawObjectMixin on DrawStateObject {
 
   /// 绘制指针
   void drawPointer(
-    IDrawContext context,
+    DrawContext context,
     Canvas canvas,
     Offset pointer,
     Offset? last,
@@ -199,7 +199,7 @@ mixin DrawObjectMixin on DrawStateObject {
   }
 
   /// 绘制刻度(时间/价值)
-  void drawAxisTicksText(IDrawContext context, Canvas canvas, Rect bounds) {
+  void drawAxisTicksText(DrawContext context, Canvas canvas, Rect bounds) {
     final mainRect = context.mainRect;
     final timeRect = context.timeRect;
 
@@ -298,7 +298,7 @@ mixin DrawObjectMixin on DrawStateObject {
   /// 在[drawableRect]区域上, 绘制由[dx]指定的时间刻度
   @protected
   Size drawTimeTicks(
-    IDrawContext context,
+    DrawContext context,
     Canvas canvas,
     double dx, {
     Rect? drawableRect,
@@ -306,7 +306,7 @@ mixin DrawObjectMixin on DrawStateObject {
     final ts = context.dxToTimestamp(dx);
     if (ts == null) return Size.zero;
 
-    final klineData = context.curKlineData;
+    final klineData = context.klineData;
     final timeTxt = formatTimeTicksText(ts, klineData.interval.unit);
 
     drawableRect ??= context.timeRect;
@@ -325,7 +325,7 @@ mixin DrawObjectMixin on DrawStateObject {
   /// 在[drawableRect]区域的右侧, 绘制由[dy]指定的价值刻度
   @protected
   Size drawValueTicks(
-    IDrawContext context,
+    DrawContext context,
     Canvas canvas,
     double dy, {
     Rect? drawableRect,
@@ -335,7 +335,7 @@ mixin DrawObjectMixin on DrawStateObject {
 
     final valTxt = formatValueTicksText(
       value,
-      precision: context.curKlineData.precision,
+      precision: context.klineData.precision,
     );
 
     final txtSpacing = config.spacing;
@@ -373,7 +373,7 @@ mixin DrawObjectMixin on DrawStateObject {
   }
 }
 
-extension IDrawContextExt on IDrawContext {
+extension DrawContextExt on DrawContext {
   /// 以当前蜡烛图绘制参数为基础, 将绘制参数[point]转换Offset坐标.
   Offset? calculateDrawPointOffset(Point point) {
     final dy = valueToDy(point.value);
@@ -418,7 +418,7 @@ extension IDrawContextExt on IDrawContext {
       dx = indexToDx(index)! - candleWidthHalf;
     }
     final value = dyToValue(dy);
-    final candle = curKlineData.get(index);
+    final candle = klineData.get(index);
     if (value != null && candle != null) {
       final high = candle.high;
       final low = candle.low;
