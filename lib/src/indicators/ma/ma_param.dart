@@ -21,8 +21,6 @@ import '../../framework/serializers.dart';
 
 part 'ma_param.g.dart';
 
-
-
 /// MA 参数 - 直接对应 JSON 配置结构
 @CopyWith()
 @FlexiParamSerializable
@@ -72,9 +70,8 @@ final class MaParam extends Equatable {
       lines: linesJson.map((lineJson) => MALineConfig.fromJson(lineJson)).toList(),
       validation: MAValidationConfig.fromJson(validationJson),
       display: MADisplayConfig.fromJson(displayJson),
-      defaultColors: defaultColorsJson
-          .map((colorStr) => Color(int.tryParse(colorStr.toString()) ?? 0xff2196f3))
-          .toList(),
+      defaultColors:
+          defaultColorsJson.map((colorStr) => Color(int.tryParse(colorStr.toString()) ?? 0xff2196f3)).toList(),
     );
   }
 
@@ -82,8 +79,7 @@ final class MaParam extends Equatable {
   List<MALineConfig> get enabledLines => lines.where((line) => line.enabled).toList();
 
   /// 获取所有有效的周期（大于0且启用的）
-  List<int> get validPeriods =>
-      enabledLines.where((line) => line.period > 0).map((line) => line.period).toList();
+  List<int> get validPeriods => enabledLines.where((line) => line.period > 0).map((line) => line.period).toList();
 
   /// 获取最大周期
   int? get maxPeriod {
@@ -171,8 +167,7 @@ final class MAValidationConfig extends Equatable {
     this.allowDuplicate = false,
   });
 
-  factory MAValidationConfig.fromJson(Map<String, dynamic> json) =>
-      _$MAValidationConfigFromJson(json);
+  factory MAValidationConfig.fromJson(Map<String, dynamic> json) => _$MAValidationConfigFromJson(json);
   Map<String, dynamic> toJson() => _$MAValidationConfigToJson(this);
 
   @override

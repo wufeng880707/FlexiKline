@@ -57,9 +57,30 @@ class PositionData {
   bool get hasTp => tpPrice != null;
   bool get hasSl => slPrice != null;
 
+  PositionData copyWith({
+    String? positionId,
+    PositionSide? side,
+    double? entryPrice,
+    double? quantity,
+    double? pnl,
+    double? tpPrice,
+    double? slPrice,
+    String? label,
+  }) {
+    return PositionData(
+      positionId: positionId ?? this.positionId,
+      side: side ?? this.side,
+      entryPrice: entryPrice ?? this.entryPrice,
+      quantity: quantity ?? this.quantity,
+      pnl: pnl ?? this.pnl,
+      tpPrice: tpPrice ?? this.tpPrice,
+      slPrice: slPrice ?? this.slPrice,
+      label: label ?? this.label,
+    );
+  }
+
   @override
-  String toString() =>
-      'Position(id: $positionId, side: $side, entry: $entryPrice, tp: $tpPrice, sl: $slPrice)';
+  String toString() => 'Position(id: $positionId, side: $side, entry: $entryPrice, tp: $tpPrice, sl: $slPrice)';
 }
 
 /// 当前持仓叠加对象
@@ -180,9 +201,7 @@ class PositionOverlay extends BusinessOverlayObject {
 
     if (data.hasTp) {
       final isDraggingTp = _draggingTarget == TpSlDragTarget.tp;
-      final tpDy = isDraggingTp && _draggingDy != null
-          ? _draggingDy!
-          : ctx.valueToDy(FlexiNum.fromNum(data.tpPrice!));
+      final tpDy = isDraggingTp && _draggingDy != null ? _draggingDy! : ctx.valueToDy(FlexiNum.fromNum(data.tpPrice!));
       _drawZone(canvas, ctx, entryDy, tpDy, tpColor.withValues(alpha: zoneTpAlpha));
       _drawDashedLine(canvas, rect.left, rect.right, tpDy, tpColor, editingLineWidth);
       _drawDragHandle(canvas, Offset(rect.left + 16, tpDy), tpColor);
@@ -194,9 +213,7 @@ class PositionOverlay extends BusinessOverlayObject {
     }
     if (data.hasSl) {
       final isDraggingSl = _draggingTarget == TpSlDragTarget.sl;
-      final slDy = isDraggingSl && _draggingDy != null
-          ? _draggingDy!
-          : ctx.valueToDy(FlexiNum.fromNum(data.slPrice!));
+      final slDy = isDraggingSl && _draggingDy != null ? _draggingDy! : ctx.valueToDy(FlexiNum.fromNum(data.slPrice!));
       _drawZone(canvas, ctx, entryDy, slDy, slColor.withValues(alpha: zoneSlAlpha));
       _drawDashedLine(canvas, rect.left, rect.right, slDy, slColor, editingLineWidth);
       _drawDragHandle(canvas, Offset(rect.left + 16, slDy), slColor);
@@ -305,14 +322,15 @@ class PositionOverlay extends BusinessOverlayObject {
   }
 
   @override
-  FlexiNum? onDragEnd(BusinessOverlayPaintContext ctx) {
+  BusinessOverlayDragResult? onDragEnd(BusinessOverlayPaintContext ctx) {
     FlexiNum? newPrice;
+    final target = _draggingTarget;
     if (_draggingDy != null) {
       newPrice = ctx.dyToValue(_draggingDy!);
     }
     _draggingDy = null;
     _draggingTarget = null;
-    return newPrice;
+    return BusinessOverlayDragResult(value: newPrice, target: target);
   }
 
   @override
@@ -324,7 +342,12 @@ class PositionOverlay extends BusinessOverlayObject {
   // ---- Private ----
 
   void _drawDashedLine(
-    Canvas canvas, double startX, double endX, double dy, Color color, double width,
+    Canvas canvas,
+    double startX,
+    double endX,
+    double dy,
+    Color color,
+    double width,
   ) {
     final path = Path();
     double dx = startX;
@@ -337,7 +360,12 @@ class PositionOverlay extends BusinessOverlayObject {
       dx += draw ? dashWidth : dashSpace;
       draw = !draw;
     }
-    canvas.drawPath(path, Paint()..color = color..strokeWidth = width..style = PaintingStyle.stroke);
+    canvas.drawPath(
+        path,
+        Paint()
+          ..color = color
+          ..strokeWidth = width
+          ..style = PaintingStyle.stroke);
   }
 
   void _drawZone(Canvas canvas, BusinessOverlayPaintContext ctx, double fromDy, double toDy, Color color) {
@@ -345,7 +373,9 @@ class PositionOverlay extends BusinessOverlayObject {
     final bottom = fromDy > toDy ? fromDy : toDy;
     canvas.drawRect(
       Rect.fromLTRB(ctx.chartRect.left, top, ctx.chartRect.right, bottom),
-      Paint()..color = color..style = PaintingStyle.fill,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.fill,
     );
   }
 
@@ -361,7 +391,10 @@ class PositionOverlay extends BusinessOverlayObject {
     final tp = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(color: labelTextColor, fontSize: labelFontSize, fontWeight: isEditing ? FontWeight.bold : FontWeight.normal),
+        style: TextStyle(
+            color: labelTextColor,
+            fontSize: labelFontSize,
+            fontWeight: isEditing ? FontWeight.bold : FontWeight.normal),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -373,16 +406,22 @@ class PositionOverlay extends BusinessOverlayObject {
 
     canvas.drawRRect(
       RRect.fromLTRBR(left, top, left + labelW, top + labelH, Radius.circular(labelBorderRadius)),
-      Paint()..color = entryColor..style = PaintingStyle.fill,
+      Paint()
+        ..color = entryColor
+        ..style = PaintingStyle.fill,
     );
     tp.paint(canvas, Offset(left + labelPaddingH, top + labelPaddingV));
   }
 
-  void _drawPriceTag(Canvas canvas, BusinessOverlayPaintContext ctx, double dy, String text, Color bgColor, bool isEditing) {
+  void _drawPriceTag(
+      Canvas canvas, BusinessOverlayPaintContext ctx, double dy, String text, Color bgColor, bool isEditing) {
     final tp = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(color: labelTextColor, fontSize: labelFontSize, fontWeight: isEditing ? FontWeight.bold : FontWeight.normal),
+        style: TextStyle(
+            color: labelTextColor,
+            fontSize: labelFontSize,
+            fontWeight: isEditing ? FontWeight.bold : FontWeight.normal),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -394,17 +433,25 @@ class PositionOverlay extends BusinessOverlayObject {
 
     canvas.drawRRect(
       RRect.fromLTRBR(left, top, left + labelW, top + labelH, Radius.circular(labelBorderRadius)),
-      Paint()..color = bgColor..style = PaintingStyle.fill,
+      Paint()
+        ..color = bgColor
+        ..style = PaintingStyle.fill,
     );
     tp.paint(canvas, Offset(left + labelPaddingH, top + labelPaddingV));
   }
 
   void _drawDragHandle(Canvas canvas, Offset center, Color color) {
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromCenter(center: center, width: handleSize, height: handleSize), const Radius.circular(3)),
-      Paint()..color = color..style = PaintingStyle.fill,
+      RRect.fromRectAndRadius(
+          Rect.fromCenter(center: center, width: handleSize, height: handleSize), const Radius.circular(3)),
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.fill,
     );
-    final linePaint = Paint()..color = const Color(0xFFFFFFFF)..strokeWidth = 1.2..style = PaintingStyle.stroke;
+    final linePaint = Paint()
+      ..color = const Color(0xFFFFFFFF)
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke;
     for (int i = -1; i <= 1; i++) {
       final y = center.dy + i * 3.5;
       canvas.drawLine(Offset(center.dx - 4, y), Offset(center.dx + 4, y), linePaint);
@@ -416,9 +463,15 @@ class PositionOverlay extends BusinessOverlayObject {
     final center = btnRect.center;
     canvas.drawRRect(
       RRect.fromRectAndRadius(btnRect, const Radius.circular(3)),
-      Paint()..color = entryColor.withValues(alpha: 0.3)..style = PaintingStyle.fill,
+      Paint()
+        ..color = entryColor.withValues(alpha: 0.3)
+        ..style = PaintingStyle.fill,
     );
-    final xPaint = Paint()..color = entryColor..strokeWidth = 1.5..style = PaintingStyle.stroke..strokeCap = StrokeCap.round;
+    final xPaint = Paint()
+      ..color = entryColor
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
     const d = 4.0;
     canvas.drawLine(Offset(center.dx - d, center.dy - d), Offset(center.dx + d, center.dy + d), xPaint);
     canvas.drawLine(Offset(center.dx + d, center.dy - d), Offset(center.dx - d, center.dy + d), xPaint);
@@ -428,11 +481,16 @@ class PositionOverlay extends BusinessOverlayObject {
     final btnRect = _getTpSlBtnRect(ctx, dy);
     canvas.drawRRect(
       RRect.fromRectAndRadius(btnRect, const Radius.circular(3)),
-      Paint()..color = entryColor.withValues(alpha: 0.3)..style = PaintingStyle.fill,
+      Paint()
+        ..color = entryColor.withValues(alpha: 0.3)
+        ..style = PaintingStyle.fill,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(btnRect, const Radius.circular(3)),
-      Paint()..color = entryColor..style = PaintingStyle.stroke..strokeWidth = 0.5,
+      Paint()
+        ..color = entryColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5,
     );
 
     final tp = TextPainter(
@@ -442,7 +500,8 @@ class PositionOverlay extends BusinessOverlayObject {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, Offset(btnRect.left + (btnRect.width - tp.width) / 2, btnRect.top + (btnRect.height - tp.height) / 2));
+    tp.paint(
+        canvas, Offset(btnRect.left + (btnRect.width - tp.width) / 2, btnRect.top + (btnRect.height - tp.height) / 2));
   }
 
   Rect _getCloseBtnRect(BusinessOverlayPaintContext ctx, double dy) {

@@ -382,8 +382,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   /// 点击
   void onTapUp(TapUpDetails details) {
     // Business Overlay 编辑态优先消费点击：空白处只退出编辑，不继续触发绘图。
-    if (controller.businessOverlayState.isEditing &&
-        controller.onBusinessOverlayTap(details.localPosition)) {
+    if (controller.businessOverlayState.isEditing && controller.onBusinessOverlayTap(details.localPosition)) {
       logd('onTapUp business overlay handled before draw! :$details');
       controller.requestCancelCross();
       return;
@@ -460,10 +459,10 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       return;
     }
     final position = details.localPosition;
-    if (controller.businessOverlayState.isEditing &&
-        controller.onBusinessDragStart(position)) {
+    final businessPanData = GestureData.pan(position);
+    if (controller.businessOverlayState.isEditing && controller.onBusinessOverlayDragStart(businessPanData)) {
       logd('onPanStart business drag > details:$details');
-      _panData = GestureData.pan(position);
+      _panData = businessPanData;
     } else if (controller.isDrawVisible && drawState.isOngoing) {
       if (drawState.isDrawing) {
         // 未完成的暂不允许移动
@@ -500,12 +499,8 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
     //   return true;
     // }());
     if (controller.isDraggingBusinessOverlay) {
-      final prev = _panData!.offset;
       _panData!.update(details.localPosition);
-      controller.onBusinessDragUpdate(
-        details.localPosition,
-        details.localPosition - prev,
-      );
+      controller.onBusinessOverlayDragUpdate(_panData!);
       return;
     }
 
@@ -530,7 +525,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
     }
 
     if (controller.isDraggingBusinessOverlay) {
-      controller.onBusinessDragEndAction();
+      controller.onBusinessOverlayDragEndAction();
       _panData?.end();
       _panData = null;
       return;
@@ -721,13 +716,14 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       } else {
         setCursorToNone();
       }
-    } else if (controller.businessOverlayState.isEditing &&
-        controller.onBusinessDragStart(details.localPosition)) {
-      logd('onLongPressStart business drag > details:$details');
-      _longData = GestureData.long(details.localPosition);
     } else if (controller.businessOverlayState.isEditing) {
-      logd('onLongPressStart ignore: in business editing state');
-      return;
+      final businessLongData = GestureData.long(details.localPosition);
+      if (!controller.onBusinessOverlayDragStart(businessLongData)) {
+        logd('onLongPressStart ignore: in business editing state');
+        return;
+      }
+      logd('onLongPressStart business drag > details:$details');
+      _longData = businessLongData;
     } else if (controller.onGridResizeStart(details.localPosition)) {
       _longData = GestureData.long(details.localPosition);
       controller.requestCancelCross();
@@ -751,12 +747,8 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       return;
     }
     if (controller.isDraggingBusinessOverlay) {
-      final prev = _longData!.offset;
       _longData!.update(details.localPosition);
-      controller.onBusinessDragUpdate(
-        details.localPosition,
-        details.localPosition - prev,
-      );
+      controller.onBusinessOverlayDragUpdate(_longData!);
       return;
     }
     if (controller.isDrawVisible && drawState.isOngoing) {
@@ -777,7 +769,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       return;
     }
     if (controller.isDraggingBusinessOverlay) {
-      controller.onBusinessDragEndAction();
+      controller.onBusinessOverlayDragEndAction();
       _longData?.end();
       _longData = null;
       return;

@@ -129,7 +129,7 @@ class MarketTickerView extends ConsumerWidget {
               BasicInfoView(
                 title: s.h24_high,
                 value: formatNumber(
-                      ticker?.high24h.d,
+                  ticker?.high24h.d,
                   precision: precision,
                   cutInvalidZero: true,
                 ),
@@ -137,7 +137,7 @@ class MarketTickerView extends ConsumerWidget {
               BasicInfoView(
                 title: s.h24_low,
                 value: formatNumber(
-                      ticker?.low24h.d,
+                  ticker?.low24h.d,
                   precision: precision,
                   cutInvalidZero: true,
                 ),
@@ -145,7 +145,7 @@ class MarketTickerView extends ConsumerWidget {
               BasicInfoView(
                 title: s.h24_vol(base),
                 value: formatNumber(
-                      ticker?.vol24h.d,
+                  ticker?.vol24h.d,
                   precision: 2,
                   enableCompact: true,
                   cutInvalidZero: true,
@@ -154,7 +154,7 @@ class MarketTickerView extends ConsumerWidget {
               BasicInfoView(
                 title: s.h24_turnover(quote),
                 value: formatNumber(
-                      ticker?.volCcy24h.d,
+                  ticker?.volCcy24h.d,
                   precision: 2,
                   enableCompact: true,
                   cutInvalidZero: true,

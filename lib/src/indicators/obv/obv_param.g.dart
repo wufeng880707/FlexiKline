@@ -197,8 +197,7 @@ class _$OBVDisplayConfigCWProxyImpl implements _$OBVDisplayConfigCWProxy {
   OBVDisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  OBVDisplayConfig showMAInTips(bool showMAInTips) =>
-      this(showMAInTips: showMAInTips);
+  OBVDisplayConfig showMAInTips(bool showMAInTips) => this(showMAInTips: showMAInTips);
 
   @override
 
@@ -317,24 +316,19 @@ extension $OBVParamCopyWith on OBVParam {
 // JsonSerializableGenerator
 // **************************************************************************
 
-OBVLineConfig _$OBVLineConfigFromJson(Map<String, dynamic> json) =>
-    OBVLineConfig(
+OBVLineConfig _$OBVLineConfigFromJson(Map<String, dynamic> json) => OBVLineConfig(
       enabled: json['enabled'] as bool? ?? true,
-      color: json['color'] == null
-          ? const Color(0xFFFF9800)
-          : const ColorConverter().fromJson(json['color'] as String),
+      color: json['color'] == null ? const Color(0xFFFF9800) : const ColorConverter().fromJson(json['color'] as String),
       width: (json['width'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$OBVLineConfigToJson(OBVLineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$OBVLineConfigToJson(OBVLineConfig instance) => <String, dynamic>{
       'enabled': instance.enabled,
       'color': const ColorConverter().toJson(instance.color),
       'width': instance.width,
     };
 
-OBVMALineConfig _$OBVMALineConfigFromJson(Map<String, dynamic> json) =>
-    OBVMALineConfig(
+OBVMALineConfig _$OBVMALineConfigFromJson(Map<String, dynamic> json) => OBVMALineConfig(
       id: json['id'] as String,
       enabled: json['enabled'] as bool? ?? true,
       period: (json['period'] as num).toInt(),
@@ -342,8 +336,7 @@ OBVMALineConfig _$OBVMALineConfigFromJson(Map<String, dynamic> json) =>
       width: (json['width'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$OBVMALineConfigToJson(OBVMALineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$OBVMALineConfigToJson(OBVMALineConfig instance) => <String, dynamic>{
       'id': instance.id,
       'enabled': instance.enabled,
       'period': instance.period,
@@ -351,14 +344,12 @@ Map<String, dynamic> _$OBVMALineConfigToJson(OBVMALineConfig instance) =>
       'width': instance.width,
     };
 
-OBVDisplayConfig _$OBVDisplayConfigFromJson(Map<String, dynamic> json) =>
-    OBVDisplayConfig(
+OBVDisplayConfig _$OBVDisplayConfigFromJson(Map<String, dynamic> json) => OBVDisplayConfig(
       precision: (json['precision'] as num?)?.toInt() ?? 2,
       showMAInTips: json['showMAInTips'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$OBVDisplayConfigToJson(OBVDisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$OBVDisplayConfigToJson(OBVDisplayConfig instance) => <String, dynamic>{
       'precision': instance.precision,
       'showMAInTips': instance.showMAInTips,
     };

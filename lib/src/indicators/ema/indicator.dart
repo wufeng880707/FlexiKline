@@ -15,29 +15,29 @@
 part of 'ema.dart';
 
 @CopyWith()
-class EMAIndicator extends DataIndicator implements IPrecomputable {
+class EMAIndicator extends ComputedIndicator {
   EMAIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
     this.calcParam = const EmaParam(),
     required this.tipsPadding,
-  }) : super(key: const DataIndicatorKey('ema'));
+  }) : super(key: const ComputedIndicatorKey('ema'));
 
   /// EMA 参数（包含所有配置）
   @override
   final EmaParam calcParam;
-  
+
   /// Tips 相关参数（仅用于显示）
   final EdgeInsets tipsPadding;
 
   @override
-  DataPaintObject<EMAIndicator> createPaintObject() {
+  ComputedPaintObject<EMAIndicator> createPaintObject() {
     return EMAPaintObject();
   }
 }
 
-class EMAPaintObject<T extends EMAIndicator> extends DataPaintObject<T> with EmaDataMixin<T> {
+class EMAPaintObject<T extends EMAIndicator> extends ComputedPaintObject<T> with EmaDataMixin<T> {
   EMAPaintObject();
 
   @override
@@ -51,7 +51,7 @@ class EMAPaintObject<T extends EMAIndicator> extends DataPaintObject<T> with Ema
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     paintEMALine(canvas, size);
   }
 
@@ -78,7 +78,7 @@ class EMAPaintObject<T extends EMAIndicator> extends DataPaintObject<T> with Ema
           valueToDy(val, correct: false),
         );
         points.add(point);
-        
+
         // 📍 绘制节点（如果配置了 pointRadius > 0）
         if (indicator.calcParam.display.pointRadius > 0) {
           canvas.drawCircle(
@@ -117,18 +117,18 @@ class EMAPaintObject<T extends EMAIndicator> extends DataPaintObject<T> with Ema
     final children = <TextSpan>[];
     final enabledLines = indicator.calcParam.enabledLines;
     final emaList = model.getEmaList(dataIndex)!;
-    
+
     for (int i = 0; i < enabledLines.length && i < emaList.length; i++) {
       final lineConfig = enabledLines[i];
       if (lineConfig.period <= 0) continue; // 跳过无效周期
-      
+
       final val = emaList.getItem(i);
       if (val == null) continue;
 
       // 📊 根据配置决定显示内容
       final displayPeriod = indicator.calcParam.display.showPeriodInTips;
       final prefix = displayPeriod ? 'EMA${lineConfig.period}:' : 'EMA:';
-      
+
       final text = formatNumber(
         val.toDecimal(),
         precision: indicator.calcParam.display.precision,
@@ -141,10 +141,10 @@ class EMAPaintObject<T extends EMAIndicator> extends DataPaintObject<T> with Ema
         style: TextStyle(color: lineConfig.color),
       ));
     }
-    
+
     // 📋 如果没有任何内容要显示，返回null
     if (children.isEmpty) return null;
-    
+
     tipsRect ??= drawableRect;
     return canvas.drawText(
       offset: tipsRect.topLeft,
@@ -158,7 +158,7 @@ class EMAPaintObject<T extends EMAIndicator> extends DataPaintObject<T> with Ema
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     // EMA不需要特殊十字线处理，可留空
   }
 }

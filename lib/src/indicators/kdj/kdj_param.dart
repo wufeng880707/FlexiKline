@@ -63,11 +63,8 @@ final class KDJParam extends Equatable {
   }
 
   /// 验证参数是否有效
-  bool isValid(int len) => 
-      calculation.kPeriod > 0 && 
-      calculation.kPeriod <= len && 
-      calculation.dPeriod > 0 && 
-      calculation.jPeriod > 0;
+  bool isValid(int len) =>
+      calculation.kPeriod > 0 && calculation.kPeriod <= len && calculation.dPeriod > 0 && calculation.jPeriod > 0;
 
   factory KDJParam.fromJson(Map<String, dynamic> json) => _$KDJParamFromJson(json);
   Map<String, dynamic> toJson() => _$KDJParamToJson(this);
@@ -179,4 +176,3 @@ final class KDJDisplayConfig extends Equatable {
   @override
   List<Object?> get props => [pointRadius, showCrossPoint, precision, showPeriodInTips];
 }
-

@@ -84,25 +84,13 @@ mixin DrawBinding on KlineBindingBase, SettingBinding {
 
   ValueListenable<DrawState> get drawStateListenable => _drawStateNotifier;
 
-  /// 兼容 fork 旧 API；新代码使用 [drawStateListenable]。
-  ValueListenable<DrawState> get drawStateListener => drawStateListenable;
-
   ValueListenable<Point?> get drawPointerListenable => _drawPointerNotifier;
 
   ValueListenable<bool> get drawVisibilityListenable => _drawVisibilityNotifier;
 
-  /// 兼容 fork 旧 API；新代码使用 [drawVisibilityListenable]。
-  ValueListenable<bool> get drawVisibilityListener => drawVisibilityListenable;
-
   ValueListenable<MagnetMode> get drawMagnetModeListenable => _drawMagnetModeNotifier;
 
-  /// 兼容 fork 旧 API；新代码使用 [drawMagnetModeListenable]。
-  ValueListenable<MagnetMode> get drawMagnetModeListener => drawMagnetModeListenable;
-
   ValueListenable<bool> get drawContinuousListenable => _drawContinuousNotifier;
-
-  /// 兼容 fork 旧 API；新代码使用 [drawContinuousListenable]。
-  ValueListenable<bool> get drawContinuousListener => drawContinuousListenable;
 
   bool get isDrawVisible => drawVisibilityListenable.value;
 
@@ -366,9 +354,6 @@ mixin DrawBinding on KlineBindingBase, SettingBinding {
     _markRepaintDraw();
   }
 
-  /// 兼容 fork 旧 API；新代码使用 [removeAllDrawObjects]。
-  void removeAllDrawObject() => removeAllDrawObjects();
-
   bool changeDrawLineStyle({
     Color? color,
     double? strokeWidth,
@@ -405,9 +390,6 @@ mixin DrawBinding on KlineBindingBase, SettingBinding {
       exitDraw();
     }
   }
-
-  /// 兼容 fork 旧 API；新代码使用 [setDrawVisible]。
-  void setDrawVisibility(bool visible) => setDrawVisible(visible);
 
   void setDrawMagnetMode(MagnetMode mode) {
     _drawMagnetModeNotifier.value = mode;

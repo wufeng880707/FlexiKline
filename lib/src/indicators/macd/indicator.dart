@@ -16,7 +16,7 @@ part of 'macd.dart';
 
 @CopyWith()
 @FlexiIndicatorSerializable
-class MACDIndicator extends DataIndicator implements IPrecomputable {
+class MACDIndicator extends ComputedIndicator {
   MACDIndicator({
     super.zIndex = 0,
     required super.height,
@@ -27,7 +27,7 @@ class MACDIndicator extends DataIndicator implements IPrecomputable {
     required this.macdTips,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('macd'));
+  }) : super(key: const ComputedIndicatorKey('macd'));
 
   /// MACD 参数（包含所有配置）
   @override
@@ -41,7 +41,7 @@ class MACDIndicator extends DataIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  DataPaintObject<MACDIndicator> createPaintObject() {
+  ComputedPaintObject<MACDIndicator> createPaintObject() {
     return MACDPaintObject();
   }
 
@@ -50,7 +50,7 @@ class MACDIndicator extends DataIndicator implements IPrecomputable {
   Map<String, dynamic> toJson() => _$MACDIndicatorToJson(this);
 }
 
-class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
+class MACDPaintObject<T extends MACDIndicator> extends ComputedPaintObject<T>
     with MacdDataMixin<T>, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   MACDPaintObject();
 
@@ -65,7 +65,7 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     paintMacdChart(canvas, size);
     if (settingConfig.showYAxisTick) {
       paintYAxisTicks(
@@ -87,7 +87,7 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     paintYAxisTicksOnCross(
       canvas,
       offset,
@@ -117,7 +117,7 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
     final List<Offset> difPoints = [];
     final List<Offset> deaPoints = [];
     final param = indicator.calcParam;
-    
+
     double zeroDy = valueToDy(FlexiNum.zero);
     final offset = startCandleDx - candleWidthHalf;
     final candleHalf = candleWidthHalf - candleSpacing;
@@ -126,7 +126,7 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
       final m = list[i];
       if (!m.isValidMacdData(dataIndex)) continue;
       final dx = offset - (i - start) * candleActualWidth;
-      
+
       // 📈 只有启用的线条才收集点位
       if (param.difLine.enabled && m.macdDif(dataIndex) != null) {
         difPoints.add(Offset(dx, valueToDy(m.macdDif(dataIndex)!, correct: false)));
@@ -140,8 +140,10 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
         final next = list.getItem(i + 1);
         final histogramColor = _getHistogramColor(m.macdVal(dataIndex)!, next?.macdVal(dataIndex));
         final histogramStyle = _getHistogramStyle(m.macdVal(dataIndex)!, next?.macdVal(dataIndex));
-        
-        if (histogramStyle == HistogramStyle.hollow && next?.macdVal(dataIndex) != null && m.macdVal(dataIndex)! > next!.macdVal(dataIndex)!) {
+
+        if (histogramStyle == HistogramStyle.hollow &&
+            next?.macdVal(dataIndex) != null &&
+            m.macdVal(dataIndex)! > next!.macdVal(dataIndex)!) {
           // 空心柱状图
           final hollowBarPaint = Paint()
             ..color = histogramColor
@@ -193,7 +195,7 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
           ..strokeWidth = param.deaLine.width,
       );
     }
-    
+
     // 📏 根据配置绘制零轴线
     if (param.showZeroLine) {
       _paintZeroLine(canvas, size, zeroDy);
@@ -207,7 +209,7 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
       ..color = param.zeroLineColor
       ..strokeWidth = param.zeroLineWidth
       ..style = PaintingStyle.stroke;
-    
+
     canvas.drawLine(
       Offset(0, zeroDy),
       Offset(size.width, zeroDy),
@@ -219,15 +221,11 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
   Color _getHistogramColor(FlexiNum currentMacd, FlexiNum? nextMacd) {
     final isBullish = currentMacd > FlexiNum.zero;
     final isIncreasing = nextMacd != null && currentMacd > nextMacd;
-    
+
     if (isBullish) {
-      return isIncreasing 
-        ? indicator.calcParam.bullishIncreasing.color
-        : indicator.calcParam.bullishDecreasing.color;
+      return isIncreasing ? indicator.calcParam.bullishIncreasing.color : indicator.calcParam.bullishDecreasing.color;
     } else {
-      return isIncreasing 
-        ? indicator.calcParam.bearishIncreasing.color
-        : indicator.calcParam.bearishDecreasing.color;
+      return isIncreasing ? indicator.calcParam.bearishIncreasing.color : indicator.calcParam.bearishDecreasing.color;
     }
   }
 
@@ -235,15 +233,11 @@ class MACDPaintObject<T extends MACDIndicator> extends DataPaintObject<T>
   HistogramStyle _getHistogramStyle(FlexiNum currentMacd, FlexiNum? nextMacd) {
     final isBullish = currentMacd > FlexiNum.zero;
     final isIncreasing = nextMacd != null && currentMacd > nextMacd;
-    
+
     if (isBullish) {
-      return isIncreasing 
-        ? indicator.calcParam.bullishIncreasing.style
-        : indicator.calcParam.bullishDecreasing.style;
+      return isIncreasing ? indicator.calcParam.bullishIncreasing.style : indicator.calcParam.bullishDecreasing.style;
     } else {
-      return isIncreasing 
-        ? indicator.calcParam.bearishIncreasing.style
-        : indicator.calcParam.bearishDecreasing.style;
+      return isIncreasing ? indicator.calcParam.bearishIncreasing.style : indicator.calcParam.bearishDecreasing.style;
     }
   }
 

@@ -22,7 +22,7 @@ class FibRetracementDrawObject extends FibExpansionDrawObject {
   FibRetracementDrawObject(super.overlay, super.config);
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 2,
       'FibRetracement hitTest points.length:${points.length} must be equals 2',
@@ -37,7 +37,7 @@ class FibRetracementDrawObject extends FibExpansionDrawObject {
   }
 
   @override
-  void drawing(IDrawContext context, Canvas canvas, Size size) {
+  void drawing(DrawContext context, Canvas canvas, Size size) {
     if (isReady) {
       final points = allPoints;
       final first = points.firstOrNull?.offset;
@@ -51,7 +51,7 @@ class FibRetracementDrawObject extends FibExpansionDrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 2,
       'FibRetracement draw points.length:${points.length} must be equals 2',

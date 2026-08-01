@@ -109,51 +109,6 @@ final class IndicatorPaintObjectManager with FlexiLog {
     return _subIndicatorRegistry.containsKey(key) || key == timeIndicatorKey;
   }
 
-  T? getIndicator<T extends Indicator>(IIndicatorKey key) {
-    if (_isInitialized) {
-      if (key == candleIndicatorKey && candlePaintObject.indicator is T) {
-        return candlePaintObject.indicator as T;
-      }
-      if (key == timeIndicatorKey && timePaintObject.indicator is T) {
-        return timePaintObject.indicator as T;
-      }
-      final mainObject = getMainPaintObject(key, includeKeepAlive: true);
-      if (mainObject?.indicator case final T indicator) return indicator;
-      final subObject = getSubPaintObject(key, includeKeepAlive: true);
-      if (subObject?.indicator case final T indicator) return indicator;
-    }
-
-    final declared = _mainIndicatorRegistry[key] ?? _subIndicatorRegistry[key];
-    if (declared is T) return declared;
-    return null;
-  }
-
-  bool updateIndicator<T extends Indicator>(T indicator) {
-    if (!_isInitialized) return false;
-
-    if (indicator.key == candleIndicatorKey && indicator is CandleBaseIndicator) {
-      _candlePaintObject.doDidUpdateIndicator(indicator);
-      return true;
-    }
-    if (indicator.key == timeIndicatorKey && indicator is TimeBaseIndicator) {
-      _timePaintObject.doDidUpdateIndicator(indicator);
-      return true;
-    }
-
-    var updated = false;
-    if (_mainIndicatorRegistry.containsKey(indicator.key)) {
-      _mainIndicatorRegistry[indicator.key] = indicator;
-      getMainPaintObject(indicator.key, includeKeepAlive: true)?.doDidUpdateIndicator(indicator);
-      updated = true;
-    }
-    if (_subIndicatorRegistry.containsKey(indicator.key)) {
-      _subIndicatorRegistry[indicator.key] = indicator;
-      getSubPaintObject(indicator.key, includeKeepAlive: true)?.doDidUpdateIndicator(indicator);
-      updated = true;
-    }
-    return updated;
-  }
-
   int? getComputedDataIndex(ComputedIndicatorKey key) {
     return _computedDataIndexes[key];
   }

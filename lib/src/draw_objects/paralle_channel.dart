@@ -28,7 +28,7 @@ class ParalleChannelDrawObject extends DrawObject {
   ParalleChannelDrawObject(super.overlay, super.config);
 
   @override
-  ChannelParams getDrawParams(IDrawContext context) {
+  ChannelParams getDrawParams(DrawContext context) {
     return const ChannelParams(bgOpacity: 0.1);
   }
 
@@ -51,7 +51,7 @@ class ParalleChannelDrawObject extends DrawObject {
   }
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 3,
       'ParalleChannel hitTest points.length:${points.length} must be equals 3',
@@ -63,7 +63,7 @@ class ParalleChannelDrawObject extends DrawObject {
   }
 
   @override
-  void drawing(IDrawContext context, Canvas canvas, Size size) {
+  void drawing(DrawContext context, Canvas canvas, Size size) {
     if (isReady) {
       final channel = getParalleChannel();
       if (channel == null) return;
@@ -74,7 +74,7 @@ class ParalleChannelDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 3,
       'ParalleChannel draw points.length:${points.length} must be equals 3',
@@ -88,7 +88,7 @@ class ParalleChannelDrawObject extends DrawObject {
 
   /// 绘制平行通道
   void _drawParallChannel(
-    IDrawContext context,
+    DrawContext context,
     Canvas canvas,
     Parallelogram channel,
   ) {

@@ -19,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
@@ -38,7 +39,7 @@ class VolMASettingPage extends BaseIndicatorSettingPage {
 
 class _VolMASettingPageState
     extends BaseIndicatorSettingPageState<VolMASettingPage> {
-  static const _volMaKey = DataIndicatorKey('volMa');
+  static const _volMaKey = ComputedIndicatorKey('volMa');
 
   static const _defaultParam = VolMaParam(
     lines: [
@@ -100,11 +101,10 @@ class _VolMASettingPageState
     final controller = klineState.controller;
 
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_volMaKey) ||
-          controller.subIndicatorKeys.contains(_volMaKey);
+      _enabled = controller.subIndicatorKeys.contains(_volMaKey);
 
       final indicator =
-          controller.getIndicator<VolMaIndicator>(_volMaKey);
+          controller.configuredSubIndicator<VolMaIndicator>(_volMaKey);
       if (indicator != null && indicator.calcParam.lines.isNotEmpty) {
         _currentParam = indicator.calcParam;
       } else {
@@ -132,17 +132,13 @@ class _VolMASettingPageState
 
     return [
       buildSectionTitle('移动平均线设置', theme),
-
       _buildLineTableHeader(theme),
-
       ...lines.asMap().entries.map((entry) {
         final index = entry.key;
         final line = entry.value;
         return _buildMALineRow(index, line, theme);
       }),
-
       SizedBox(height: 8.r),
-
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.r),
         child: ElevatedButton.icon(
@@ -157,11 +153,8 @@ class _VolMASettingPageState
           ),
         ),
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('成交量柱状图设置', theme),
-
       buildSwitchItem(
         title: '使用涨跌色',
         subtitle: '根据价格涨跌显示不同颜色',
@@ -175,7 +168,6 @@ class _VolMASettingPageState
         },
         theme: theme,
       ),
-
       buildColorItem(
         title: '看涨颜色',
         color: volumeConfig.bullishColor,
@@ -188,7 +180,6 @@ class _VolMASettingPageState
         },
         theme: theme,
       ),
-
       buildColorItem(
         title: '看跌颜色',
         color: volumeConfig.bearishColor,
@@ -201,7 +192,6 @@ class _VolMASettingPageState
         },
         theme: theme,
       ),
-
       ListTile(
         title: Text('透明度', style: theme.t1s16w400),
         trailing: SizedBox(
@@ -234,11 +224,8 @@ class _VolMASettingPageState
           ),
         ),
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('显示设置', theme),
-
       buildSwitchItem(
         title: '在提示中显示成交量',
         value: displayConfig.showVolInTips,
@@ -251,7 +238,6 @@ class _VolMASettingPageState
         },
         theme: theme,
       ),
-
       buildSwitchItem(
         title: '在提示中显示周期',
         value: displayConfig.showPeriodInTips,
@@ -264,7 +250,6 @@ class _VolMASettingPageState
         },
         theme: theme,
       ),
-
       buildNumberItem(
         title: '数值精度',
         value: displayConfig.precision.toDouble(),
@@ -280,7 +265,6 @@ class _VolMASettingPageState
         max: 6,
         decimalPlaces: 0,
       ),
-
       SizedBox(height: 16.r),
     ];
   }
@@ -312,8 +296,7 @@ class _VolMASettingPageState
     );
   }
 
-  Widget _buildMALineRow(
-      int index, VolMALineConfig line, FKTheme theme) {
+  Widget _buildMALineRow(int index, VolMALineConfig line, FKTheme theme) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.r, vertical: 2.r),
       padding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 8.r),
@@ -354,7 +337,6 @@ class _VolMASettingPageState
               ],
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -401,7 +383,6 @@ class _VolMASettingPageState
               ),
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -416,7 +397,6 @@ class _VolMASettingPageState
               ),
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -430,7 +410,6 @@ class _VolMASettingPageState
               ),
             ),
           ),
-
           SizedBox(
             width: 24.r,
             child: _currentParam.lines.length > 1
@@ -519,20 +498,19 @@ class _VolMASettingPageState
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
 
-      if (_enabled) {
-        final oldIndicator =
-            controller.getIndicator<VolMaIndicator>(_volMaKey);
-        if (oldIndicator != null) {
-          final newIndicator = VolMaIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            tipsPadding: oldIndicator.tipsPadding,
-            ticksCount: oldIndicator.ticksCount,
-          );
-          controller.updateIndicator(newIndicator);
-          debugPrint('VOLMA指标参数已更新');
-        }
+      final oldIndicator =
+          controller.configuredSubIndicator<VolMaIndicator>(_volMaKey);
+      if (oldIndicator != null) {
+        final newIndicator = VolMaIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          tipsPadding: oldIndicator.tipsPadding,
+          ticksCount: oldIndicator.ticksCount,
+        );
+        await controller.saveAndSetSubIndicator(newIndicator,
+            enabled: _enabled);
+        debugPrint('VOLMA指标参数已更新');
       }
     } catch (e) {
       debugPrint('保存VOLMA设置失败: $e');

@@ -34,11 +34,11 @@ extension on FlexiCandleModel {
   }
 }
 
-mixin RsiDataMixin<T extends RSIIndicator> on DataPaintObject<T> {
+mixin RsiDataMixin<T extends RSIIndicator> on ComputedPaintObject<T> {
   RsiParam get calcParam => indicator.calcParam;
 
   @override
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     calcuAndCacheRsi(
       calcParam,
       start: range.start,
@@ -168,7 +168,7 @@ mixin RsiDataMixin<T extends RSIIndicator> on DataPaintObject<T> {
       minmax ??= m.getRsiMinmax(dataIndex);
       minmax?.updateMinMax(m.getRsiMinmax(dataIndex));
     }
-    
+
     // 如果启用参考线，需要考虑参考线的范围
     if (param.reference.enabled) {
       minmax ??= MinMax(
@@ -180,7 +180,7 @@ mixin RsiDataMixin<T extends RSIIndicator> on DataPaintObject<T> {
         max: FlexiNum.fromNum(param.reference.overbought),
       ));
     }
-    
+
     return minmax;
   }
 }

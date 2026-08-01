@@ -36,8 +36,7 @@ final class OBVLineConfig extends Equatable {
     this.width = 1.0,
   });
 
-  factory OBVLineConfig.fromJson(Map<String, dynamic> json) =>
-      _$OBVLineConfigFromJson(json);
+  factory OBVLineConfig.fromJson(Map<String, dynamic> json) => _$OBVLineConfigFromJson(json);
   Map<String, dynamic> toJson() => _$OBVLineConfigToJson(this);
 
   @override
@@ -63,8 +62,7 @@ final class OBVMALineConfig extends Equatable {
     this.width = 1.0,
   });
 
-  factory OBVMALineConfig.fromJson(Map<String, dynamic> json) =>
-      _$OBVMALineConfigFromJson(json);
+  factory OBVMALineConfig.fromJson(Map<String, dynamic> json) => _$OBVMALineConfigFromJson(json);
   Map<String, dynamic> toJson() => _$OBVMALineConfigToJson(this);
 
   @override
@@ -83,8 +81,7 @@ final class OBVDisplayConfig extends Equatable {
     this.showMAInTips = true,
   });
 
-  factory OBVDisplayConfig.fromJson(Map<String, dynamic> json) =>
-      _$OBVDisplayConfigFromJson(json);
+  factory OBVDisplayConfig.fromJson(Map<String, dynamic> json) => _$OBVDisplayConfigFromJson(json);
   Map<String, dynamic> toJson() => _$OBVDisplayConfigToJson(this);
 
   @override
@@ -111,8 +108,7 @@ final class OBVParam extends Equatable {
     this.display = const OBVDisplayConfig(),
   });
 
-  List<OBVMALineConfig> get enabledMALines =>
-      maLines.where((line) => line.enabled).toList();
+  List<OBVMALineConfig> get enabledMALines => maLines.where((line) => line.enabled).toList();
 
   /// slot 布局: [obvValue, ma0, ma1, ...]
   /// slot 长度 = 1 (OBV 主线) + enabledMALines.length
@@ -124,8 +120,7 @@ final class OBVParam extends Equatable {
     return enabled.map((l) => l.period).reduce((a, b) => a > b ? a : b);
   }
 
-  factory OBVParam.fromJson(Map<String, dynamic> json) =>
-      _$OBVParamFromJson(json);
+  factory OBVParam.fromJson(Map<String, dynamic> json) => _$OBVParamFromJson(json);
   Map<String, dynamic> toJson() => _$OBVParamToJson(this);
 
   @override

@@ -81,24 +81,19 @@ class _$MACDParamCWProxyImpl implements _$MACDParamCWProxy {
   MACDParam deaLine(MACDLineConfig deaLine) => this(deaLine: deaLine);
 
   @override
-  MACDParam histogramEnabled(bool histogramEnabled) =>
-      this(histogramEnabled: histogramEnabled);
+  MACDParam histogramEnabled(bool histogramEnabled) => this(histogramEnabled: histogramEnabled);
 
   @override
-  MACDParam bullishIncreasing(MACDHistogramState bullishIncreasing) =>
-      this(bullishIncreasing: bullishIncreasing);
+  MACDParam bullishIncreasing(MACDHistogramState bullishIncreasing) => this(bullishIncreasing: bullishIncreasing);
 
   @override
-  MACDParam bullishDecreasing(MACDHistogramState bullishDecreasing) =>
-      this(bullishDecreasing: bullishDecreasing);
+  MACDParam bullishDecreasing(MACDHistogramState bullishDecreasing) => this(bullishDecreasing: bullishDecreasing);
 
   @override
-  MACDParam bearishIncreasing(MACDHistogramState bearishIncreasing) =>
-      this(bearishIncreasing: bearishIncreasing);
+  MACDParam bearishIncreasing(MACDHistogramState bearishIncreasing) => this(bearishIncreasing: bearishIncreasing);
 
   @override
-  MACDParam bearishDecreasing(MACDHistogramState bearishDecreasing) =>
-      this(bearishDecreasing: bearishDecreasing);
+  MACDParam bearishDecreasing(MACDHistogramState bearishDecreasing) => this(bearishDecreasing: bearishDecreasing);
 
   @override
   MACDParam precision(int precision) => this(precision: precision);
@@ -107,12 +102,10 @@ class _$MACDParamCWProxyImpl implements _$MACDParamCWProxy {
   MACDParam showZeroLine(bool showZeroLine) => this(showZeroLine: showZeroLine);
 
   @override
-  MACDParam zeroLineColor(Color zeroLineColor) =>
-      this(zeroLineColor: zeroLineColor);
+  MACDParam zeroLineColor(Color zeroLineColor) => this(zeroLineColor: zeroLineColor);
 
   @override
-  MACDParam zeroLineWidth(double zeroLineWidth) =>
-      this(zeroLineWidth: zeroLineWidth);
+  MACDParam zeroLineWidth(double zeroLineWidth) => this(zeroLineWidth: zeroLineWidth);
 
   @override
 
@@ -333,8 +326,7 @@ class _$MACDHistogramStateCWProxyImpl implements _$MACDHistogramStateCWProxy {
 extension $MACDHistogramStateCopyWith on MACDHistogramState {
   /// Returns a callable class that can be used as follows: `instanceOfMACDHistogramState.copyWith(...)` or like so:`instanceOfMACDHistogramState.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$MACDHistogramStateCWProxy get copyWith =>
-      _$MACDHistogramStateCWProxyImpl(this);
+  _$MACDHistogramStateCWProxy get copyWith => _$MACDHistogramStateCWProxyImpl(this);
 }
 
 // **************************************************************************
@@ -353,25 +345,17 @@ MACDParam _$MACDParamFromJson(Map<String, dynamic> json) => MACDParam(
           : MACDLineConfig.fromJson(json['deaLine'] as Map<String, dynamic>),
       histogramEnabled: json['histogramEnabled'] as bool? ?? true,
       bullishIncreasing: json['bullishIncreasing'] == null
-          ? const MACDHistogramState(
-              color: Color(0xff4caf50), style: HistogramStyle.hollow)
-          : MACDHistogramState.fromJson(
-              json['bullishIncreasing'] as Map<String, dynamic>),
+          ? const MACDHistogramState(color: Color(0xff4caf50), style: HistogramStyle.hollow)
+          : MACDHistogramState.fromJson(json['bullishIncreasing'] as Map<String, dynamic>),
       bullishDecreasing: json['bullishDecreasing'] == null
-          ? const MACDHistogramState(
-              color: Color(0xff4caf50), style: HistogramStyle.solid)
-          : MACDHistogramState.fromJson(
-              json['bullishDecreasing'] as Map<String, dynamic>),
+          ? const MACDHistogramState(color: Color(0xff4caf50), style: HistogramStyle.solid)
+          : MACDHistogramState.fromJson(json['bullishDecreasing'] as Map<String, dynamic>),
       bearishIncreasing: json['bearishIncreasing'] == null
-          ? const MACDHistogramState(
-              color: Color(0xfff44336), style: HistogramStyle.hollow)
-          : MACDHistogramState.fromJson(
-              json['bearishIncreasing'] as Map<String, dynamic>),
+          ? const MACDHistogramState(color: Color(0xfff44336), style: HistogramStyle.hollow)
+          : MACDHistogramState.fromJson(json['bearishIncreasing'] as Map<String, dynamic>),
       bearishDecreasing: json['bearishDecreasing'] == null
-          ? const MACDHistogramState(
-              color: Color(0xfff44336), style: HistogramStyle.solid)
-          : MACDHistogramState.fromJson(
-              json['bearishDecreasing'] as Map<String, dynamic>),
+          ? const MACDHistogramState(color: Color(0xfff44336), style: HistogramStyle.solid)
+          : MACDHistogramState.fromJson(json['bearishDecreasing'] as Map<String, dynamic>),
       precision: (json['precision'] as num?)?.toInt() ?? 2,
       showZeroLine: json['showZeroLine'] as bool? ?? true,
       zeroLineColor: json['zeroLineColor'] == null
@@ -397,33 +381,24 @@ Map<String, dynamic> _$MACDParamToJson(MACDParam instance) => <String, dynamic>{
       'zeroLineWidth': instance.zeroLineWidth,
     };
 
-MACDLineConfig _$MACDLineConfigFromJson(Map<String, dynamic> json) =>
-    MACDLineConfig(
+MACDLineConfig _$MACDLineConfigFromJson(Map<String, dynamic> json) => MACDLineConfig(
       enabled: json['enabled'] as bool? ?? true,
-      color: json['color'] == null
-          ? const Color(0xff2196f3)
-          : const ColorConverter().fromJson(json['color'] as String),
+      color: json['color'] == null ? const Color(0xff2196f3) : const ColorConverter().fromJson(json['color'] as String),
       width: (json['width'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$MACDLineConfigToJson(MACDLineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$MACDLineConfigToJson(MACDLineConfig instance) => <String, dynamic>{
       'enabled': instance.enabled,
       'color': const ColorConverter().toJson(instance.color),
       'width': instance.width,
     };
 
-MACDHistogramState _$MACDHistogramStateFromJson(Map<String, dynamic> json) =>
-    MACDHistogramState(
-      color: json['color'] == null
-          ? const Color(0xff4caf50)
-          : const ColorConverter().fromJson(json['color'] as String),
-      style: $enumDecodeNullable(_$HistogramStyleEnumMap, json['style']) ??
-          HistogramStyle.solid,
+MACDHistogramState _$MACDHistogramStateFromJson(Map<String, dynamic> json) => MACDHistogramState(
+      color: json['color'] == null ? const Color(0xff4caf50) : const ColorConverter().fromJson(json['color'] as String),
+      style: $enumDecodeNullable(_$HistogramStyleEnumMap, json['style']) ?? HistogramStyle.solid,
     );
 
-Map<String, dynamic> _$MACDHistogramStateToJson(MACDHistogramState instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$MACDHistogramStateToJson(MACDHistogramState instance) => <String, dynamic>{
       'color': const ColorConverter().toJson(instance.color),
       'style': _$HistogramStyleEnumMap[instance.style]!,
     };

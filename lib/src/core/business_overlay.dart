@@ -57,18 +57,41 @@ mixin BusinessOverlayBinding on KlineBindingBase, SettingBinding, StateBinding, 
     _markRepaintBusinessOverlay();
   }
 
+  void syncBusinessOverlays(
+    Iterable<BusinessOverlayObject> objects, {
+    BusinessOverlayType? type,
+  }) {
+    _boManager.sync(objects, type: type);
+    _refreshBusinessOverlayState();
+    _markRepaintBusinessOverlay();
+  }
+
   /// 原地更新对象，并保持当前编辑/拖拽状态
   void updateBusinessOverlay(BusinessOverlayObject object) {
     _boManager.update(object);
+    _refreshBusinessOverlayState();
+    _markRepaintBusinessOverlay();
+  }
+
+  void _refreshBusinessOverlayState() {
     final state = _boState.value;
-    if (state.object?.id == object.id) {
+    final objectId = state.object?.id;
+    if (objectId == null) return;
+
+    final object = _boManager.findById(objectId);
+    if (object == null) {
+      _boState.value = const BONormal();
+      _businessOverlayDragHit = null;
+      return;
+    }
+
+    if (state.object != object) {
       if (state.isEditing) {
         _boState.value = BOEditing(object);
       } else if (state.isDragging) {
         _boState.value = BODragging(object);
       }
     }
-    _markRepaintBusinessOverlay();
   }
 
   void removeBusinessOverlay(String id) {
@@ -97,8 +120,7 @@ mixin BusinessOverlayBinding on KlineBindingBase, SettingBinding, StateBinding, 
 
   // ========== State ==========
 
-  final ValueNotifier<BusinessOverlayState> _boState =
-      ValueNotifier(const BONormal());
+  final ValueNotifier<BusinessOverlayState> _boState = ValueNotifier(const BONormal());
 
   ValueListenable<BusinessOverlayState> get businessOverlayStateListener => _boState;
   BusinessOverlayState get businessOverlayState => _boState.value;
@@ -117,6 +139,26 @@ mixin BusinessOverlayBinding on KlineBindingBase, SettingBinding, StateBinding, 
   /// 业务叠加层操作回调
   BusinessOverlayActionCallback? onBusinessOverlayAction;
 
+  BusinessOverlayHitResult? _businessOverlayDragHit;
+
+  void _emitBusinessOverlayAction(
+    BusinessOverlayObject object,
+    BusinessOverlayAction action, {
+    FlexiNum? newValue,
+    BusinessOverlayHitResult? hitResult,
+    Object? dragTarget,
+  }) {
+    onBusinessOverlayAction?.call(
+      BusinessOverlayActionEvent(
+        object: object,
+        action: action,
+        newValue: newValue,
+        hitResult: hitResult,
+        dragTarget: dragTarget,
+      ),
+    );
+  }
+
   // ========== PaintContext ==========
 
   BusinessOverlayPaintContext? _buildPaintContext() {
@@ -124,7 +166,7 @@ mixin BusinessOverlayBinding on KlineBindingBase, SettingBinding, StateBinding, 
     if (main.chartRect.isEmpty) return null;
     return BusinessOverlayPaintContext(
       chartRect: main.chartRect,
-      precision: curKlineData.precision,
+      precision: klineData.precision,
       valueToDy: (value) => main.valueToDy(value, correct: false),
       dyToValue: (dy) => main.dyToValue(dy, check: false),
     );
@@ -149,15 +191,27 @@ mixin BusinessOverlayBinding on KlineBindingBase, SettingBinding, StateBinding, 
       if (hit != null) {
         switch (hit.area) {
           case BusinessOverlayHitArea.close:
-            onBusinessOverlayAction?.call(editObj, BusinessOverlayAction.close, null);
+            _emitBusinessOverlayAction(
+              editObj,
+              BusinessOverlayAction.close,
+              hitResult: hit,
+            );
             _boState.value = const BONormal();
             _markRepaintBusinessOverlay();
             return true;
           case BusinessOverlayHitArea.tpSl:
-            onBusinessOverlayAction?.call(editObj, BusinessOverlayAction.tpSl, null);
+            _emitBusinessOverlayAction(
+              editObj,
+              BusinessOverlayAction.tpSl,
+              hitResult: hit,
+            );
             return true;
           case BusinessOverlayHitArea.menu:
-            onBusinessOverlayAction?.call(editObj, BusinessOverlayAction.menu, null);
+            _emitBusinessOverlayAction(
+              editObj,
+              BusinessOverlayAction.menu,
+              hitResult: hit,
+            );
             return true;
           case BusinessOverlayHitArea.dragHandle:
           case BusinessOverlayHitArea.line:
@@ -175,7 +229,11 @@ mixin BusinessOverlayBinding on KlineBindingBase, SettingBinding, StateBinding, 
       if (obj != null) {
         // 命中控件区域 → 直接分发
         if (hit.area == BusinessOverlayHitArea.close) {
-          onBusinessOverlayAction?.call(obj, BusinessOverlayAction.close, null);
+          _emitBusinessOverlayAction(
+            obj,
+            BusinessOverlayAction.close,
+            hitResult: hit,
+          );
           if (state.object?.id == obj.id) {
             _boState.value = const BONormal();
           }
@@ -209,11 +267,8 @@ mixin BusinessOverlayBinding on KlineBindingBase, SettingBinding, StateBinding, 
 
   bool get isDraggingBusinessOverlay => _boState.value.isDragging;
 
-  /// 拖拽开始：仅当处于 Editing 态时生效
-  ///
-  /// 编辑态下，任意手势起点均视为对当前选中对象的拖拽意图，
-  /// 无需精确命中对象（规避触摸偏差导致 hitTest 失败的问题）。
-  bool onBusinessDragStart(Offset position) {
+  /// 拖拽开始：仅当处于 Editing 态且命中当前对象可拖区域时生效。
+  bool onBusinessOverlayDragStart(GestureData data) {
     final state = _boState.value;
     if (!state.isEditing) return false;
 
@@ -221,52 +276,55 @@ mixin BusinessOverlayBinding on KlineBindingBase, SettingBinding, StateBinding, 
     if (ctx == null) return false;
 
     final obj = state.object!;
+    final position = data.offset;
 
-    // 先尝试 hitTest 检测命中区域
     final hit = obj.hitTest(position, ctx);
+    if (hit == null || !obj.canStartDrag(hit)) return false;
 
-    // close / tpSl / menu 按钮不触发拖拽，交由 tap 处理
-    const nonDraggableAreas = {
-      BusinessOverlayHitArea.close,
-      BusinessOverlayHitArea.tpSl,
-      BusinessOverlayHitArea.menu,
-    };
-    if (hit != null && nonDraggableAreas.contains(hit.area)) return false;
-
-    // 编辑态下，命中或未命中（手指在线附近）均允许拖拽
     obj.onDragStart(position, ctx);
+    _businessOverlayDragHit = hit;
     _boState.value = BODragging(obj);
     _markRepaintBusinessOverlay();
     return true;
   }
 
-  void onBusinessDragUpdate(Offset position, Offset delta) {
+  void onBusinessOverlayDragUpdate(GestureData data) {
     final state = _boState.value;
     if (!state.isDragging) return;
-    state.object!.onDragUpdate(position, delta, mainRect);
+    state.object!.onDragUpdate(data.offset, data.delta, mainRect);
     _markRepaintBusinessOverlay();
   }
 
-  void onBusinessDragEndAction() {
+  void onBusinessOverlayDragEndAction() {
     final state = _boState.value;
     if (!state.isDragging) return;
 
     final ctx = _buildPaintContext();
     final obj = state.object!;
-    final newValue = ctx != null ? obj.onDragEnd(ctx) : null;
+    final objectId = obj.id;
+    final result = ctx != null ? obj.onDragEnd(ctx) : null;
 
-    if (newValue != null) {
-      onBusinessOverlayAction?.call(obj, BusinessOverlayAction.editPrice, newValue);
+    if (result?.value != null) {
+      _emitBusinessOverlayAction(
+        obj,
+        BusinessOverlayAction.editPrice,
+        newValue: result!.value,
+        hitResult: _businessOverlayDragHit,
+        dragTarget: result.target ?? _businessOverlayDragHit?.extra,
+      );
     }
 
-    _boState.value = BOEditing(obj);
+    final latestObject = _boManager.findById(objectId);
+    _businessOverlayDragHit = null;
+    _boState.value = latestObject != null ? BOEditing(latestObject) : const BONormal();
     _markRepaintBusinessOverlay();
   }
 
-  void onBusinessDragCancel() {
+  void onBusinessOverlayDragCancel() {
     final state = _boState.value;
     if (!state.isDragging) return;
     state.object!.onDragCancel();
+    _businessOverlayDragHit = null;
     _boState.value = BOEditing(state.object!);
     _markRepaintBusinessOverlay();
   }

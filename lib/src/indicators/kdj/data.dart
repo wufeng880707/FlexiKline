@@ -36,10 +36,7 @@ extension CandleKdjExt on FlexiCandleModel {
     return null;
   }
 
-  bool isValidKdjData(int dataIndex) =>
-      kdjK(dataIndex) != null &&
-      kdjD(dataIndex) != null &&
-      kdjJ(dataIndex) != null;
+  bool isValidKdjData(int dataIndex) => kdjK(dataIndex) != null && kdjD(dataIndex) != null && kdjJ(dataIndex) != null;
 
   MinMax? kdjMinmax(int dataIndex) {
     if (!isValidKdjData(dataIndex)) return null;
@@ -49,11 +46,11 @@ extension CandleKdjExt on FlexiCandleModel {
   }
 }
 
-mixin KdjDataMixin<T extends KDJIndicator> on DataPaintObject<T> {
+mixin KdjDataMixin<T extends KDJIndicator> on ComputedPaintObject<T> {
   KDJParam get calcParam => indicator.calcParam;
 
   @override
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     calcuAndCacheKdj(
       calcParam,
       start: range.start,
@@ -88,14 +85,14 @@ mixin KdjDataMixin<T extends KDJIndicator> on DataPaintObject<T> {
         if (candle.low < low) low = candle.low;
       }
 
-      final rsv =
-          high == low ? FlexiNum.fromNum(50) : ((m.close - low) / (high - low)) * FlexiNum.fromNum(100);
+      final rsv = high == low ? FlexiNum.fromNum(50) : ((m.close - low) / (high - low)) * FlexiNum.fromNum(100);
 
       // 计算K值
       FlexiNum k = FlexiNum.fromNum(50);
       if (i < len - 1) {
         final prevK = klineData.list[i + 1].kdjK(dataIndex) ?? FlexiNum.fromNum(50);
-        k = (prevK * FlexiNum.fromNum(param.calculation.dPeriod - 1) + rsv) / FlexiNum.fromNum(param.calculation.dPeriod);
+        k = (prevK * FlexiNum.fromNum(param.calculation.dPeriod - 1) + rsv) /
+            FlexiNum.fromNum(param.calculation.dPeriod);
       } else {
         k = rsv;
       }

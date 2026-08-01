@@ -46,6 +46,24 @@ class BusinessOverlayManager {
     }
   }
 
+  /// 批量同步对象。
+  ///
+  /// [type] 为空时同步全部对象；非空时只同步指定类型，其他类型保持不变。
+  void sync(
+    Iterable<BusinessOverlayObject> objects, {
+    BusinessOverlayType? type,
+  }) {
+    final incoming = objects.toList();
+    final incomingIds = incoming.map((o) => o.id).toSet();
+    _objects.removeWhere((object) {
+      final sameScope = type == null || object.type == type;
+      return sameScope && !incomingIds.contains(object.id);
+    });
+    for (final object in incoming) {
+      update(object);
+    }
+  }
+
   void removeByType(BusinessOverlayType type) {
     _objects.removeWhere((o) => o.type == type);
   }

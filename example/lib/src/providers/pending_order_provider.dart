@@ -16,10 +16,10 @@ class PendingOrderDataManager {
 
   void setOrders(List<PendingOrderData> orders) {
     _orders = orders;
-    _controller.removeBusinessOverlayByType(BusinessOverlayType.pendingOrder);
-    for (final order in _orders) {
-      _controller.addBusinessOverlay(PendingOrderOverlay(data: order));
-    }
+    _controller.syncBusinessOverlays(
+      _orders.map((order) => PendingOrderOverlay(data: order)),
+      type: BusinessOverlayType.pendingOrder,
+    );
   }
 
   void addOrder(PendingOrderData order) {
@@ -71,7 +71,8 @@ List<PendingOrderData> createTestPendingOrders(KlineData klineData) {
     orders.add(PendingOrderData(
       id: 'buy_limit_$i',
       side: OrderSide.buy,
-      price: double.parse((currentPrice - offset).toStringAsFixed(klineData.precision)),
+      price: double.parse(
+          (currentPrice - offset).toStringAsFixed(klineData.precision)),
       quantity: double.parse((0.1 + rng.nextDouble() * 0.5).toStringAsFixed(4)),
       label: '限价',
     ));
@@ -82,7 +83,8 @@ List<PendingOrderData> createTestPendingOrders(KlineData klineData) {
     orders.add(PendingOrderData(
       id: 'sell_limit_$i',
       side: OrderSide.sell,
-      price: double.parse((currentPrice + offset).toStringAsFixed(klineData.precision)),
+      price: double.parse(
+          (currentPrice + offset).toStringAsFixed(klineData.precision)),
       quantity: double.parse((0.1 + rng.nextDouble() * 0.5).toStringAsFixed(4)),
       label: '限价',
     ));

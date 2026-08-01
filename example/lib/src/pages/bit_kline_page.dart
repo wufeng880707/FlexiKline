@@ -67,15 +67,17 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
   @override
   void initState() {
     super.initState();
-    
+
     // 先初始化 configuration
     configuration = BitFlexiKlineConfiguration(ref: ref);
-    
+
     final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId,
         );
 
-    final interval = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '15m');
+    final interval = configuration
+        .getTimeBarConfigs()
+        .firstWhere((e) => e.debugLabel == '15m');
 
     req = KlineSpec(
       symbol: widget.instId,
@@ -83,7 +85,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
       precision: p ?? 2,
       limit: 300,
     );
-    
+
     controller = FlexiKlineController(
       configuration: configuration,
       logger: LoggerImpl(
@@ -101,7 +103,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     _positionManager = PositionDataManager(controller);
 
     controller.onBusinessOverlayAction = _onBusinessOverlayAction;
-    controller.intervalListener.addListener(_onTimeBarChanged);
+    controller.intervalListenable.addListener(_onTimeBarChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       initKlineData(req);
@@ -109,15 +111,17 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
   }
 
   void _onTimeBarChanged() {
-    _tradeMarkManager.onTimeBarChanged(controller.intervalListener.value);
+    _tradeMarkManager.onTimeBarChanged(controller.intervalListenable.value);
   }
 
-  void _onBusinessOverlayAction(
-    BusinessOverlayObject object,
-    BusinessOverlayAction action,
-    FlexiNum? newValue,
-  ) {
-    debugPrint('[BusinessOverlay] action: $action, object: ${object.id}, newValue: $newValue');
+  void _onBusinessOverlayAction(BusinessOverlayActionEvent event) {
+    final object = event.object;
+    final action = event.action;
+    final newValue = event.newValue;
+    debugPrint(
+      '[BusinessOverlay] action: $action, object: ${object.id}, '
+      'target: ${event.dragTarget}, newValue: $newValue',
+    );
     switch (action) {
       case BusinessOverlayAction.close:
       case BusinessOverlayAction.delete:
@@ -132,6 +136,17 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
           final price = newValue.toDouble();
           if (object is PendingOrderOverlay) {
             _pendingOrderManager.updateOrderPrice(object.id, price);
+          } else if (object is PositionOverlay) {
+            final target = event.dragTarget;
+            _positionManager.updatePositionPrice(
+              object.id,
+              price,
+              target: target is TpSlDragTarget ? target : null,
+            );
+            debugPrint(
+              '[BusinessOverlay] 持仓价格拖拽: ${object.id}, '
+              'target: ${event.dragTarget}, price: $price',
+            );
           }
         }
         break;
@@ -146,7 +161,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
 
   @override
   void dispose() {
-    controller.intervalListener.removeListener(_onTimeBarChanged);
+    controller.intervalListenable.removeListener(_onTimeBarChanged);
     _tradeMarkManager.dispose();
     _pendingOrderManager.dispose();
     _positionManager.dispose();
@@ -161,12 +176,12 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
   }
 
   void _injectTestBusinessData() {
-    final klineData = controller.curKlineData;
+    final klineData = controller.klineData;
     if (!klineData.canPaintChart) return;
 
     // TradeMark (保留在 indicator 体系中)
     if (!controller.hasAddedMainIndicator(tradeMarkIndicatorKey)) {
-      controller.addMainIndicator(tradeMarkIndicatorKey);
+      controller.showMainIndicator(tradeMarkIndicatorKey);
     }
     final marks = createTestTradeMarks(klineData);
     _tradeMarkManager.onTimeBarChanged(klineData.spec.interval);
@@ -201,13 +216,14 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     final isUpdate = await context.pushNamed(
       'landscapeKline',
       extra: {
-        "candleReq": controller.curKlineData.spec.initial(),
+        "candleReq": controller.klineData.spec.initial(),
         "configuration": controller.configuration,
       },
     );
     if (mounted && isUpdate == true) {
       controller.logd('openLandscapePage return isUpdate> $isUpdate');
-      controller.updateFlexiKlineConfig();
+      controller.storeFlexiKlineConfig();
+      controller.requestRepaint();
     }
   }
 
@@ -216,7 +232,8 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
     final klineTheme = ref.watch(bitFlexiKlineThemeProvider);
     ref.listen(bitFlexiKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        controller.updateFlexiKlineConfig();
+        controller.storeFlexiKlineConfig();
+        controller.requestRepaint();
       }
     });
     return Scaffold(
@@ -328,7 +345,7 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
         ),
         Positioned(
           child: ValueListenableBuilder(
-            valueListenable: controller.loadingStateListener,
+            valueListenable: controller.loadingStateListenable,
             builder: (context, loadingState, child) {
               return Offstage(
                 offstage: !loadingState.showLoading,
@@ -340,9 +357,11 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
                     dimension: controller.settingConfig.loading.size,
                     child: CircularProgressIndicator(
                       strokeWidth: controller.settingConfig.loading.strokeWidth,
-                      backgroundColor: controller.settingConfig.loading.backgroundColor,
+                      backgroundColor:
+                          controller.settingConfig.loading.backgroundColor,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        controller.settingConfig.loading.valueColor ?? controller.theme.textColor,
+                        controller.settingConfig.loading.valueColor ??
+                            controller.theme.textColor,
                       ),
                     ),
                   ),
@@ -378,50 +397,58 @@ class _BitKlinePageState extends ConsumerState<BitKlinePage>
       TooltipInfo(
         label: s.tooltipOpen,
         labelStyle: lableStyle,
-        value: formatNumber(current.open.toDecimal(), precision: p, enableGrouping: true),
+        value: formatNumber(current.open.toDecimal(),
+            precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipHigh,
         labelStyle: lableStyle,
-        value: formatNumber(current.high.toDecimal(), precision: p, enableGrouping: true),
+        value: formatNumber(current.high.toDecimal(),
+            precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipLow,
         labelStyle: lableStyle,
-        value: formatNumber(current.low.toDecimal(), precision: p, enableGrouping: true),
+        value: formatNumber(current.low.toDecimal(),
+            precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipClose,
         labelStyle: lableStyle,
-        value: formatNumber(current.close.toDecimal(), precision: p, enableGrouping: true),
+        value: formatNumber(current.close.toDecimal(),
+            precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipAmount,
         labelStyle: lableStyle,
-        value: formatNumber(current.vol.toDecimal(), precision: p, enableGrouping: true),
+        value: formatNumber(current.vol.toDecimal(),
+            precision: p, enableGrouping: true),
         valueStyle: valueStyle,
       ),
       TooltipInfo(
         label: s.tooltipChg,
         labelStyle: lableStyle,
-        value: formatNumber(current.change.toDecimal(), precision: p, enableGrouping: true),
+        value: formatNumber(current.change.toDecimal(),
+            precision: p, enableGrouping: true),
         valueStyle: valStyle,
       ),
       TooltipInfo(
         label: s.tooltipChgRate,
         labelStyle: lableStyle,
-        value: formatNumber(current.changeRate.d, precision: 2, showSign: true, suffix: '%'),
+        value: formatNumber(current.changeRate.d,
+            precision: 2, showSign: true, suffix: '%'),
         valueStyle: valStyle,
       ),
       TooltipInfo(
         label: s.tooltipRange,
         labelStyle: lableStyle,
         value: prev != null
-            ? formatNumber(current.rangeRate(prev).d, precision: 2, showSign: true, suffix: '%')
+            ? formatNumber(current.rangeRate(prev).d,
+                precision: 2, showSign: true, suffix: '%')
             : formatNumber(current.range.toDecimal(), precision: p),
         valueStyle: valStyle,
       ),

@@ -33,8 +33,7 @@ class _$KDJParamCWProxyImpl implements _$KDJParamCWProxy {
   final KDJParam _value;
 
   @override
-  KDJParam calculation(KDJCalculationConfig calculation) =>
-      this(calculation: calculation);
+  KDJParam calculation(KDJCalculationConfig calculation) => this(calculation: calculation);
 
   @override
   KDJParam lines(KDJLinesConfig lines) => this(lines: lines);
@@ -99,8 +98,7 @@ abstract class _$KDJCalculationConfigCWProxy {
 }
 
 /// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfKDJCalculationConfig.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfKDJCalculationConfig.copyWith.fieldName(...)`
-class _$KDJCalculationConfigCWProxyImpl
-    implements _$KDJCalculationConfigCWProxy {
+class _$KDJCalculationConfigCWProxyImpl implements _$KDJCalculationConfigCWProxy {
   const _$KDJCalculationConfigCWProxyImpl(this._value);
 
   final KDJCalculationConfig _value;
@@ -147,8 +145,7 @@ class _$KDJCalculationConfigCWProxyImpl
 extension $KDJCalculationConfigCopyWith on KDJCalculationConfig {
   /// Returns a callable class that can be used as follows: `instanceOfKDJCalculationConfig.copyWith(...)` or like so:`instanceOfKDJCalculationConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$KDJCalculationConfigCWProxy get copyWith =>
-      _$KDJCalculationConfigCWProxyImpl(this);
+  _$KDJCalculationConfigCWProxy get copyWith => _$KDJCalculationConfigCWProxyImpl(this);
 }
 
 abstract class _$KDJLineConfigCWProxy {
@@ -323,19 +320,16 @@ class _$KDJDisplayConfigCWProxyImpl implements _$KDJDisplayConfigCWProxy {
   final KDJDisplayConfig _value;
 
   @override
-  KDJDisplayConfig pointRadius(double pointRadius) =>
-      this(pointRadius: pointRadius);
+  KDJDisplayConfig pointRadius(double pointRadius) => this(pointRadius: pointRadius);
 
   @override
-  KDJDisplayConfig showCrossPoint(bool showCrossPoint) =>
-      this(showCrossPoint: showCrossPoint);
+  KDJDisplayConfig showCrossPoint(bool showCrossPoint) => this(showCrossPoint: showCrossPoint);
 
   @override
   KDJDisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  KDJDisplayConfig showPeriodInTips(bool showPeriodInTips) =>
-      this(showPeriodInTips: showPeriodInTips);
+  KDJDisplayConfig showPeriodInTips(bool showPeriodInTips) => this(showPeriodInTips: showPeriodInTips);
 
   @override
 
@@ -385,8 +379,7 @@ extension $KDJDisplayConfigCopyWith on KDJDisplayConfig {
 KDJParam _$KDJParamFromJson(Map<String, dynamic> json) => KDJParam(
       calculation: json['calculation'] == null
           ? const KDJCalculationConfig()
-          : KDJCalculationConfig.fromJson(
-              json['calculation'] as Map<String, dynamic>),
+          : KDJCalculationConfig.fromJson(json['calculation'] as Map<String, dynamic>),
       lines: json['lines'] == null
           ? const KDJLinesConfig()
           : KDJLinesConfig.fromJson(json['lines'] as Map<String, dynamic>),
@@ -401,40 +394,31 @@ Map<String, dynamic> _$KDJParamToJson(KDJParam instance) => <String, dynamic>{
       'display': instance.display.toJson(),
     };
 
-KDJCalculationConfig _$KDJCalculationConfigFromJson(
-        Map<String, dynamic> json) =>
-    KDJCalculationConfig(
+KDJCalculationConfig _$KDJCalculationConfigFromJson(Map<String, dynamic> json) => KDJCalculationConfig(
       kPeriod: (json['kPeriod'] as num?)?.toInt() ?? 9,
       dPeriod: (json['dPeriod'] as num?)?.toInt() ?? 3,
       jPeriod: (json['jPeriod'] as num?)?.toInt() ?? 3,
     );
 
-Map<String, dynamic> _$KDJCalculationConfigToJson(
-        KDJCalculationConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$KDJCalculationConfigToJson(KDJCalculationConfig instance) => <String, dynamic>{
       'kPeriod': instance.kPeriod,
       'dPeriod': instance.dPeriod,
       'jPeriod': instance.jPeriod,
     };
 
-KDJLineConfig _$KDJLineConfigFromJson(Map<String, dynamic> json) =>
-    KDJLineConfig(
+KDJLineConfig _$KDJLineConfigFromJson(Map<String, dynamic> json) => KDJLineConfig(
       enabled: json['enabled'] as bool? ?? true,
-      color: json['color'] == null
-          ? const Color(0xff2196f3)
-          : const ColorConverter().fromJson(json['color'] as String),
+      color: json['color'] == null ? const Color(0xff2196f3) : const ColorConverter().fromJson(json['color'] as String),
       width: (json['width'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$KDJLineConfigToJson(KDJLineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$KDJLineConfigToJson(KDJLineConfig instance) => <String, dynamic>{
       'enabled': instance.enabled,
       'color': const ColorConverter().toJson(instance.color),
       'width': instance.width,
     };
 
-KDJLinesConfig _$KDJLinesConfigFromJson(Map<String, dynamic> json) =>
-    KDJLinesConfig(
+KDJLinesConfig _$KDJLinesConfigFromJson(Map<String, dynamic> json) => KDJLinesConfig(
       k: json['k'] == null
           ? const KDJLineConfig(color: Color(0xffffff00))
           : KDJLineConfig.fromJson(json['k'] as Map<String, dynamic>),
@@ -446,23 +430,20 @@ KDJLinesConfig _$KDJLinesConfigFromJson(Map<String, dynamic> json) =>
           : KDJLineConfig.fromJson(json['j'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$KDJLinesConfigToJson(KDJLinesConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$KDJLinesConfigToJson(KDJLinesConfig instance) => <String, dynamic>{
       'k': instance.k.toJson(),
       'd': instance.d.toJson(),
       'j': instance.j.toJson(),
     };
 
-KDJDisplayConfig _$KDJDisplayConfigFromJson(Map<String, dynamic> json) =>
-    KDJDisplayConfig(
+KDJDisplayConfig _$KDJDisplayConfigFromJson(Map<String, dynamic> json) => KDJDisplayConfig(
       pointRadius: (json['pointRadius'] as num?)?.toDouble() ?? 0.0,
       showCrossPoint: json['showCrossPoint'] as bool? ?? false,
       precision: (json['precision'] as num?)?.toInt() ?? 2,
       showPeriodInTips: json['showPeriodInTips'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$KDJDisplayConfigToJson(KDJDisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$KDJDisplayConfigToJson(KDJDisplayConfig instance) => <String, dynamic>{
       'pointRadius': instance.pointRadius,
       'showCrossPoint': instance.showCrossPoint,
       'precision': instance.precision,

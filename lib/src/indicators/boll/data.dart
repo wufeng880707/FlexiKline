@@ -37,9 +37,7 @@ extension CandleBollExt on FlexiCandleModel {
   }
 
   bool isValidBollData(int dataIndex) =>
-      bollMb(dataIndex) != null &&
-      bollUp(dataIndex) != null &&
-      bollDn(dataIndex) != null;
+      bollMb(dataIndex) != null && bollUp(dataIndex) != null && bollDn(dataIndex) != null;
 
   MinMax? bollMinmax(int dataIndex) {
     if (!isValidBollData(dataIndex)) return null;
@@ -49,11 +47,11 @@ extension CandleBollExt on FlexiCandleModel {
   }
 }
 
-mixin BollDataMixin<T extends BOLLIndicator> on DataPaintObject<T> {
+mixin BollDataMixin<T extends BOLLIndicator> on ComputedPaintObject<T> {
   BOLLParam get calcParam => indicator.calcParam;
 
   @override
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     calcuAndCacheBoll(
       calcParam,
       start: range.start,
@@ -89,8 +87,8 @@ mixin BollDataMixin<T extends BOLLIndicator> on DataPaintObject<T> {
       // 计算标准差
       double variance = (m.close.toDouble() - ma.toDouble()) * (m.close.toDouble() - ma.toDouble());
       for (int j = i + 1; j < i + period; j++) {
-        variance += (klineData.list[j].close.toDouble() - ma.toDouble()) *
-            (klineData.list[j].close.toDouble() - ma.toDouble());
+        variance +=
+            (klineData.list[j].close.toDouble() - ma.toDouble()) * (klineData.list[j].close.toDouble() - ma.toDouble());
       }
       final std = FlexiNum.fromNum(math.sqrt(variance / period));
 

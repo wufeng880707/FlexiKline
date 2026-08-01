@@ -71,7 +71,9 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     final p = ref.read(instrumentsMgrProvider.notifier).getPrecision(
           widget.instId,
         );
-    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '15m');
+    final m15TimeBar = configuration
+        .getTimeBarConfigs()
+        .firstWhere((e) => e.debugLabel == '15m');
 
     req = KlineSpec(
       symbol: widget.instId,
@@ -85,7 +87,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     controller.onLoadMoreCandles = loadMoreCandles;
 
     _tradeMarkManager = TradeMarkDataManager(controller);
-    controller.intervalListener.addListener(_onTimeBarChanged);
+    controller.intervalListenable.addListener(_onTimeBarChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       initKlineData(req);
@@ -93,12 +95,12 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
   }
 
   void _onTimeBarChanged() {
-    _tradeMarkManager.onTimeBarChanged(controller.intervalListener.value);
+    _tradeMarkManager.onTimeBarChanged(controller.intervalListenable.value);
   }
 
   @override
   void dispose() {
-    controller.intervalListener.removeListener(_onTimeBarChanged);
+    controller.intervalListenable.removeListener(_onTimeBarChanged);
     _tradeMarkManager.dispose();
     controller.dispose();
     super.dispose();
@@ -115,7 +117,8 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
     final theme = ref.watch(themeProvider);
     ref.listen(defaultKlineThemeProvider, (previous, next) async {
       if (previous != next) {
-        controller.updateFlexiKlineConfig();
+        controller.storeFlexiKlineConfig();
+        controller.requestRepaint();
       }
     });
     return Scaffold(
@@ -234,7 +237,9 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
             padding: EdgeInsets.zero,
             style: theme.circleBtnStyle(bg: theme.markBg.withOpacity(0.6)),
             iconSize: 16.r,
-            icon: Icon(isFullScreen ? Icons.close_fullscreen_outlined : Icons.open_in_full_rounded),
+            icon: Icon(isFullScreen
+                ? Icons.close_fullscreen_outlined
+                : Icons.open_in_full_rounded),
             onPressed: setFullScreen,
           ),
         ),
@@ -245,7 +250,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
           right: 0,
           bottom: 8.r,
           child: ValueListenableBuilder(
-            valueListenable: controller.isFirstCandleMoveOffScreenListener,
+            valueListenable: controller.isFirstCandleMovedOffScreenListenable,
             builder: (context, value, child) => Offstage(
               offstage: !value,
               child: SizedBox(
@@ -259,7 +264,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
                   ),
                   iconSize: 16.r,
                   icon: const Icon(Icons.keyboard_double_arrow_right_outlined),
-                  onPressed: controller.moveToInitialPosition,
+                  onPressed: controller.requestMoveToInitialPosition,
                 ),
               ),
             ),
@@ -268,7 +273,7 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
 
         /// Loading
         ValueListenableBuilder(
-          valueListenable: controller.loadingStateListener,
+          valueListenable: controller.loadingStateListenable,
           builder: (context, loadingState, child) {
             return Offstage(
               offstage: !loadingState.showLoading,
@@ -301,11 +306,11 @@ class _OkKlinePageState extends ConsumerState<OkKlinePage>
   }
 
   void _injectTestTradeMarks() {
-    final klineData = controller.curKlineData;
+    final klineData = controller.klineData;
     if (!klineData.canPaintChart) return;
 
     if (!controller.hasAddedMainIndicator(tradeMarkIndicatorKey)) {
-      controller.addMainIndicator(tradeMarkIndicatorKey);
+      controller.showMainIndicator(tradeMarkIndicatorKey);
     }
 
     final marks = createTestTradeMarks(klineData);

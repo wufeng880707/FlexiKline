@@ -45,8 +45,7 @@ final class VolMALineConfig extends Equatable {
   /// 获取带透明度的颜色
   Color get colorWithOpacity => color.withValues(alpha: opacity);
 
-  factory VolMALineConfig.fromJson(Map<String, dynamic> json) =>
-      _$VolMALineConfigFromJson(json);
+  factory VolMALineConfig.fromJson(Map<String, dynamic> json) => _$VolMALineConfigFromJson(json);
   Map<String, dynamic> toJson() => _$VolMALineConfigToJson(this);
 
   @override
@@ -67,8 +66,7 @@ final class VolMAValidationConfig extends Equatable {
     this.allowDuplicate = false,
   });
 
-  factory VolMAValidationConfig.fromJson(Map<String, dynamic> json) =>
-      _$VolMAValidationConfigFromJson(json);
+  factory VolMAValidationConfig.fromJson(Map<String, dynamic> json) => _$VolMAValidationConfigFromJson(json);
   Map<String, dynamic> toJson() => _$VolMAValidationConfigToJson(this);
 
   @override
@@ -95,12 +93,11 @@ final class VolMAVolumeConfig extends Equatable {
 
   /// 获取看涨颜色（带透明度）
   Color get bullishColorWithOpacity => bullishColor.withValues(alpha: opacity);
-  
+
   /// 获取看跌颜色（带透明度）
   Color get bearishColorWithOpacity => bearishColor.withValues(alpha: opacity);
 
-  factory VolMAVolumeConfig.fromJson(Map<String, dynamic> json) =>
-      _$VolMAVolumeConfigFromJson(json);
+  factory VolMAVolumeConfig.fromJson(Map<String, dynamic> json) => _$VolMAVolumeConfigFromJson(json);
   Map<String, dynamic> toJson() => _$VolMAVolumeConfigToJson(this);
 
   @override
@@ -125,8 +122,7 @@ final class VolMADisplayConfig extends Equatable {
     this.showVolInTips = true,
   });
 
-  factory VolMADisplayConfig.fromJson(Map<String, dynamic> json) =>
-      _$VolMADisplayConfigFromJson(json);
+  factory VolMADisplayConfig.fromJson(Map<String, dynamic> json) => _$VolMADisplayConfigFromJson(json);
   Map<String, dynamic> toJson() => _$VolMADisplayConfigToJson(this);
 
   @override
@@ -182,8 +178,7 @@ final class VolMaParam extends Equatable {
     );
   }
 
-  factory VolMaParam.fromJson(Map<String, dynamic> json) =>
-      _$VolMaParamFromJson(json);
+  factory VolMaParam.fromJson(Map<String, dynamic> json) => _$VolMaParamFromJson(json);
   Map<String, dynamic> toJson() => _$VolMaParamToJson(this);
 
   @override

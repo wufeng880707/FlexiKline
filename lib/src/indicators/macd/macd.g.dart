@@ -72,8 +72,7 @@ class _$MACDIndicatorCWProxyImpl implements _$MACDIndicatorCWProxy {
   MACDIndicator macdTips(TipsConfig macdTips) => this(macdTips: macdTips);
 
   @override
-  MACDIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  MACDIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
   MACDIndicator tickCount(int tickCount) => this(tickCount: tickCount);
@@ -148,27 +147,23 @@ extension $MACDIndicatorCopyWith on MACDIndicator {
 // JsonSerializableGenerator
 // **************************************************************************
 
-MACDIndicator _$MACDIndicatorFromJson(Map<String, dynamic> json) =>
-    MACDIndicator(
+MACDIndicator _$MACDIndicatorFromJson(Map<String, dynamic> json) => MACDIndicator(
       zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
       height: (json['height'] as num).toDouble(),
       padding: json['padding'] == null
           ? defaultSubIndicatorPadding
-          : const EdgeInsetsConverter()
-              .fromJson(json['padding'] as Map<String, dynamic>),
+          : const EdgeInsetsConverter().fromJson(json['padding'] as Map<String, dynamic>),
       calcParam: json['calcParam'] == null
           ? const MACDParam(s: 12, l: 26, m: 9)
           : MACDParam.fromJson(json['calcParam'] as Map<String, dynamic>),
       difTips: TipsConfig.fromJson(json['difTips'] as Map<String, dynamic>),
       deaTips: TipsConfig.fromJson(json['deaTips'] as Map<String, dynamic>),
       macdTips: TipsConfig.fromJson(json['macdTips'] as Map<String, dynamic>),
-      tipsPadding: const EdgeInsetsConverter()
-          .fromJson(json['tipsPadding'] as Map<String, dynamic>),
+      tipsPadding: const EdgeInsetsConverter().fromJson(json['tipsPadding'] as Map<String, dynamic>),
       tickCount: (json['tickCount'] as num?)?.toInt() ?? defaultSubTickCount,
     );
 
-Map<String, dynamic> _$MACDIndicatorToJson(MACDIndicator instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$MACDIndicatorToJson(MACDIndicator instance) => <String, dynamic>{
       'height': instance.height,
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'zIndex': instance.zIndex,

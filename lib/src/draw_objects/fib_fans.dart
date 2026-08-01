@@ -29,7 +29,7 @@ class FibFansDrawObject extends DrawObject {
   FibFansDrawObject(super.overlay, super.config);
 
   @override
-  FibFansParams getDrawParams(IDrawContext context) {
+  FibFansParams getDrawParams(DrawContext context) {
     return FibFansParams(
       params: const [0.382, 0.5, 0.618],
       gridColor: lineColor.withValues(alpha: 0.3),
@@ -47,7 +47,7 @@ class FibFansDrawObject extends DrawObject {
   }
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 2,
       'FibFans hitTest points.length:${points.length} must be equals 2',
@@ -59,7 +59,7 @@ class FibFansDrawObject extends DrawObject {
   }
 
   @override
-  void drawing(IDrawContext context, Canvas canvas, Size size) {
+  void drawing(DrawContext context, Canvas canvas, Size size) {
     if (isReady) {
       final points = allPoints;
       final first = points.firstOrNull?.offset;
@@ -73,7 +73,7 @@ class FibFansDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 2,
       'FibFans draw points.length:${points.length} must be equals 2',
@@ -90,7 +90,7 @@ class FibFansDrawObject extends DrawObject {
 
   /// 绘制斐波那契扇形
   void _drawFibFans(
-    IDrawContext context,
+    DrawContext context,
     Canvas canvas,
     Offset A,
     Offset B,

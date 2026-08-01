@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 
@@ -35,7 +36,7 @@ class SubSARSettingPage extends BaseIndicatorSettingPage {
 
 class _SubSARSettingPageState
     extends BaseIndicatorSettingPageState<SubSARSettingPage> {
-  static const _sarKey = DataIndicatorKey('sar');
+  static const _sarKey = ComputedIndicatorKey('sar');
 
   late SARParam _currentParam;
   late bool _enabled;
@@ -51,10 +52,10 @@ class _SubSARSettingPageState
     final controller = klineState.controller;
 
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_sarKey) ||
-          controller.subIndicatorKeys.contains(_sarKey);
+      _enabled = controller.subIndicatorKeys.contains(_sarKey);
 
-      final indicator = controller.getIndicator<SARIndicator>(_sarKey);
+      final indicator =
+          controller.configuredSubIndicator<SARIndicator>(_sarKey);
       if (indicator != null) {
         _currentParam = indicator.calcParam;
       } else {
@@ -80,7 +81,6 @@ class _SubSARSettingPageState
 
     return [
       buildSectionTitle('加速因子参数', theme),
-
       buildNumberItem(
         title: '初始加速因子',
         value: periods.start,
@@ -96,7 +96,6 @@ class _SubSARSettingPageState
         max: 0.1,
         decimalPlaces: 2,
       ),
-
       buildNumberItem(
         title: '加速步长',
         value: periods.step,
@@ -112,7 +111,6 @@ class _SubSARSettingPageState
         max: 0.1,
         decimalPlaces: 2,
       ),
-
       buildNumberItem(
         title: '最大加速因子',
         value: periods.max,
@@ -128,11 +126,8 @@ class _SubSARSettingPageState
         max: 0.5,
         decimalPlaces: 2,
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('外观设置', theme),
-
       buildColorItem(
         title: 'SAR点颜色',
         color: appearance.color,
@@ -145,7 +140,6 @@ class _SubSARSettingPageState
         },
         theme: theme,
       ),
-
       buildSwitchItem(
         title: '使用涨跌色',
         subtitle: '根据趋势方向显示不同颜色',
@@ -159,7 +153,6 @@ class _SubSARSettingPageState
         },
         theme: theme,
       ),
-
       buildNumberItem(
         title: '点半径',
         value: appearance.pointRadius,
@@ -175,7 +168,6 @@ class _SubSARSettingPageState
         max: 10.0,
         decimalPlaces: 1,
       ),
-
       buildNumberItem(
         title: '边框宽度',
         value: appearance.borderWidth,
@@ -191,11 +183,8 @@ class _SubSARSettingPageState
         max: 5.0,
         decimalPlaces: 1,
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('显示设置', theme),
-
       buildNumberItem(
         title: '数值精度',
         value: _currentParam.display.precision.toDouble(),
@@ -213,7 +202,6 @@ class _SubSARSettingPageState
         max: 8,
         decimalPlaces: 0,
       ),
-
       SizedBox(height: 16.r),
     ];
   }
@@ -224,19 +212,18 @@ class _SubSARSettingPageState
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
 
-      if (_enabled) {
-        final oldIndicator =
-            controller.getIndicator<SARIndicator>(_sarKey);
-        if (oldIndicator != null) {
-          final newIndicator = SARIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            tipsPadding: oldIndicator.tipsPadding,
-            tickCount: oldIndicator.tickCount,
-          );
-          controller.updateIndicator(newIndicator);
-        }
+      final oldIndicator =
+          controller.configuredSubIndicator<SARIndicator>(_sarKey);
+      if (oldIndicator != null) {
+        final newIndicator = SARIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          tipsPadding: oldIndicator.tipsPadding,
+          tickCount: oldIndicator.tickCount,
+        );
+        await controller.saveAndSetSubIndicator(newIndicator,
+            enabled: _enabled);
       }
     } catch (e) {
       debugPrint('保存SAR设置失败: $e');

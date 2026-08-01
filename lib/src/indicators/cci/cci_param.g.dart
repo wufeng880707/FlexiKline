@@ -138,8 +138,7 @@ class _$CCIReferenceConfigCWProxyImpl implements _$CCIReferenceConfigCWProxy {
   CCIReferenceConfig enabled(bool enabled) => this(enabled: enabled);
 
   @override
-  CCIReferenceConfig overbought(double overbought) =>
-      this(overbought: overbought);
+  CCIReferenceConfig overbought(double overbought) => this(overbought: overbought);
 
   @override
   CCIReferenceConfig oversold(double oversold) => this(oversold: oversold);
@@ -201,8 +200,7 @@ class _$CCIReferenceConfigCWProxyImpl implements _$CCIReferenceConfigCWProxy {
 extension $CCIReferenceConfigCopyWith on CCIReferenceConfig {
   /// Returns a callable class that can be used as follows: `instanceOfCCIReferenceConfig.copyWith(...)` or like so:`instanceOfCCIReferenceConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$CCIReferenceConfigCWProxy get copyWith =>
-      _$CCIReferenceConfigCWProxyImpl(this);
+  _$CCIReferenceConfigCWProxy get copyWith => _$CCIReferenceConfigCWProxyImpl(this);
 }
 
 abstract class _$CCIDisplayConfigCWProxy {
@@ -235,19 +233,16 @@ class _$CCIDisplayConfigCWProxyImpl implements _$CCIDisplayConfigCWProxy {
   final CCIDisplayConfig _value;
 
   @override
-  CCIDisplayConfig pointRadius(double pointRadius) =>
-      this(pointRadius: pointRadius);
+  CCIDisplayConfig pointRadius(double pointRadius) => this(pointRadius: pointRadius);
 
   @override
   CCIDisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  CCIDisplayConfig showPeriodInTips(bool showPeriodInTips) =>
-      this(showPeriodInTips: showPeriodInTips);
+  CCIDisplayConfig showPeriodInTips(bool showPeriodInTips) => this(showPeriodInTips: showPeriodInTips);
 
   @override
-  CCIDisplayConfig showReferenceValue(bool showReferenceValue) =>
-      this(showReferenceValue: showReferenceValue);
+  CCIDisplayConfig showReferenceValue(bool showReferenceValue) => this(showReferenceValue: showReferenceValue);
 
   @override
 
@@ -326,8 +321,7 @@ class _$CCIParamCWProxyImpl implements _$CCIParamCWProxy {
   CCIParam lines(List<CCILineConfig> lines) => this(lines: lines);
 
   @override
-  CCIParam reference(CCIReferenceConfig reference) =>
-      this(reference: reference);
+  CCIParam reference(CCIReferenceConfig reference) => this(reference: reference);
 
   @override
   CCIParam display(CCIDisplayConfig display) => this(display: display);
@@ -377,8 +371,7 @@ extension $CCIParamCopyWith on CCIParam {
 // JsonSerializableGenerator
 // **************************************************************************
 
-CCILineConfig _$CCILineConfigFromJson(Map<String, dynamic> json) =>
-    CCILineConfig(
+CCILineConfig _$CCILineConfigFromJson(Map<String, dynamic> json) => CCILineConfig(
       id: json['id'] as String,
       enabled: json['enabled'] as bool? ?? true,
       period: (json['period'] as num).toInt(),
@@ -386,8 +379,7 @@ CCILineConfig _$CCILineConfigFromJson(Map<String, dynamic> json) =>
       width: (json['width'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$CCILineConfigToJson(CCILineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$CCILineConfigToJson(CCILineConfig instance) => <String, dynamic>{
       'id': instance.id,
       'enabled': instance.enabled,
       'period': instance.period,
@@ -395,20 +387,16 @@ Map<String, dynamic> _$CCILineConfigToJson(CCILineConfig instance) =>
       'width': instance.width,
     };
 
-CCIReferenceConfig _$CCIReferenceConfigFromJson(Map<String, dynamic> json) =>
-    CCIReferenceConfig(
+CCIReferenceConfig _$CCIReferenceConfigFromJson(Map<String, dynamic> json) => CCIReferenceConfig(
       enabled: json['enabled'] as bool? ?? true,
       overbought: (json['overbought'] as num?)?.toDouble() ?? 100.0,
       oversold: (json['oversold'] as num?)?.toDouble() ?? -100.0,
       lineWidth: (json['lineWidth'] as num?)?.toDouble() ?? 0.5,
-      color: json['color'] == null
-          ? const Color(0x66666666)
-          : const ColorConverter().fromJson(json['color'] as String),
+      color: json['color'] == null ? const Color(0x66666666) : const ColorConverter().fromJson(json['color'] as String),
       dashWidth: (json['dashWidth'] as num?)?.toDouble() ?? 2.0,
     );
 
-Map<String, dynamic> _$CCIReferenceConfigToJson(CCIReferenceConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$CCIReferenceConfigToJson(CCIReferenceConfig instance) => <String, dynamic>{
       'enabled': instance.enabled,
       'overbought': instance.overbought,
       'oversold': instance.oversold,
@@ -417,16 +405,14 @@ Map<String, dynamic> _$CCIReferenceConfigToJson(CCIReferenceConfig instance) =>
       'dashWidth': instance.dashWidth,
     };
 
-CCIDisplayConfig _$CCIDisplayConfigFromJson(Map<String, dynamic> json) =>
-    CCIDisplayConfig(
+CCIDisplayConfig _$CCIDisplayConfigFromJson(Map<String, dynamic> json) => CCIDisplayConfig(
       pointRadius: (json['pointRadius'] as num?)?.toDouble() ?? 0.0,
       precision: (json['precision'] as num?)?.toInt() ?? 2,
       showPeriodInTips: json['showPeriodInTips'] as bool? ?? true,
       showReferenceValue: json['showReferenceValue'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$CCIDisplayConfigToJson(CCIDisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$CCIDisplayConfigToJson(CCIDisplayConfig instance) => <String, dynamic>{
       'pointRadius': instance.pointRadius,
       'precision': instance.precision,
       'showPeriodInTips': instance.showPeriodInTips,
@@ -435,13 +421,10 @@ Map<String, dynamic> _$CCIDisplayConfigToJson(CCIDisplayConfig instance) =>
 
 CCIParam _$CCIParamFromJson(Map<String, dynamic> json) => CCIParam(
       maxLines: (json['maxLines'] as num?)?.toInt() ?? 10,
-      lines: (json['lines'] as List<dynamic>)
-          .map((e) => CCILineConfig.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      lines: (json['lines'] as List<dynamic>).map((e) => CCILineConfig.fromJson(e as Map<String, dynamic>)).toList(),
       reference: json['reference'] == null
           ? const CCIReferenceConfig()
-          : CCIReferenceConfig.fromJson(
-              json['reference'] as Map<String, dynamic>),
+          : CCIReferenceConfig.fromJson(json['reference'] as Map<String, dynamic>),
       display: json['display'] == null
           ? const CCIDisplayConfig()
           : CCIDisplayConfig.fromJson(json['display'] as Map<String, dynamic>),

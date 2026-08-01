@@ -37,9 +37,6 @@ abstract interface class PaintDataScope {
   /// 当前绘制使用的 K 线数据。
   KlineData get klineData;
 
-  /// 兼容 fork 旧 API；新代码使用 [klineData]。
-  KlineData get curKlineData;
-
   /// 当前 K 线规格变化 listenable。
   ValueListenable<KlineSpec> get klineSpecListenable;
 
@@ -116,7 +113,7 @@ abstract interface class PaintRuntimeScope {
   Rect get chartZoomSlideBarRect;
 
   /// 请求重绘 chart 图层。
-  void requestRepaint();
+  void requestRepaint({bool reset = false});
 
   /// 请求取消当前 cross。
   void requestCancelCross();

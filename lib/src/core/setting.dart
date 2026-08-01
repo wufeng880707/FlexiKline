@@ -283,6 +283,16 @@ mixin SettingBinding on KlineBindingBase {
     if (!fixedSize.isFinite) return false;
     if (!_canApplyFixedSize(fixedSize)) return false;
 
+    // mount 前没有 mainPaintObject，不能同步 adapt 尺寸；这里只记录
+    // fixed 目标尺寸，首次 mount/initState 时再完成真实布局。
+    if (!isMounted) {
+      _fixedSize = fixedSize;
+      if (layoutMode != FlexiLayoutMode.fixed) {
+        _layoutModeNotifier.value = FlexiLayoutMode.fixed;
+      }
+      return true;
+    }
+
     if (layoutMode == FlexiLayoutMode.fixed) {
       // fixed 内只更新尺寸，不切换模式。
       if (fixedSize.equals(_fixedSize)) return true;
@@ -293,9 +303,6 @@ mixin SettingBinding on KlineBindingBase {
       _fixedSize = fixedSize;
       _layoutModeNotifier.value = FlexiLayoutMode.fixed;
     }
-
-    // mount 前只记录 fixedSize，首次布局在 initState/build 约束驱动时完成。
-    if (!isMounted) return true;
 
     final changed = _layoutFixedGeometry();
     _notifyCanvasSizeChanged(force: changed);
@@ -442,17 +449,11 @@ mixin SettingBinding on KlineBindingBase {
     return _paintObjectManager.supportMainIndicatorKeys.where((key) => key is! ExternalIndicatorKey);
   }
 
-  /// 兼容 fork 旧 API；新代码使用 [getSupportMainIndicatorKeys]。
-  Iterable<IIndicatorKey> get supportMainIndicatorKeys => getSupportMainIndicatorKeys();
-
   /// 副区已注册指标 key；默认过滤 External 业务指标，[includeExternal]=true 则全返回。
   Iterable<IIndicatorKey> getSupportSubIndicatorKeys([bool includeExternal = false]) {
     if (includeExternal) return _paintObjectManager.supportSubIndicatorKeys;
     return _paintObjectManager.supportSubIndicatorKeys.where((key) => key is! ExternalIndicatorKey);
   }
-
-  /// 兼容 fork 旧 API；新代码使用 [getSupportSubIndicatorKeys]。
-  Iterable<IIndicatorKey> get supportSubIndicatorKeys => getSupportSubIndicatorKeys();
 
   Iterable<IIndicatorKey> get mainIndicatorKeys {
     return _paintObjectManager.mainIndicatorKeys;
@@ -563,9 +564,6 @@ mixin SettingBinding on KlineBindingBase {
     return true;
   }
 
-  /// 兼容 fork 旧 API；新代码使用 [showMainIndicator]。
-  bool addMainIndicator(IIndicatorKey key) => showMainIndicator(key);
-
   /// 在主图中隐藏指标。
   bool hideMainIndicator(IIndicatorKey key) {
     if (!_paintObjectManager.removeMainPaintObject(key)) return false;
@@ -573,9 +571,6 @@ mixin SettingBinding on KlineBindingBase {
     markRepaintCross();
     return true;
   }
-
-  /// 兼容 fork 旧 API；新代码使用 [hideMainIndicator]。
-  bool removeMainIndicator(IIndicatorKey key) => hideMainIndicator(key);
 
   /// 主图是否已添加 [key] 指标。
   bool hasAddedMainIndicator(IIndicatorKey key) {
@@ -598,18 +593,12 @@ mixin SettingBinding on KlineBindingBase {
     return true;
   }
 
-  /// 兼容 fork 旧 API；新代码使用 [showSubIndicator]。
-  bool addSubIndicator(IIndicatorKey key) => showSubIndicator(key);
-
   /// 在副图中隐藏指标。
   bool hideSubIndicator(IIndicatorKey key) {
     if (!_paintObjectManager.removeSubPaintObject(key)) return false;
     _onSubIndicatorsChanged();
     return true;
   }
-
-  /// 兼容 fork 旧 API；新代码使用 [hideSubIndicator]。
-  bool removeSubIndicator(IIndicatorKey key) => hideSubIndicator(key);
 
   /// 副图是否已添加 [key] 指标。
   bool hasAddedSubIndicator(IIndicatorKey key) {
@@ -626,15 +615,6 @@ mixin SettingBinding on KlineBindingBase {
     if (storeDrawOverlays && drawConfig.enable) {
       _drawObjectManager.storeDrawOverlaysConfig();
     }
-  }
-
-  /// 兼容 fork 旧 API；保存当前配置并刷新所有绘制层。
-  void updateFlexiKlineConfig() {
-    storeFlexiKlineConfig();
-    markRepaintChart(reset: true);
-    markRepaintCross();
-    markRepaintGrid();
-    markRepaintDraw();
   }
 
   /// SettingConfig
@@ -711,24 +691,5 @@ mixin SettingBinding on KlineBindingBase {
   /// 获取时间轴指标配置
   T getTimeIndicator<T extends TimeBaseIndicator>() {
     return timePaintObject.indicator as T;
-  }
-
-  /// 兼容 fork 旧 API；按 key 获取当前声明或已挂载的指标配置。
-  T? getIndicator<T extends Indicator>(IIndicatorKey key) {
-    return _paintObjectManager.getIndicator<T>(key);
-  }
-
-  /// 兼容 fork 旧 API；同步指标配置到声明缓存、已挂载对象和本地配置。
-  bool updateIndicator<T extends Indicator>(T indicator) {
-    final updated = _paintObjectManager.updateIndicator(indicator);
-    if (!updated) return false;
-
-    final config = configuration;
-    if (config is IIndicatorConfig) {
-      (config as IIndicatorConfig).saveIndicator(indicator);
-    }
-    markRepaintChart(reset: true);
-    markRepaintCross();
-    return true;
   }
 }

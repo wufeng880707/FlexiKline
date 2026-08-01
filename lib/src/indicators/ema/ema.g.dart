@@ -51,8 +51,7 @@ class _$EMAIndicatorCWProxyImpl implements _$EMAIndicatorCWProxy {
   EMAIndicator calcParam(EmaParam calcParam) => this(calcParam: calcParam);
 
   @override
-  EMAIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  EMAIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
 

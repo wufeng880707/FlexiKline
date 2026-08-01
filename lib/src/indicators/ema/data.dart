@@ -18,17 +18,16 @@ part of 'ema.dart';
 extension CandleEmaExt on FlexiCandleModel {
   List<FlexiNum?>? getEmaList(int dataIndex) => getList<FlexiNum>(dataIndex);
 
-  bool isValidEmaList(int dataIndex) =>
-      getEmaList(dataIndex)?.any((e) => e != null) ?? false;
+  bool isValidEmaList(int dataIndex) => getEmaList(dataIndex)?.any((e) => e != null) ?? false;
 
   void cleanEma(int dataIndex) => clean(dataIndex);
 }
 
-mixin EmaDataMixin<T extends EMAIndicator> on DataPaintObject<T> {
+mixin EmaDataMixin<T extends EMAIndicator> on ComputedPaintObject<T> {
   EmaParam get calcParam => indicator.calcParam;
 
   @override
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     calcuAndCacheEma(
       calcParam,
       start: range.start,
@@ -152,7 +151,7 @@ mixin EmaDataMixin<T extends EMAIndicator> on DataPaintObject<T> {
 
     // 确保 end 在有效范围内
     end = end.clamp(0, len);
-    
+
     // 确保数据已计算，使用安全的索引检查
     final checkIndex = (end > 0 ? end - 1 : 0).clamp(0, len - 1);
     if (!klineData.list[checkIndex].isValidEmaList(dataIndex)) {

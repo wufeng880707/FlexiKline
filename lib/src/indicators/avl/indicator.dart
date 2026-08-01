@@ -14,12 +14,12 @@
 
 part of 'avl.dart';
 
-/// AVL 均价线指标  
+/// AVL 均价线指标
 /// 均价线(AVL) = (开盘价 + 最高价 + 最低价 + 收盘价) / 4
 /// 适用于24小时连续交易的加密货币市场，使用四价平均提供更全面的价格信息
 @CopyWith()
 @FlexiIndicatorSerializable
-class AVLIndicator extends DataIndicator implements IPrecomputable {
+class AVLIndicator extends ComputedIndicator {
   AVLIndicator({
     super.zIndex = 0,
     required super.height,
@@ -27,7 +27,7 @@ class AVLIndicator extends DataIndicator implements IPrecomputable {
     this.calcParam = const AVLParam(),
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('avl'));
+  }) : super(key: const ComputedIndicatorKey('avl'));
 
   /// AVL计算参数 - 包含所有配置
   @override
@@ -40,7 +40,7 @@ class AVLIndicator extends DataIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  DataPaintObject<AVLIndicator> createPaintObject() {
+  ComputedPaintObject<AVLIndicator> createPaintObject() {
     return AVLPaintObject();
   }
 
@@ -50,7 +50,7 @@ class AVLIndicator extends DataIndicator implements IPrecomputable {
   Map<String, dynamic> toJson() => _$AVLIndicatorToJson(this);
 }
 
-class AVLPaintObject<T extends AVLIndicator> extends DataPaintObject<T>
+class AVLPaintObject<T extends AVLIndicator> extends ComputedPaintObject<T>
     with AvlDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   AVLPaintObject();
 
@@ -77,7 +77,7 @@ class AVLPaintObject<T extends AVLIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     /// 绘制AVL图
     paintAvlChart(canvas, size);
 
@@ -102,7 +102,7 @@ class AVLPaintObject<T extends AVLIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     /// onCross时, 绘制Y轴上的标记值(注: 仅对indicator.key为subAvlKey时有效)
     if (isInSub) {
       paintYAxisTicksOnCross(
@@ -153,7 +153,7 @@ class AVLPaintObject<T extends AVLIndicator> extends DataPaintObject<T>
 
     // 绘制线条
     final path = Path()..addPolygon(points, false);
-    
+
     if (appearance.dashWidth > 0) {
       // 绘制虚线 - 使用简单的实现
       final pathMetrics = path.computeMetrics();

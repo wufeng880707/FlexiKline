@@ -54,8 +54,7 @@ class _$KDJIndicatorCWProxyImpl implements _$KDJIndicatorCWProxy {
   KDJIndicator calcParam(KDJParam calcParam) => this(calcParam: calcParam);
 
   @override
-  KDJIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  KDJIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
   KDJIndicator tickCount(int tickCount) => this(tickCount: tickCount);

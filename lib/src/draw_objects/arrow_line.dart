@@ -28,12 +28,12 @@ class ArrowLineDrawObject extends DrawObject {
   ArrowLineDrawObject(super.overlay, super.config);
 
   @override
-  ArrowParams getDrawParams(IDrawContext context) {
+  ArrowParams getDrawParams(DrawContext context) {
     return const ArrowParams(length: 15.0, radians: 0.5);
   }
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 2,
       'ArrowLine hitTest points.length:${points.length} must be equals 2',
@@ -49,7 +49,7 @@ class ArrowLineDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 2,
       'RayLine draw points.length:${points.length} must be equals 2',

@@ -54,8 +54,7 @@ class _$AVLIndicatorCWProxyImpl implements _$AVLIndicatorCWProxy {
   AVLIndicator calcParam(AVLParam calcParam) => this(calcParam: calcParam);
 
   @override
-  AVLIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  AVLIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
   AVLIndicator tickCount(int tickCount) => this(tickCount: tickCount);
@@ -120,18 +119,14 @@ AVLIndicator _$AVLIndicatorFromJson(Map<String, dynamic> json) => AVLIndicator(
       height: (json['height'] as num).toDouble(),
       padding: json['padding'] == null
           ? defaultMainIndicatorPadding
-          : const EdgeInsetsConverter()
-              .fromJson(json['padding'] as Map<String, dynamic>),
-      calcParam: json['calcParam'] == null
-          ? const AVLParam()
-          : AVLParam.fromJson(json['calcParam'] as Map<String, dynamic>),
-      tipsPadding: const EdgeInsetsConverter()
-          .fromJson(json['tipsPadding'] as Map<String, dynamic>),
+          : const EdgeInsetsConverter().fromJson(json['padding'] as Map<String, dynamic>),
+      calcParam:
+          json['calcParam'] == null ? const AVLParam() : AVLParam.fromJson(json['calcParam'] as Map<String, dynamic>),
+      tipsPadding: const EdgeInsetsConverter().fromJson(json['tipsPadding'] as Map<String, dynamic>),
       tickCount: (json['tickCount'] as num?)?.toInt() ?? defaultSubTickCount,
     );
 
-Map<String, dynamic> _$AVLIndicatorToJson(AVLIndicator instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$AVLIndicatorToJson(AVLIndicator instance) => <String, dynamic>{
       'height': instance.height,
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'zIndex': instance.zIndex,

@@ -30,8 +30,7 @@ class _$AVLParamCWProxyImpl implements _$AVLParamCWProxy {
   final AVLParam _value;
 
   @override
-  AVLParam appearance(AVLAppearanceConfig appearance) =>
-      this(appearance: appearance);
+  AVLParam appearance(AVLAppearanceConfig appearance) => this(appearance: appearance);
 
   @override
   AVLParam display(AVLDisplayConfig display) => this(display: display);
@@ -135,8 +134,7 @@ class _$AVLAppearanceConfigCWProxyImpl implements _$AVLAppearanceConfigCWProxy {
 extension $AVLAppearanceConfigCopyWith on AVLAppearanceConfig {
   /// Returns a callable class that can be used as follows: `instanceOfAVLAppearanceConfig.copyWith(...)` or like so:`instanceOfAVLAppearanceConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$AVLAppearanceConfigCWProxy get copyWith =>
-      _$AVLAppearanceConfigCWProxyImpl(this);
+  _$AVLAppearanceConfigCWProxy get copyWith => _$AVLAppearanceConfigCWProxyImpl(this);
 }
 
 abstract class _$AVLDisplayConfigCWProxy {
@@ -217,8 +215,7 @@ extension $AVLDisplayConfigCopyWith on AVLDisplayConfig {
 AVLParam _$AVLParamFromJson(Map<String, dynamic> json) => AVLParam(
       appearance: json['appearance'] == null
           ? const AVLAppearanceConfig()
-          : AVLAppearanceConfig.fromJson(
-              json['appearance'] as Map<String, dynamic>),
+          : AVLAppearanceConfig.fromJson(json['appearance'] as Map<String, dynamic>),
       display: json['display'] == null
           ? const AVLDisplayConfig()
           : AVLDisplayConfig.fromJson(json['display'] as Map<String, dynamic>),
@@ -229,32 +226,25 @@ Map<String, dynamic> _$AVLParamToJson(AVLParam instance) => <String, dynamic>{
       'display': instance.display.toJson(),
     };
 
-AVLAppearanceConfig _$AVLAppearanceConfigFromJson(Map<String, dynamic> json) =>
-    AVLAppearanceConfig(
-      color: json['color'] == null
-          ? const Color(0xffff5722)
-          : const ColorConverter().fromJson(json['color'] as String),
+AVLAppearanceConfig _$AVLAppearanceConfigFromJson(Map<String, dynamic> json) => AVLAppearanceConfig(
+      color: json['color'] == null ? const Color(0xffff5722) : const ColorConverter().fromJson(json['color'] as String),
       lineWidth: (json['lineWidth'] as num?)?.toDouble() ?? 1.0,
       dashWidth: (json['dashWidth'] as num?)?.toDouble() ?? 0.0,
     );
 
-Map<String, dynamic> _$AVLAppearanceConfigToJson(
-        AVLAppearanceConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$AVLAppearanceConfigToJson(AVLAppearanceConfig instance) => <String, dynamic>{
       'color': const ColorConverter().toJson(instance.color),
       'lineWidth': instance.lineWidth,
       'dashWidth': instance.dashWidth,
     };
 
-AVLDisplayConfig _$AVLDisplayConfigFromJson(Map<String, dynamic> json) =>
-    AVLDisplayConfig(
+AVLDisplayConfig _$AVLDisplayConfigFromJson(Map<String, dynamic> json) => AVLDisplayConfig(
       precision: (json['precision'] as num?)?.toInt() ?? 2,
       showInTips: json['showInTips'] as bool? ?? true,
       tipsLabel: json['tipsLabel'] as String? ?? 'AVL',
     );
 
-Map<String, dynamic> _$AVLDisplayConfigToJson(AVLDisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$AVLDisplayConfigToJson(AVLDisplayConfig instance) => <String, dynamic>{
       'precision': instance.precision,
       'showInTips': instance.showInTips,
       'tipsLabel': instance.tipsLabel,

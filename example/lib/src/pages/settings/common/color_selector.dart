@@ -57,7 +57,10 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
       child: Container(
         height: widget.height,
         width: widget.width,
-        decoration: BoxDecoration(border: Border.all(color: theme.dividerLine), borderRadius: BorderRadius.circular(4), color: theme.cardBg),
+        decoration: BoxDecoration(
+            border: Border.all(color: theme.dividerLine),
+            borderRadius: BorderRadius.circular(4),
+            color: theme.cardBg),
         child: Row(
           // mainAxisSize: MainAxisSize.min,
           children: [
@@ -85,7 +88,8 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
   }
 
   void _showColorPickerOverlay(BuildContext context, FKTheme theme) {
-    final RenderBox? renderBox = _buttonKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox =
+        _buttonKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     // 直接使用Overlay，避免Dialog坐标系统问题
@@ -100,7 +104,8 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
 
     // 面板尺寸配置 - 与_buildColorPanel中的设置保持一致
     const double panelWidthBase = 140.0; // 从160进一步减小到140
-    final double panelWidth = panelWidthBase; // 使用ScreenUtil缩放，与_buildColorPanel一致
+    final double panelWidth =
+        panelWidthBase; // 使用ScreenUtil缩放，与_buildColorPanel一致
 
     // 根据配置计算面板高度 - 与_buildColorPanel保持一致
     const double panelPadding = 10.0; // 与面板配置一致
@@ -108,15 +113,19 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
     const int itemsPerRow = 5;
 
     // 计算颜色块大小（与_buildColorPanel中的计算保持一致）
-    final double availableWidth = panelWidthBase - panelPadding * 2 - (itemsPerRow - 1) * itemSpacing;
-    final double colorSize = (availableWidth / itemsPerRow) - 0.5; // 减少0.5px确保不会溢出
+    final double availableWidth =
+        panelWidthBase - panelPadding * 2 - (itemsPerRow - 1) * itemSpacing;
+    final double colorSize =
+        (availableWidth / itemsPerRow) - 0.5; // 减少0.5px确保不会溢出
 
     // 计算总行数
     final int totalColors = 10; // 假设总共10个颜色
     final int rowCount = (totalColors / itemsPerRow).ceil(); // 计算需要的行数
 
     // 面板高度 = 上下内边距 + 行数*颜色块高度 + (行数-1)*行间距
-    final double panelHeight = (panelPadding * 4 + rowCount * colorSize + (rowCount - 1) * itemSpacing);
+    final double panelHeight = (panelPadding * 4 +
+        rowCount * colorSize +
+        (rowCount - 1) * itemSpacing);
     const double margin = 16.0;
 
     final Size screenSize = MediaQuery.of(context).size;
@@ -128,7 +137,8 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
     // 计算左对齐和右对齐的位置
     final double leftAlignedLeft = buttonPosition.dx;
     final double leftAlignedRight = leftAlignedLeft + panelWidth;
-    final double rightAlignedLeft = buttonPosition.dx + buttonSize.width - panelWidth;
+    final double rightAlignedLeft =
+        buttonPosition.dx + buttonSize.width - panelWidth;
     final double rightAlignedRight = rightAlignedLeft + panelWidth;
 
     // 检查左对齐是否超出右边界
@@ -159,7 +169,8 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
     double panelTop;
     bool isDownwardAligned;
 
-    final double downwardTop = buttonPosition.dy + buttonSize.height + widget.panelOffset;
+    final double downwardTop =
+        buttonPosition.dy + buttonSize.height + widget.panelOffset;
     if (downwardTop + panelHeight <= screenSize.height - margin) {
       // 向下显示不会超出底部边界
       panelTop = downwardTop;
@@ -221,12 +232,15 @@ class _ColorSelectorState extends ConsumerState<ColorSelector> {
 
     // 根据配置计算颜色块大小 - 简单有效的方案
     // 可用宽度 = 面板宽度 - 左右内边距 - (颜色块之间的间距数量 × 间距大小)
-    final double availableWidth = panelWidth - panelPadding * 2 - (itemsPerRow - 1) * itemSpacing;
-    final double colorSize = (availableWidth / itemsPerRow) - 0.5; // 减少0.5px确保不会溢出
+    final double availableWidth =
+        panelWidth - panelPadding * 2 - (itemsPerRow - 1) * itemSpacing;
+    final double colorSize =
+        (availableWidth / itemsPerRow) - 0.5; // 减少0.5px确保不会溢出
 
     return Container(
       width: panelWidth,
-      padding: EdgeInsets.symmetric(vertical: panelPadding, horizontal: panelPadding),
+      padding: EdgeInsets.symmetric(
+          vertical: panelPadding, horizontal: panelPadding),
       decoration: BoxDecoration(
         color: theme.cardBg,
         borderRadius: BorderRadius.circular(panelRadius),

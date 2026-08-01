@@ -33,12 +33,13 @@ class FlexiKlineDrawMenubar extends ConsumerStatefulWidget {
   });
 
   final FlexiKlineController controller;
-  
+
   /// 隐藏菜单栏的回调
   final VoidCallback onHide;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _FlexiKlineDrawMenubarState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _FlexiKlineDrawMenubarState();
 }
 
 class _FlexiKlineDrawMenubarState extends ConsumerState<FlexiKlineDrawMenubar> {
@@ -58,7 +59,7 @@ class _FlexiKlineDrawMenubarState extends ConsumerState<FlexiKlineDrawMenubar> {
           _MagnetModeToggle(controller: widget.controller, theme: theme),
           _VisibilityToggle(controller: widget.controller),
           _ClearAllButton(controller: widget.controller),
-          _SaveButton(controller: widget.controller,onHide: widget.onHide),
+          _SaveButton(controller: widget.controller, onHide: widget.onHide),
         ],
       ),
     );
@@ -81,7 +82,7 @@ class _DrawToolsScrollableSection extends ConsumerWidget {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: ValueListenableBuilder(
-          valueListenable: controller.drawStateListener,
+          valueListenable: controller.drawStateListenable,
           builder: (context, state, child) {
             final drawType = state.object?.type;
             return Row(
@@ -131,7 +132,7 @@ class _ContinuousDrawToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller.drawContinuousListener,
+      valueListenable: controller.drawContinuousListenable,
       builder: (context, isOn, child) => ShrinkIconButton(
         onPressed: () => controller.setDrawContinuous(!isOn),
         content: Icons.auto_awesome_motion_rounded,
@@ -154,7 +155,7 @@ class _MagnetModeToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller.drawMagnetModeListener,
+      valueListenable: controller.drawMagnetModeListenable,
       builder: (context, mode, child) => ShrinkIconButton(
         onPressed: () => controller.setDrawMagnetMode(mode.next),
         color: mode.isNormal ? theme.t2 : Colors.blueAccent,
@@ -173,10 +174,11 @@ class _VisibilityToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller.drawVisibilityListener,
+      valueListenable: controller.drawVisibilityListenable,
       builder: (context, isShow, child) => ShrinkIconButton(
-        onPressed: () => controller.setDrawVisibility(!isShow),
-        content: isShow ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+        onPressed: () => controller.setDrawVisible(!isShow),
+        content:
+            isShow ? Icons.visibility_outlined : Icons.visibility_off_outlined,
       ),
     );
   }
@@ -191,7 +193,7 @@ class _ClearAllButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ShrinkIconButton(
-      onPressed: () => controller.removeAllDrawObject(),
+      onPressed: () => controller.removeAllDrawObjects(),
       content: Icons.cleaning_services_rounded,
     );
   }
@@ -199,7 +201,7 @@ class _ClearAllButton extends StatelessWidget {
 
 /// 保存按钮（暂时未实现功能）
 class _SaveButton extends StatelessWidget {
-  const _SaveButton({required this.controller,required this.onHide});
+  const _SaveButton({required this.controller, required this.onHide});
 
   final FlexiKlineController controller;
   final VoidCallback onHide;
@@ -208,7 +210,6 @@ class _SaveButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ShrinkIconButton(
       onPressed: () {
-      
         // TODO: 实现保存绘制对象到文件的功能
         controller.storeFlexiKlineConfig();
         onHide();
@@ -217,4 +218,3 @@ class _SaveButton extends StatelessWidget {
     );
   }
 }
-

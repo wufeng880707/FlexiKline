@@ -71,7 +71,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
 
   Widget _buildPreferTimeBarList(BuildContext context, WidgetRef ref) {
     return ValueListenableBuilder(
-      valueListenable: controller.intervalListener,
+      valueListenable: controller.intervalListenable,
       builder: (context, value, child) {
         final theme = ref.watch(themeProvider);
         return Row(

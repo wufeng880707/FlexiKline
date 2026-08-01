@@ -132,8 +132,7 @@ class _$RSIValidationConfigCWProxyImpl implements _$RSIValidationConfigCWProxy {
   RSIValidationConfig maxPeriod(int maxPeriod) => this(maxPeriod: maxPeriod);
 
   @override
-  RSIValidationConfig allowDuplicate(bool allowDuplicate) =>
-      this(allowDuplicate: allowDuplicate);
+  RSIValidationConfig allowDuplicate(bool allowDuplicate) => this(allowDuplicate: allowDuplicate);
 
   @override
 
@@ -168,8 +167,7 @@ class _$RSIValidationConfigCWProxyImpl implements _$RSIValidationConfigCWProxy {
 extension $RSIValidationConfigCopyWith on RSIValidationConfig {
   /// Returns a callable class that can be used as follows: `instanceOfRSIValidationConfig.copyWith(...)` or like so:`instanceOfRSIValidationConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$RSIValidationConfigCWProxy get copyWith =>
-      _$RSIValidationConfigCWProxyImpl(this);
+  _$RSIValidationConfigCWProxy get copyWith => _$RSIValidationConfigCWProxyImpl(this);
 }
 
 abstract class _$RSIReferenceConfigCWProxy {
@@ -211,8 +209,7 @@ class _$RSIReferenceConfigCWProxyImpl implements _$RSIReferenceConfigCWProxy {
   RSIReferenceConfig enabled(bool enabled) => this(enabled: enabled);
 
   @override
-  RSIReferenceConfig overbought(double overbought) =>
-      this(overbought: overbought);
+  RSIReferenceConfig overbought(double overbought) => this(overbought: overbought);
 
   @override
   RSIReferenceConfig oversold(double oversold) => this(oversold: oversold);
@@ -274,8 +271,7 @@ class _$RSIReferenceConfigCWProxyImpl implements _$RSIReferenceConfigCWProxy {
 extension $RSIReferenceConfigCopyWith on RSIReferenceConfig {
   /// Returns a callable class that can be used as follows: `instanceOfRSIReferenceConfig.copyWith(...)` or like so:`instanceOfRSIReferenceConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$RSIReferenceConfigCWProxy get copyWith =>
-      _$RSIReferenceConfigCWProxyImpl(this);
+  _$RSIReferenceConfigCWProxy get copyWith => _$RSIReferenceConfigCWProxyImpl(this);
 }
 
 abstract class _$RSIDisplayConfigCWProxy {
@@ -311,23 +307,19 @@ class _$RSIDisplayConfigCWProxyImpl implements _$RSIDisplayConfigCWProxy {
   final RSIDisplayConfig _value;
 
   @override
-  RSIDisplayConfig pointRadius(double pointRadius) =>
-      this(pointRadius: pointRadius);
+  RSIDisplayConfig pointRadius(double pointRadius) => this(pointRadius: pointRadius);
 
   @override
-  RSIDisplayConfig showCrossPoint(bool showCrossPoint) =>
-      this(showCrossPoint: showCrossPoint);
+  RSIDisplayConfig showCrossPoint(bool showCrossPoint) => this(showCrossPoint: showCrossPoint);
 
   @override
   RSIDisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  RSIDisplayConfig showPeriodInTips(bool showPeriodInTips) =>
-      this(showPeriodInTips: showPeriodInTips);
+  RSIDisplayConfig showPeriodInTips(bool showPeriodInTips) => this(showPeriodInTips: showPeriodInTips);
 
   @override
-  RSIDisplayConfig showReferenceValue(bool showReferenceValue) =>
-      this(showReferenceValue: showReferenceValue);
+  RSIDisplayConfig showReferenceValue(bool showReferenceValue) => this(showReferenceValue: showReferenceValue);
 
   @override
 
@@ -414,12 +406,10 @@ class _$RsiParamCWProxyImpl implements _$RsiParamCWProxy {
   RsiParam lines(List<RSILineConfig> lines) => this(lines: lines);
 
   @override
-  RsiParam validation(RSIValidationConfig validation) =>
-      this(validation: validation);
+  RsiParam validation(RSIValidationConfig validation) => this(validation: validation);
 
   @override
-  RsiParam reference(RSIReferenceConfig reference) =>
-      this(reference: reference);
+  RsiParam reference(RSIReferenceConfig reference) => this(reference: reference);
 
   @override
   RsiParam display(RSIDisplayConfig display) => this(display: display);
@@ -474,8 +464,7 @@ extension $RsiParamCopyWith on RsiParam {
 // JsonSerializableGenerator
 // **************************************************************************
 
-RSILineConfig _$RSILineConfigFromJson(Map<String, dynamic> json) =>
-    RSILineConfig(
+RSILineConfig _$RSILineConfigFromJson(Map<String, dynamic> json) => RSILineConfig(
       id: json['id'] as String,
       enabled: json['enabled'] as bool? ?? true,
       period: (json['period'] as num).toInt(),
@@ -483,8 +472,7 @@ RSILineConfig _$RSILineConfigFromJson(Map<String, dynamic> json) =>
       width: (json['width'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$RSILineConfigToJson(RSILineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$RSILineConfigToJson(RSILineConfig instance) => <String, dynamic>{
       'id': instance.id,
       'enabled': instance.enabled,
       'period': instance.period,
@@ -492,35 +480,28 @@ Map<String, dynamic> _$RSILineConfigToJson(RSILineConfig instance) =>
       'width': instance.width,
     };
 
-RSIValidationConfig _$RSIValidationConfigFromJson(Map<String, dynamic> json) =>
-    RSIValidationConfig(
+RSIValidationConfig _$RSIValidationConfigFromJson(Map<String, dynamic> json) => RSIValidationConfig(
       minPeriod: (json['minPeriod'] as num?)?.toInt() ?? 1,
       maxPeriod: (json['maxPeriod'] as num?)?.toInt() ?? 1000,
       allowDuplicate: json['allowDuplicate'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$RSIValidationConfigToJson(
-        RSIValidationConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$RSIValidationConfigToJson(RSIValidationConfig instance) => <String, dynamic>{
       'minPeriod': instance.minPeriod,
       'maxPeriod': instance.maxPeriod,
       'allowDuplicate': instance.allowDuplicate,
     };
 
-RSIReferenceConfig _$RSIReferenceConfigFromJson(Map<String, dynamic> json) =>
-    RSIReferenceConfig(
+RSIReferenceConfig _$RSIReferenceConfigFromJson(Map<String, dynamic> json) => RSIReferenceConfig(
       enabled: json['enabled'] as bool? ?? true,
       overbought: (json['overbought'] as num?)?.toDouble() ?? 70.0,
       oversold: (json['oversold'] as num?)?.toDouble() ?? 30.0,
       lineWidth: (json['lineWidth'] as num?)?.toDouble() ?? 0.5,
-      color: json['color'] == null
-          ? const Color(0x66666666)
-          : const ColorConverter().fromJson(json['color'] as String),
+      color: json['color'] == null ? const Color(0x66666666) : const ColorConverter().fromJson(json['color'] as String),
       dashWidth: (json['dashWidth'] as num?)?.toDouble() ?? 2.0,
     );
 
-Map<String, dynamic> _$RSIReferenceConfigToJson(RSIReferenceConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$RSIReferenceConfigToJson(RSIReferenceConfig instance) => <String, dynamic>{
       'enabled': instance.enabled,
       'overbought': instance.overbought,
       'oversold': instance.oversold,
@@ -529,8 +510,7 @@ Map<String, dynamic> _$RSIReferenceConfigToJson(RSIReferenceConfig instance) =>
       'dashWidth': instance.dashWidth,
     };
 
-RSIDisplayConfig _$RSIDisplayConfigFromJson(Map<String, dynamic> json) =>
-    RSIDisplayConfig(
+RSIDisplayConfig _$RSIDisplayConfigFromJson(Map<String, dynamic> json) => RSIDisplayConfig(
       pointRadius: (json['pointRadius'] as num?)?.toDouble() ?? 0.0,
       showCrossPoint: json['showCrossPoint'] as bool? ?? false,
       precision: (json['precision'] as num?)?.toInt() ?? 2,
@@ -538,8 +518,7 @@ RSIDisplayConfig _$RSIDisplayConfigFromJson(Map<String, dynamic> json) =>
       showReferenceValue: json['showReferenceValue'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$RSIDisplayConfigToJson(RSIDisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$RSIDisplayConfigToJson(RSIDisplayConfig instance) => <String, dynamic>{
       'pointRadius': instance.pointRadius,
       'showCrossPoint': instance.showCrossPoint,
       'precision': instance.precision,
@@ -549,17 +528,13 @@ Map<String, dynamic> _$RSIDisplayConfigToJson(RSIDisplayConfig instance) =>
 
 RsiParam _$RsiParamFromJson(Map<String, dynamic> json) => RsiParam(
       maxLines: (json['maxLines'] as num?)?.toInt() ?? 10,
-      lines: (json['lines'] as List<dynamic>)
-          .map((e) => RSILineConfig.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      lines: (json['lines'] as List<dynamic>).map((e) => RSILineConfig.fromJson(e as Map<String, dynamic>)).toList(),
       validation: json['validation'] == null
           ? const RSIValidationConfig()
-          : RSIValidationConfig.fromJson(
-              json['validation'] as Map<String, dynamic>),
+          : RSIValidationConfig.fromJson(json['validation'] as Map<String, dynamic>),
       reference: json['reference'] == null
           ? const RSIReferenceConfig()
-          : RSIReferenceConfig.fromJson(
-              json['reference'] as Map<String, dynamic>),
+          : RSIReferenceConfig.fromJson(json['reference'] as Map<String, dynamic>),
       display: json['display'] == null
           ? const RSIDisplayConfig()
           : RSIDisplayConfig.fromJson(json['display'] as Map<String, dynamic>),

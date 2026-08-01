@@ -25,8 +25,7 @@ extension on FlexiCandleModel {
     return list;
   }
 
-  bool isValidCci(int dataIndex) =>
-      getCciList(dataIndex)?.any((e) => e != null) ?? false;
+  bool isValidCci(int dataIndex) => getCciList(dataIndex)?.any((e) => e != null) ?? false;
 
   MinMax? getCciMinmax(int dataIndex) {
     final cciList = getCciList(dataIndex);
@@ -37,17 +36,14 @@ extension on FlexiCandleModel {
   }
 
   double get tp =>
-      (double.parse(high.toString()) +
-          double.parse(low.toString()) +
-          double.parse(close.toString())) /
-      3.0;
+      (double.parse(high.toString()) + double.parse(low.toString()) + double.parse(close.toString())) / 3.0;
 }
 
-mixin CciDataMixin<T extends CCIIndicator> on DataPaintObject<T> {
+mixin CciDataMixin<T extends CCIIndicator> on ComputedPaintObject<T> {
   CCIParam get calcParam => indicator.calcParam;
 
   @override
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     calcuAndCacheCci(
       calcParam,
       start: range.start,
@@ -137,8 +133,7 @@ mixin CciDataMixin<T extends CCIIndicator> on DataPaintObject<T> {
   }) {
     start ??= klineData.start;
     end ??= klineData.end;
-    if (param.enabledLines.isEmpty ||
-        !klineData.checkStartAndEnd(start, end)) {
+    if (param.enabledLines.isEmpty || !klineData.checkStartAndEnd(start, end)) {
       return null;
     }
     final len = klineData.list.length;

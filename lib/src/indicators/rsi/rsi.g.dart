@@ -54,8 +54,7 @@ class _$RSIIndicatorCWProxyImpl implements _$RSIIndicatorCWProxy {
   RSIIndicator calcParam(RsiParam calcParam) => this(calcParam: calcParam);
 
   @override
-  RSIIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  RSIIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
   RSIIndicator tickCount(int tickCount) => this(tickCount: tickCount);

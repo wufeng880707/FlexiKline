@@ -51,8 +51,7 @@ class _$MAIndicatorCWProxyImpl implements _$MAIndicatorCWProxy {
   MAIndicator calcParam(MaParam calcParam) => this(calcParam: calcParam);
 
   @override
-  MAIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  MAIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
 

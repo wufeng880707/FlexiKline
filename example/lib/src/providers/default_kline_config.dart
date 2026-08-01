@@ -91,8 +91,6 @@ class DefaultFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color get countdownBg => countDownTextBg;
 
-  Color get countDownBg => countdownBg;
-
   @override
   Color get dragBg => theme.translucentBg;
 
@@ -153,7 +151,7 @@ final defaultKlineThemeProvider = StateProvider<DefaultFlexiKlineTheme>((ref) {
 });
 
 class DefaultFlexiKlineConfiguration
-    with FlexiKlineThemeConfigurationMixin
+    with FlexiKlineConfigurationMixin
     implements IIndicatorConfig {
   final WidgetRef ref;
 
@@ -278,12 +276,12 @@ class DefaultFlexiKlineConfiguration
 
       // 2. 使用代码默认值
       defLogger.d('Using code default main indicators');
-      return super.mainIndicatorBuilders;
+      return <IIndicatorKey, IndicatorBuilder>{};
     } catch (err, stack) {
       defLogger.e('Error loading default main indicators: $err',
           stackTrace: stack);
       // 3. 出错时返回代码默认值
-      return super.mainIndicatorBuilders;
+      return <IIndicatorKey, IndicatorBuilder>{};
     }
   }
 
@@ -297,7 +295,7 @@ class DefaultFlexiKlineConfiguration
         defLogger
             .d('Loaded ${cachedIndicators.length} sub indicators from cache');
         // 合并代码默认配置中缓存缺失的指标（确保新增指标始终可用）
-        final defaults = super.subIndicatorBuilders;
+        final defaults = <IIndicatorKey, IndicatorBuilder>{};
         for (final entry in defaults.entries) {
           cachedIndicators.putIfAbsent(entry.key, () => entry.value);
         }
@@ -328,12 +326,12 @@ class DefaultFlexiKlineConfiguration
 
       // 2. 使用代码默认值
       defLogger.d('Using code default sub indicators');
-      return super.subIndicatorBuilders;
+      return <IIndicatorKey, IndicatorBuilder>{};
     } catch (err, stack) {
       defLogger.e('Error loading default sub indicators: $err',
           stackTrace: stack);
       // 3. 出错时返回代码默认值
-      return super.subIndicatorBuilders;
+      return <IIndicatorKey, IndicatorBuilder>{};
     }
   }
 
@@ -350,7 +348,7 @@ class DefaultFlexiKlineConfiguration
 
         for (final indicatorConfig in cachedData['indicators']) {
           if (indicatorConfig is Map<String, dynamic>) {
-            final key = DataIndicatorKey(indicatorConfig['key'] as String);
+            final key = ComputedIndicatorKey(indicatorConfig['key'] as String);
             final builder =
                 createIndicatorBuilderFromConfig(indicatorConfig, theme);
             indicators[key] = builder;
@@ -376,7 +374,7 @@ class DefaultFlexiKlineConfiguration
 
         for (final indicatorConfig in cachedData['indicators']) {
           if (indicatorConfig is Map<String, dynamic>) {
-            final key = DataIndicatorKey(indicatorConfig['key'] as String);
+            final key = ComputedIndicatorKey(indicatorConfig['key'] as String);
             final builder =
                 createIndicatorBuilderFromConfig(indicatorConfig, theme);
             indicators[key] = builder;
@@ -432,7 +430,7 @@ class DefaultFlexiKlineConfiguration
 
     for (final entry in mainIndicators.entries) {
       try {
-        final key = DataIndicatorKey(entry.key);
+        final key = ComputedIndicatorKey(entry.key);
         final config = entry.value as Map<String, dynamic>;
         final builder = createIndicatorBuilderFromConfig(config, theme);
         indicators[key] = builder;
@@ -452,7 +450,7 @@ class DefaultFlexiKlineConfiguration
 
     for (final entry in subIndicators.entries) {
       try {
-        final key = DataIndicatorKey(entry.key);
+        final key = ComputedIndicatorKey(entry.key);
         final config = entry.value as Map<String, dynamic>;
         final builder = createIndicatorBuilderFromConfig(config, theme);
         indicators[key] = builder;

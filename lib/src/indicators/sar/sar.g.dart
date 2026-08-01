@@ -54,8 +54,7 @@ class _$SARIndicatorCWProxyImpl implements _$SARIndicatorCWProxy {
   SARIndicator calcParam(SARParam calcParam) => this(calcParam: calcParam);
 
   @override
-  SARIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  SARIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
   SARIndicator tickCount(int tickCount) => this(tickCount: tickCount);
@@ -120,18 +119,14 @@ SARIndicator _$SARIndicatorFromJson(Map<String, dynamic> json) => SARIndicator(
       height: (json['height'] as num).toDouble(),
       padding: json['padding'] == null
           ? defaultMainIndicatorPadding
-          : const EdgeInsetsConverter()
-              .fromJson(json['padding'] as Map<String, dynamic>),
-      calcParam: json['calcParam'] == null
-          ? const SARParam()
-          : SARParam.fromJson(json['calcParam'] as Map<String, dynamic>),
-      tipsPadding: const EdgeInsetsConverter()
-          .fromJson(json['tipsPadding'] as Map<String, dynamic>),
+          : const EdgeInsetsConverter().fromJson(json['padding'] as Map<String, dynamic>),
+      calcParam:
+          json['calcParam'] == null ? const SARParam() : SARParam.fromJson(json['calcParam'] as Map<String, dynamic>),
+      tipsPadding: const EdgeInsetsConverter().fromJson(json['tipsPadding'] as Map<String, dynamic>),
       tickCount: (json['tickCount'] as num?)?.toInt() ?? defaultSubTickCount,
     );
 
-Map<String, dynamic> _$SARIndicatorToJson(SARIndicator instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$SARIndicatorToJson(SARIndicator instance) => <String, dynamic>{
       'height': instance.height,
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'zIndex': instance.zIndex,

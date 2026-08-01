@@ -19,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/style_selector_row.dart';
@@ -37,7 +38,7 @@ class OBVSettingPage extends BaseIndicatorSettingPage {
 
 class _OBVSettingPageState
     extends BaseIndicatorSettingPageState<OBVSettingPage> {
-  static const _obvKey = DataIndicatorKey('obv');
+  static const _obvKey = ComputedIndicatorKey('obv');
 
   static const _defaultParam = OBVParam(
     obvLine: OBVLineConfig(
@@ -84,7 +85,8 @@ class _OBVSettingPageState
     final klineState = ref.read(klineStateProvider(widget.controller));
     final controller = klineState.controller;
     try {
-      final indicator = controller.getIndicator<OBVIndicator>(_obvKey);
+      final indicator =
+          controller.configuredSubIndicator<OBVIndicator>(_obvKey);
       if (indicator != null) {
         _currentParam = indicator.calcParam;
       } else {
@@ -109,7 +111,6 @@ class _OBVSettingPageState
 
     return [
       buildSectionTitle('OBV主线设置', theme),
-
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 8.r),
         child: Row(
@@ -154,21 +155,15 @@ class _OBVSettingPageState
           ],
         ),
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('OBV均线设置', theme),
-
       if (maLines.isNotEmpty) _buildMATableHeader(theme),
-
       ...maLines.asMap().entries.map((entry) {
         final index = entry.key;
         final maLine = entry.value;
         return _buildMALineRow(index, maLine, theme);
       }),
-
       SizedBox(height: 8.r),
-
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.r),
         child: ElevatedButton.icon(
@@ -183,11 +178,8 @@ class _OBVSettingPageState
           ),
         ),
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('显示配置', theme),
-
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 4.r),
         child: Row(
@@ -215,7 +207,6 @@ class _OBVSettingPageState
           ],
         ),
       ),
-
       buildSwitchItem(
         title: '在Tips中显示MA值',
         value: _currentParam.display.showMAInTips,
@@ -236,9 +227,18 @@ class _OBVSettingPageState
       padding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 4.r),
       child: Row(
         children: [
-          SizedBox(width: 40.r, child: Text('启用', style: TextStyle(color: theme.t2, fontSize: 12.sp))),
-          Expanded(flex: 2, child: Text('周期', style: TextStyle(color: theme.t2, fontSize: 12.sp))),
-          Expanded(flex: 2, child: Text('颜色/线宽', style: TextStyle(color: theme.t2, fontSize: 12.sp))),
+          SizedBox(
+              width: 40.r,
+              child: Text('启用',
+                  style: TextStyle(color: theme.t2, fontSize: 12.sp))),
+          Expanded(
+              flex: 2,
+              child: Text('周期',
+                  style: TextStyle(color: theme.t2, fontSize: 12.sp))),
+          Expanded(
+              flex: 2,
+              child: Text('颜色/线宽',
+                  style: TextStyle(color: theme.t2, fontSize: 12.sp))),
           SizedBox(width: 40.r),
         ],
       ),
@@ -255,7 +255,8 @@ class _OBVSettingPageState
             child: Checkbox(
               value: maLine.enabled,
               onChanged: (val) {
-                final newList = List<OBVMALineConfig>.from(_currentParam.maLines);
+                final newList =
+                    List<OBVMALineConfig>.from(_currentParam.maLines);
                 newList[index] = maLine.copyWith(enabled: val ?? true);
                 setState(() {
                   _currentParam = _currentParam.copyWith(maLines: newList);
@@ -276,8 +277,10 @@ class _OBVSettingPageState
                 ],
                 decoration: InputDecoration(
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 8.r),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(4.r)),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 8.r, vertical: 8.r),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4.r)),
                   hintText: 'MA周期',
                   hintStyle: TextStyle(color: theme.t3, fontSize: 12.sp),
                 ),
@@ -285,7 +288,8 @@ class _OBVSettingPageState
                 onChanged: (val) {
                   final period = int.tryParse(val);
                   if (period != null && period > 0) {
-                    final newList = List<OBVMALineConfig>.from(_currentParam.maLines);
+                    final newList =
+                        List<OBVMALineConfig>.from(_currentParam.maLines);
                     newList[index] = maLine.copyWith(period: period);
                     _currentParam = _currentParam.copyWith(maLines: newList);
                   }
@@ -299,14 +303,16 @@ class _OBVSettingPageState
               lineWidth: maLine.width,
               color: maLine.color,
               onLineWidthChanged: (width) {
-                final newList = List<OBVMALineConfig>.from(_currentParam.maLines);
+                final newList =
+                    List<OBVMALineConfig>.from(_currentParam.maLines);
                 newList[index] = maLine.copyWith(width: width);
                 setState(() {
                   _currentParam = _currentParam.copyWith(maLines: newList);
                 });
               },
               onColorChanged: (color) {
-                final newList = List<OBVMALineConfig>.from(_currentParam.maLines);
+                final newList =
+                    List<OBVMALineConfig>.from(_currentParam.maLines);
                 newList[index] = maLine.copyWith(color: color);
                 setState(() {
                   _currentParam = _currentParam.copyWith(maLines: newList);
@@ -383,10 +389,11 @@ class _OBVSettingPageState
   Future<void> saveSettings() async {
     final klineState = ref.read(klineStateProvider(widget.controller));
     final controller = klineState.controller;
-    final indicator = controller.getIndicator<OBVIndicator>(_obvKey);
+    final indicator = controller.configuredSubIndicator<OBVIndicator>(_obvKey);
     if (indicator != null) {
-      controller.updateIndicator(
+      await controller.saveAndSetSubIndicator(
         indicator.copyWith(calcParam: _currentParam),
+        enabled: controller.hasAddedSubIndicator(_obvKey),
       );
     }
   }

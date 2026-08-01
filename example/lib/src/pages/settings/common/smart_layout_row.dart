@@ -58,18 +58,18 @@ class SmartLayoutRow extends StatelessWidget {
 
   List<Widget> _buildSpacedChildren() {
     if (children.isEmpty) return [];
-    
+
     final List<Widget> spacedChildren = [];
-    
+
     for (int i = 0; i < children.length; i++) {
       spacedChildren.add(children[i]);
-      
+
       // 在非最后一个元素后添加间距
       if (i < children.length - 1) {
         spacedChildren.add(SizedBox(width: spacing.r));
       }
     }
-    
+
     return spacedChildren;
   }
 }
@@ -112,14 +112,14 @@ class SmartPopupPositioner extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenSize = MediaQuery.of(context).size;
-        
+
         // 计算最佳位置
         double? left;
         double? right;
-        
+
         // 判断是否有足够空间显示在右侧
         final hasRightSpace = popupWidth <= screenSize.width - 32.r;
-        
+
         if (hasRightSpace) {
           // 优先左对齐
           left = offset.dx;
@@ -127,7 +127,7 @@ class SmartPopupPositioner extends StatelessWidget {
           // 空间不够时居中
           left = (screenSize.width - popupWidth.r) / 2 - 16.r;
         }
-        
+
         return Transform.translate(
           offset: Offset(left ?? 0, 0),
           child: Container(

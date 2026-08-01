@@ -54,8 +54,7 @@ class _$CCIIndicatorCWProxyImpl implements _$CCIIndicatorCWProxy {
   CCIIndicator calcParam(CCIParam calcParam) => this(calcParam: calcParam);
 
   @override
-  CCIIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  CCIIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
   CCIIndicator tickCount(int tickCount) => this(tickCount: tickCount);
@@ -120,16 +119,13 @@ CCIIndicator _$CCIIndicatorFromJson(Map<String, dynamic> json) => CCIIndicator(
       height: (json['height'] as num).toDouble(),
       padding: json['padding'] == null
           ? defaultSubIndicatorPadding
-          : const EdgeInsetsConverter()
-              .fromJson(json['padding'] as Map<String, dynamic>),
+          : const EdgeInsetsConverter().fromJson(json['padding'] as Map<String, dynamic>),
       calcParam: CCIParam.fromJson(json['calcParam'] as Map<String, dynamic>),
-      tipsPadding: const EdgeInsetsConverter()
-          .fromJson(json['tipsPadding'] as Map<String, dynamic>),
+      tipsPadding: const EdgeInsetsConverter().fromJson(json['tipsPadding'] as Map<String, dynamic>),
       tickCount: (json['tickCount'] as num?)?.toInt() ?? defaultSubTickCount,
     );
 
-Map<String, dynamic> _$CCIIndicatorToJson(CCIIndicator instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$CCIIndicatorToJson(CCIIndicator instance) => <String, dynamic>{
       'height': instance.height,
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'zIndex': instance.zIndex,

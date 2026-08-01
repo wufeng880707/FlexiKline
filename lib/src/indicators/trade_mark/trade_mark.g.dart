@@ -45,8 +45,7 @@ class _$TradeMarkIndicatorCWProxyImpl implements _$TradeMarkIndicatorCWProxy {
   TradeMarkIndicator padding(EdgeInsets padding) => this(padding: padding);
 
   @override
-  TradeMarkIndicator calcParam(TradeMarkParam calcParam) =>
-      this(calcParam: calcParam);
+  TradeMarkIndicator calcParam(TradeMarkParam calcParam) => this(calcParam: calcParam);
 
   @override
 
@@ -86,8 +85,7 @@ class _$TradeMarkIndicatorCWProxyImpl implements _$TradeMarkIndicatorCWProxy {
 extension $TradeMarkIndicatorCopyWith on TradeMarkIndicator {
   /// Returns a callable class that can be used as follows: `instanceOfTradeMarkIndicator.copyWith(...)` or like so:`instanceOfTradeMarkIndicator.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$TradeMarkIndicatorCWProxy get copyWith =>
-      _$TradeMarkIndicatorCWProxyImpl(this);
+  _$TradeMarkIndicatorCWProxy get copyWith => _$TradeMarkIndicatorCWProxyImpl(this);
 }
 
 abstract class _$TradeMarkParamCWProxy {
@@ -147,8 +145,7 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
   TradeMarkParam spacing(double spacing) => this(spacing: spacing);
 
   @override
-  TradeMarkParam markerRadius(double markerRadius) =>
-      this(markerRadius: markerRadius);
+  TradeMarkParam markerRadius(double markerRadius) => this(markerRadius: markerRadius);
 
   @override
   TradeMarkParam arrowSize(double arrowSize) => this(arrowSize: arrowSize);
@@ -157,35 +154,28 @@ class _$TradeMarkParamCWProxyImpl implements _$TradeMarkParamCWProxy {
   TradeMarkParam buyBgColor(Color buyBgColor) => this(buyBgColor: buyBgColor);
 
   @override
-  TradeMarkParam sellBgColor(Color sellBgColor) =>
-      this(sellBgColor: sellBgColor);
+  TradeMarkParam sellBgColor(Color sellBgColor) => this(sellBgColor: sellBgColor);
 
   @override
-  TradeMarkParam buyTextStyle(TextStyle buyTextStyle) =>
-      this(buyTextStyle: buyTextStyle);
+  TradeMarkParam buyTextStyle(TextStyle buyTextStyle) => this(buyTextStyle: buyTextStyle);
 
   @override
-  TradeMarkParam sellTextStyle(TextStyle sellTextStyle) =>
-      this(sellTextStyle: sellTextStyle);
+  TradeMarkParam sellTextStyle(TextStyle sellTextStyle) => this(sellTextStyle: sellTextStyle);
 
   @override
-  TradeMarkParam borderWidth(double borderWidth) =>
-      this(borderWidth: borderWidth);
+  TradeMarkParam borderWidth(double borderWidth) => this(borderWidth: borderWidth);
 
   @override
-  TradeMarkParam borderColor(Color? borderColor) =>
-      this(borderColor: borderColor);
+  TradeMarkParam borderColor(Color? borderColor) => this(borderColor: borderColor);
 
   @override
-  TradeMarkParam showQuantity(bool showQuantity) =>
-      this(showQuantity: showQuantity);
+  TradeMarkParam showQuantity(bool showQuantity) => this(showQuantity: showQuantity);
 
   @override
   TradeMarkParam show(bool show) => this(show: show);
 
   @override
-  TradeMarkParam useArrowStyle(bool useArrowStyle) =>
-      this(useArrowStyle: useArrowStyle);
+  TradeMarkParam useArrowStyle(bool useArrowStyle) => this(useArrowStyle: useArrowStyle);
 
   @override
 
@@ -272,8 +262,7 @@ extension $TradeMarkParamCopyWith on TradeMarkParam {
 // JsonSerializableGenerator
 // **************************************************************************
 
-TradeMarkParam _$TradeMarkParamFromJson(Map<String, dynamic> json) =>
-    TradeMarkParam(
+TradeMarkParam _$TradeMarkParamFromJson(Map<String, dynamic> json) => TradeMarkParam(
       spacing: (json['spacing'] as num?)?.toDouble() ?? 2.0,
       markerRadius: (json['markerRadius'] as num?)?.toDouble() ?? 5.0,
       arrowSize: (json['arrowSize'] as num?)?.toDouble() ?? 6.0,
@@ -284,40 +273,28 @@ TradeMarkParam _$TradeMarkParamFromJson(Map<String, dynamic> json) =>
           ? const Color(0xfff15057)
           : const ColorConverter().fromJson(json['sellBgColor'] as String),
       buyTextStyle: json['buyTextStyle'] == null
-          ? const TextStyle(
-              color: Color(0xFFFFFFFF),
-              fontSize: 8.0,
-              fontWeight: FontWeight.bold)
-          : const TextStyleConverter()
-              .fromJson(json['buyTextStyle'] as Map<String, dynamic>),
+          ? const TextStyle(color: Color(0xFFFFFFFF), fontSize: 8.0, fontWeight: FontWeight.bold)
+          : const TextStyleConverter().fromJson(json['buyTextStyle'] as Map<String, dynamic>),
       sellTextStyle: json['sellTextStyle'] == null
-          ? const TextStyle(
-              color: Color(0xFFFFFFFF),
-              fontSize: 8.0,
-              fontWeight: FontWeight.bold)
-          : const TextStyleConverter()
-              .fromJson(json['sellTextStyle'] as Map<String, dynamic>),
+          ? const TextStyle(color: Color(0xFFFFFFFF), fontSize: 8.0, fontWeight: FontWeight.bold)
+          : const TextStyleConverter().fromJson(json['sellTextStyle'] as Map<String, dynamic>),
       borderWidth: (json['borderWidth'] as num?)?.toDouble() ?? 0.0,
-      borderColor: _$JsonConverterFromJson<String, Color>(
-          json['borderColor'], const ColorConverter().fromJson),
+      borderColor: _$JsonConverterFromJson<String, Color>(json['borderColor'], const ColorConverter().fromJson),
       showQuantity: json['showQuantity'] as bool? ?? false,
       show: json['show'] as bool? ?? true,
       useArrowStyle: json['useArrowStyle'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$TradeMarkParamToJson(TradeMarkParam instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$TradeMarkParamToJson(TradeMarkParam instance) => <String, dynamic>{
       'spacing': instance.spacing,
       'markerRadius': instance.markerRadius,
       'arrowSize': instance.arrowSize,
       'buyBgColor': const ColorConverter().toJson(instance.buyBgColor),
       'sellBgColor': const ColorConverter().toJson(instance.sellBgColor),
       'buyTextStyle': const TextStyleConverter().toJson(instance.buyTextStyle),
-      'sellTextStyle':
-          const TextStyleConverter().toJson(instance.sellTextStyle),
+      'sellTextStyle': const TextStyleConverter().toJson(instance.sellTextStyle),
       'borderWidth': instance.borderWidth,
-      'borderColor': _$JsonConverterToJson<String, Color>(
-          instance.borderColor, const ColorConverter().toJson),
+      'borderColor': _$JsonConverterToJson<String, Color>(instance.borderColor, const ColorConverter().toJson),
       'showQuantity': instance.showQuantity,
       'show': instance.show,
       'useArrowStyle': instance.useArrowStyle,

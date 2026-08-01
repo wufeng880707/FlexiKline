@@ -1,15 +1,15 @@
 part of 'trade_mark.dart';
 
 /// 交易标记指标Key
-const tradeMarkIndicatorKey = BusinessIndicatorKey('tradeMark');
+const tradeMarkIndicatorKey = ExternalIndicatorKey('tradeMark');
 
 /// 交易标记指标
 ///
 /// 只负责样式配置，不持有业务数据。
 /// 业务数据通过 [FlexiKlineController.setBusinessData] 注入，
-/// [TradeMarkPaintObject] 在绘制时通过 [IPaintContext.getBusinessData] 获取。
+/// [TradeMarkPaintObject] 在绘制时通过 [PaintContext.getBusinessData] 获取。
 @CopyWith()
-class TradeMarkIndicator extends BusinessIndicator {
+class TradeMarkIndicator extends ExternalIndicator {
   TradeMarkIndicator({
     super.zIndex = 100,
     super.height = 0,
@@ -21,7 +21,7 @@ class TradeMarkIndicator extends BusinessIndicator {
   final TradeMarkParam calcParam;
 
   @override
-  BusinessPaintObject<TradeMarkIndicator> createPaintObject() {
+  ExternalPaintObject<TradeMarkIndicator> createPaintObject() {
     return TradeMarkPaintObject();
   }
 
@@ -61,10 +61,9 @@ class TradeMarkIndicator extends BusinessIndicator {
 
 /// 交易标记绘制对象
 ///
-/// 通过 [IPaintContext.getBusinessData] 获取 [Map<int, CandleTradeMarks>] 格式的数据。
+/// 通过 [PaintContext.getBusinessData] 获取 [Map<int, CandleTradeMarks>] 格式的数据。
 /// 数据分组由外部完成（如 Riverpod Provider），绘制帧内不做任何数据处理。
-class TradeMarkPaintObject<T extends TradeMarkIndicator>
-    extends BusinessPaintObject<T> {
+class TradeMarkPaintObject<T extends TradeMarkIndicator> extends ExternalPaintObject<T> {
   TradeMarkPaintObject();
 
   @override
@@ -100,12 +99,8 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
     final topPaddingPx = chartRect.top - drawableRect.top;
     final bottomPaddingPx = drawableRect.bottom - chartRect.bottom;
 
-    final extraTopPx = hasVisibleSell
-        ? math.max(0.0, markPixelHeight - topPaddingPx)
-        : 0.0;
-    final extraBottomPx = hasVisibleBuy
-        ? math.max(0.0, markPixelHeight - bottomPaddingPx)
-        : 0.0;
+    final extraTopPx = hasVisibleSell ? math.max(0.0, markPixelHeight - topPaddingPx) : 0.0;
+    final extraBottomPx = hasVisibleBuy ? math.max(0.0, markPixelHeight - bottomPaddingPx) : 0.0;
 
     // padding 已足够容纳箭头，无需扩展 minMax
     if (extraTopPx == 0 && extraBottomPx == 0) return null;
@@ -119,12 +114,8 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
     final pricePerPx = priceRange / availableHeight;
 
     return MinMax(
-      min: extraBottomPx > 0
-          ? candleMinMax.min - FlexiNum.fromNum(pricePerPx * extraBottomPx)
-          : candleMinMax.min,
-      max: extraTopPx > 0
-          ? candleMinMax.max + FlexiNum.fromNum(pricePerPx * extraTopPx)
-          : candleMinMax.max,
+      min: extraBottomPx > 0 ? candleMinMax.min - FlexiNum.fromNum(pricePerPx * extraBottomPx) : candleMinMax.min,
+      max: extraTopPx > 0 ? candleMinMax.max + FlexiNum.fromNum(pricePerPx * extraTopPx) : candleMinMax.max,
     );
   }
 
@@ -140,10 +131,10 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {}
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {}
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     if (!klineData.canPaintChart) return;
     if (!indicator.calcParam.show) return;
 
@@ -280,8 +271,7 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
     required bool below,
   }) {
     final param = indicator.calcParam;
-    final textStyle =
-        mark.type == TradeType.buy ? param.buyTextStyle : param.sellTextStyle;
+    final textStyle = mark.type == TradeType.buy ? param.buyTextStyle : param.sellTextStyle;
 
     String text = mark.type == TradeType.buy ? 'B' : 'S';
     if (mark.count > 1 && param.showQuantity) {
@@ -344,8 +334,7 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
         ..strokeWidth = 1;
     }
 
-    final textStyle =
-        mark.type == TradeType.buy ? param.buyTextStyle : param.sellTextStyle;
+    final textStyle = mark.type == TradeType.buy ? param.buyTextStyle : param.sellTextStyle;
     final text = mark.type == TradeType.buy ? 'B' : 'S';
 
     final tp = TextPainter(
@@ -382,11 +371,9 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
 
     if (marks.hasBuy) {
       final buy = marks.buyMark!;
-      String tipText =
-          '买入: ${formatNumber(buy.price.toDecimal(), precision: klineData.precision)}';
+      String tipText = '买入: ${formatNumber(buy.price.toDecimal(), precision: klineData.precision)}';
       if (param.showQuantity) {
-        tipText +=
-            ' 数量: ${formatNumber(buy.volume.toDecimal(), precision: 4)}';
+        tipText += ' 数量: ${formatNumber(buy.volume.toDecimal(), precision: 4)}';
       }
       if (buy.count > 1) {
         tipText += ' (${buy.count}次)';
@@ -396,11 +383,9 @@ class TradeMarkPaintObject<T extends TradeMarkIndicator>
 
     if (marks.hasSell) {
       final sell = marks.sellMark!;
-      String tipText =
-          '卖出: ${formatNumber(sell.price.toDecimal(), precision: klineData.precision)}';
+      String tipText = '卖出: ${formatNumber(sell.price.toDecimal(), precision: klineData.precision)}';
       if (param.showQuantity) {
-        tipText +=
-            ' 数量: ${formatNumber(sell.volume.toDecimal(), precision: 4)}';
+        tipText += ' 数量: ${formatNumber(sell.volume.toDecimal(), precision: 4)}';
       }
       if (sell.count > 1) {
         tipText += ' (${sell.count}次)';

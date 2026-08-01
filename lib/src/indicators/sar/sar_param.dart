@@ -26,10 +26,10 @@ part 'sar_param.g.dart';
 final class SARParam extends Equatable {
   // 周期参数
   final SARPeriodsConfig periods;
-  
+
   // 外观配置
   final SARAppearanceConfig appearance;
-  
+
   // 显示配置
   final SARDisplayConfig display;
 
@@ -53,11 +53,7 @@ final class SARParam extends Equatable {
   }
 
   /// 验证参数是否有效
-  bool isValid(int len) => 
-      len > 1 && 
-      periods.start > 0 && 
-      periods.max > periods.start &&
-      periods.step > 0;
+  bool isValid(int len) => len > 1 && periods.start > 0 && periods.max > periods.start && periods.step > 0;
 
   // 为了兼容旧代码，保留这些getter
   double get startAf => periods.start;

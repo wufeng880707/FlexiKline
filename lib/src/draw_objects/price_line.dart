@@ -27,12 +27,12 @@ class PriceLineDrawObject extends DrawObject {
   PriceLineDrawObject(super.overlay, super.config);
 
   @override
-  PriceParams getDrawParams(IDrawContext context) {
+  PriceParams getDrawParams(DrawContext context) {
     return const PriceParams(margin: 4.0);
   }
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 1,
       'HorizontalLine only takes one point, but it has ${points.length}',
@@ -51,7 +51,7 @@ class PriceLineDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 1,
       'PriceLine only takes one point, but it has ${points.length}',
@@ -79,7 +79,7 @@ class PriceLineDrawObject extends DrawObject {
     if (value != null) {
       final valTxt = formatValueTicksText(
         value,
-        precision: context.curKlineData.precision,
+        precision: context.klineData.precision,
       );
 
       final params = getDrawParams(context);

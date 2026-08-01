@@ -78,6 +78,18 @@ void main() {
       expect(c.fixedSize, equals(const Size(480, 360)));
       expect(c.canvasRect.size, equals(const Size(480, 360)));
     });
+
+    test('setFixedLayoutMode before mount records size without main paint object', () {
+      final c = _createController();
+      addTearDown(c.dispose);
+
+      expect(c.setFixedLayoutMode(const Size(480, 360)), isTrue);
+      expect(c.layoutMode, FlexiLayoutMode.fixed);
+      expect(c.fixedSize, equals(const Size(480, 360)));
+
+      _mount(c);
+      expect(c.canvasRect.size, equals(const Size(480, 360)));
+    });
   });
 
   group('setAdaptLayoutMode', () {

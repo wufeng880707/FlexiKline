@@ -171,6 +171,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         if (_zoomData!.dyDelta.abs() >= gestureConfig.zoomStartMinDistance &&
             controller.onChartZoomStart(event.localPosition, false)) {
           _isZoomStarted = true;
+          controller.onChartZoomUpdate(_zoomData!);
         }
       } else {
         controller.onChartZoomUpdate(_zoomData!);
@@ -214,8 +215,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
   /// 点击
   void onTapUp(TapUpDetails details) {
     // Business Overlay 编辑态优先消费点击：空白处只退出编辑，不继续触发绘图。
-    if (controller.businessOverlayState.isEditing &&
-        controller.onBusinessOverlayTap(details.localPosition)) {
+    if (controller.businessOverlayState.isEditing && controller.onBusinessOverlayTap(details.localPosition)) {
       logd('onTapUp business overlay handled before draw! :$details');
       controller.requestCancelCross();
       return;
@@ -302,11 +302,12 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       return;
     }
 
+    final businessPanData = GestureData.pan(details.localFocalPoint);
     if (details.pointerCount == 1 &&
         controller.businessOverlayState.isEditing &&
-        controller.onBusinessDragStart(details.localFocalPoint)) {
+        controller.onBusinessOverlayDragStart(businessPanData)) {
       logd('onScaleStart business drag > details:$details');
-      _panScaleData = GestureData.pan(details.localFocalPoint);
+      _panScaleData = businessPanData;
     } else if (controller.isDrawVisible && drawState.isOngoing) {
       if (drawState.isDrawing) {
         // 未完成的暂不允许移动
@@ -352,12 +353,8 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     }
 
     if (controller.isDraggingBusinessOverlay) {
-      final prev = _panScaleData!.offset;
       _panScaleData!.update(details.localFocalPoint, newScale: details.scale);
-      controller.onBusinessDragUpdate(
-        details.localFocalPoint,
-        details.localFocalPoint - prev,
-      );
+      controller.onBusinessOverlayDragUpdate(_panScaleData!);
       return;
     }
 
@@ -403,7 +400,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
     }
 
     if (controller.isDraggingBusinessOverlay) {
-      controller.onBusinessDragEndAction();
+      controller.onBusinessOverlayDragEndAction();
       _panScaleData?.end();
       _panScaleData = null;
       return;
@@ -513,13 +510,14 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
         _longData?.end();
         _longData = null;
       }
-    } else if (controller.businessOverlayState.isEditing &&
-        controller.onBusinessDragStart(details.localPosition)) {
-      logd('onLongPressStart business drag > details:$details');
-      _longData = GestureData.long(details.localPosition);
     } else if (controller.businessOverlayState.isEditing) {
-      logd('onLongPressStart ignore: in business editing state');
-      return;
+      final businessLongData = GestureData.long(details.localPosition);
+      if (!controller.onBusinessOverlayDragStart(businessLongData)) {
+        logd('onLongPressStart ignore: in business editing state');
+        return;
+      }
+      logd('onLongPressStart business drag > details:$details');
+      _longData = businessLongData;
     } else if (!controller.isCrossing && controller.onGridResizeStart(details.localPosition)) {
       logd('onLongPressStart move > details:$details');
       _longData = GestureData.long(details.localPosition);
@@ -539,12 +537,8 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       return;
     }
     if (controller.isDraggingBusinessOverlay) {
-      final prev = _longData!.offset;
       _longData!.update(details.localPosition);
-      controller.onBusinessDragUpdate(
-        details.localPosition,
-        details.localPosition - prev,
-      );
+      controller.onBusinessOverlayDragUpdate(_longData!);
       return;
     }
     if (controller.isDrawVisible && drawState.isOngoing) {
@@ -565,7 +559,7 @@ class _TouchGestureDetectorState extends GestureDetectorState<TouchGestureDetect
       return;
     }
     if (controller.isDraggingBusinessOverlay) {
-      controller.onBusinessDragEndAction();
+      controller.onBusinessOverlayDragEndAction();
       _longData?.end();
       _longData = null;
       return;

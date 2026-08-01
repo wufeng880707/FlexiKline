@@ -131,8 +131,7 @@ abstract class _$VolMAValidationConfigCWProxy {
 }
 
 /// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfVolMAValidationConfig.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfVolMAValidationConfig.copyWith.fieldName(...)`
-class _$VolMAValidationConfigCWProxyImpl
-    implements _$VolMAValidationConfigCWProxy {
+class _$VolMAValidationConfigCWProxyImpl implements _$VolMAValidationConfigCWProxy {
   const _$VolMAValidationConfigCWProxyImpl(this._value);
 
   final VolMAValidationConfig _value;
@@ -144,8 +143,7 @@ class _$VolMAValidationConfigCWProxyImpl
   VolMAValidationConfig maxPeriod(int maxPeriod) => this(maxPeriod: maxPeriod);
 
   @override
-  VolMAValidationConfig allowDuplicate(bool allowDuplicate) =>
-      this(allowDuplicate: allowDuplicate);
+  VolMAValidationConfig allowDuplicate(bool allowDuplicate) => this(allowDuplicate: allowDuplicate);
 
   @override
 
@@ -180,8 +178,7 @@ class _$VolMAValidationConfigCWProxyImpl
 extension $VolMAValidationConfigCopyWith on VolMAValidationConfig {
   /// Returns a callable class that can be used as follows: `instanceOfVolMAValidationConfig.copyWith(...)` or like so:`instanceOfVolMAValidationConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$VolMAValidationConfigCWProxy get copyWith =>
-      _$VolMAValidationConfigCWProxyImpl(this);
+  _$VolMAValidationConfigCWProxy get copyWith => _$VolMAValidationConfigCWProxyImpl(this);
 }
 
 abstract class _$VolMAVolumeConfigCWProxy {
@@ -214,16 +211,13 @@ class _$VolMAVolumeConfigCWProxyImpl implements _$VolMAVolumeConfigCWProxy {
   final VolMAVolumeConfig _value;
 
   @override
-  VolMAVolumeConfig useTrendColor(bool useTrendColor) =>
-      this(useTrendColor: useTrendColor);
+  VolMAVolumeConfig useTrendColor(bool useTrendColor) => this(useTrendColor: useTrendColor);
 
   @override
-  VolMAVolumeConfig bullishColor(Color bullishColor) =>
-      this(bullishColor: bullishColor);
+  VolMAVolumeConfig bullishColor(Color bullishColor) => this(bullishColor: bullishColor);
 
   @override
-  VolMAVolumeConfig bearishColor(Color bearishColor) =>
-      this(bearishColor: bearishColor);
+  VolMAVolumeConfig bearishColor(Color bearishColor) => this(bearishColor: bearishColor);
 
   @override
   VolMAVolumeConfig opacity(double opacity) => this(opacity: opacity);
@@ -266,8 +260,7 @@ class _$VolMAVolumeConfigCWProxyImpl implements _$VolMAVolumeConfigCWProxy {
 extension $VolMAVolumeConfigCopyWith on VolMAVolumeConfig {
   /// Returns a callable class that can be used as follows: `instanceOfVolMAVolumeConfig.copyWith(...)` or like so:`instanceOfVolMAVolumeConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$VolMAVolumeConfigCWProxy get copyWith =>
-      _$VolMAVolumeConfigCWProxyImpl(this);
+  _$VolMAVolumeConfigCWProxy get copyWith => _$VolMAVolumeConfigCWProxyImpl(this);
 }
 
 abstract class _$VolMADisplayConfigCWProxy {
@@ -303,23 +296,19 @@ class _$VolMADisplayConfigCWProxyImpl implements _$VolMADisplayConfigCWProxy {
   final VolMADisplayConfig _value;
 
   @override
-  VolMADisplayConfig pointRadius(double pointRadius) =>
-      this(pointRadius: pointRadius);
+  VolMADisplayConfig pointRadius(double pointRadius) => this(pointRadius: pointRadius);
 
   @override
-  VolMADisplayConfig showCrossPoint(bool showCrossPoint) =>
-      this(showCrossPoint: showCrossPoint);
+  VolMADisplayConfig showCrossPoint(bool showCrossPoint) => this(showCrossPoint: showCrossPoint);
 
   @override
   VolMADisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  VolMADisplayConfig showPeriodInTips(bool showPeriodInTips) =>
-      this(showPeriodInTips: showPeriodInTips);
+  VolMADisplayConfig showPeriodInTips(bool showPeriodInTips) => this(showPeriodInTips: showPeriodInTips);
 
   @override
-  VolMADisplayConfig showVolInTips(bool showVolInTips) =>
-      this(showVolInTips: showVolInTips);
+  VolMADisplayConfig showVolInTips(bool showVolInTips) => this(showVolInTips: showVolInTips);
 
   @override
 
@@ -364,8 +353,7 @@ class _$VolMADisplayConfigCWProxyImpl implements _$VolMADisplayConfigCWProxy {
 extension $VolMADisplayConfigCopyWith on VolMADisplayConfig {
   /// Returns a callable class that can be used as follows: `instanceOfVolMADisplayConfig.copyWith(...)` or like so:`instanceOfVolMADisplayConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$VolMADisplayConfigCWProxy get copyWith =>
-      _$VolMADisplayConfigCWProxyImpl(this);
+  _$VolMADisplayConfigCWProxy get copyWith => _$VolMADisplayConfigCWProxyImpl(this);
 }
 
 abstract class _$VolMaParamCWProxy {
@@ -407,8 +395,7 @@ class _$VolMaParamCWProxyImpl implements _$VolMaParamCWProxy {
   VolMaParam lines(List<VolMALineConfig> lines) => this(lines: lines);
 
   @override
-  VolMaParam validation(VolMAValidationConfig validation) =>
-      this(validation: validation);
+  VolMaParam validation(VolMAValidationConfig validation) => this(validation: validation);
 
   @override
   VolMaParam volume(VolMAVolumeConfig volume) => this(volume: volume);
@@ -466,8 +453,7 @@ extension $VolMaParamCopyWith on VolMaParam {
 // JsonSerializableGenerator
 // **************************************************************************
 
-VolMALineConfig _$VolMALineConfigFromJson(Map<String, dynamic> json) =>
-    VolMALineConfig(
+VolMALineConfig _$VolMALineConfigFromJson(Map<String, dynamic> json) => VolMALineConfig(
       id: json['id'] as String,
       enabled: json['enabled'] as bool? ?? true,
       period: (json['period'] as num).toInt(),
@@ -476,8 +462,7 @@ VolMALineConfig _$VolMALineConfigFromJson(Map<String, dynamic> json) =>
       opacity: (json['opacity'] as num?)?.toDouble() ?? 0.8,
     );
 
-Map<String, dynamic> _$VolMALineConfigToJson(VolMALineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$VolMALineConfigToJson(VolMALineConfig instance) => <String, dynamic>{
       'id': instance.id,
       'enabled': instance.enabled,
       'period': instance.period,
@@ -486,24 +471,19 @@ Map<String, dynamic> _$VolMALineConfigToJson(VolMALineConfig instance) =>
       'opacity': instance.opacity,
     };
 
-VolMAValidationConfig _$VolMAValidationConfigFromJson(
-        Map<String, dynamic> json) =>
-    VolMAValidationConfig(
+VolMAValidationConfig _$VolMAValidationConfigFromJson(Map<String, dynamic> json) => VolMAValidationConfig(
       minPeriod: (json['minPeriod'] as num?)?.toInt() ?? 1,
       maxPeriod: (json['maxPeriod'] as num?)?.toInt() ?? 1000,
       allowDuplicate: json['allowDuplicate'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$VolMAValidationConfigToJson(
-        VolMAValidationConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$VolMAValidationConfigToJson(VolMAValidationConfig instance) => <String, dynamic>{
       'minPeriod': instance.minPeriod,
       'maxPeriod': instance.maxPeriod,
       'allowDuplicate': instance.allowDuplicate,
     };
 
-VolMAVolumeConfig _$VolMAVolumeConfigFromJson(Map<String, dynamic> json) =>
-    VolMAVolumeConfig(
+VolMAVolumeConfig _$VolMAVolumeConfigFromJson(Map<String, dynamic> json) => VolMAVolumeConfig(
       useTrendColor: json['useTrendColor'] as bool? ?? true,
       bullishColor: json['bullishColor'] == null
           ? const Color(0xff4caf50)
@@ -514,16 +494,14 @@ VolMAVolumeConfig _$VolMAVolumeConfigFromJson(Map<String, dynamic> json) =>
       opacity: (json['opacity'] as num?)?.toDouble() ?? 0.6,
     );
 
-Map<String, dynamic> _$VolMAVolumeConfigToJson(VolMAVolumeConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$VolMAVolumeConfigToJson(VolMAVolumeConfig instance) => <String, dynamic>{
       'useTrendColor': instance.useTrendColor,
       'bullishColor': const ColorConverter().toJson(instance.bullishColor),
       'bearishColor': const ColorConverter().toJson(instance.bearishColor),
       'opacity': instance.opacity,
     };
 
-VolMADisplayConfig _$VolMADisplayConfigFromJson(Map<String, dynamic> json) =>
-    VolMADisplayConfig(
+VolMADisplayConfig _$VolMADisplayConfigFromJson(Map<String, dynamic> json) => VolMADisplayConfig(
       pointRadius: (json['pointRadius'] as num?)?.toDouble() ?? 0.0,
       showCrossPoint: json['showCrossPoint'] as bool? ?? false,
       precision: (json['precision'] as num?)?.toInt() ?? 0,
@@ -531,8 +509,7 @@ VolMADisplayConfig _$VolMADisplayConfigFromJson(Map<String, dynamic> json) =>
       showVolInTips: json['showVolInTips'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$VolMADisplayConfigToJson(VolMADisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$VolMADisplayConfigToJson(VolMADisplayConfig instance) => <String, dynamic>{
       'pointRadius': instance.pointRadius,
       'showCrossPoint': instance.showCrossPoint,
       'precision': instance.precision,
@@ -542,24 +519,19 @@ Map<String, dynamic> _$VolMADisplayConfigToJson(VolMADisplayConfig instance) =>
 
 VolMaParam _$VolMaParamFromJson(Map<String, dynamic> json) => VolMaParam(
       maxLines: (json['maxLines'] as num?)?.toInt() ?? 10,
-      lines: (json['lines'] as List<dynamic>)
-          .map((e) => VolMALineConfig.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      lines: (json['lines'] as List<dynamic>).map((e) => VolMALineConfig.fromJson(e as Map<String, dynamic>)).toList(),
       validation: json['validation'] == null
           ? const VolMAValidationConfig()
-          : VolMAValidationConfig.fromJson(
-              json['validation'] as Map<String, dynamic>),
+          : VolMAValidationConfig.fromJson(json['validation'] as Map<String, dynamic>),
       volume: json['volume'] == null
           ? const VolMAVolumeConfig()
           : VolMAVolumeConfig.fromJson(json['volume'] as Map<String, dynamic>),
       display: json['display'] == null
           ? const VolMADisplayConfig()
-          : VolMADisplayConfig.fromJson(
-              json['display'] as Map<String, dynamic>),
+          : VolMADisplayConfig.fromJson(json['display'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$VolMaParamToJson(VolMaParam instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$VolMaParamToJson(VolMaParam instance) => <String, dynamic>{
       'maxLines': instance.maxLines,
       'lines': instance.lines.map((e) => e.toJson()).toList(),
       'validation': instance.validation.toJson(),

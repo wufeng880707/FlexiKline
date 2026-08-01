@@ -162,7 +162,9 @@ class SelectTradingPairDialog extends HookConsumerWidget {
                     final searchTxt = value.text.trim().toUpperCase();
                     List<MarketTicker> list = data;
                     if (searchTxt.isNotEmpty) {
-                      list = data.where((e) => e.instId.contains(searchTxt)).toList();
+                      list = data
+                          .where((e) => e.instId.contains(searchTxt))
+                          .toList();
                     }
                     return _buildTradingPairListView(ref, list);
                   },

@@ -36,16 +36,13 @@ class _$VolumeBarConfigCWProxyImpl implements _$VolumeBarConfigCWProxy {
   final VolumeBarConfig _value;
 
   @override
-  VolumeBarConfig useTrendColor(bool useTrendColor) =>
-      this(useTrendColor: useTrendColor);
+  VolumeBarConfig useTrendColor(bool useTrendColor) => this(useTrendColor: useTrendColor);
 
   @override
-  VolumeBarConfig bullishColor(Color bullishColor) =>
-      this(bullishColor: bullishColor);
+  VolumeBarConfig bullishColor(Color bullishColor) => this(bullishColor: bullishColor);
 
   @override
-  VolumeBarConfig bearishColor(Color bearishColor) =>
-      this(bearishColor: bearishColor);
+  VolumeBarConfig bearishColor(Color bearishColor) => this(bearishColor: bearishColor);
 
   @override
   VolumeBarConfig opacity(double opacity) => this(opacity: opacity);
@@ -121,12 +118,10 @@ class _$VolumeDisplayConfigCWProxyImpl implements _$VolumeDisplayConfigCWProxy {
   VolumeDisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  VolumeDisplayConfig showVolInTips(bool showVolInTips) =>
-      this(showVolInTips: showVolInTips);
+  VolumeDisplayConfig showVolInTips(bool showVolInTips) => this(showVolInTips: showVolInTips);
 
   @override
-  VolumeDisplayConfig compactDisplay(bool compactDisplay) =>
-      this(compactDisplay: compactDisplay);
+  VolumeDisplayConfig compactDisplay(bool compactDisplay) => this(compactDisplay: compactDisplay);
 
   @override
 
@@ -161,8 +156,7 @@ class _$VolumeDisplayConfigCWProxyImpl implements _$VolumeDisplayConfigCWProxy {
 extension $VolumeDisplayConfigCopyWith on VolumeDisplayConfig {
   /// Returns a callable class that can be used as follows: `instanceOfVolumeDisplayConfig.copyWith(...)` or like so:`instanceOfVolumeDisplayConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$VolumeDisplayConfigCWProxy get copyWith =>
-      _$VolumeDisplayConfigCWProxyImpl(this);
+  _$VolumeDisplayConfigCWProxy get copyWith => _$VolumeDisplayConfigCWProxyImpl(this);
 }
 
 abstract class _$VolumeParamCWProxy {
@@ -251,8 +245,7 @@ extension $VolumeParamCopyWith on VolumeParam {
 // JsonSerializableGenerator
 // **************************************************************************
 
-VolumeBarConfig _$VolumeBarConfigFromJson(Map<String, dynamic> json) =>
-    VolumeBarConfig(
+VolumeBarConfig _$VolumeBarConfigFromJson(Map<String, dynamic> json) => VolumeBarConfig(
       useTrendColor: json['useTrendColor'] as bool? ?? true,
       bullishColor: json['bullishColor'] == null
           ? const Color(0xff4caf50)
@@ -263,24 +256,20 @@ VolumeBarConfig _$VolumeBarConfigFromJson(Map<String, dynamic> json) =>
       opacity: (json['opacity'] as num?)?.toDouble() ?? 0.6,
     );
 
-Map<String, dynamic> _$VolumeBarConfigToJson(VolumeBarConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$VolumeBarConfigToJson(VolumeBarConfig instance) => <String, dynamic>{
       'useTrendColor': instance.useTrendColor,
       'bullishColor': const ColorConverter().toJson(instance.bullishColor),
       'bearishColor': const ColorConverter().toJson(instance.bearishColor),
       'opacity': instance.opacity,
     };
 
-VolumeDisplayConfig _$VolumeDisplayConfigFromJson(Map<String, dynamic> json) =>
-    VolumeDisplayConfig(
+VolumeDisplayConfig _$VolumeDisplayConfigFromJson(Map<String, dynamic> json) => VolumeDisplayConfig(
       precision: (json['precision'] as num?)?.toInt() ?? 0,
       showVolInTips: json['showVolInTips'] as bool? ?? true,
       compactDisplay: json['compactDisplay'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$VolumeDisplayConfigToJson(
-        VolumeDisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$VolumeDisplayConfigToJson(VolumeDisplayConfig instance) => <String, dynamic>{
       'precision': instance.precision,
       'showVolInTips': instance.showVolInTips,
       'compactDisplay': instance.compactDisplay,
@@ -294,12 +283,10 @@ VolumeParam _$VolumeParamFromJson(Map<String, dynamic> json) => VolumeParam(
           : VolumeBarConfig.fromJson(json['volume'] as Map<String, dynamic>),
       display: json['display'] == null
           ? const VolumeDisplayConfig()
-          : VolumeDisplayConfig.fromJson(
-              json['display'] as Map<String, dynamic>),
+          : VolumeDisplayConfig.fromJson(json['display'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$VolumeParamToJson(VolumeParam instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$VolumeParamToJson(VolumeParam instance) => <String, dynamic>{
       'showInMain': instance.showInMain,
       'heightRatio': instance.heightRatio,
       'volume': instance.volume.toJson(),

@@ -65,8 +65,7 @@ class TradeMarkData {
   }
 
   @override
-  String toString() =>
-      'TradeMarkData(type: $type, price: $price, maxPrice: $maxPrice, volume: $volume, count: $count)';
+  String toString() => 'TradeMarkData(type: $type, price: $price, maxPrice: $maxPrice, volume: $volume, count: $count)';
 }
 
 /// 单根K线的交易标记汇总

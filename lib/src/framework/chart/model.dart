@@ -98,20 +98,6 @@ abstract class ComputedIndicator extends Indicator<ComputedIndicatorKey> {
   dynamic get calcParam => null;
 }
 
-/// 兼容 fork 旧 API；新代码使用 [ComputedIndicator]。
-typedef DataIndicator = ComputedIndicator;
-
-/// 兼容 fork 旧 API；新代码使用 [DirectIndicator]。
-typedef NormalIndicator = DirectIndicator;
-
-/// 兼容 fork 旧 API；新代码使用 [ExternalIndicator]。
-typedef BusinessIndicator = ExternalIndicator;
-
-/// 兼容 fork 旧 API；新代码让需要计算的指标继承 [ComputedIndicator]。
-abstract interface class IPrecomputable {
-  dynamic get calcParam;
-}
-
 /// 业务指标配置基类
 ///
 /// 用于 Trade 等由业务数据或用户操作驱动的指标，不占 slot。

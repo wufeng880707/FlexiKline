@@ -63,11 +63,8 @@ class TradeMarkParam extends Equatable {
   final bool useArrowStyle;
 
   /// 验证参数是否有效
-  bool isValid(int len) => 
-      len > 0 && 
-      markerRadius > 0 && 
-      (buyTextStyle.fontSize ?? 12.0) > 0 &&
-      (sellTextStyle.fontSize ?? 12.0) > 0;
+  bool isValid(int len) =>
+      len > 0 && markerRadius > 0 && (buyTextStyle.fontSize ?? 12.0) > 0 && (sellTextStyle.fontSize ?? 12.0) > 0;
 
   factory TradeMarkParam.fromJson(Map<String, dynamic> json) => _$TradeMarkParamFromJson(json);
   Map<String, dynamic> toJson() => _$TradeMarkParamToJson(this);

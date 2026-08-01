@@ -19,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
@@ -37,7 +38,7 @@ class MASettingPage extends BaseIndicatorSettingPage {
 }
 
 class _MASettingPageState extends BaseIndicatorSettingPageState<MASettingPage> {
-  static const _maKey = DataIndicatorKey('ma');
+  static const _maKey = ComputedIndicatorKey('ma');
 
   static const _defaultParam = MaParam(
     lines: [
@@ -104,10 +105,9 @@ class _MASettingPageState extends BaseIndicatorSettingPageState<MASettingPage> {
     final controller = klineState.controller;
 
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_maKey) ||
-          controller.subIndicatorKeys.contains(_maKey);
+      _enabled = controller.mainIndicatorKeys.contains(_maKey);
 
-      final indicator = controller.getIndicator<MAIndicator>(_maKey);
+      final indicator = controller.configuredMainIndicator<MAIndicator>(_maKey);
       if (indicator != null && indicator.calcParam.lines.isNotEmpty) {
         _currentParam = indicator.calcParam;
       } else {
@@ -132,17 +132,13 @@ class _MASettingPageState extends BaseIndicatorSettingPageState<MASettingPage> {
     final lines = _currentParam.lines;
     return [
       buildSectionTitle('指标线设置', theme),
-
       _buildLineTableHeader(theme),
-
       ...lines.asMap().entries.map((entry) {
         final index = entry.key;
         final line = entry.value;
         return _buildMALineRow(index, line, theme);
       }),
-
       SizedBox(height: 8.r),
-
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.r),
         child: ElevatedButton.icon(
@@ -157,7 +153,6 @@ class _MASettingPageState extends BaseIndicatorSettingPageState<MASettingPage> {
           ),
         ),
       ),
-
       SizedBox(height: 16.r),
     ];
   }
@@ -230,7 +225,6 @@ class _MASettingPageState extends BaseIndicatorSettingPageState<MASettingPage> {
               ],
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -277,7 +271,6 @@ class _MASettingPageState extends BaseIndicatorSettingPageState<MASettingPage> {
               ),
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -292,7 +285,6 @@ class _MASettingPageState extends BaseIndicatorSettingPageState<MASettingPage> {
               ),
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -306,7 +298,6 @@ class _MASettingPageState extends BaseIndicatorSettingPageState<MASettingPage> {
               ),
             ),
           ),
-
           SizedBox(
             width: 24.r,
             child: _currentParam.lines.length > 1
@@ -385,18 +376,18 @@ class _MASettingPageState extends BaseIndicatorSettingPageState<MASettingPage> {
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
 
-      if (_enabled) {
-        final oldIndicator = controller.getIndicator<MAIndicator>(_maKey);
-        if (oldIndicator != null) {
-          final newIndicator = MAIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            tipsPadding: oldIndicator.tipsPadding,
-          );
-          controller.updateIndicator(newIndicator);
-          debugPrint('MA指标参数已更新');
-        }
+      final oldIndicator =
+          controller.configuredMainIndicator<MAIndicator>(_maKey);
+      if (oldIndicator != null) {
+        final newIndicator = MAIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          tipsPadding: oldIndicator.tipsPadding,
+        );
+        await controller.saveAndSetMainIndicator(newIndicator,
+            enabled: _enabled);
+        debugPrint('MA指标参数已更新');
       }
     } catch (e) {
       debugPrint('保存MA设置失败: $e');

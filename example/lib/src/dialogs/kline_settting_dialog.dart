@@ -31,12 +31,15 @@ class KlineSettingDialog extends ConsumerStatefulWidget {
   const KlineSettingDialog({
     super.key,
     required this.controller,
+    this.onTapDraw,
   });
 
   final FlexiKlineController controller;
+  final VoidCallback? onTapDraw;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _KlineSettingDialogState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _KlineSettingDialogState();
 }
 
 class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
@@ -57,7 +60,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
     final isUpdate = await ref.read(routerProvider).pushNamed(
       'landscapeKline',
       extra: {
-        "candleReq": widget.controller.curKlineData.spec.initial(),
+        "candleReq": widget.controller.klineData.spec.initial(),
         "configuration": widget.controller.configuration,
       },
     );
@@ -66,7 +69,17 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
 
       /// TODO: 要放开
       // final landConfig = widget.controller.configuration.getFlexiKlineConfig();
-      // widget.controller.updateFlexiKlineConfig(landConfig);
+      // widget.controller.storeFlexiKlineConfig(landConfig);
+    }
+  }
+
+  void openDrawTools() {
+    SmartDialog.dismiss(tag: KlineSettingDialog.dialogTag);
+    final onTapDraw = widget.onTapDraw;
+    if (onTapDraw != null) {
+      onTapDraw();
+    } else {
+      widget.controller.prepareDraw();
     }
   }
 
@@ -112,7 +125,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                       vertical: 10.r,
                     ),
                     decoration: BoxDecoration(
-                      color: theme.pageBg.withOpacity(0.3),
+                      color: theme.pageBg.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: _buildKlineWidthSetting(context),
@@ -129,7 +142,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                     vertical: 10.r,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.pageBg.withOpacity(0.3),
+                    color: theme.pageBg.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: _buildKlineHeightSetting(context),
@@ -176,9 +189,9 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                 style: theme.roundBtnStyle,
                 onPressed: () {
                   ref.read(routerProvider).pushNamed(
-                    'indicatorSetting',
-                    extra: widget.controller,
-                  );
+                        'indicatorSetting',
+                        extra: widget.controller,
+                      );
                 },
                 child: Column(
                   children: [
@@ -189,7 +202,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
               ),
               TextButton(
                 style: theme.roundBtnStyle,
-                onPressed: () {},
+                onPressed: openDrawTools,
                 child: Column(
                   children: [
                     Icon(Icons.draw_rounded, color: theme.t1),
@@ -240,9 +253,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                   contentPadding: EdgeInsets.zero,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   onChanged: (value) {
-                    klineState.setShowLatestPrice(
-                      !klineState.isShowLatestPrice,
-                    );
+                    klineState.setShowLatestPrice(value ?? false);
                   },
                   controlAffinity: ListTileControlAffinity.leading,
                   title: Text(
@@ -261,7 +272,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                   value: klineState.isShowCountDown,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (value) {
-                    klineState.setShowCountDown(!klineState.isShowCountDown);
+                    klineState.setShowCountDown(value ?? false);
                   },
                   controlAffinity: ListTileControlAffinity.leading,
                   title: Text(
@@ -283,9 +294,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                   value: klineState.isShowCandleHighPrice,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (value) {
-                    klineState.setShowCandleHighPrice(
-                      !klineState.isShowCandleHighPrice,
-                    );
+                    klineState.setShowCandleHighPrice(value ?? false);
                   },
                   controlAffinity: ListTileControlAffinity.leading,
                   title: Text(
@@ -303,9 +312,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                   value: klineState.isShowCandleLowPrice,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (value) {
-                    klineState.setShowCandleLowPrice(
-                      !klineState.isShowCandleLowPrice,
-                    );
+                    klineState.setShowCandleLowPrice(value ?? false);
                   },
                   controlAffinity: ListTileControlAffinity.leading,
                   title: Text(
@@ -328,7 +335,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                   contentPadding: EdgeInsets.zero,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   onChanged: (value) {
-                    klineState.setShowYAxisTick(!klineState.isShowYAxisTick);
+                    klineState.setShowYAxisTick(value ?? false);
                   },
                   controlAffinity: ListTileControlAffinity.leading,
                   title: Text(
@@ -348,7 +355,7 @@ class _KlineSettingDialogState extends ConsumerState<KlineSettingDialog> {
                   contentPadding: EdgeInsets.zero,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   onChanged: (value) {
-                    klineState.setShowTradeMark(!klineState.isShowTradeMark);
+                    klineState.setShowTradeMark(value ?? false);
                   },
                   controlAffinity: ListTileControlAffinity.leading,
                   title: Text(

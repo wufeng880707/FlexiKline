@@ -17,7 +17,7 @@ part of 'cci.dart';
 /// CCI 顺势指标 (Commodity Channel Index)
 @CopyWith()
 @FlexiIndicatorSerializable
-class CCIIndicator extends DataIndicator implements IPrecomputable {
+class CCIIndicator extends ComputedIndicator {
   CCIIndicator({
     super.zIndex = 0,
     required super.height,
@@ -25,7 +25,7 @@ class CCIIndicator extends DataIndicator implements IPrecomputable {
     required this.calcParam,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('cci'));
+  }) : super(key: const ComputedIndicatorKey('cci'));
 
   @override
   final CCIParam calcParam;
@@ -33,19 +33,18 @@ class CCIIndicator extends DataIndicator implements IPrecomputable {
   final EdgeInsets tipsPadding;
   final int tickCount;
 
-  factory CCIIndicator.fromJson(Map<String, dynamic> json) =>
-      _$CCIIndicatorFromJson(json);
+  factory CCIIndicator.fromJson(Map<String, dynamic> json) => _$CCIIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$CCIIndicatorToJson(this);
 
   @override
-  DataPaintObject<CCIIndicator> createPaintObject() {
+  ComputedPaintObject<CCIIndicator> createPaintObject() {
     return CCIPaintObject();
   }
 }
 
-class CCIPaintObject<T extends CCIIndicator> extends DataPaintObject<T>
+class CCIPaintObject<T extends CCIIndicator> extends ComputedPaintObject<T>
     with CciDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   CCIPaintObject();
 
@@ -60,7 +59,7 @@ class CCIPaintObject<T extends CCIIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     paintCciLine(canvas, size);
     paintReferenceLines(canvas, size);
 
@@ -84,7 +83,7 @@ class CCIPaintObject<T extends CCIIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     paintYAxisTicksOnCross(
       canvas,
       offset,
@@ -225,8 +224,7 @@ class CCIPaintObject<T extends CCIIndicator> extends DataPaintObject<T>
       double distance = 0.0;
       bool draw = true;
       while (distance < metric.length) {
-        final nextDistance =
-            (distance + dashWidth).clamp(0.0, metric.length);
+        final nextDistance = (distance + dashWidth).clamp(0.0, metric.length);
         if (draw) {
           final extractPath = metric.extractPath(distance, nextDistance);
           canvas.drawPath(extractPath, paint);
@@ -278,8 +276,7 @@ class CCIPaintObject<T extends CCIIndicator> extends DataPaintObject<T>
 
     if (param.reference.enabled && param.display.showReferenceValue) {
       children.add(TextSpan(
-        text:
-            'OB:${param.reference.overbought.toInt()} OS:${param.reference.oversold.toInt()}  ',
+        text: 'OB:${param.reference.overbought.toInt()} OS:${param.reference.oversold.toInt()}  ',
         style: TextStyle(color: param.reference.color, fontSize: 12),
       ));
     }

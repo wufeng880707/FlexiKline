@@ -69,10 +69,7 @@ final class BOLLParam extends Equatable {
   }
 
   /// 验证参数是否有效
-  bool isValid(int len) => 
-      periods.period > 0 && 
-      periods.period <= len && 
-      periods.stdDev > 0;
+  bool isValid(int len) => periods.period > 0 && periods.period <= len && periods.stdDev > 0;
 
   factory BOLLParam.fromJson(Map<String, dynamic> json) => _$BOLLParamFromJson(json);
   Map<String, dynamic> toJson() => _$BOLLParamToJson(this);

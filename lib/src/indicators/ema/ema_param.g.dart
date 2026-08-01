@@ -42,8 +42,7 @@ class _$EmaParamCWProxyImpl implements _$EmaParamCWProxy {
   EmaParam lines(List<EMALineConfig> lines) => this(lines: lines);
 
   @override
-  EmaParam validation(EMAValidationConfig validation) =>
-      this(validation: validation);
+  EmaParam validation(EMAValidationConfig validation) => this(validation: validation);
 
   @override
   EmaParam display(EMADisplayConfig display) => this(display: display);
@@ -215,8 +214,7 @@ class _$EMAValidationConfigCWProxyImpl implements _$EMAValidationConfigCWProxy {
   EMAValidationConfig maxPeriod(int maxPeriod) => this(maxPeriod: maxPeriod);
 
   @override
-  EMAValidationConfig allowDuplicate(bool allowDuplicate) =>
-      this(allowDuplicate: allowDuplicate);
+  EMAValidationConfig allowDuplicate(bool allowDuplicate) => this(allowDuplicate: allowDuplicate);
 
   @override
 
@@ -251,8 +249,7 @@ class _$EMAValidationConfigCWProxyImpl implements _$EMAValidationConfigCWProxy {
 extension $EMAValidationConfigCopyWith on EMAValidationConfig {
   /// Returns a callable class that can be used as follows: `instanceOfEMAValidationConfig.copyWith(...)` or like so:`instanceOfEMAValidationConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$EMAValidationConfigCWProxy get copyWith =>
-      _$EMAValidationConfigCWProxyImpl(this);
+  _$EMAValidationConfigCWProxy get copyWith => _$EMAValidationConfigCWProxyImpl(this);
 }
 
 abstract class _$EMADisplayConfigCWProxy {
@@ -285,19 +282,16 @@ class _$EMADisplayConfigCWProxyImpl implements _$EMADisplayConfigCWProxy {
   final EMADisplayConfig _value;
 
   @override
-  EMADisplayConfig pointRadius(double pointRadius) =>
-      this(pointRadius: pointRadius);
+  EMADisplayConfig pointRadius(double pointRadius) => this(pointRadius: pointRadius);
 
   @override
-  EMADisplayConfig showCrossPoint(bool showCrossPoint) =>
-      this(showCrossPoint: showCrossPoint);
+  EMADisplayConfig showCrossPoint(bool showCrossPoint) => this(showCrossPoint: showCrossPoint);
 
   @override
   EMADisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  EMADisplayConfig showPeriodInTips(bool showPeriodInTips) =>
-      this(showPeriodInTips: showPeriodInTips);
+  EMADisplayConfig showPeriodInTips(bool showPeriodInTips) => this(showPeriodInTips: showPeriodInTips);
 
   @override
 
@@ -346,14 +340,12 @@ extension $EMADisplayConfigCopyWith on EMADisplayConfig {
 
 EmaParam _$EmaParamFromJson(Map<String, dynamic> json) => EmaParam(
       maxLines: (json['maxLines'] as num?)?.toInt() ?? 10,
-      lines: (json['lines'] as List<dynamic>?)
-              ?.map((e) => EMALineConfig.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
+      lines:
+          (json['lines'] as List<dynamic>?)?.map((e) => EMALineConfig.fromJson(e as Map<String, dynamic>)).toList() ??
+              const [],
       validation: json['validation'] == null
           ? const EMAValidationConfig()
-          : EMAValidationConfig.fromJson(
-              json['validation'] as Map<String, dynamic>),
+          : EMAValidationConfig.fromJson(json['validation'] as Map<String, dynamic>),
       display: json['display'] == null
           ? const EMADisplayConfig()
           : EMADisplayConfig.fromJson(json['display'] as Map<String, dynamic>),
@@ -366,19 +358,15 @@ Map<String, dynamic> _$EmaParamToJson(EmaParam instance) => <String, dynamic>{
       'display': instance.display.toJson(),
     };
 
-EMALineConfig _$EMALineConfigFromJson(Map<String, dynamic> json) =>
-    EMALineConfig(
+EMALineConfig _$EMALineConfigFromJson(Map<String, dynamic> json) => EMALineConfig(
       id: json['id'] as String,
       enabled: json['enabled'] as bool? ?? true,
       period: (json['period'] as num).toInt(),
-      color: json['color'] == null
-          ? const Color(0xff2196f3)
-          : const ColorConverter().fromJson(json['color'] as String),
+      color: json['color'] == null ? const Color(0xff2196f3) : const ColorConverter().fromJson(json['color'] as String),
       width: (json['width'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$EMALineConfigToJson(EMALineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$EMALineConfigToJson(EMALineConfig instance) => <String, dynamic>{
       'id': instance.id,
       'enabled': instance.enabled,
       'period': instance.period,
@@ -386,31 +374,26 @@ Map<String, dynamic> _$EMALineConfigToJson(EMALineConfig instance) =>
       'width': instance.width,
     };
 
-EMAValidationConfig _$EMAValidationConfigFromJson(Map<String, dynamic> json) =>
-    EMAValidationConfig(
+EMAValidationConfig _$EMAValidationConfigFromJson(Map<String, dynamic> json) => EMAValidationConfig(
       minPeriod: (json['minPeriod'] as num?)?.toInt() ?? 1,
       maxPeriod: (json['maxPeriod'] as num?)?.toInt() ?? 1000,
       allowDuplicate: json['allowDuplicate'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$EMAValidationConfigToJson(
-        EMAValidationConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$EMAValidationConfigToJson(EMAValidationConfig instance) => <String, dynamic>{
       'minPeriod': instance.minPeriod,
       'maxPeriod': instance.maxPeriod,
       'allowDuplicate': instance.allowDuplicate,
     };
 
-EMADisplayConfig _$EMADisplayConfigFromJson(Map<String, dynamic> json) =>
-    EMADisplayConfig(
+EMADisplayConfig _$EMADisplayConfigFromJson(Map<String, dynamic> json) => EMADisplayConfig(
       pointRadius: (json['pointRadius'] as num?)?.toDouble() ?? 0.0,
       showCrossPoint: json['showCrossPoint'] as bool? ?? false,
       precision: (json['precision'] as num?)?.toInt() ?? 2,
       showPeriodInTips: json['showPeriodInTips'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$EMADisplayConfigToJson(EMADisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$EMADisplayConfigToJson(EMADisplayConfig instance) => <String, dynamic>{
       'pointRadius': instance.pointRadius,
       'showCrossPoint': instance.showCrossPoint,
       'precision': instance.precision,

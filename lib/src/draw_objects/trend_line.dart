@@ -22,12 +22,12 @@ class TrendLineDrawObject extends DrawObject {
   TrendLineDrawObject(super.overlay, super.config);
 
   @override
-  void getDrawParams(IDrawContext context) {
+  void getDrawParams(DrawContext context) {
     // 简单线条不需要额外参数
   }
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 2,
       'TrendLine hitTest points.length:${points.length} must be equals 2',
@@ -43,7 +43,7 @@ class TrendLineDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 2,
       'TrendLine draw points.length:${points.length} must be equals 2',

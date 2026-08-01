@@ -54,12 +54,39 @@ enum BusinessOverlayAction {
   menu,
 }
 
+/// 业务叠加层拖拽结束结果。
+class BusinessOverlayDragResult {
+  const BusinessOverlayDragResult({
+    required this.value,
+    this.target,
+  });
+
+  /// 拖拽后的业务价格值。
+  final FlexiNum? value;
+
+  /// 拖拽目标，例如持仓的 TP / SL 标识。
+  final Object? target;
+}
+
+/// 业务叠加层操作事件。
+class BusinessOverlayActionEvent {
+  const BusinessOverlayActionEvent({
+    required this.object,
+    required this.action,
+    this.newValue,
+    this.hitResult,
+    this.dragTarget,
+  });
+
+  final BusinessOverlayObject object;
+  final BusinessOverlayAction action;
+  final FlexiNum? newValue;
+  final BusinessOverlayHitResult? hitResult;
+  final Object? dragTarget;
+}
+
 /// 业务叠加层操作回调
-typedef BusinessOverlayActionCallback = void Function(
-  BusinessOverlayObject object,
-  BusinessOverlayAction action,
-  FlexiNum? newValue,
-);
+typedef BusinessOverlayActionCallback = void Function(BusinessOverlayActionEvent event);
 
 /// 业务叠加层对象基类
 ///
@@ -96,8 +123,15 @@ abstract class BusinessOverlayObject {
 
   // ---- Drag ----
 
+  bool canStartDrag(BusinessOverlayHitResult hit) {
+    return switch (hit.area) {
+      BusinessOverlayHitArea.close || BusinessOverlayHitArea.tpSl || BusinessOverlayHitArea.menu => false,
+      BusinessOverlayHitArea.line || BusinessOverlayHitArea.label || BusinessOverlayHitArea.dragHandle => true,
+    };
+  }
+
   void onDragStart(Offset position, BusinessOverlayPaintContext ctx);
   void onDragUpdate(Offset position, Offset delta, Rect chartRect);
-  FlexiNum? onDragEnd(BusinessOverlayPaintContext ctx);
+  BusinessOverlayDragResult? onDragEnd(BusinessOverlayPaintContext ctx);
   void onDragCancel();
 }

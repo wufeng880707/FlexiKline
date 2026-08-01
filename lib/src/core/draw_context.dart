@@ -27,9 +27,6 @@ abstract interface class DrawEnvironment {
 abstract interface class DrawDataScope {
   /// 当前 K 线数据源。
   KlineData get klineData;
-
-  /// 兼容 fork 旧 API；新代码使用 [klineData]。
-  KlineData get curKlineData;
 }
 
 /// Draw 绘制几何：区域、蜡烛尺寸与坐标换算。
@@ -76,16 +73,4 @@ abstract interface class DrawRuntimeScope {
 
 /// Overlay 对外可见的绘制上下文。
 abstract interface class DrawContext
-    implements
-        DrawEnvironment,
-        DrawDataScope,
-        DrawGeometryScope,
-        DrawRuntimeScope,
-        IStorage,
-        ILogger {}
-
-/// 兼容 fork 旧 API；新代码使用 [DrawContext]。
-typedef IDrawContext = DrawContext;
-
-/// 兼容 fork 旧 API；新代码使用 [PaintContext]。
-typedef IPaintContext = PaintContext;
+    implements DrawEnvironment, DrawDataScope, DrawGeometryScope, DrawRuntimeScope, IStorage, ILogger {}

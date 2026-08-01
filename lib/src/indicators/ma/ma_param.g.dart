@@ -45,15 +45,13 @@ class _$MaParamCWProxyImpl implements _$MaParamCWProxy {
   MaParam lines(List<MALineConfig> lines) => this(lines: lines);
 
   @override
-  MaParam validation(MAValidationConfig validation) =>
-      this(validation: validation);
+  MaParam validation(MAValidationConfig validation) => this(validation: validation);
 
   @override
   MaParam display(MADisplayConfig display) => this(display: display);
 
   @override
-  MaParam defaultColors(List<Color> defaultColors) =>
-      this(defaultColors: defaultColors);
+  MaParam defaultColors(List<Color> defaultColors) => this(defaultColors: defaultColors);
 
   @override
 
@@ -227,8 +225,7 @@ class _$MAValidationConfigCWProxyImpl implements _$MAValidationConfigCWProxy {
   MAValidationConfig maxPeriod(int maxPeriod) => this(maxPeriod: maxPeriod);
 
   @override
-  MAValidationConfig allowDuplicate(bool allowDuplicate) =>
-      this(allowDuplicate: allowDuplicate);
+  MAValidationConfig allowDuplicate(bool allowDuplicate) => this(allowDuplicate: allowDuplicate);
 
   @override
 
@@ -263,8 +260,7 @@ class _$MAValidationConfigCWProxyImpl implements _$MAValidationConfigCWProxy {
 extension $MAValidationConfigCopyWith on MAValidationConfig {
   /// Returns a callable class that can be used as follows: `instanceOfMAValidationConfig.copyWith(...)` or like so:`instanceOfMAValidationConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$MAValidationConfigCWProxy get copyWith =>
-      _$MAValidationConfigCWProxyImpl(this);
+  _$MAValidationConfigCWProxy get copyWith => _$MAValidationConfigCWProxyImpl(this);
 }
 
 abstract class _$MADisplayConfigCWProxy {
@@ -297,19 +293,16 @@ class _$MADisplayConfigCWProxyImpl implements _$MADisplayConfigCWProxy {
   final MADisplayConfig _value;
 
   @override
-  MADisplayConfig pointRadius(double pointRadius) =>
-      this(pointRadius: pointRadius);
+  MADisplayConfig pointRadius(double pointRadius) => this(pointRadius: pointRadius);
 
   @override
-  MADisplayConfig showCrossPoint(bool showCrossPoint) =>
-      this(showCrossPoint: showCrossPoint);
+  MADisplayConfig showCrossPoint(bool showCrossPoint) => this(showCrossPoint: showCrossPoint);
 
   @override
   MADisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  MADisplayConfig showPeriodInTips(bool showPeriodInTips) =>
-      this(showPeriodInTips: showPeriodInTips);
+  MADisplayConfig showPeriodInTips(bool showPeriodInTips) => this(showPeriodInTips: showPeriodInTips);
 
   @override
 
@@ -358,14 +351,11 @@ extension $MADisplayConfigCopyWith on MADisplayConfig {
 
 MaParam _$MaParamFromJson(Map<String, dynamic> json) => MaParam(
       maxLines: (json['maxLines'] as num?)?.toInt() ?? 10,
-      lines: (json['lines'] as List<dynamic>?)
-              ?.map((e) => MALineConfig.fromJson(e as Map<String, dynamic>))
-              .toList() ??
+      lines: (json['lines'] as List<dynamic>?)?.map((e) => MALineConfig.fromJson(e as Map<String, dynamic>)).toList() ??
           const [],
       validation: json['validation'] == null
           ? const MAValidationConfig()
-          : MAValidationConfig.fromJson(
-              json['validation'] as Map<String, dynamic>),
+          : MAValidationConfig.fromJson(json['validation'] as Map<String, dynamic>),
       display: json['display'] == null
           ? const MADisplayConfig()
           : MADisplayConfig.fromJson(json['display'] as Map<String, dynamic>),
@@ -391,22 +381,18 @@ Map<String, dynamic> _$MaParamToJson(MaParam instance) => <String, dynamic>{
       'lines': instance.lines.map((e) => e.toJson()).toList(),
       'validation': instance.validation.toJson(),
       'display': instance.display.toJson(),
-      'defaultColors':
-          instance.defaultColors.map(const ColorConverter().toJson).toList(),
+      'defaultColors': instance.defaultColors.map(const ColorConverter().toJson).toList(),
     };
 
 MALineConfig _$MALineConfigFromJson(Map<String, dynamic> json) => MALineConfig(
       id: json['id'] as String,
       enabled: json['enabled'] as bool? ?? true,
       period: (json['period'] as num).toInt(),
-      color: json['color'] == null
-          ? const Color(0xff2196f3)
-          : const ColorConverter().fromJson(json['color'] as String),
+      color: json['color'] == null ? const Color(0xff2196f3) : const ColorConverter().fromJson(json['color'] as String),
       width: (json['width'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$MALineConfigToJson(MALineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$MALineConfigToJson(MALineConfig instance) => <String, dynamic>{
       'id': instance.id,
       'enabled': instance.enabled,
       'period': instance.period,
@@ -414,30 +400,26 @@ Map<String, dynamic> _$MALineConfigToJson(MALineConfig instance) =>
       'width': instance.width,
     };
 
-MAValidationConfig _$MAValidationConfigFromJson(Map<String, dynamic> json) =>
-    MAValidationConfig(
+MAValidationConfig _$MAValidationConfigFromJson(Map<String, dynamic> json) => MAValidationConfig(
       minPeriod: (json['minPeriod'] as num?)?.toInt() ?? 1,
       maxPeriod: (json['maxPeriod'] as num?)?.toInt() ?? 1000,
       allowDuplicate: json['allowDuplicate'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$MAValidationConfigToJson(MAValidationConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$MAValidationConfigToJson(MAValidationConfig instance) => <String, dynamic>{
       'minPeriod': instance.minPeriod,
       'maxPeriod': instance.maxPeriod,
       'allowDuplicate': instance.allowDuplicate,
     };
 
-MADisplayConfig _$MADisplayConfigFromJson(Map<String, dynamic> json) =>
-    MADisplayConfig(
+MADisplayConfig _$MADisplayConfigFromJson(Map<String, dynamic> json) => MADisplayConfig(
       pointRadius: (json['pointRadius'] as num?)?.toDouble() ?? 0.0,
       showCrossPoint: json['showCrossPoint'] as bool? ?? false,
       precision: (json['precision'] as num?)?.toInt() ?? 2,
       showPeriodInTips: json['showPeriodInTips'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$MADisplayConfigToJson(MADisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$MADisplayConfigToJson(MADisplayConfig instance) => <String, dynamic>{
       'pointRadius': instance.pointRadius,
       'showCrossPoint': instance.showCrossPoint,
       'precision': instance.precision,

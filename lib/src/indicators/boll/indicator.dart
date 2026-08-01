@@ -15,7 +15,7 @@
 part of 'boll.dart';
 
 /// BOLL 布林带指标
-class BOLLIndicator extends DataIndicator implements IPrecomputable {
+class BOLLIndicator extends ComputedIndicator {
   BOLLIndicator({
     super.zIndex = 0,
     required super.height,
@@ -23,7 +23,7 @@ class BOLLIndicator extends DataIndicator implements IPrecomputable {
     this.calcParam = const BOLLParam(),
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('boll'));
+  }) : super(key: const ComputedIndicatorKey('boll'));
 
   /// BOLL计算参数 - 包含所有配置
   @override
@@ -36,12 +36,12 @@ class BOLLIndicator extends DataIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  DataPaintObject<BOLLIndicator> createPaintObject() {
+  ComputedPaintObject<BOLLIndicator> createPaintObject() {
     return BOLLPaintObject();
   }
 }
 
-class BOLLPaintObject<T extends BOLLIndicator> extends DataPaintObject<T>
+class BOLLPaintObject<T extends BOLLIndicator> extends ComputedPaintObject<T>
     with BollDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   BOLLPaintObject();
 
@@ -68,7 +68,7 @@ class BOLLPaintObject<T extends BOLLIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     /// 绘制BOLL图
     paintBollChart(canvas, size);
 
@@ -93,7 +93,7 @@ class BOLLPaintObject<T extends BOLLIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     /// onCross时, 绘制Y轴上的标记值(注: 仅对indicator.key为subBollKey时有效)
     if (isInSub) {
       paintYAxisTicksOnCross(
@@ -135,12 +135,12 @@ class BOLLPaintObject<T extends BOLLIndicator> extends DataPaintObject<T>
     }
 
     final offset = startCandleDx - candleWidthHalf;
-    
+
     for (int i = start; i < end; i++) {
       final m = list[i];
       if (!m.isValidBollData(dataIndex)) continue;
       final dx = offset - (i - start) * candleActualWidth;
-      
+
       for (final lineType in enabledLines) {
         FlexiNum? value;
         switch (lineType) {
@@ -161,15 +161,15 @@ class BOLLPaintObject<T extends BOLLIndicator> extends DataPaintObject<T>
     }
 
     // 绘制背景填充（如果启用）
-    if (indicator.calcParam.fill.enabled && 
-        linePoints[BOLLLineType.ub]?.isNotEmpty == true && 
+    if (indicator.calcParam.fill.enabled &&
+        linePoints[BOLLLineType.ub]?.isNotEmpty == true &&
         linePoints[BOLLLineType.lb]?.isNotEmpty == true) {
       final ubPoints = linePoints[BOLLLineType.ub]!;
       final lbPoints = linePoints[BOLLLineType.lb]!;
-      
+
       final fillPath = Path();
       fillPath.addPolygon([...ubPoints, ...lbPoints.reversed], true);
-      
+
       canvas.drawPath(
         fillPath,
         Paint()
@@ -210,7 +210,7 @@ class BOLLPaintObject<T extends BOLLIndicator> extends DataPaintObject<T>
         final pointPaint = Paint()
           ..color = lineConfig.color
           ..style = PaintingStyle.fill;
-        
+
         for (final point in points) {
           canvas.drawCircle(point, indicator.calcParam.display.pointRadius, pointPaint);
         }
@@ -261,9 +261,8 @@ class BOLLPaintObject<T extends BOLLIndicator> extends DataPaintObject<T>
 
       if (value != null) {
         // 根据配置决定是否显示周期信息
-        final displayLabel = indicator.calcParam.display.showPeriodInTips 
-            ? '$label(${indicator.calcParam.periods.period})'
-            : label;
+        final displayLabel =
+            indicator.calcParam.display.showPeriodInTips ? '$label(${indicator.calcParam.periods.period})' : label;
 
         children.add(TextSpan(
           text: formatNumber(

@@ -42,11 +42,11 @@ extension on FlexiCandleModel {
   void cleanMa(int dataIndex) => clean(dataIndex);
 }
 
-mixin MaDataMixin<T extends MAIndicator> on DataPaintObject<T> {
+mixin MaDataMixin<T extends MAIndicator> on ComputedPaintObject<T> {
   MaParam get calcParam => indicator.calcParam;
 
   @override
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     calcuAndCacheMa(
       calcParam,
       start: range.start,
@@ -123,7 +123,7 @@ mixin MaDataMixin<T extends MAIndicator> on DataPaintObject<T> {
     for (int i = 0; i < paramLen; i++) {
       final lineConfig = enabledLines[i];
       if (lineConfig.period <= 0) continue; // 跳过无效周期
-      
+
       _calculateMa(
         lineConfig.period,
         paramIndex: i,

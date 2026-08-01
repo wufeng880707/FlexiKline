@@ -40,8 +40,7 @@ final class RSILineConfig extends Equatable {
     this.width = 1.0,
   });
 
-  factory RSILineConfig.fromJson(Map<String, dynamic> json) =>
-      _$RSILineConfigFromJson(json);
+  factory RSILineConfig.fromJson(Map<String, dynamic> json) => _$RSILineConfigFromJson(json);
   Map<String, dynamic> toJson() => _$RSILineConfigToJson(this);
 
   @override
@@ -62,8 +61,7 @@ final class RSIValidationConfig extends Equatable {
     this.allowDuplicate = false,
   });
 
-  factory RSIValidationConfig.fromJson(Map<String, dynamic> json) =>
-      _$RSIValidationConfigFromJson(json);
+  factory RSIValidationConfig.fromJson(Map<String, dynamic> json) => _$RSIValidationConfigFromJson(json);
   Map<String, dynamic> toJson() => _$RSIValidationConfigToJson(this);
 
   @override
@@ -91,8 +89,7 @@ final class RSIReferenceConfig extends Equatable {
     this.dashWidth = 2.0,
   });
 
-  factory RSIReferenceConfig.fromJson(Map<String, dynamic> json) =>
-      _$RSIReferenceConfigFromJson(json);
+  factory RSIReferenceConfig.fromJson(Map<String, dynamic> json) => _$RSIReferenceConfigFromJson(json);
   Map<String, dynamic> toJson() => _$RSIReferenceConfigToJson(this);
 
   @override
@@ -117,8 +114,7 @@ final class RSIDisplayConfig extends Equatable {
     this.showReferenceValue = true,
   });
 
-  factory RSIDisplayConfig.fromJson(Map<String, dynamic> json) =>
-      _$RSIDisplayConfigFromJson(json);
+  factory RSIDisplayConfig.fromJson(Map<String, dynamic> json) => _$RSIDisplayConfigFromJson(json);
   Map<String, dynamic> toJson() => _$RSIDisplayConfigToJson(this);
 
   @override
@@ -174,8 +170,7 @@ final class RsiParam extends Equatable {
     );
   }
 
-  factory RsiParam.fromJson(Map<String, dynamic> json) =>
-      _$RsiParamFromJson(json);
+  factory RsiParam.fromJson(Map<String, dynamic> json) => _$RsiParamFromJson(json);
   Map<String, dynamic> toJson() => _$RsiParamToJson(this);
 
   @override

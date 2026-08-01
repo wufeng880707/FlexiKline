@@ -61,8 +61,7 @@ final class EmaParam extends Equatable {
   List<EMALineConfig> get enabledLines => lines.where((line) => line.enabled).toList();
 
   /// 获取所有有效的周期（大于0且启用的）
-  List<int> get validPeriods =>
-      enabledLines.where((line) => line.period > 0).map((line) => line.period).toList();
+  List<int> get validPeriods => enabledLines.where((line) => line.period > 0).map((line) => line.period).toList();
 
   /// 获取最大周期
   int? get maxPeriod {
@@ -86,7 +85,6 @@ final class EmaParam extends Equatable {
     if (validation.allowDuplicate) return false;
     return lines.any((line) => line.id != excludeId && line.enabled && line.period == period);
   }
-
 
   factory EmaParam.fromJson(Map<String, dynamic> json) => _$EmaParamFromJson(json);
   Map<String, dynamic> toJson() => _$EmaParamToJson(this);
@@ -140,8 +138,7 @@ final class EMAValidationConfig extends Equatable {
     this.allowDuplicate = false,
   });
 
-  factory EMAValidationConfig.fromJson(Map<String, dynamic> json) =>
-      _$EMAValidationConfigFromJson(json);
+  factory EMAValidationConfig.fromJson(Map<String, dynamic> json) => _$EMAValidationConfigFromJson(json);
   Map<String, dynamic> toJson() => _$EMAValidationConfigToJson(this);
 
   @override

@@ -247,50 +247,6 @@ abstract class ComputedPaintObject<T extends ComputedIndicator> extends PaintObj
   }
 }
 
-/// 兼容 fork 旧 API；新代码使用 [ComputedPaintObject] 并 override [compute]。
-abstract class DataPaintObject<T extends DataIndicator> extends ComputedPaintObject<T> {
-  void precompute(Range range, {bool reset = false}) {}
-
-  void paintChart(Canvas canvas, Size size) {}
-
-  void onCross(Canvas canvas, Offset offset) {}
-
-  @override
-  void compute(Range range, {bool reset = false}) {
-    precompute(range, reset: reset);
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    paintChart(canvas, size);
-  }
-
-  @override
-  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
-    onCross(canvas, offset);
-  }
-}
-
-/// 兼容 fork 旧 API；新代码使用 [DirectPaintObject]。
-typedef NormalPaintObject<T extends NormalIndicator> = DirectPaintObject<T>;
-
-/// 兼容 fork 旧 API；新代码使用 [ExternalPaintObject]。
-abstract class BusinessPaintObject<T extends BusinessIndicator> extends ExternalPaintObject<T> {
-  void paintChart(Canvas canvas, Size size) {}
-
-  void onCross(Canvas canvas, Offset offset) {}
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    paintChart(canvas, size);
-  }
-
-  @override
-  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
-    onCross(canvas, offset);
-  }
-}
-
 /// 业务指标绘制对象
 ///
 /// 用于 Trade 等由业务数据或用户操作驱动的指标，不占 slot。

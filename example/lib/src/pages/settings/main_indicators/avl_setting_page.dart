@@ -21,6 +21,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/default_kline_config.dart';
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 
@@ -60,12 +61,13 @@ class _AVLSettingPageState
 
     try {
       // 检查AVL指标是否存在
-      const avlKey = DataIndicatorKey('avl');
+      const avlKey = ComputedIndicatorKey('avl');
       enabled = controller.mainIndicatorKeys.contains(avlKey);
 
       if (enabled) {
         // 获取当前AVL指标配置
-        final avlIndicator = controller.getIndicator<AVLIndicator>(avlKey);
+        final avlIndicator =
+            controller.configuredMainIndicator<AVLIndicator>(avlKey);
         if (avlIndicator != null) {
           _originalParam = avlIndicator.calcParam;
           _currentParam = _originalParam;
@@ -210,31 +212,27 @@ class _AVLSettingPageState
     try {
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
-      const avlKey = DataIndicatorKey('avl');
+      const avlKey = ComputedIndicatorKey('avl');
 
-      if (enabled && controller.mainIndicatorKeys.contains(avlKey)) {
-        // 更新现有的AVL指标
-        final oldIndicator = controller.getIndicator<AVLIndicator>(avlKey);
-        if (oldIndicator != null) {
-          final newIndicator = AVLIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            tipsPadding: oldIndicator.tipsPadding,
-            tickCount: oldIndicator.tickCount,
-          );
+      final oldIndicator =
+          controller.configuredMainIndicator<AVLIndicator>(avlKey);
+      if (oldIndicator != null) {
+        final newIndicator = AVLIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          tipsPadding: oldIndicator.tipsPadding,
+          tickCount: oldIndicator.tickCount,
+        );
 
-          // 使用controller的updateIndicator方法更新
-          controller.updateIndicator(newIndicator);
+        await controller.saveAndSetMainIndicator(
+          newIndicator,
+          enabled: enabled,
+        );
 
-          debugPrint('AVL指标参数已更新');
-        } else {
-          debugPrint('AVL指标未找到，无法更新');
-        }
-      } else if (enabled) {
-        // 添加AVL指标（如果还没有的话）
-        controller.addMainIndicator(avlKey);
-        debugPrint('AVL指标已启用');
+        debugPrint('AVL指标参数已更新');
+      } else {
+        debugPrint('AVL指标未找到，无法更新');
       }
 
       // 保存原始参数为新的参考值
@@ -254,7 +252,7 @@ class _AVLSettingPageState
 
       widget.controller.configuration;
       // 从默认主指标配置中获取AVL指标
-      const avlKey = DataIndicatorKey('avl');
+      const avlKey = ComputedIndicatorKey('avl');
       final defaultMainIndicators =
           defaultConfig.getDefaultMainIndicatorBuilders();
       final avlBuilder = defaultMainIndicators[avlKey];

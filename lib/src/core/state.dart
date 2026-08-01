@@ -71,11 +71,6 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     return _isFirstCandleMovedOffScreenNotifier;
   }
 
-  /// 兼容 fork 旧 API；新代码使用 [isFirstCandleMovedOffScreenListenable]。
-  ValueListenable<bool> get isFirstCandleMoveOffScreenListener {
-    return isFirstCandleMovedOffScreenListenable;
-  }
-
   /// 当前是否处于多指触摸（双指缩放）状态.
   final _isMultiTouchNotifier = ValueNotifier<bool>(false);
   ValueListenable<bool> get isMultiTouchListenable => _isMultiTouchNotifier;
@@ -89,9 +84,6 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   final _intervalNotifier = ValueNotifier<ITimeInterval?>(null);
   ValueListenable<ITimeInterval?> get intervalListenable => _intervalNotifier;
 
-  /// 兼容 fork 旧 API；新代码使用 [intervalListenable]。
-  ValueListenable<ITimeInterval?> get intervalListener => intervalListenable;
-
   /// KlineSpec 变化 notifier。
   final _klineSpecNotifier = ValueNotifier<KlineSpec>(KlineData.empty.spec);
 
@@ -103,9 +95,6 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
 
   @override
   ValueListenable<KlineLoadingState> get loadingStateListenable => _loadingStateNotifier;
-
-  /// 兼容 fork 旧 API；新代码使用 [loadingStateListenable]。
-  ValueListenable<KlineLoadingState> get loadingStateListener => loadingStateListenable;
 
   /// 当前 KlineData 绘制范围 listenable。
   final _paintRangeNotifier = ValueNotifier<Range?>(null);
@@ -342,9 +331,6 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     if (!isMounted) return;
     _moveToPaintDxOffset(getInitPaintDxOffset());
   }
-
-  /// 兼容 fork 旧 API；新代码使用 [requestMoveToInitialPosition]。
-  void moveToInitialPosition() => requestMoveToInitialPosition();
 
   /// 计算绘制蜡烛图的范围
   void calculatePaintChartRange() {

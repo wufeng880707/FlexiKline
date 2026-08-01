@@ -15,7 +15,7 @@
 part of 'volume.dart';
 
 @CopyWith()
-class VolumeIndicator extends DataIndicator {
+class VolumeIndicator extends ComputedIndicator {
   VolumeIndicator({
     super.zIndex = 0,
     required super.height,
@@ -23,7 +23,7 @@ class VolumeIndicator extends DataIndicator {
     required this.calcParam,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('volume'), paintMode: PaintMode.alone);
+  }) : super(key: const ComputedIndicatorKey('volume'), paintMode: PaintMode.alone);
 
   @override
   final VolumeParam calcParam;
@@ -39,13 +39,12 @@ class VolumeIndicator extends DataIndicator {
   // final bool useTint;
 
   @override
-  DataPaintObject<VolumeIndicator> createPaintObject() {
+  ComputedPaintObject<VolumeIndicator> createPaintObject() {
     return VolumePaintObject();
   }
-
 }
 
-class VolumePaintObject<T extends VolumeIndicator> extends DataPaintObject<T>
+class VolumePaintObject<T extends VolumeIndicator> extends ComputedPaintObject<T>
     with VolumeDataMixin<T>, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   VolumePaintObject();
 
@@ -62,7 +61,7 @@ class VolumePaintObject<T extends VolumeIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     /// 绘制Volume柱状图
     paintVolumeChart(canvas, size);
 
@@ -88,7 +87,7 @@ class VolumePaintObject<T extends VolumeIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     /// onCross时, 绘制Y轴上的标记值
     paintYAxisTicksOnCross(
       canvas,
@@ -123,15 +122,15 @@ class VolumePaintObject<T extends VolumeIndicator> extends DataPaintObject<T>
 
     // 绘制成交量柱
     final bullishPaint = Paint()
-      ..color = volumeConfig.useTrendColor 
-          ? volumeConfig.bullishColorWithOpacity 
+      ..color = volumeConfig.useTrendColor
+          ? volumeConfig.bullishColorWithOpacity
           : longColor.withValues(alpha: volumeConfig.opacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = barWidth;
 
     final bearishPaint = Paint()
-      ..color = volumeConfig.useTrendColor 
-          ? volumeConfig.bearishColorWithOpacity 
+      ..color = volumeConfig.useTrendColor
+          ? volumeConfig.bearishColorWithOpacity
           : shortColor.withValues(alpha: volumeConfig.opacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = barWidth;

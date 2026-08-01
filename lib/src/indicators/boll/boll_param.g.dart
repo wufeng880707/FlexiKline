@@ -145,8 +145,7 @@ class _$BOLLPeriodsConfigCWProxyImpl implements _$BOLLPeriodsConfigCWProxy {
 extension $BOLLPeriodsConfigCopyWith on BOLLPeriodsConfig {
   /// Returns a callable class that can be used as follows: `instanceOfBOLLPeriodsConfig.copyWith(...)` or like so:`instanceOfBOLLPeriodsConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$BOLLPeriodsConfigCWProxy get copyWith =>
-      _$BOLLPeriodsConfigCWProxyImpl(this);
+  _$BOLLPeriodsConfigCWProxy get copyWith => _$BOLLPeriodsConfigCWProxyImpl(this);
 }
 
 abstract class _$BOLLLineConfigCWProxy {
@@ -392,19 +391,16 @@ class _$BOLLDisplayConfigCWProxyImpl implements _$BOLLDisplayConfigCWProxy {
   final BOLLDisplayConfig _value;
 
   @override
-  BOLLDisplayConfig pointRadius(double pointRadius) =>
-      this(pointRadius: pointRadius);
+  BOLLDisplayConfig pointRadius(double pointRadius) => this(pointRadius: pointRadius);
 
   @override
-  BOLLDisplayConfig showCrossPoint(bool showCrossPoint) =>
-      this(showCrossPoint: showCrossPoint);
+  BOLLDisplayConfig showCrossPoint(bool showCrossPoint) => this(showCrossPoint: showCrossPoint);
 
   @override
   BOLLDisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  BOLLDisplayConfig showPeriodInTips(bool showPeriodInTips) =>
-      this(showPeriodInTips: showPeriodInTips);
+  BOLLDisplayConfig showPeriodInTips(bool showPeriodInTips) => this(showPeriodInTips: showPeriodInTips);
 
   @override
 
@@ -444,8 +440,7 @@ class _$BOLLDisplayConfigCWProxyImpl implements _$BOLLDisplayConfigCWProxy {
 extension $BOLLDisplayConfigCopyWith on BOLLDisplayConfig {
   /// Returns a callable class that can be used as follows: `instanceOfBOLLDisplayConfig.copyWith(...)` or like so:`instanceOfBOLLDisplayConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$BOLLDisplayConfigCWProxy get copyWith =>
-      _$BOLLDisplayConfigCWProxyImpl(this);
+  _$BOLLDisplayConfigCWProxy get copyWith => _$BOLLDisplayConfigCWProxyImpl(this);
 }
 
 // **************************************************************************
@@ -459,9 +454,8 @@ BOLLParam _$BOLLParamFromJson(Map<String, dynamic> json) => BOLLParam(
       lines: json['lines'] == null
           ? const BOLLLinesConfig()
           : BOLLLinesConfig.fromJson(json['lines'] as Map<String, dynamic>),
-      fill: json['fill'] == null
-          ? const BOLLFillConfig()
-          : BOLLFillConfig.fromJson(json['fill'] as Map<String, dynamic>),
+      fill:
+          json['fill'] == null ? const BOLLFillConfig() : BOLLFillConfig.fromJson(json['fill'] as Map<String, dynamic>),
       display: json['display'] == null
           ? const BOLLDisplayConfig()
           : BOLLDisplayConfig.fromJson(json['display'] as Map<String, dynamic>),
@@ -474,36 +468,29 @@ Map<String, dynamic> _$BOLLParamToJson(BOLLParam instance) => <String, dynamic>{
       'display': instance.display.toJson(),
     };
 
-BOLLPeriodsConfig _$BOLLPeriodsConfigFromJson(Map<String, dynamic> json) =>
-    BOLLPeriodsConfig(
+BOLLPeriodsConfig _$BOLLPeriodsConfigFromJson(Map<String, dynamic> json) => BOLLPeriodsConfig(
       period: (json['period'] as num?)?.toInt() ?? 20,
       stdDev: (json['stdDev'] as num?)?.toDouble() ?? 2.0,
     );
 
-Map<String, dynamic> _$BOLLPeriodsConfigToJson(BOLLPeriodsConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$BOLLPeriodsConfigToJson(BOLLPeriodsConfig instance) => <String, dynamic>{
       'period': instance.period,
       'stdDev': instance.stdDev,
     };
 
-BOLLLineConfig _$BOLLLineConfigFromJson(Map<String, dynamic> json) =>
-    BOLLLineConfig(
+BOLLLineConfig _$BOLLLineConfigFromJson(Map<String, dynamic> json) => BOLLLineConfig(
       enabled: json['enabled'] as bool? ?? true,
-      color: json['color'] == null
-          ? const Color(0xff2196f3)
-          : const ColorConverter().fromJson(json['color'] as String),
+      color: json['color'] == null ? const Color(0xff2196f3) : const ColorConverter().fromJson(json['color'] as String),
       width: (json['width'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$BOLLLineConfigToJson(BOLLLineConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$BOLLLineConfigToJson(BOLLLineConfig instance) => <String, dynamic>{
       'enabled': instance.enabled,
       'color': const ColorConverter().toJson(instance.color),
       'width': instance.width,
     };
 
-BOLLLinesConfig _$BOLLLinesConfigFromJson(Map<String, dynamic> json) =>
-    BOLLLinesConfig(
+BOLLLinesConfig _$BOLLLinesConfigFromJson(Map<String, dynamic> json) => BOLLLinesConfig(
       ub: json['ub'] == null
           ? const BOLLLineConfig(color: Color(0xffffff00))
           : BOLLLineConfig.fromJson(json['ub'] as Map<String, dynamic>),
@@ -515,39 +502,32 @@ BOLLLinesConfig _$BOLLLinesConfigFromJson(Map<String, dynamic> json) =>
           : BOLLLineConfig.fromJson(json['lb'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$BOLLLinesConfigToJson(BOLLLinesConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$BOLLLinesConfigToJson(BOLLLinesConfig instance) => <String, dynamic>{
       'ub': instance.ub.toJson(),
       'boll': instance.boll.toJson(),
       'lb': instance.lb.toJson(),
     };
 
-BOLLFillConfig _$BOLLFillConfigFromJson(Map<String, dynamic> json) =>
-    BOLLFillConfig(
+BOLLFillConfig _$BOLLFillConfigFromJson(Map<String, dynamic> json) => BOLLFillConfig(
       enabled: json['enabled'] as bool? ?? true,
-      color: json['color'] == null
-          ? const Color(0x1a4caf50)
-          : const ColorConverter().fromJson(json['color'] as String),
+      color: json['color'] == null ? const Color(0x1a4caf50) : const ColorConverter().fromJson(json['color'] as String),
       opacity: (json['opacity'] as num?)?.toDouble() ?? 0.1,
     );
 
-Map<String, dynamic> _$BOLLFillConfigToJson(BOLLFillConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$BOLLFillConfigToJson(BOLLFillConfig instance) => <String, dynamic>{
       'enabled': instance.enabled,
       'color': const ColorConverter().toJson(instance.color),
       'opacity': instance.opacity,
     };
 
-BOLLDisplayConfig _$BOLLDisplayConfigFromJson(Map<String, dynamic> json) =>
-    BOLLDisplayConfig(
+BOLLDisplayConfig _$BOLLDisplayConfigFromJson(Map<String, dynamic> json) => BOLLDisplayConfig(
       pointRadius: (json['pointRadius'] as num?)?.toDouble() ?? 0.0,
       showCrossPoint: json['showCrossPoint'] as bool? ?? false,
       precision: (json['precision'] as num?)?.toInt() ?? 2,
       showPeriodInTips: json['showPeriodInTips'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$BOLLDisplayConfigToJson(BOLLDisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$BOLLDisplayConfigToJson(BOLLDisplayConfig instance) => <String, dynamic>{
       'pointRadius': instance.pointRadius,
       'showCrossPoint': instance.showCrossPoint,
       'precision': instance.precision,

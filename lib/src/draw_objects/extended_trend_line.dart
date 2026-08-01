@@ -23,7 +23,7 @@ class ExtendedTrendLineDrawObject extends DrawObject {
   ExtendedTrendLineDrawObject(super.overlay, super.config);
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 2,
       'ExtendedTrendLine hitTest points.length:${points.length} must be equals 2',
@@ -39,7 +39,7 @@ class ExtendedTrendLineDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 2,
       'ExtendedTrendLine draw points.length:${points.length} must be equals 2',

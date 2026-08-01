@@ -16,6 +16,8 @@ import 'package:flexi_kline/flexi_kline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'indicator_config_controller_ext.dart';
+
 final klineStateProvider = ChangeNotifierProvider.autoDispose
     .family<KlineStateNotifier, FlexiKlineController>(
   (ref, controller) => KlineStateNotifier(ref, controller),
@@ -31,12 +33,12 @@ class KlineStateNotifier extends ChangeNotifier {
   final Ref ref;
   final FlexiKlineController controller;
 
-  Set<IIndicatorKey> get supportMainIndicatorKeys =>
-      controller.supportMainIndicatorKeys
-          .where((key) => key != tradeMarkIndicatorKey)
-          .toSet();
+  Set<IIndicatorKey> get supportMainIndicatorKeys => controller
+      .getSupportMainIndicatorKeys()
+      .where((key) => key != tradeMarkIndicatorKey)
+      .toSet();
   Set<IIndicatorKey> get supportSubIndicatorKeys =>
-      controller.supportSubIndicatorKeys.toSet();
+      controller.getSupportSubIndicatorKeys().toSet();
   Set<IIndicatorKey> get mainIndicatorKeys => controller.mainIndicatorKeys
       .where((key) => key != tradeMarkIndicatorKey)
       .toSet();
@@ -45,18 +47,18 @@ class KlineStateNotifier extends ChangeNotifier {
 
   void onTapMainIndicator(IIndicatorKey key) {
     if (controller.mainIndicatorKeys.contains(key)) {
-      controller.removeMainIndicator(key);
+      controller.hideMainIndicator(key);
     } else {
-      controller.addMainIndicator(key);
+      controller.showMainIndicator(key);
     }
     notifyListeners();
   }
 
   void onTapSubIndicator(IIndicatorKey key) {
     if (controller.subIndicatorKeys.contains(key)) {
-      controller.removeSubIndicator(key);
+      controller.hideSubIndicator(key);
     } else {
-      controller.addSubIndicator(key);
+      controller.showSubIndicator(key);
     }
     notifyListeners();
   }
@@ -73,7 +75,8 @@ class KlineStateNotifier extends ChangeNotifier {
   }
 
   /// 设置蜡烛图中是否展示最新价 - 使用直接访问方式
-  void setShowLatestPrice(bool isShow) {
+  Future<void> setShowLatestPrice(bool isShow) async {
+    if (isShow == isShowLatestPrice) return;
     try {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
       final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
@@ -82,12 +85,12 @@ class KlineStateNotifier extends ChangeNotifier {
         offViewPriceMark:
             candleIndicator.offViewPriceMark.copyWith(show: isShow),
       );
-      // 使用controller的updateIndicator方法更新
-      controller.updateIndicator(updatedIndicator);
+      if (await controller.saveAndUpdateIndicator(updatedIndicator)) {
+        notifyListeners();
+      }
     } catch (e) {
       // 如果设置失败，忽略错误
     }
-    notifyListeners();
   }
 
   /// 蜡烛图中是否展示倒计时 - 使用直接访问方式
@@ -102,17 +105,18 @@ class KlineStateNotifier extends ChangeNotifier {
   }
 
   /// 设置蜡烛图中是否展示倒计时 - 使用直接访问方式
-  void setShowCountDown(bool isShow) {
+  Future<void> setShowCountDown(bool isShow) async {
+    if (isShow == isShowCountDown) return;
     try {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
       final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       final updatedIndicator = candleIndicator.copyWith(showCountdown: isShow);
-      // 使用controller的updateIndicator方法更新
-      controller.updateIndicator(updatedIndicator);
+      if (await controller.saveAndUpdateIndicator(updatedIndicator)) {
+        notifyListeners();
+      }
     } catch (e) {
       // 如果设置失败，忽略错误
     }
-    notifyListeners();
   }
 
   /// 是否展示蜡烛图最高价 - 使用直接访问方式
@@ -126,19 +130,20 @@ class KlineStateNotifier extends ChangeNotifier {
     }
   }
 
-  void setShowCandleHighPrice(bool isShow) {
+  Future<void> setShowCandleHighPrice(bool isShow) async {
+    if (isShow == isShowCandleHighPrice) return;
     try {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
       final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       final updatedIndicator = candleIndicator.copyWith(
         high: candleIndicator.high.copyWith(show: isShow),
       );
-      // 使用controller的updateIndicator方法更新
-      controller.updateIndicator(updatedIndicator);
+      if (await controller.saveAndUpdateIndicator(updatedIndicator)) {
+        notifyListeners();
+      }
     } catch (e) {
       // 如果设置失败，忽略错误
     }
-    notifyListeners();
   }
 
   /// 是否展示蜡烛图最低价 - 使用直接访问方式
@@ -152,19 +157,20 @@ class KlineStateNotifier extends ChangeNotifier {
     }
   }
 
-  void setShowCandleLowPrice(bool isShow) {
+  Future<void> setShowCandleLowPrice(bool isShow) async {
+    if (isShow == isShowCandleLowPrice) return;
     try {
       // 通过开放的candlePaintObject直接访问和修改CandleIndicator，需要类型转换
       final candleIndicator = controller.getCandleIndicator<CandleIndicator>();
       final updatedIndicator = candleIndicator.copyWith(
         low: candleIndicator.low.copyWith(show: isShow),
       );
-      // 使用controller的updateIndicator方法更新
-      controller.updateIndicator(updatedIndicator);
+      if (await controller.saveAndUpdateIndicator(updatedIndicator)) {
+        notifyListeners();
+      }
     } catch (e) {
       // 如果设置失败，忽略错误
     }
-    notifyListeners();
   }
 
   /// 是否展示Y轴刻度
@@ -184,8 +190,8 @@ class KlineStateNotifier extends ChangeNotifier {
   /// 是否展示买卖标记
   bool get isShowTradeMark {
     try {
-      final tradeMarkIndicator =
-          controller.getIndicator<TradeMarkIndicator>(tradeMarkIndicatorKey);
+      final tradeMarkIndicator = controller
+          .configuredIndicator<TradeMarkIndicator>(tradeMarkIndicatorKey);
       return tradeMarkIndicator?.calcParam.show ?? false;
     } catch (e) {
       return false;
@@ -193,19 +199,28 @@ class KlineStateNotifier extends ChangeNotifier {
   }
 
   /// 设置是否展示买卖标记
-  void setShowTradeMark(bool isShow) {
-    if (isShow == isShowTradeMark) return;
-
-    final indicator = controller.getIndicator<TradeMarkIndicator>(
-      tradeMarkIndicatorKey,
-    );
-    if (indicator != null) {
-      final updated = indicator.copyWith(
-        calcParam: indicator.calcParam.copyWith(show: isShow),
-      );
-      controller.updateIndicator(updated);
-      notifyListeners();
+  Future<void> setShowTradeMark(bool isShow) async {
+    if (isShow == isShowTradeMark &&
+        (!isShow || controller.hasAddedMainIndicator(tradeMarkIndicatorKey))) {
+      return;
     }
+
+    final indicator = controller
+            .configuredIndicator<TradeMarkIndicator>(tradeMarkIndicatorKey) ??
+        TradeMarkIndicator();
+    final updated = indicator.copyWith(
+      calcParam: indicator.calcParam.copyWith(show: isShow),
+    );
+
+    final didUpdate = await controller.saveAndUpdateIndicator(updated);
+    if (didUpdate && controller.isMounted) {
+      if (isShow && !controller.hasAddedMainIndicator(tradeMarkIndicatorKey)) {
+        controller.showMainIndicator(tradeMarkIndicatorKey);
+      }
+      controller.requestRepaint(reset: true);
+      controller.markRepaintCross();
+    }
+    notifyListeners();
   }
 
   /// K线图样式（蜡烛柱样式）
@@ -221,14 +236,16 @@ class KlineStateNotifier extends ChangeNotifier {
     }
   }
 
-  void setChartBarStyle(ChartBarStyle style) {
+  Future<void> setChartBarStyle(ChartBarStyle style) async {
+    if (style == chartBarStyle) return;
     try {
       final candle = controller.getCandleIndicator<CandleIndicator>();
       final updated = candle.copyWith(
         chartType: FlexiChartType.bar(style),
       );
-      controller.updateIndicator(updated);
-      notifyListeners();
+      if (await controller.saveAndUpdateIndicator(updated)) {
+        notifyListeners();
+      }
     } catch (_) {}
   }
 
@@ -241,12 +258,14 @@ class KlineStateNotifier extends ChangeNotifier {
     }
   }
 
-  void setChartType(FlexiChartType type) {
+  Future<void> setChartType(FlexiChartType type) async {
+    if (type == chartType) return;
     try {
       final candle = controller.getCandleIndicator<CandleIndicator>();
       final updated = candle.copyWith(chartType: type);
-      controller.updateIndicator(updated);
-      notifyListeners();
+      if (await controller.saveAndUpdateIndicator(updated)) {
+        notifyListeners();
+      }
     } catch (_) {}
   }
 
@@ -259,12 +278,14 @@ class KlineStateNotifier extends ChangeNotifier {
     }
   }
 
-  void setMinWidthLineType(FlexiLineChartType? type) {
+  Future<void> setMinWidthLineType(FlexiLineChartType? type) async {
+    if (type == minWidthLineType) return;
     try {
       final candle = controller.getCandleIndicator<CandleIndicator>();
       final updated = candle.copyWith(minWidthLineType: type);
-      controller.updateIndicator(updated);
-      notifyListeners();
+      if (await controller.saveAndUpdateIndicator(updated)) {
+        notifyListeners();
+      }
     } catch (_) {}
   }
 

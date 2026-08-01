@@ -30,4 +30,4 @@ import '../../model/export.dart';
 
 part 'data.dart';
 part 'indicator.dart';
-part 'rsi.g.dart'; 
+part 'rsi.g.dart';

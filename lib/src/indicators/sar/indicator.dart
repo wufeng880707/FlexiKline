@@ -19,7 +19,7 @@ part of 'sar.dart';
 /// SAR(今日)：SAR (昨日) + AF (动能趋势指标) x [ (区间极值(波段内最极值) – SAR(昨日)]
 @CopyWith()
 @FlexiIndicatorSerializable
-class SARIndicator extends DataIndicator implements IPrecomputable {
+class SARIndicator extends ComputedIndicator {
   SARIndicator({
     super.zIndex = 0,
     required super.height,
@@ -27,10 +27,9 @@ class SARIndicator extends DataIndicator implements IPrecomputable {
 
     /// SAR计算参数 - 包含所有配置
     this.calcParam = const SARParam(),
-
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('sar'));
+  }) : super(key: const ComputedIndicatorKey('sar'));
 
   /// SAR计算参数 - 包含所有配置
   @override
@@ -43,7 +42,7 @@ class SARIndicator extends DataIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  DataPaintObject<SARIndicator> createPaintObject() {
+  ComputedPaintObject<SARIndicator> createPaintObject() {
     return SARPaintObject();
   }
 
@@ -53,12 +52,12 @@ class SARIndicator extends DataIndicator implements IPrecomputable {
   Map<String, dynamic> toJson() => _$SARIndicatorToJson(this);
 }
 
-class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
+class SARPaintObject<T extends SARIndicator> extends ComputedPaintObject<T>
     with SarDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   SARPaintObject();
 
   bool? _isInsub;
-  bool get isInSub => _isInsub ??= indicator.key == const DataIndicatorKey('sar');
+  bool get isInSub => _isInsub ??= indicator.key == const ComputedIndicatorKey('sar');
 
   @override
   MinMax? computeVisibleMinMax(int start, int end) {
@@ -80,7 +79,7 @@ class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     /// 绘制SAR图
     paintSarChart(canvas, size);
 
@@ -105,7 +104,7 @@ class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     /// onCross时, 绘制Y轴上的标记值(注: 仅对indicator.key为subSarKey时有效)
     if (isInSub) {
       paintYAxisTicksOnCross(
@@ -139,7 +138,7 @@ class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
     // 使用新的配置结构
     final appearance = indicator.calcParam.appearance;
     final paint = Paint()..style = PaintingStyle.fill;
-    
+
     // 计算半径：使用配置的半径，但限制在最小和最大值之间
     final configRadius = appearance.pointRadius;
     final radius = configRadius.clamp(
@@ -152,7 +151,7 @@ class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
       final m = list[i];
       if (!m.isValidSarData(dataIndex)) continue;
       final dx = offset - (i - start) * candleActualWidth;
-      
+
       // 根据配置决定使用涨跌色还是固定颜色
       if (appearance.useTrendColor) {
         if (m.sarFlag(dataIndex)! > 0) {
@@ -165,12 +164,12 @@ class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
       } else {
         paint.color = appearance.color;
       }
-      
+
       final center = Offset(dx, valueToDy(m.sarValue(dataIndex)!, correct: false));
-      
+
       // 绘制 SAR 点
       canvas.drawCircle(center, radius, paint);
-      
+
       // 如果有边框宽度，绘制边框
       if (appearance.borderWidth > 0) {
         final borderPaint = Paint()
@@ -194,7 +193,7 @@ class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
 
     final display = indicator.calcParam.display;
     final periods = indicator.calcParam.periods;
-    
+
     // 构建 tips 文本
     String text;
     if (display.showPeriodInTips) {
@@ -202,7 +201,7 @@ class SARPaintObject<T extends SARIndicator> extends DataPaintObject<T>
     } else {
       text = 'SAR: ';
     }
-    
+
     text += formatNumber(
       model.sarValue(dataIndex)?.toDecimal(),
       precision: display.precision,

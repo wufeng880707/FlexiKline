@@ -23,7 +23,7 @@ class VerticalLineDrawObject extends DrawObject {
   VerticalLineDrawObject(super.overlay, super.config);
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 1,
       'VerticalLine only takes one point, but it has ${points.length}',
@@ -43,7 +43,7 @@ class VerticalLineDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 1,
       'VerticalLine only takes one point, but it has ${points.length}',

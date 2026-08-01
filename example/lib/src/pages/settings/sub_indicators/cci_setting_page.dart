@@ -19,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
@@ -39,7 +40,7 @@ class CCISettingPage extends BaseIndicatorSettingPage {
 
 class _CCISettingPageState
     extends BaseIndicatorSettingPageState<CCISettingPage> {
-  static const _cciKey = DataIndicatorKey('cci');
+  static const _cciKey = ComputedIndicatorKey('cci');
 
   static const _defaultParam = CCIParam(
     lines: [
@@ -91,9 +92,9 @@ class _CCISettingPageState
     final klineState = ref.read(klineStateProvider(widget.controller));
     final controller = klineState.controller;
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_cciKey) ||
-          controller.subIndicatorKeys.contains(_cciKey);
-      final indicator = controller.getIndicator<CCIIndicator>(_cciKey);
+      _enabled = controller.subIndicatorKeys.contains(_cciKey);
+      final indicator =
+          controller.configuredSubIndicator<CCIIndicator>(_cciKey);
       if (indicator != null && indicator.calcParam.lines.isNotEmpty) {
         _currentParam = indicator.calcParam;
       } else {
@@ -119,17 +120,13 @@ class _CCISettingPageState
 
     return [
       buildSectionTitle('CCI线条设置', theme),
-
       _buildLineTableHeader(theme),
-
       ...lines.asMap().entries.map((entry) {
         final index = entry.key;
         final line = entry.value;
         return _buildCCILineRow(index, line, theme);
       }),
-
       SizedBox(height: 8.r),
-
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.r),
         child: ElevatedButton.icon(
@@ -144,9 +141,7 @@ class _CCISettingPageState
           ),
         ),
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('参考线设置', theme),
       buildSwitchItem(
         title: '显示超买超卖线',
@@ -161,7 +156,6 @@ class _CCISettingPageState
         },
         theme: theme,
       ),
-
       if (refCfg.enabled) ...[
         buildNumberItem(
           title: '超买线位置',
@@ -195,7 +189,6 @@ class _CCISettingPageState
         ),
         _buildRefLineRow(theme),
       ],
-
       SizedBox(height: 16.r),
     ];
   }
@@ -487,18 +480,18 @@ class _CCISettingPageState
     try {
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
-      if (_enabled) {
-        final oldIndicator = controller.getIndicator<CCIIndicator>(_cciKey);
-        if (oldIndicator != null) {
-          final newIndicator = CCIIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            tipsPadding: oldIndicator.tipsPadding,
-            tickCount: oldIndicator.tickCount,
-          );
-          controller.updateIndicator(newIndicator);
-        }
+      final oldIndicator =
+          controller.configuredSubIndicator<CCIIndicator>(_cciKey);
+      if (oldIndicator != null) {
+        final newIndicator = CCIIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          tipsPadding: oldIndicator.tipsPadding,
+          tickCount: oldIndicator.tickCount,
+        );
+        await controller.saveAndSetSubIndicator(newIndicator,
+            enabled: _enabled);
       }
     } catch (e) {
       debugPrint('保存CCI设置失败: $e');

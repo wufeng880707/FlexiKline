@@ -21,15 +21,15 @@ extension CandleAvlExt on FlexiCandleModel {
   FlexiNum get avl => (open + high + low + close).divNum(4);
 
   bool get isValidAvlData => true; // AVL总是可以计算的
-  
+
   MinMax get avlMinmax => MinMax(max: avl, min: avl);
 }
 
-mixin AvlDataMixin<T extends AVLIndicator> on DataPaintObject<T> {
+mixin AvlDataMixin<T extends AVLIndicator> on ComputedPaintObject<T> {
   AVLParam get calcParam => indicator.calcParam;
 
   @override
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     calcuAndCacheAvl(
       calcParam,
       start: range.start,
@@ -37,7 +37,6 @@ mixin AvlDataMixin<T extends AVLIndicator> on DataPaintObject<T> {
       reset: reset,
     );
   }
-
 
   void calcuAndCacheAvl(
     AVLParam calcParam, {
@@ -65,11 +64,11 @@ mixin AvlDataMixin<T extends AVLIndicator> on DataPaintObject<T> {
 
     final len = klineData.list.length;
     if (len == 0) return null;
-    
+
     // 确保 start 和 end 在有效范围内
     start = start.clamp(0, len - 1);
     end = end.clamp(0, len - 1);
-    
+
     MinMax? minmax;
     for (int i = start; i <= end; i++) {
       final m = klineData.list[i];

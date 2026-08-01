@@ -33,7 +33,8 @@ class AccurateKlineDemoPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _AccurateKlinePageState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _AccurateKlinePageState();
 }
 
 class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
@@ -53,7 +54,9 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
   void initState() {
     super.initState();
     configuration = DefaultFlexiKlineConfiguration(ref: ref);
-    final interval = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '1H');
+    final interval = configuration
+        .getTimeBarConfigs()
+        .firstWhere((e) => e.debugLabel == '1H');
 
     req1 = KlineSpec(
       symbol: 'SATS-USDT',

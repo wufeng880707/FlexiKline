@@ -54,8 +54,7 @@ class _$VolMaIndicatorCWProxyImpl implements _$VolMaIndicatorCWProxy {
   VolMaIndicator calcParam(VolMaParam calcParam) => this(calcParam: calcParam);
 
   @override
-  VolMaIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  VolMaIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
   VolMaIndicator ticksCount(int ticksCount) => this(ticksCount: ticksCount);

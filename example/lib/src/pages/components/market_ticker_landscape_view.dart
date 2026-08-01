@@ -100,12 +100,12 @@ class MarketTickerLandscapeView extends ConsumerWidget {
           ),
           child: FittedBox(
             child: Text(
-                formatNumber(
-                  ticker?.changeRate.d,
-                  precision: 2,
-                  showSign: true,
-                  suffix: '%',
-                ),
+              formatNumber(
+                ticker?.changeRate.d,
+                precision: 2,
+                showSign: true,
+                suffix: '%',
+              ),
               style: TextStyle(
                 color: theme.white,
                 fontSize: 12.sp,

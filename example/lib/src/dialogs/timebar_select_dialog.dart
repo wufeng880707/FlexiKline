@@ -30,7 +30,8 @@ class TimerBarSelectDialog extends ConsumerWidget {
 
   /// 获取时间周期配置列表（兼容不同配置类型）
   List<ITimeInterval> _getTimeBarConfigs(IConfiguration configuration) {
-    return (configuration as dynamic).getTimeBarConfigs() as List<ITimeInterval>;
+    return (configuration as dynamic).getTimeBarConfigs()
+        as List<ITimeInterval>;
   }
 
   final FlexiKlineController controller;
@@ -77,7 +78,7 @@ class TimerBarSelectDialog extends ConsumerWidget {
     required double barWidth,
   }) {
     return ValueListenableBuilder(
-      valueListenable: controller.intervalListener,
+      valueListenable: controller.intervalListenable,
       builder: (context, value, child) {
         final theme = ref.read(themeProvider);
         return Wrap(
@@ -115,14 +116,15 @@ class TimerBarSelectDialog extends ConsumerWidget {
     required double barWidth,
   }) {
     return ValueListenableBuilder(
-      valueListenable: controller.intervalListener,
+      valueListenable: controller.intervalListenable,
       builder: (context, value, child) {
         final theme = ref.read(themeProvider);
         return Wrap(
           alignment: WrapAlignment.start,
           spacing: 12.r,
           runSpacing: 8.r,
-          children: _getTimeBarConfigs(controller.configuration).map((interval) {
+          children:
+              _getTimeBarConfigs(controller.configuration).map((interval) {
             final selected = value == interval;
             return SizedBox(
               width: barWidth,

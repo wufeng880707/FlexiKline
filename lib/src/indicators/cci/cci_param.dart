@@ -40,8 +40,7 @@ final class CCILineConfig extends Equatable {
     this.width = 1.0,
   });
 
-  factory CCILineConfig.fromJson(Map<String, dynamic> json) =>
-      _$CCILineConfigFromJson(json);
+  factory CCILineConfig.fromJson(Map<String, dynamic> json) => _$CCILineConfigFromJson(json);
   Map<String, dynamic> toJson() => _$CCILineConfigToJson(this);
 
   @override
@@ -69,13 +68,11 @@ final class CCIReferenceConfig extends Equatable {
     this.dashWidth = 2.0,
   });
 
-  factory CCIReferenceConfig.fromJson(Map<String, dynamic> json) =>
-      _$CCIReferenceConfigFromJson(json);
+  factory CCIReferenceConfig.fromJson(Map<String, dynamic> json) => _$CCIReferenceConfigFromJson(json);
   Map<String, dynamic> toJson() => _$CCIReferenceConfigToJson(this);
 
   @override
-  List<Object?> get props =>
-      [enabled, overbought, oversold, lineWidth, color, dashWidth];
+  List<Object?> get props => [enabled, overbought, oversold, lineWidth, color, dashWidth];
 }
 
 /// CCI 显示配置
@@ -94,13 +91,11 @@ final class CCIDisplayConfig extends Equatable {
     this.showReferenceValue = true,
   });
 
-  factory CCIDisplayConfig.fromJson(Map<String, dynamic> json) =>
-      _$CCIDisplayConfigFromJson(json);
+  factory CCIDisplayConfig.fromJson(Map<String, dynamic> json) => _$CCIDisplayConfigFromJson(json);
   Map<String, dynamic> toJson() => _$CCIDisplayConfigToJson(this);
 
   @override
-  List<Object?> get props =>
-      [pointRadius, precision, showPeriodInTips, showReferenceValue];
+  List<Object?> get props => [pointRadius, precision, showPeriodInTips, showReferenceValue];
 }
 
 /// CCI 参数主配置类
@@ -119,8 +114,7 @@ final class CCIParam extends Equatable {
     this.display = const CCIDisplayConfig(),
   });
 
-  List<CCILineConfig> get enabledLines =>
-      lines.where((line) => line.enabled).toList();
+  List<CCILineConfig> get enabledLines => lines.where((line) => line.enabled).toList();
 
   int? get maxPeriod {
     final enabled = enabledLines;
@@ -134,8 +128,7 @@ final class CCIParam extends Equatable {
     return enabled.map((line) => line.period).reduce((a, b) => a < b ? a : b);
   }
 
-  factory CCIParam.fromJson(Map<String, dynamic> json) =>
-      _$CCIParamFromJson(json);
+  factory CCIParam.fromJson(Map<String, dynamic> json) => _$CCIParamFromJson(json);
   Map<String, dynamic> toJson() => _$CCIParamToJson(this);
 
   @override

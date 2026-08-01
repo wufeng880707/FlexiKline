@@ -41,12 +41,11 @@ final class VolumeBarConfig extends Equatable {
 
   /// 获取看涨颜色（带透明度）
   Color get bullishColorWithOpacity => bullishColor.withValues(alpha: opacity);
-  
+
   /// 获取看跌颜色（带透明度）
   Color get bearishColorWithOpacity => bearishColor.withValues(alpha: opacity);
 
-  factory VolumeBarConfig.fromJson(Map<String, dynamic> json) =>
-      _$VolumeBarConfigFromJson(json);
+  factory VolumeBarConfig.fromJson(Map<String, dynamic> json) => _$VolumeBarConfigFromJson(json);
   Map<String, dynamic> toJson() => _$VolumeBarConfigToJson(this);
 
   @override
@@ -67,8 +66,7 @@ final class VolumeDisplayConfig extends Equatable {
     this.compactDisplay = true,
   });
 
-  factory VolumeDisplayConfig.fromJson(Map<String, dynamic> json) =>
-      _$VolumeDisplayConfigFromJson(json);
+  factory VolumeDisplayConfig.fromJson(Map<String, dynamic> json) => _$VolumeDisplayConfigFromJson(json);
   Map<String, dynamic> toJson() => _$VolumeDisplayConfigToJson(this);
 
   @override
@@ -101,8 +99,7 @@ final class VolumeParam extends Equatable {
     );
   }
 
-  factory VolumeParam.fromJson(Map<String, dynamic> json) =>
-      _$VolumeParamFromJson(json);
+  factory VolumeParam.fromJson(Map<String, dynamic> json) => _$VolumeParamFromJson(json);
   Map<String, dynamic> toJson() => _$VolumeParamToJson(this);
 
   @override

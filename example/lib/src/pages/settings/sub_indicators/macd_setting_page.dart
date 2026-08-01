@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
@@ -40,7 +41,7 @@ class MACDSettingPage extends BaseIndicatorSettingPage {
 
 class _MACDSettingPageState
     extends BaseIndicatorSettingPageState<MACDSettingPage> {
-  static const _macdKey = DataIndicatorKey('macd');
+  static const _macdKey = ComputedIndicatorKey('macd');
 
   late MACDParam _currentParam;
   late bool _enabled;
@@ -55,9 +56,9 @@ class _MACDSettingPageState
     final klineState = ref.read(klineStateProvider(widget.controller));
     final controller = klineState.controller;
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_macdKey) ||
-          controller.subIndicatorKeys.contains(_macdKey);
-      final indicator = controller.getIndicator<MACDIndicator>(_macdKey);
+      _enabled = controller.subIndicatorKeys.contains(_macdKey);
+      final indicator =
+          controller.configuredSubIndicator<MACDIndicator>(_macdKey);
       if (indicator != null) {
         _currentParam = indicator.calcParam;
       } else {
@@ -212,8 +213,7 @@ class _MACDSettingPageState
         barStyle: _barStyleFromHistogram(_currentParam.bullishIncreasing.style),
         onHistogramEnabledChanged: (enabled) {
           setState(() {
-            _currentParam =
-                _currentParam.copyWith(histogramEnabled: enabled);
+            _currentParam = _currentParam.copyWith(histogramEnabled: enabled);
           });
         },
         onBarStyleChanged: (style) {
@@ -414,21 +414,21 @@ class _MACDSettingPageState
     try {
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
-      if (_enabled) {
-        final oldIndicator = controller.getIndicator<MACDIndicator>(_macdKey);
-        if (oldIndicator != null) {
-          final newIndicator = MACDIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            difTips: oldIndicator.difTips,
-            deaTips: oldIndicator.deaTips,
-            macdTips: oldIndicator.macdTips,
-            tipsPadding: oldIndicator.tipsPadding,
-            tickCount: oldIndicator.tickCount,
-          );
-          controller.updateIndicator(newIndicator);
-        }
+      final oldIndicator =
+          controller.configuredSubIndicator<MACDIndicator>(_macdKey);
+      if (oldIndicator != null) {
+        final newIndicator = MACDIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          difTips: oldIndicator.difTips,
+          deaTips: oldIndicator.deaTips,
+          macdTips: oldIndicator.macdTips,
+          tipsPadding: oldIndicator.tipsPadding,
+          tickCount: oldIndicator.tickCount,
+        );
+        await controller.saveAndSetSubIndicator(newIndicator,
+            enabled: _enabled);
       }
     } catch (e) {
       debugPrint('保存MACD设置失败: $e');

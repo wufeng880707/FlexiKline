@@ -16,7 +16,7 @@ part of 'rsi.dart';
 
 /// RSI 相对强弱指标
 @CopyWith()
-class RSIIndicator extends DataIndicator implements IPrecomputable {
+class RSIIndicator extends ComputedIndicator {
   RSIIndicator({
     super.zIndex = 0,
     required super.height,
@@ -24,7 +24,7 @@ class RSIIndicator extends DataIndicator implements IPrecomputable {
     required this.calcParam,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('rsi'));
+  }) : super(key: const ComputedIndicatorKey('rsi'));
 
   final RsiParam calcParam;
   final EdgeInsets tipsPadding;
@@ -33,12 +33,12 @@ class RSIIndicator extends DataIndicator implements IPrecomputable {
   dynamic getCalcParam() => calcParam;
 
   @override
-  DataPaintObject<RSIIndicator> createPaintObject() {
+  ComputedPaintObject<RSIIndicator> createPaintObject() {
     return RSIPaintObject();
   }
 }
 
-class RSIPaintObject<T extends RSIIndicator> extends DataPaintObject<T>
+class RSIPaintObject<T extends RSIIndicator> extends ComputedPaintObject<T>
     with RsiDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   RSIPaintObject();
 
@@ -54,7 +54,7 @@ class RSIPaintObject<T extends RSIIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     paintRsiLine(canvas, size);
     paintReferenceLines(canvas, size);
 
@@ -80,7 +80,7 @@ class RSIPaintObject<T extends RSIIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     /// onCross时, 绘制Y轴上的标记值
     paintYAxisTicksOnCross(
       canvas,
@@ -212,7 +212,7 @@ class RSIPaintObject<T extends RSIIndicator> extends DataPaintObject<T>
     final precision = param.display.precision;
     final children = <TextSpan>[];
     double? val;
-    
+
     final rsiList = model.getRsiList(dataIndex)!;
     for (int i = 0; i < rsiList.length && i < enabledLines.length; i++) {
       val = rsiList.getItem(i);

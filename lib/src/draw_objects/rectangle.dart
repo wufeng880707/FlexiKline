@@ -27,7 +27,7 @@ class RectangleDrawObject extends DrawObject {
   RectangleDrawObject(super.overlay, super.config);
 
   @override
-  RectangleParams getDrawParams(IDrawContext context) {
+  RectangleParams getDrawParams(DrawContext context) {
     return const RectangleParams(bgOpacity: 0.1);
   }
 
@@ -42,7 +42,7 @@ class RectangleDrawObject extends DrawObject {
   }
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 2,
       'Rectangle hitTest points.length:${points.length} must be equals 2',
@@ -54,7 +54,7 @@ class RectangleDrawObject extends DrawObject {
   }
 
   @override
-  void drawing(IDrawContext context, Canvas canvas, Size size) {
+  void drawing(DrawContext context, Canvas canvas, Size size) {
     if (isReady) {
       final rectangle = getRectangleRect();
       if (rectangle == null) return;
@@ -65,7 +65,7 @@ class RectangleDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 2,
       'Rectangle draw points.length:${points.length} must be equals 2',
@@ -79,7 +79,7 @@ class RectangleDrawObject extends DrawObject {
 
   /// 绘制平行四边形
   void _drawRectangle(
-    IDrawContext context,
+    DrawContext context,
     Canvas canvas,
     Rect rect,
   ) {

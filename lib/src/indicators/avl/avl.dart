@@ -29,4 +29,4 @@ import '../../model/export.dart';
 
 part 'data.dart';
 part 'indicator.dart';
-part 'avl.g.dart'; 
+part 'avl.g.dart';

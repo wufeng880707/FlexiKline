@@ -65,7 +65,9 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
       logger: logger,
     );
 
-    final interval = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '15m');
+    final interval = configuration
+        .getTimeBarConfigs()
+        .firstWhere((e) => e.debugLabel == '15m');
     final now = DateTime.now().millisecondsSinceEpoch;
     final before = now - (now % interval.milliseconds);
     final after = before - count * interval.milliseconds;
@@ -140,16 +142,18 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
 
     String? rangeRate;
     if (prev != null) rangeRate = current.rangeRate(prev).toString();
-    ref.read(marketCandleProvider.notifier).emitOnCross(current, rangeRate: rangeRate);
+    ref
+        .read(marketCandleProvider.notifier)
+        .emitOnCross(current, rangeRate: rangeRate);
     // 返回空数组, 自行定制.
     return [];
   }
 
   /// 更新最新的蜡烛数据到行情上.
   void emitLatestMarketCandle() {
-    if (controller.curKlineData.latest != null) {
+    if (controller.klineData.latest != null) {
       ref.read(marketCandleProvider.notifier).emit(
-            controller.curKlineData.latest!,
+            controller.klineData.latest!,
           );
     }
   }
@@ -167,7 +171,8 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
     final theme = ref.watch(themeProvider);
     ref.listen(defaultKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        controller.updateFlexiKlineConfig();
+        controller.storeFlexiKlineConfig();
+        controller.requestRepaint();
       }
     });
     return Scaffold(
@@ -200,7 +205,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
           children: [
             MarketTooltipCustomView(
               candleReq: req,
-              data: controller.curKlineData.latest,
+              data: controller.klineData.latest,
             ),
             FlexiKlineSettingBar(
               controller: controller,
@@ -232,7 +237,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final latest = controller.curKlineData.latest;
+          final latest = controller.klineData.latest;
           DateTime? dateTime;
           if (latest != null) {
             dateTime = DateTime.fromMillisecondsSinceEpoch(latest.ts);
@@ -243,7 +248,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
           final newList = await genRandomCandleList(
             count: 3,
             dateTime: dateTime,
-            interval: controller.curKlineData.spec.interval,
+            interval: controller.klineData.spec.interval,
             isHistory: false,
           );
 

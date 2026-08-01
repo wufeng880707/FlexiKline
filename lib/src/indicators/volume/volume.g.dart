@@ -51,12 +51,10 @@ class _$VolumeIndicatorCWProxyImpl implements _$VolumeIndicatorCWProxy {
   VolumeIndicator padding(EdgeInsets padding) => this(padding: padding);
 
   @override
-  VolumeIndicator calcParam(VolumeParam calcParam) =>
-      this(calcParam: calcParam);
+  VolumeIndicator calcParam(VolumeParam calcParam) => this(calcParam: calcParam);
 
   @override
-  VolumeIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  VolumeIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
   VolumeIndicator tickCount(int tickCount) => this(tickCount: tickCount);

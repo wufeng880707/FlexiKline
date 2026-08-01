@@ -33,7 +33,8 @@ class DoubleKlinePage extends ConsumerStatefulWidget {
   final String instId2;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _DoubleKlinePageState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _DoubleKlinePageState();
 }
 
 class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
@@ -60,7 +61,9 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
           widget.instId2,
         );
 
-    final m15TimeBar = configuration.getTimeBarConfigs().firstWhere((e) => e.debugLabel == '15m');
+    final m15TimeBar = configuration
+        .getTimeBarConfigs()
+        .firstWhere((e) => e.debugLabel == '15m');
 
     req1 = KlineSpec(
       symbol: widget.instId1,
@@ -94,8 +97,10 @@ class _DoubleKlinePageState extends ConsumerState<DoubleKlinePage> {
   Widget build(BuildContext context) {
     ref.listen(defaultKlineThemeProvider, (previous, next) {
       if (previous != next) {
-        controller1.updateFlexiKlineConfig();
-        controller2.updateFlexiKlineConfig();
+        controller1.storeFlexiKlineConfig();
+        controller1.requestRepaint();
+        controller2.storeFlexiKlineConfig();
+        controller2.requestRepaint();
       }
     });
     return Container();

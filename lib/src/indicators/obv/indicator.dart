@@ -17,7 +17,7 @@ part of 'obv.dart';
 /// OBV 能量潮指标 (On-Balance Volume)
 @CopyWith()
 @FlexiIndicatorSerializable
-class OBVIndicator extends DataIndicator implements IPrecomputable {
+class OBVIndicator extends ComputedIndicator {
   OBVIndicator({
     super.zIndex = 0,
     required super.height,
@@ -25,7 +25,7 @@ class OBVIndicator extends DataIndicator implements IPrecomputable {
     required this.calcParam,
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('obv'));
+  }) : super(key: const ComputedIndicatorKey('obv'));
 
   @override
   final OBVParam calcParam;
@@ -33,19 +33,18 @@ class OBVIndicator extends DataIndicator implements IPrecomputable {
   final EdgeInsets tipsPadding;
   final int tickCount;
 
-  factory OBVIndicator.fromJson(Map<String, dynamic> json) =>
-      _$OBVIndicatorFromJson(json);
+  factory OBVIndicator.fromJson(Map<String, dynamic> json) => _$OBVIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$OBVIndicatorToJson(this);
 
   @override
-  DataPaintObject<OBVIndicator> createPaintObject() {
+  ComputedPaintObject<OBVIndicator> createPaintObject() {
     return OBVPaintObject();
   }
 }
 
-class OBVPaintObject<T extends OBVIndicator> extends DataPaintObject<T>
+class OBVPaintObject<T extends OBVIndicator> extends ComputedPaintObject<T>
     with ObvDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   OBVPaintObject();
 
@@ -60,7 +59,7 @@ class OBVPaintObject<T extends OBVIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     paintObvLine(canvas, size);
     paintObvMALines(canvas, size);
 
@@ -80,7 +79,7 @@ class OBVPaintObject<T extends OBVIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     paintYAxisTicksOnCross(
       canvas,
       offset,
@@ -208,8 +207,7 @@ class OBVPaintObject<T extends OBVIndicator> extends DataPaintObject<T>
         if (maVal == null) continue;
         final maConfig = enabledMALines[j];
         children.add(TextSpan(
-          text:
-              'MA${maConfig.period}: ${_formatObvValue(FlexiNum.fromNum(maVal), precision)}  ',
+          text: 'MA${maConfig.period}: ${_formatObvValue(FlexiNum.fromNum(maVal), precision)}  ',
           style: TextStyle(color: maConfig.color, fontSize: 12),
         ));
       }

@@ -16,7 +16,7 @@ part of 'vol_ma.dart';
 
 /// VolMa 移动平均指标线
 @CopyWith()
-class VolMaIndicator extends DataIndicator implements IPrecomputable {
+class VolMaIndicator extends ComputedIndicator {
   VolMaIndicator({
     super.zIndex = 0,
     super.height = defaultSubIndicatorHeight,
@@ -24,7 +24,7 @@ class VolMaIndicator extends DataIndicator implements IPrecomputable {
     required this.calcParam,
     required this.tipsPadding,
     this.ticksCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('volMa'));
+  }) : super(key: const ComputedIndicatorKey('volMa'));
 
   @override
   final VolMaParam calcParam;
@@ -34,12 +34,12 @@ class VolMaIndicator extends DataIndicator implements IPrecomputable {
   dynamic getCalcParam() => calcParam;
 
   @override
-  DataPaintObject<VolMaIndicator> createPaintObject() {
+  ComputedPaintObject<VolMaIndicator> createPaintObject() {
     return VolMaPaintObject();
   }
 }
 
-class VolMaPaintObject<T extends VolMaIndicator> extends DataPaintObject<T>
+class VolMaPaintObject<T extends VolMaIndicator> extends ComputedPaintObject<T>
     with VolmaDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   VolMaPaintObject();
 
@@ -67,7 +67,7 @@ class VolMaPaintObject<T extends VolMaIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     /// 绘制Volume柱状图
     paintVolumeChart(canvas, size);
 
@@ -86,7 +86,7 @@ class VolMaPaintObject<T extends VolMaIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     /// onCross时, 绘制Y轴上的标记值
     paintYAxisTicksOnCross(
       canvas,

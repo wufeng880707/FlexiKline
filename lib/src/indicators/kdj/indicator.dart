@@ -21,7 +21,7 @@ part of 'kdj.dart';
 /// 若无前一日K 值与D值，则可分别用50来代替。
 /// J值=3*当日K值-2*当日D值
 @CopyWith()
-class KDJIndicator extends DataIndicator implements IPrecomputable {
+class KDJIndicator extends ComputedIndicator {
   KDJIndicator({
     super.zIndex = 0,
     required super.height,
@@ -29,7 +29,7 @@ class KDJIndicator extends DataIndicator implements IPrecomputable {
     this.calcParam = const KDJParam(),
     required this.tipsPadding,
     this.tickCount = defaultSubTickCount,
-  }) : super(key: const DataIndicatorKey('kdj'));
+  }) : super(key: const ComputedIndicatorKey('kdj'));
 
   /// KDJ 参数（包含所有配置）
   @override
@@ -40,12 +40,12 @@ class KDJIndicator extends DataIndicator implements IPrecomputable {
   final int tickCount;
 
   @override
-  DataPaintObject<KDJIndicator> createPaintObject() {
+  ComputedPaintObject<KDJIndicator> createPaintObject() {
     return KDJPaintObject();
   }
 }
 
-class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
+class KDJPaintObject<T extends KDJIndicator> extends ComputedPaintObject<T>
     with KdjDataMixin, PaintYAxisTicksMixin, PaintYAxisTicksOnCrossMixin {
   KDJPaintObject();
 
@@ -61,7 +61,7 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     /// 绘制KDJ线
     paintKDJLine(canvas, size);
 
@@ -74,7 +74,6 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
         precision: indicator.calcParam.display.precision,
       );
     }
-    
   }
 
   /// 重写[paintYAxisTicks]中的格式化刻度值.
@@ -88,7 +87,7 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     /// onCross时, 绘制Y轴上的标记值
     paintYAxisTicksOnCross(
       canvas,
@@ -124,7 +123,7 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
     for (final lineType in enabledLines) {
       final List<Offset> points = [];
       KDJLineConfig lineConfig;
-      
+
       switch (lineType) {
         case KDJLineType.k:
           lineConfig = indicator.calcParam.lines.k;
@@ -141,7 +140,7 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
       for (int i = start; i < end; i++) {
         final m = list[i];
         if (!m.isValidKdjData(dataIndex)) continue;
-        
+
         FlexiNum? value;
         switch (lineType) {
           case KDJLineType.k:
@@ -154,14 +153,14 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
             value = m.kdjJ(dataIndex);
             break;
         }
-        
+
         if (value != null) {
           final point = Offset(
             offset - (i - start) * candleActualWidth,
             valueToDy(value, correct: false),
           );
           points.add(point);
-          
+
           // 📍 绘制节点（如果配置了 pointRadius > 0）
           if (indicator.calcParam.display.pointRadius > 0) {
             canvas.drawCircle(
@@ -202,12 +201,12 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
     final enabledLines = indicator.calcParam.enabledLines;
     final precision = indicator.calcParam.display.precision;
     final showPeriod = indicator.calcParam.display.showPeriodInTips;
-    
+
     for (final lineType in enabledLines) {
       FlexiNum? value;
       KDJLineConfig lineConfig;
       String label;
-      
+
       switch (lineType) {
         case KDJLineType.k:
           value = model.kdjK(dataIndex);
@@ -225,7 +224,7 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
           label = showPeriod ? 'J(${indicator.calcParam.calculation.jPeriod})' : 'J';
           break;
       }
-      
+
       if (value != null) {
         final text = formatNumber(
           value.toDecimal(),
@@ -240,7 +239,7 @@ class KDJPaintObject<T extends KDJIndicator> extends DataPaintObject<T>
         ));
       }
     }
-    
+
     // 📋 如果没有任何内容要显示，返回null
     if (children.isEmpty) return null;
 

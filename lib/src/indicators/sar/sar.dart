@@ -31,4 +31,4 @@ import '../../model/export.dart';
 
 part 'data.dart';
 part 'indicator.dart';
-part 'sar.g.dart'; 
+part 'sar.g.dart';

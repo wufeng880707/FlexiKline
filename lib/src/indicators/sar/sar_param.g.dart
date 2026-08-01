@@ -36,8 +36,7 @@ class _$SARParamCWProxyImpl implements _$SARParamCWProxy {
   SARParam periods(SARPeriodsConfig periods) => this(periods: periods);
 
   @override
-  SARParam appearance(SARAppearanceConfig appearance) =>
-      this(appearance: appearance);
+  SARParam appearance(SARAppearanceConfig appearance) => this(appearance: appearance);
 
   @override
   SARParam display(SARDisplayConfig display) => this(display: display);
@@ -188,12 +187,10 @@ class _$SARAppearanceConfigCWProxyImpl implements _$SARAppearanceConfigCWProxy {
   SARAppearanceConfig color(Color color) => this(color: color);
 
   @override
-  SARAppearanceConfig pointRadius(double pointRadius) =>
-      this(pointRadius: pointRadius);
+  SARAppearanceConfig pointRadius(double pointRadius) => this(pointRadius: pointRadius);
 
   @override
-  SARAppearanceConfig borderWidth(double borderWidth) =>
-      this(borderWidth: borderWidth);
+  SARAppearanceConfig borderWidth(double borderWidth) => this(borderWidth: borderWidth);
 
   @override
   SARAppearanceConfig minRadius(double minRadius) => this(minRadius: minRadius);
@@ -202,8 +199,7 @@ class _$SARAppearanceConfigCWProxyImpl implements _$SARAppearanceConfigCWProxy {
   SARAppearanceConfig maxRadius(double maxRadius) => this(maxRadius: maxRadius);
 
   @override
-  SARAppearanceConfig useTrendColor(bool useTrendColor) =>
-      this(useTrendColor: useTrendColor);
+  SARAppearanceConfig useTrendColor(bool useTrendColor) => this(useTrendColor: useTrendColor);
 
   @override
 
@@ -253,8 +249,7 @@ class _$SARAppearanceConfigCWProxyImpl implements _$SARAppearanceConfigCWProxy {
 extension $SARAppearanceConfigCopyWith on SARAppearanceConfig {
   /// Returns a callable class that can be used as follows: `instanceOfSARAppearanceConfig.copyWith(...)` or like so:`instanceOfSARAppearanceConfig.copyWith.fieldName(...)`.
   // ignore: library_private_types_in_public_api
-  _$SARAppearanceConfigCWProxy get copyWith =>
-      _$SARAppearanceConfigCWProxyImpl(this);
+  _$SARAppearanceConfigCWProxy get copyWith => _$SARAppearanceConfigCWProxyImpl(this);
 }
 
 abstract class _$SARDisplayConfigCWProxy {
@@ -284,8 +279,7 @@ class _$SARDisplayConfigCWProxyImpl implements _$SARDisplayConfigCWProxy {
   SARDisplayConfig precision(int precision) => this(precision: precision);
 
   @override
-  SARDisplayConfig showPeriodInTips(bool showPeriodInTips) =>
-      this(showPeriodInTips: showPeriodInTips);
+  SARDisplayConfig showPeriodInTips(bool showPeriodInTips) => this(showPeriodInTips: showPeriodInTips);
 
   @override
 
@@ -328,8 +322,7 @@ SARParam _$SARParamFromJson(Map<String, dynamic> json) => SARParam(
           : SARPeriodsConfig.fromJson(json['periods'] as Map<String, dynamic>),
       appearance: json['appearance'] == null
           ? const SARAppearanceConfig()
-          : SARAppearanceConfig.fromJson(
-              json['appearance'] as Map<String, dynamic>),
+          : SARAppearanceConfig.fromJson(json['appearance'] as Map<String, dynamic>),
       display: json['display'] == null
           ? const SARDisplayConfig()
           : SARDisplayConfig.fromJson(json['display'] as Map<String, dynamic>),
@@ -341,25 +334,20 @@ Map<String, dynamic> _$SARParamToJson(SARParam instance) => <String, dynamic>{
       'display': instance.display.toJson(),
     };
 
-SARPeriodsConfig _$SARPeriodsConfigFromJson(Map<String, dynamic> json) =>
-    SARPeriodsConfig(
+SARPeriodsConfig _$SARPeriodsConfigFromJson(Map<String, dynamic> json) => SARPeriodsConfig(
       start: (json['start'] as num?)?.toDouble() ?? 0.02,
       max: (json['max'] as num?)?.toDouble() ?? 0.6,
       step: (json['step'] as num?)?.toDouble() ?? 0.02,
     );
 
-Map<String, dynamic> _$SARPeriodsConfigToJson(SARPeriodsConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$SARPeriodsConfigToJson(SARPeriodsConfig instance) => <String, dynamic>{
       'start': instance.start,
       'max': instance.max,
       'step': instance.step,
     };
 
-SARAppearanceConfig _$SARAppearanceConfigFromJson(Map<String, dynamic> json) =>
-    SARAppearanceConfig(
-      color: json['color'] == null
-          ? const Color(0xff9c27b0)
-          : const ColorConverter().fromJson(json['color'] as String),
+SARAppearanceConfig _$SARAppearanceConfigFromJson(Map<String, dynamic> json) => SARAppearanceConfig(
+      color: json['color'] == null ? const Color(0xff9c27b0) : const ColorConverter().fromJson(json['color'] as String),
       pointRadius: (json['pointRadius'] as num?)?.toDouble() ?? 2.0,
       borderWidth: (json['borderWidth'] as num?)?.toDouble() ?? 0.5,
       minRadius: (json['minRadius'] as num?)?.toDouble() ?? 1.0,
@@ -367,9 +355,7 @@ SARAppearanceConfig _$SARAppearanceConfigFromJson(Map<String, dynamic> json) =>
       useTrendColor: json['useTrendColor'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$SARAppearanceConfigToJson(
-        SARAppearanceConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$SARAppearanceConfigToJson(SARAppearanceConfig instance) => <String, dynamic>{
       'color': const ColorConverter().toJson(instance.color),
       'pointRadius': instance.pointRadius,
       'borderWidth': instance.borderWidth,
@@ -378,14 +364,12 @@ Map<String, dynamic> _$SARAppearanceConfigToJson(
       'useTrendColor': instance.useTrendColor,
     };
 
-SARDisplayConfig _$SARDisplayConfigFromJson(Map<String, dynamic> json) =>
-    SARDisplayConfig(
+SARDisplayConfig _$SARDisplayConfigFromJson(Map<String, dynamic> json) => SARDisplayConfig(
       precision: (json['precision'] as num?)?.toInt() ?? 4,
       showPeriodInTips: json['showPeriodInTips'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$SARDisplayConfigToJson(SARDisplayConfig instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$SARDisplayConfigToJson(SARDisplayConfig instance) => <String, dynamic>{
       'precision': instance.precision,
       'showPeriodInTips': instance.showPeriodInTips,
     };

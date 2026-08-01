@@ -28,7 +28,7 @@ class FibExpansionDrawObject extends DrawObject {
   FibExpansionDrawObject(super.overlay, super.config);
 
   @override
-  FibExpansionParams getDrawParams(IDrawContext context) {
+  FibExpansionParams getDrawParams(DrawContext context) {
     return const FibExpansionParams(
       rates: [0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0, 1.272, 1.618],
       bgOpacity: 0.1,
@@ -36,7 +36,7 @@ class FibExpansionDrawObject extends DrawObject {
   }
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 3,
       'FibExpansion hitTest points.length:${points.length} must be equals 3',
@@ -54,7 +54,7 @@ class FibExpansionDrawObject extends DrawObject {
   }
 
   @override
-  void drawing(IDrawContext context, Canvas canvas, Size size) {
+  void drawing(DrawContext context, Canvas canvas, Size size) {
     if (isReady) {
       final points = allPoints;
       final first = points.firstOrNull?.offset;
@@ -69,7 +69,7 @@ class FibExpansionDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 3,
       'FibExpansion draw points.length:${points.length} must be equals 3',
@@ -89,7 +89,7 @@ class FibExpansionDrawObject extends DrawObject {
 
   /// 绘制连接虚线
   void drawFibConnectingLine(
-    IDrawContext context,
+    DrawContext context,
     Canvas canvas,
     List<Offset> points,
   ) {
@@ -105,13 +105,13 @@ class FibExpansionDrawObject extends DrawObject {
   /// 绘制斐波那契扩展/回撤
   /// 注: 如果[dyLen]不为空, 则使用绘制此区间内的斐波那契; 否则计算[A]到[B]区间的.
   void drawFibonacciLevel(
-    IDrawContext context,
+    DrawContext context,
     Canvas canvas,
     Offset A,
     Offset B,
     double? dyLen,
   ) {
-    final precision = context.curKlineData.precision;
+    final precision = context.klineData.precision;
     final params = getDrawParams(context);
     final fibRates = params.rates;
     final fibText = config.ticksText;

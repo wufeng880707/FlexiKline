@@ -29,8 +29,8 @@ abstract interface class IKlinePage {
   FlexiKlineController get flexiKlineController;
 }
 
-mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T>
-    implements IKlinePage {
+mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget>
+    on ConsumerState<T> implements IKlinePage {
   late KlineSpec req;
 
   CancelToken? cancelToken;
@@ -60,7 +60,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget> on ConsumerStat
     if (resp.success && resp.data != null && resp.data!.isNotEmpty) {
       await flexiKlineController.updateKlineData(request, resp.data!);
       if (realTimeUpdateKlineData) {
-        _startMockPushTimer(flexiKlineController.curKlineData.spec); // 假装推送
+        _startMockPushTimer(flexiKlineController.klineData.spec); // 假装推送
       }
     } else if (resp.msg.isNotEmpty) {
       SmartDialog.showToast(resp.msg);

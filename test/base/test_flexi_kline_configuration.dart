@@ -60,8 +60,6 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color get countdownBg => countDownTextBg;
 
-  Color get countDownBg => countdownBg;
-
   @override
   Color crossTextBg = const Color(0xFF111111);
 
@@ -126,7 +124,7 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   Color get drawToolColor => drawColor;
 }
 
-class TestFlexiKlineConfiguration with FlexiKlineThemeConfigurationMixin {
+class TestFlexiKlineConfiguration with FlexiKlineConfigurationMixin {
   @override
   IFlexiKlineTheme get theme => TestFlexiKlineTheme();
 

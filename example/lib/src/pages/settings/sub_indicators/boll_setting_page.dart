@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
@@ -37,7 +38,7 @@ class SubBOLLSettingPage extends BaseIndicatorSettingPage {
 
 class _SubBOLLSettingPageState
     extends BaseIndicatorSettingPageState<SubBOLLSettingPage> {
-  static const _bollKey = DataIndicatorKey('boll');
+  static const _bollKey = ComputedIndicatorKey('boll');
 
   late BOLLParam _currentParam;
   late bool _enabled;
@@ -53,10 +54,10 @@ class _SubBOLLSettingPageState
     final controller = klineState.controller;
 
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_bollKey) ||
-          controller.subIndicatorKeys.contains(_bollKey);
+      _enabled = controller.subIndicatorKeys.contains(_bollKey);
 
-      final indicator = controller.getIndicator<BOLLIndicator>(_bollKey);
+      final indicator =
+          controller.configuredSubIndicator<BOLLIndicator>(_bollKey);
       if (indicator != null) {
         _currentParam = indicator.calcParam;
       } else {
@@ -83,7 +84,6 @@ class _SubBOLLSettingPageState
 
     return [
       buildSectionTitle('基础参数', theme),
-
       buildNumberItem(
         title: '计算周期',
         value: periods.period.toDouble(),
@@ -99,7 +99,6 @@ class _SubBOLLSettingPageState
         max: 100,
         decimalPlaces: 0,
       ),
-
       buildNumberItem(
         title: '标准差倍数',
         value: periods.stdDev,
@@ -115,13 +114,9 @@ class _SubBOLLSettingPageState
         max: 5.0,
         decimalPlaces: 1,
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('线条设置', theme),
-
       _buildLineTableHeader(theme),
-
       _buildBollLineRow(
         title: '上轨(UB)',
         lineConfig: linesConfig.ub,
@@ -134,9 +129,7 @@ class _SubBOLLSettingPageState
         },
         theme: theme,
       ),
-
       SizedBox(height: 4.r),
-
       _buildBollLineRow(
         title: '中轨(BOLL)',
         lineConfig: linesConfig.boll,
@@ -149,9 +142,7 @@ class _SubBOLLSettingPageState
         },
         theme: theme,
       ),
-
       SizedBox(height: 4.r),
-
       _buildBollLineRow(
         title: '下轨(LB)',
         lineConfig: linesConfig.lb,
@@ -164,11 +155,8 @@ class _SubBOLLSettingPageState
         },
         theme: theme,
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('填充设置', theme),
-
       buildSwitchItem(
         title: '显示轨道填充',
         subtitle: '在上轨和下轨之间显示填充区域',
@@ -182,7 +170,6 @@ class _SubBOLLSettingPageState
         },
         theme: theme,
       ),
-
       if (fillConfig.enabled) ...[
         buildColorItem(
           title: '填充颜色',
@@ -196,7 +183,6 @@ class _SubBOLLSettingPageState
           },
           theme: theme,
         ),
-
         ListTile(
           title: Text('填充透明度', style: theme.t1s16w400),
           trailing: SizedBox(
@@ -230,7 +216,6 @@ class _SubBOLLSettingPageState
           ),
         ),
       ],
-
       SizedBox(height: 16.r),
     ];
   }
@@ -344,19 +329,18 @@ class _SubBOLLSettingPageState
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
 
-      if (_enabled) {
-        final oldIndicator =
-            controller.getIndicator<BOLLIndicator>(_bollKey);
-        if (oldIndicator != null) {
-          final newIndicator = BOLLIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            tipsPadding: oldIndicator.tipsPadding,
-            tickCount: oldIndicator.tickCount,
-          );
-          controller.updateIndicator(newIndicator);
-        }
+      final oldIndicator =
+          controller.configuredSubIndicator<BOLLIndicator>(_bollKey);
+      if (oldIndicator != null) {
+        final newIndicator = BOLLIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          tipsPadding: oldIndicator.tipsPadding,
+          tickCount: oldIndicator.tickCount,
+        );
+        await controller.saveAndSetSubIndicator(newIndicator,
+            enabled: _enabled);
       }
     } catch (e) {
       debugPrint('保存BOLL设置失败: $e');

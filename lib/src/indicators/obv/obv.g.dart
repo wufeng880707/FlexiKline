@@ -54,8 +54,7 @@ class _$OBVIndicatorCWProxyImpl implements _$OBVIndicatorCWProxy {
   OBVIndicator calcParam(OBVParam calcParam) => this(calcParam: calcParam);
 
   @override
-  OBVIndicator tipsPadding(EdgeInsets tipsPadding) =>
-      this(tipsPadding: tipsPadding);
+  OBVIndicator tipsPadding(EdgeInsets tipsPadding) => this(tipsPadding: tipsPadding);
 
   @override
   OBVIndicator tickCount(int tickCount) => this(tickCount: tickCount);
@@ -120,16 +119,13 @@ OBVIndicator _$OBVIndicatorFromJson(Map<String, dynamic> json) => OBVIndicator(
       height: (json['height'] as num).toDouble(),
       padding: json['padding'] == null
           ? defaultSubIndicatorPadding
-          : const EdgeInsetsConverter()
-              .fromJson(json['padding'] as Map<String, dynamic>),
+          : const EdgeInsetsConverter().fromJson(json['padding'] as Map<String, dynamic>),
       calcParam: OBVParam.fromJson(json['calcParam'] as Map<String, dynamic>),
-      tipsPadding: const EdgeInsetsConverter()
-          .fromJson(json['tipsPadding'] as Map<String, dynamic>),
+      tipsPadding: const EdgeInsetsConverter().fromJson(json['tipsPadding'] as Map<String, dynamic>),
       tickCount: (json['tickCount'] as num?)?.toInt() ?? defaultSubTickCount,
     );
 
-Map<String, dynamic> _$OBVIndicatorToJson(OBVIndicator instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$OBVIndicatorToJson(OBVIndicator instance) => <String, dynamic>{
       'height': instance.height,
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'zIndex': instance.zIndex,

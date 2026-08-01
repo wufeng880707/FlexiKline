@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
@@ -32,8 +33,9 @@ class KDJSettingPage extends BaseIndicatorSettingPage {
   ConsumerState<KDJSettingPage> createState() => _KDJSettingPageState();
 }
 
-class _KDJSettingPageState extends BaseIndicatorSettingPageState<KDJSettingPage> {
-  static const _kdjKey = DataIndicatorKey('kdj');
+class _KDJSettingPageState
+    extends BaseIndicatorSettingPageState<KDJSettingPage> {
+  static const _kdjKey = ComputedIndicatorKey('kdj');
 
   late KDJParam _currentParam;
   late bool _enabled;
@@ -48,9 +50,9 @@ class _KDJSettingPageState extends BaseIndicatorSettingPageState<KDJSettingPage>
     final klineState = ref.read(klineStateProvider(widget.controller));
     final controller = klineState.controller;
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_kdjKey) ||
-          controller.subIndicatorKeys.contains(_kdjKey);
-      final indicator = controller.getIndicator<KDJIndicator>(_kdjKey);
+      _enabled = controller.subIndicatorKeys.contains(_kdjKey);
+      final indicator =
+          controller.configuredSubIndicator<KDJIndicator>(_kdjKey);
       if (indicator != null) {
         _currentParam = indicator.calcParam;
       } else {
@@ -287,18 +289,18 @@ class _KDJSettingPageState extends BaseIndicatorSettingPageState<KDJSettingPage>
     try {
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
-      if (_enabled) {
-        final oldIndicator = controller.getIndicator<KDJIndicator>(_kdjKey);
-        if (oldIndicator != null) {
-          final newIndicator = KDJIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            tipsPadding: oldIndicator.tipsPadding,
-            tickCount: oldIndicator.tickCount,
-          );
-          controller.updateIndicator(newIndicator);
-        }
+      final oldIndicator =
+          controller.configuredSubIndicator<KDJIndicator>(_kdjKey);
+      if (oldIndicator != null) {
+        final newIndicator = KDJIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          tipsPadding: oldIndicator.tipsPadding,
+          tickCount: oldIndicator.tickCount,
+        );
+        await controller.saveAndSetSubIndicator(newIndicator,
+            enabled: _enabled);
       }
     } catch (e) {
       debugPrint('保存KDJ设置失败: $e');

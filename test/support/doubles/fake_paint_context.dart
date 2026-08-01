@@ -63,9 +63,6 @@ class FakePaintContext implements PaintContext {
   KlineData get klineData => KlineData.empty;
 
   @override
-  KlineData get curKlineData => klineData;
-
-  @override
   T? getBusinessData<T>(IIndicatorKey key) => null;
 
   @override
@@ -142,7 +139,7 @@ class FakePaintContext implements PaintContext {
   int get computedDataCapacity => 0;
 
   @override
-  void requestRepaint() {}
+  void requestRepaint({bool reset = false}) {}
 }
 
 /// 将 slot 查询代理到真实 manager，供 precompute 等需要读 slot 的集成测试。

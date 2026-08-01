@@ -106,8 +106,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding {
   }
 
   @override
-  @protected
-  void requestRepaint() => markRepaintChart();
+  void requestRepaint({bool reset = false}) => markRepaintChart(reset: reset);
 
   @protected
   void startLastPriceCountDownTimer() {
@@ -433,5 +432,4 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding {
     }
     return false;
   }
-
 }

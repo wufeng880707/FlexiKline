@@ -103,7 +103,8 @@ class _LineWidthSelectorState extends ConsumerState<LineWidthSelector> {
   }
 
   void _showLineWidthOverlay(BuildContext context, FKTheme theme) {
-    final RenderBox? renderBox = _buttonKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox =
+        _buttonKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     // 直接使用Overlay，避免Dialog坐标系统问题
@@ -121,7 +122,11 @@ class _LineWidthSelectorState extends ConsumerState<LineWidthSelector> {
 
     // 计算面板尺寸（水平排列）- 精确计算防止溢出
     final int itemCount = widget.availableWidths.length.clamp(1, 7); // 最多显示7个
-    final double panelWidth = (panelPadding * 2 + itemCount * itemWidth + (itemCount - 1) * itemSpacing + 2.0).ceilToDouble(); // 加2px缓冲
+    final double panelWidth = (panelPadding * 2 +
+            itemCount * itemWidth +
+            (itemCount - 1) * itemSpacing +
+            2.0)
+        .ceilToDouble(); // 加2px缓冲
     final double panelHeight = panelPadding * 2 + itemHeight;
     const double margin = 16.0;
 
@@ -133,7 +138,8 @@ class _LineWidthSelectorState extends ConsumerState<LineWidthSelector> {
     // 计算左对齐和右对齐的位置
     final double leftAlignedLeft = buttonPosition.dx;
     final double leftAlignedRight = leftAlignedLeft + panelWidth;
-    final double rightAlignedLeft = buttonPosition.dx + buttonSize.width - panelWidth;
+    final double rightAlignedLeft =
+        buttonPosition.dx + buttonSize.width - panelWidth;
 
     // 检查左对齐是否超出右边界
     bool leftWouldOverflow = leftAlignedRight > screenSize.width - margin;
@@ -158,7 +164,8 @@ class _LineWidthSelectorState extends ConsumerState<LineWidthSelector> {
     // 2. 垂直对齐判断：检查向下显示是否超出底部边界
     double panelTop;
 
-    final double downwardTop = buttonPosition.dy + buttonSize.height + widget.panelOffset;
+    final double downwardTop =
+        buttonPosition.dy + buttonSize.height + widget.panelOffset;
     if (downwardTop + panelHeight <= screenSize.height - margin) {
       // 向下显示不会超出底部边界
       panelTop = downwardTop;

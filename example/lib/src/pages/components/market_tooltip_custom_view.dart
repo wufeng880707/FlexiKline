@@ -51,9 +51,11 @@ class MarketTooltipCustomView extends ConsumerWidget {
     final s = S.of(context);
     final theme = ref.watch(themeProvider);
     final changeRate = data?.changeRate;
-    final crossRangeRate = ref.read(marketCandleProvider.notifier).crossRangeRate;
+    final crossRangeRate =
+        ref.read(marketCandleProvider.notifier).crossRangeRate;
     final range = crossRangeRate != null && crossRangeRate.isNotEmpty
-        ? formatNumber(parseDouble(crossRangeRate)?.d, precision: 2, showSign: true, suffix: '%')
+        ? formatNumber(parseDouble(crossRangeRate)?.d,
+            precision: 2, showSign: true, suffix: '%')
         : formatNumber(data?.range.toDecimal(), precision: p);
     Color rateColor;
     Color? marketBg;
@@ -110,7 +112,8 @@ class MarketTooltipCustomView extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      formatNumber(changeRate?.d, precision: 2, showSign: true, suffix: '%'),
+                      formatNumber(changeRate?.d,
+                          precision: 2, showSign: true, suffix: '%'),
                       style: TextStyle(
                         fontSize: 10.sp,
                         color: rateColor,

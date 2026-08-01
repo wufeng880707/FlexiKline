@@ -192,7 +192,8 @@ abstract class BaseIndicatorSettingPageState<T extends BaseIndicatorSettingPage>
         child: TextFormField(
           initialValue: decimalPlaces != null
               ? value.toStringAsFixed(decimalPlaces)
-              : value.toStringAsFixed(value.truncateToDouble() == value ? 0 : 1),
+              : value
+                  .toStringAsFixed(value.truncateToDouble() == value ? 0 : 1),
           keyboardType: TextInputType.numberWithOptions(
             decimal: decimalPlaces != null && decimalPlaces > 0,
           ),

@@ -39,7 +39,8 @@ class LandscapeKlinePage extends ConsumerStatefulWidget {
   final IConfiguration? configuration;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _LandscapeKlinePageState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _LandscapeKlinePageState();
 }
 
 class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
@@ -139,9 +140,11 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
               return Center(
                 child: CircularProgressIndicator(
                   strokeWidth: controller.settingConfig.loading.strokeWidth,
-                  backgroundColor: controller.settingConfig.loading.backgroundColor,
+                  backgroundColor:
+                      controller.settingConfig.loading.backgroundColor,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    controller.settingConfig.loading.valueColor ?? controller.theme.textColor,
+                    controller.settingConfig.loading.valueColor ??
+                        controller.theme.textColor,
                   ),
                 ),
               );
@@ -167,11 +170,11 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
             builder: (context, constraints) {
               controller.logd('zp::: LandscapeKlinePage:$constraints');
               // 设置固定布局模式以确保全屏时视图填满整个区域
-              controller.setFixedLayoutMode(Size(constraints.maxWidth, constraints.maxHeight));
+              controller.setFixedLayoutMode(
+                  Size(constraints.maxWidth, constraints.maxHeight));
 
               return FlexiKlineWidget(
                 controller: controller,
-                autoAdaptLayout: false,
                 mainBackgroundView: FlexiKlineMarkView(
                   margin: EdgeInsetsDirectional.only(
                     bottom: 10.r,
@@ -199,7 +202,7 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
 
   Widget _buildKlineMainForgroundView(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller.loadingStateListener,
+      valueListenable: controller.loadingStateListenable,
       builder: (context, loadingState, child) {
         return Offstage(
           offstage: !loadingState.showLoading,
@@ -213,9 +216,11 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
               dimension: controller.settingConfig.loading.size,
               child: CircularProgressIndicator(
                 strokeWidth: controller.settingConfig.loading.strokeWidth,
-                backgroundColor: controller.settingConfig.loading.backgroundColor,
+                backgroundColor:
+                    controller.settingConfig.loading.backgroundColor,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  controller.settingConfig.loading.valueColor ?? controller.theme.textColor,
+                  controller.settingConfig.loading.valueColor ??
+                      controller.theme.textColor,
                 ),
               ),
             ),

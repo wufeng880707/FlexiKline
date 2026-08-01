@@ -121,10 +121,6 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
   @override
   IFlexiKlineTheme get theme => configuration.theme;
 
-  /// 兼容 fork 旧 API；新代码使用 [klineData]。
-  @override
-  KlineData get curKlineData => klineData;
-
   @override
   Map<String, dynamic>? getConfig(String key) {
     return configuration.getConfig(key);
@@ -135,9 +131,6 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
     return configuration.setConfig(key, value);
   }
 
-  /// 兼容 fork 旧 API；新代码使用 [requestCancelCross]。
-  void cancelCross() => requestCancelCross();
-
   /// 注入业务指标的外部数据
   ///
   /// 外部（如 Riverpod Provider）在数据变更或 timeBar 切换时调用，
@@ -147,13 +140,13 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
     final old = _businessDataMap[key];
     if (identical(old, data)) return;
     _businessDataMap[key] = data;
-    requestRepaint();
+    markRepaintChart(reset: true);
   }
 
   /// 清除 [key] 指定的业务数据
   void removeBusinessData(IIndicatorKey key) {
     if (_businessDataMap.remove(key) != null) {
-      requestRepaint();
+      markRepaintChart(reset: true);
     }
   }
 

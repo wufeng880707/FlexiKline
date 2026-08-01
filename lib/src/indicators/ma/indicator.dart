@@ -16,30 +16,29 @@ part of 'ma.dart';
 
 /// MA 移动平均指标线
 @CopyWith()
-class MAIndicator extends DataIndicator implements IPrecomputable {
+class MAIndicator extends ComputedIndicator {
   MAIndicator({
     super.zIndex = 0,
     required super.height,
     super.padding = defaultMainIndicatorPadding,
     this.calcParam = const MaParam(),
     required this.tipsPadding,
-  }) : super(key: const DataIndicatorKey('ma'));
+  }) : super(key: const ComputedIndicatorKey('ma'));
 
   /// MA 参数（包含所有配置）
   @override
   final MaParam calcParam;
-  
+
   /// Tips 相关参数（仅用于显示）
   final EdgeInsets tipsPadding;
 
   @override
-  DataPaintObject<MAIndicator> createPaintObject() {
+  ComputedPaintObject<MAIndicator> createPaintObject() {
     return MAPaintObject();
   }
-
 }
 
-class MAPaintObject<T extends MAIndicator> extends DataPaintObject<T> with MaDataMixin {
+class MAPaintObject<T extends MAIndicator> extends ComputedPaintObject<T> with MaDataMixin {
   MAPaintObject();
 
   @override
@@ -54,12 +53,12 @@ class MAPaintObject<T extends MAIndicator> extends DataPaintObject<T> with MaDat
   }
 
   @override
-  void paintChart(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     paintMALine(canvas, size);
   }
 
   @override
-  void onCross(Canvas canvas, Offset offset) {
+  void paintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     ///
   }
 
@@ -86,7 +85,7 @@ class MAPaintObject<T extends MAIndicator> extends DataPaintObject<T> with MaDat
           valueToDy(val, correct: false),
         );
         points.add(point);
-        
+
         // 📍 绘制节点（如果配置了 pointRadius > 0）
         if (indicator.calcParam.display.pointRadius > 0) {
           canvas.drawCircle(
@@ -112,7 +111,6 @@ class MAPaintObject<T extends MAIndicator> extends DataPaintObject<T> with MaDat
     }
   }
 
-
   /// MA 绘制tips区域
   @override
   Size? paintTips(
@@ -127,18 +125,18 @@ class MAPaintObject<T extends MAIndicator> extends DataPaintObject<T> with MaDat
     final children = <TextSpan>[];
     final enabledLines = indicator.calcParam.enabledLines;
     final maList = model.getMaList(dataIndex)!;
-    
+
     for (int i = 0; i < enabledLines.length && i < maList.length; i++) {
       final lineConfig = enabledLines[i];
       if (lineConfig.period <= 0) continue; // 跳过无效周期
-      
+
       final val = maList.getItem(i);
       if (val == null) continue;
 
       // 📊 根据配置决定显示内容
       final displayPeriod = indicator.calcParam.display.showPeriodInTips;
       final prefix = displayPeriod ? 'MA${lineConfig.period}:' : 'MA:';
-      
+
       final text = formatNumber(
         val.toDecimal(),
         precision: indicator.calcParam.display.precision,
@@ -151,19 +149,19 @@ class MAPaintObject<T extends MAIndicator> extends DataPaintObject<T> with MaDat
         style: TextStyle(color: lineConfig.color),
       ));
     }
-    
+
     // 📋 如果没有任何内容要显示，返回null
     if (children.isEmpty) return null;
-    
+
     tipsRect ??= drawableRect;
     return canvas.drawText(
-        offset: tipsRect.topLeft,
-        textSpan: TextSpan(children: children),
-        drawDirection: DrawDirection.ltr,
-        drawableRect: tipsRect,
-        textAlign: TextAlign.left,
-        padding: indicator.tipsPadding,
-        maxLines: 1,
-      );
+      offset: tipsRect.topLeft,
+      textSpan: TextSpan(children: children),
+      drawDirection: DrawDirection.ltr,
+      drawableRect: tipsRect,
+      textAlign: TextAlign.left,
+      padding: indicator.tipsPadding,
+      maxLines: 1,
+    );
   }
 }

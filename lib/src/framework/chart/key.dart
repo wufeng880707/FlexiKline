@@ -66,15 +66,6 @@ final class ExternalIndicatorKey extends IIndicatorKey {
   const ExternalIndicatorKey(super.id, {super.label});
 }
 
-/// 兼容 fork 旧 API；新代码使用 [DirectIndicatorKey]。
-typedef NormalIndicatorKey = DirectIndicatorKey;
-
-/// 兼容 fork 旧 API；新代码使用 [ComputedIndicatorKey]。
-typedef DataIndicatorKey = ComputedIndicatorKey;
-
-/// 兼容 fork 旧 API；新代码使用 [ExternalIndicatorKey]。
-typedef BusinessIndicatorKey = ExternalIndicatorKey;
-
 const unknownIndicatorKey = DirectIndicatorKey('unknown');
 
 typedef IndicatorBuilder<T extends Indicator<IIndicatorKey>> = T Function(

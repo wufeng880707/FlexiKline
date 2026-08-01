@@ -48,10 +48,10 @@ const List<Color> flexiKlinePaintColors = [
 ];
 
 /// 绘制工具条组件
-/// 
+///
 /// 提供绘制对象的样式配置功能：
 /// - 线条颜色选择
-/// - 线条粗细调整  
+/// - 线条粗细调整
 /// - 线条类型选择
 /// - 图层顺序管理
 /// - 锁定/解锁状态
@@ -75,11 +75,11 @@ class FlexiKlineDrawToolbar extends ConsumerWidget {
       height: 38.r,
       padding: EdgeInsets.symmetric(horizontal: 2.r, vertical: 2.r),
       child: ValueListenableBuilder(
-        valueListenable: controller.drawStateListener,
+        valueListenable: controller.drawStateListenable,
         builder: (context, state, child) {
           final object = state.object;
           if (object == null) return const SizedBox.shrink();
-          
+
           return _DrawToolbarContent(
             controller: controller,
             object: object,
@@ -113,181 +113,179 @@ class _DrawToolbarContent extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-              Icon(
-                Icons.drag_indicator_rounded,
-                size: 20.r,
-              ),
-              FlexiPopupHorizMenuButton(
-                menuTag: 'selectLinePaintColor',
-                initialValue: paintColor,
-                showArrow: false,
-                padding: EdgeInsets.symmetric(horizontal: 6.r, vertical: 6.r),
-                onSelected: (Color color) {
-                  controller.changeDrawLineStyle(color: color);
-                },
-                // offset: Offset(-8.r, 0),
-                itemBuilder: (context) {
-                  return flexiKlinePaintColors.map((value) {
-                    return PopupHorizMenuItem(
-                      key: ValueKey(value),
-                      value: value,
-                      // height: 32.r,
-                      padding: 6.r,
-                      child: SvgPicture.asset(
-                        SvgRes.paintColor,
-                        colorFilter: ColorFilter.mode(value, BlendMode.srcIn),
-                      ),
-                    );
-                  }).toList();
-                },
+        Icon(
+          Icons.drag_indicator_rounded,
+          size: 20.r,
+        ),
+        FlexiPopupHorizMenuButton(
+          menuTag: 'selectLinePaintColor',
+          initialValue: paintColor,
+          showArrow: false,
+          padding: EdgeInsets.symmetric(horizontal: 6.r, vertical: 6.r),
+          onSelected: (Color color) {
+            controller.changeDrawLineStyle(color: color);
+          },
+          // offset: Offset(-8.r, 0),
+          itemBuilder: (context) {
+            return flexiKlinePaintColors.map((value) {
+              return PopupHorizMenuItem(
+                key: ValueKey(value),
+                value: value,
+                // height: 32.r,
+                padding: 6.r,
                 child: SvgPicture.asset(
                   SvgRes.paintColor,
-                  colorFilter: ColorFilter.mode(paintColor, BlendMode.srcIn),
+                  colorFilter: ColorFilter.mode(value, BlendMode.srcIn),
                 ),
-              ),
-              FlexiPopupMenuButton(
-                initialValue: strokeWidth,
-                onSelected: (double value) {
-                  controller.changeDrawLineStyle(strokeWidth: value);
-                },
-                constraints: BoxConstraints(
-                  minWidth: 40.r,
-                  maxWidth: 80.r,
-                ),
-                padding: EdgeInsets.only(left: 4.r),
-                offset: Offset(-16.r, 0),
-                itemBuilder: (context) {
-                  return flexiKlineLineWeightList.map((value) {
-                    return PopupMenuItem(
-                      key: ValueKey(value),
-                      value: value,
-                      height: 32.r,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SvgPicture.asset(
-                            'assets/svgs/line_weight_${cutInvalidZero(value)}.svg',
-                            colorFilter:
-                                ColorFilter.mode(theme.t1, BlendMode.srcIn),
-                          ),
-                          Text('${value.toInt()} px', style: theme.t1s12w400),
-                        ],
-                      ),
-                    );
-                  }).toList();
-                },
-                // child: SvgPicture.asset(
-                //   'assets/svgs/line_weight_${cutInvalidZero(strokeWidth)}.svg',
-                //   colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
-                // ),
-                child: Text(
-                  '${strokeWidth.toInt()} px',
-                  style: theme.t1s12w500,
-                ),
-              ),
-              // FlexiPopupHorizMenuButton(
-              //   menuTag: 'selectLineStrokeWidth',
-              //   initialValue: strokeWidth,
-              //   onSelected: (double value) {
-              //     controller.changeDrawLineStyle(strokeWidth: value);
-              //   },
-              //   // offset: Offset(-8.r, 0),
-              //   itemBuilder: (context) {
-              //     return flexiKlineLineWeightList.map((value) {
-              //       return PopupHorizMenuItem(
-              //         key: ValueKey(value),
-              //         value: value,
-              //         // height: 32.r,
-              //         child: SvgPicture.asset(
-              //           'assets/svgs/line_weight_${cutInvalidZero(value)}.svg',
-              //           colorFilter:
-              //               ColorFilter.mode(theme.t1, BlendMode.srcIn),
-              //         ),
-              //       );
-              //     }).toList();
-              //   },
-              //   child: SvgPicture.asset(
-              //     'assets/svgs/line_weight_${cutInvalidZero(strokeWidth)}.svg',
-              //     colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
-              //   ),
-              // ),
-              FlexiPopupMenuButton(
-                initialValue: lineType,
-                onSelected: (LineType type) {
-                  controller.changeDrawLineStyle(lineType: type);
-                },
-                constraints: BoxConstraints(
-                  minWidth: 40.r,
-                  maxWidth: 100.r,
-                ),
-                offset: Offset(-18.r, 0),
-                itemBuilder: (context) => LineType.values.map((value) {
-                  final displayName =
-                      value.name[0].toUpperCase() + value.name.substring(1);
-                  return PopupMenuItem(
-                    key: ValueKey(value),
-                    value: value,
-                    height: 32.r,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/svgs/line_type_${value.name}.svg',
-                          colorFilter:
-                              ColorFilter.mode(theme.t1, BlendMode.srcIn),
-                        ),
-                        Text(displayName, style: theme.t1s12w400),
-                      ],
+              );
+            }).toList();
+          },
+          child: SvgPicture.asset(
+            SvgRes.paintColor,
+            colorFilter: ColorFilter.mode(paintColor, BlendMode.srcIn),
+          ),
+        ),
+        FlexiPopupMenuButton(
+          initialValue: strokeWidth,
+          onSelected: (double value) {
+            controller.changeDrawLineStyle(strokeWidth: value);
+          },
+          constraints: BoxConstraints(
+            minWidth: 40.r,
+            maxWidth: 80.r,
+          ),
+          padding: EdgeInsets.only(left: 4.r),
+          offset: Offset(-16.r, 0),
+          itemBuilder: (context) {
+            return flexiKlineLineWeightList.map((value) {
+              return PopupMenuItem(
+                key: ValueKey(value),
+                value: value,
+                height: 32.r,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/svgs/line_weight_${cutInvalidZero(value)}.svg',
+                      colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
                     ),
-                  );
-                }).toList(),
-                child: SvgPicture.asset(
-                  'assets/svgs/line_type_${lineType.name}.svg',
-                  colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
+                    Text('${value.toInt()} px', style: theme.t1s12w400),
+                  ],
                 ),
+              );
+            }).toList();
+          },
+          // child: SvgPicture.asset(
+          //   'assets/svgs/line_weight_${cutInvalidZero(strokeWidth)}.svg',
+          //   colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
+          // ),
+          child: Text(
+            '${strokeWidth.toInt()} px',
+            style: theme.t1s12w500,
+          ),
+        ),
+        // FlexiPopupHorizMenuButton(
+        //   menuTag: 'selectLineStrokeWidth',
+        //   initialValue: strokeWidth,
+        //   onSelected: (double value) {
+        //     controller.changeDrawLineStyle(strokeWidth: value);
+        //   },
+        //   // offset: Offset(-8.r, 0),
+        //   itemBuilder: (context) {
+        //     return flexiKlineLineWeightList.map((value) {
+        //       return PopupHorizMenuItem(
+        //         key: ValueKey(value),
+        //         value: value,
+        //         // height: 32.r,
+        //         child: SvgPicture.asset(
+        //           'assets/svgs/line_weight_${cutInvalidZero(value)}.svg',
+        //           colorFilter:
+        //               ColorFilter.mode(theme.t1, BlendMode.srcIn),
+        //         ),
+        //       );
+        //     }).toList();
+        //   },
+        //   child: SvgPicture.asset(
+        //     'assets/svgs/line_weight_${cutInvalidZero(strokeWidth)}.svg',
+        //     colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
+        //   ),
+        // ),
+        FlexiPopupMenuButton(
+          initialValue: lineType,
+          onSelected: (LineType type) {
+            controller.changeDrawLineStyle(lineType: type);
+          },
+          constraints: BoxConstraints(
+            minWidth: 40.r,
+            maxWidth: 100.r,
+          ),
+          offset: Offset(-18.r, 0),
+          itemBuilder: (context) => LineType.values.map((value) {
+            final displayName =
+                value.name[0].toUpperCase() + value.name.substring(1);
+            return PopupMenuItem(
+              key: ValueKey(value),
+              value: value,
+              height: 32.r,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SvgPicture.asset(
+                    'assets/svgs/line_type_${value.name}.svg',
+                    colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
+                  ),
+                  Text(displayName, style: theme.t1s12w400),
+                ],
               ),
-              // FlexiPopupHorizMenuButton(
-              //   menuTag: 'selectLineType',
-              //   initialValue: lineType,
-              //   onSelected: (LineType type) {
-              //     controller.changeDrawLineStyle(lineType: type);
-              //   },
-              //   // offset: Offset(-8.r, 0),
-              //   itemBuilder: (context) => LineType.values.map((value) {
-              //     return PopupHorizMenuItem(
-              //       key: ValueKey(value),
-              //       value: value,
-              //       // height: 32.r,
-              //       child: SvgPicture.asset(
-              //         'assets/svgs/line_type_${value.name}.svg',
-              //         colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
-              //       ),
-              //     );
-              //   }).toList(),
-              //   child: SvgPicture.asset(
-              //     'assets/svgs/line_type_${lineType.name}.svg',
-              //     colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
-              //   ),
-              // ),
-              _VisualOrderButton(controller: controller),
-              ShrinkIconButton(
-                onPressed: () {
-                  debugPrint('zp::: draw onTap Lock');
-                  controller.setDrawLockState(!object.lock);
-                },
-                content: object.lock ? SvgRes.lock : SvgRes.unlock,
-              ),
-              ShrinkIconButton(
-                onPressed: () {
-                  debugPrint('zp::: draw onTap Delete');
-                  controller.removeDrawObject();
-                },
-                content: SvgRes.delete,
-              ),
-            ],
-          );
+            );
+          }).toList(),
+          child: SvgPicture.asset(
+            'assets/svgs/line_type_${lineType.name}.svg',
+            colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
+          ),
+        ),
+        // FlexiPopupHorizMenuButton(
+        //   menuTag: 'selectLineType',
+        //   initialValue: lineType,
+        //   onSelected: (LineType type) {
+        //     controller.changeDrawLineStyle(lineType: type);
+        //   },
+        //   // offset: Offset(-8.r, 0),
+        //   itemBuilder: (context) => LineType.values.map((value) {
+        //     return PopupHorizMenuItem(
+        //       key: ValueKey(value),
+        //       value: value,
+        //       // height: 32.r,
+        //       child: SvgPicture.asset(
+        //         'assets/svgs/line_type_${value.name}.svg',
+        //         colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
+        //       ),
+        //     );
+        //   }).toList(),
+        //   child: SvgPicture.asset(
+        //     'assets/svgs/line_type_${lineType.name}.svg',
+        //     colorFilter: ColorFilter.mode(theme.t1, BlendMode.srcIn),
+        //   ),
+        // ),
+        _VisualOrderButton(controller: controller),
+        ShrinkIconButton(
+          onPressed: () {
+            debugPrint('zp::: draw onTap Lock');
+            controller.setDrawLockState(!object.lock);
+          },
+          content: object.lock ? SvgRes.lock : SvgRes.unlock,
+        ),
+        ShrinkIconButton(
+          onPressed: () {
+            debugPrint('zp::: draw onTap Delete');
+            controller.removeDrawObject();
+          },
+          content: SvgRes.delete,
+        ),
+      ],
+    );
   }
 
   /// 获取当前绘制颜色
@@ -326,8 +324,8 @@ class _VisualOrderButton extends ConsumerWidget {
 
 /// 显示图层顺序设置对话框
 void showSetVisualOrderDialog(
-  BuildContext context, 
-  WidgetRef ref, 
+  BuildContext context,
+  WidgetRef ref,
   FlexiKlineController controller,
 ) {
   final theme = ref.read(themeProvider);

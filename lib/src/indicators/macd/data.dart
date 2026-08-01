@@ -35,21 +35,17 @@ extension CandleMacdExt on FlexiCandleModel {
 
   bool isValidMacdData(int dataIndex) {
     final list = macdList(dataIndex);
-    return list != null &&
-        list.length >= 3 &&
-        list[0] != null &&
-        list[1] != null &&
-        list[2] != null;
+    return list != null && list.length >= 3 && list[0] != null && list[1] != null && list[2] != null;
   }
 
   void cleanMacd(int dataIndex) => clean(dataIndex);
 }
 
-mixin MacdDataMixin<T extends MACDIndicator> on DataPaintObject<T> {
+mixin MacdDataMixin<T extends MACDIndicator> on ComputedPaintObject<T> {
   MACDParam get calcParam => indicator.calcParam;
 
   @override
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     calcuAndCacheMacd(
       calcParam,
       reset: reset,
@@ -111,9 +107,9 @@ mixin MacdDataMixin<T extends MACDIndicator> on DataPaintObject<T> {
     }
 
     // 📊 从配置中获取计算参数
-    final s = param.s;  // 短周期 EMA (如: 12)
-    final l = param.l;  // 长周期 EMA (如: 26)  
-    final m = param.m;  // 信号周期 EMA (如: 9)
+    final s = param.s; // 短周期 EMA (如: 12)
+    final l = param.l; // 长周期 EMA (如: 26)
+    final m = param.m; // 信号周期 EMA (如: 9)
 
     // 📋 验证配置参数的有效性
     if (!param.isValid(len)) {
@@ -161,12 +157,12 @@ mixin MacdDataMixin<T extends MACDIndicator> on DataPaintObject<T> {
       final dif = finalDif[i];
       final dea = finalDea[i];
       final macd = finalMacd[i];
-      
+
       // 📊 根据线条配置决定是否存储相应数据
       final shouldStoreDif = param.difLine.enabled && dif != null;
       final shouldStoreDea = param.deaLine.enabled && dea != null;
       final shouldStoreMacd = param.histogramEnabled && macd != null;
-      
+
       if (shouldStoreDif || shouldStoreDea || shouldStoreMacd) {
         list[i].setList<FlexiNum>(dataIndex, [
           shouldStoreDif ? dif : null,
@@ -219,7 +215,7 @@ mixin MacdDataMixin<T extends MACDIndicator> on DataPaintObject<T> {
             minmax.updateMinMaxBy(macd);
           }
         }
-        
+
         // 📏 如果启用零轴线，确保包含零点在范围内
         if (param.showZeroLine && minmax != null) {
           minmax.updateMinMaxBy(FlexiNum.zero);

@@ -39,11 +39,11 @@ extension on FlexiCandleModel {
   }
 }
 
-mixin ObvDataMixin<T extends OBVIndicator> on DataPaintObject<T> {
+mixin ObvDataMixin<T extends OBVIndicator> on ComputedPaintObject<T> {
   OBVParam get calcParam => indicator.calcParam;
 
   @override
-  void precompute(Range range, {bool reset = false}) {
+  void compute(Range range, {bool reset = false}) {
     calcuAndCacheObv(
       calcParam,
       start: range.start,
@@ -95,11 +95,9 @@ mixin ObvDataMixin<T extends OBVIndicator> on DataPaintObject<T> {
     }
   }
 
-  double Function(FlexiCandleModel) get _closeDouble =>
-      (m) => double.parse(m.close.toString());
+  double Function(FlexiCandleModel) get _closeDouble => (m) => double.parse(m.close.toString());
 
-  double Function(FlexiCandleModel) get _volDouble =>
-      (m) => double.parse(m.vol.toString());
+  double Function(FlexiCandleModel) get _volDouble => (m) => double.parse(m.vol.toString());
 
   /// 在 OBV 主线计算完成后，计算 OBV 的 MA 线
   void _calculateObvMA({

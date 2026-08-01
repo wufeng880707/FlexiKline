@@ -450,8 +450,10 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
     );
   }
 
-  /// 缓存价钱刻度文本区域大小, 用于定位缩放拖拽条区域
-  Size? _zoomSlideBarSize;
+  /// 缓存价钱刻度文本区域, 用于定位缩放拖拽条区域
+  Rect? _zoomSlideBarRect;
+
+  static const double _minZoomSlideBarHitWidth = 44.0;
 
   /// 绘制蜡烛图右侧价钱刻度
   /// 根据Grid horizontal配置来绘制, 保证在grid.horizontal线之上.
@@ -489,15 +491,20 @@ class CandlePaintObject<T extends CandleIndicator> extends CandleBasePaintObject
       if (size.width > maxTickWidth) maxTickWidth = size.width;
     }
 
-    if (!context.gestureConfig.isManualSetZoomRect &&
-        (_zoomSlideBarSize == null || _zoomSlideBarSize!.width != maxTickWidth)) {
-      final barSize = Size(maxTickWidth, drawableRect.height);
-      _zoomSlideBarSize = barSize;
+    final hitWidth = maxTickWidth < _minZoomSlideBarHitWidth ? _minZoomSlideBarHitWidth : maxTickWidth;
+    final slideBarRect = Rect.fromLTWH(
+      drawableRect.right - hitWidth,
+      drawableRect.top,
+      hitWidth,
+      drawableRect.height,
+    );
+    if (!context.gestureConfig.isManualSetZoomRect && _zoomSlideBarRect != slideBarRect) {
+      _zoomSlideBarRect = slideBarRect;
       context.reportChartZoomSlideBarRect(Rect.fromLTWH(
-        drawableRect.right - barSize.width,
+        drawableRect.right - hitWidth,
         drawableRect.top,
-        barSize.width,
-        barSize.height,
+        hitWidth,
+        drawableRect.height,
       ));
     }
   }

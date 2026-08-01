@@ -19,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
@@ -39,8 +40,9 @@ class RSISettingPage extends BaseIndicatorSettingPage {
   ConsumerState<RSISettingPage> createState() => _RSISettingPageState();
 }
 
-class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage> {
-  static const _rsiKey = DataIndicatorKey('rsi');
+class _RSISettingPageState
+    extends BaseIndicatorSettingPageState<RSISettingPage> {
+  static const _rsiKey = ComputedIndicatorKey('rsi');
 
   static const _defaultParam = RsiParam(
     lines: [
@@ -106,9 +108,9 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
     final klineState = ref.read(klineStateProvider(widget.controller));
     final controller = klineState.controller;
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_rsiKey) ||
-          controller.subIndicatorKeys.contains(_rsiKey);
-      final indicator = controller.getIndicator<RSIIndicator>(_rsiKey);
+      _enabled = controller.subIndicatorKeys.contains(_rsiKey);
+      final indicator =
+          controller.configuredSubIndicator<RSIIndicator>(_rsiKey);
       if (indicator != null && indicator.calcParam.lines.isNotEmpty) {
         _currentParam = indicator.calcParam;
       } else {
@@ -147,17 +149,13 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
 
     return [
       buildSectionTitle('RSI线条设置', theme),
-
       _buildLineTableHeader(theme),
-
       ...lines.asMap().entries.map((entry) {
         final index = entry.key;
         final line = entry.value;
         return _buildRSILineRow(index, line, theme);
       }),
-
       SizedBox(height: 8.r),
-
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.r),
         child: ElevatedButton.icon(
@@ -172,9 +170,7 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
           ),
         ),
       ),
-
       SizedBox(height: 16.r),
-
       buildSectionTitle('参考线设置', theme),
       buildSwitchItem(
         title: '显示超买超卖线',
@@ -189,7 +185,6 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
         },
         theme: theme,
       ),
-
       if (refCfg.enabled) ...[
         buildNumberItem(
           title: '超买线位置',
@@ -223,7 +218,6 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
         ),
         _buildRefLineRow(theme),
       ],
-
       SizedBox(height: 16.r),
     ];
   }
@@ -532,18 +526,18 @@ class _RSISettingPageState extends BaseIndicatorSettingPageState<RSISettingPage>
     try {
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
-      if (_enabled) {
-        final oldIndicator = controller.getIndicator<RSIIndicator>(_rsiKey);
-        if (oldIndicator != null) {
-          final newIndicator = RSIIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            tipsPadding: oldIndicator.tipsPadding,
-            tickCount: oldIndicator.tickCount,
-          );
-          controller.updateIndicator(newIndicator);
-        }
+      final oldIndicator =
+          controller.configuredSubIndicator<RSIIndicator>(_rsiKey);
+      if (oldIndicator != null) {
+        final newIndicator = RSIIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          tipsPadding: oldIndicator.tipsPadding,
+          tickCount: oldIndicator.tickCount,
+        );
+        await controller.saveAndSetSubIndicator(newIndicator,
+            enabled: _enabled);
       }
     } catch (e) {
       debugPrint('保存RSI设置失败: $e');

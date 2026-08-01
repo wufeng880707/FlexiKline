@@ -29,12 +29,12 @@ class TrendAngleDrawObject extends DrawObject {
   TrendAngleDrawObject(super.overlay, super.config);
 
   @override
-  AngleParams getDrawParams(IDrawContext context) {
+  AngleParams getDrawParams(DrawContext context) {
     return const AngleParams(radSize: 50.0, baseLineMinLen: 50.0);
   }
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 2,
       'TrendAngle hitTest points.length:${points.length} must be equals 2',
@@ -50,7 +50,7 @@ class TrendAngleDrawObject extends DrawObject {
   }
 
   @override
-  void drawing(IDrawContext context, Canvas canvas, Size size) {
+  void drawing(DrawContext context, Canvas canvas, Size size) {
     drawConnectingLine(context, canvas, size);
     final first = points.firstOrNull?.offset;
     final second = (points.secondOrNull ?? pointer)?.offset;
@@ -73,7 +73,7 @@ class TrendAngleDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 2,
       'TrendAngle draw points.length:${points.length} must be equals 2',
@@ -97,7 +97,7 @@ class TrendAngleDrawObject extends DrawObject {
 
   /// 绘制以[A]的x轴水平方向的基线, 和与向量AB线的弧线与弧度值
   void _drawAngleLineAndRadVal(
-    IDrawContext context,
+    DrawContext context,
     Canvas canvas,
     Offset A,
     Offset B,

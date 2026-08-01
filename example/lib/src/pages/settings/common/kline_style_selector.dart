@@ -20,8 +20,8 @@ import '../../../theme/flexi_theme.dart';
 
 /// 柱状图样式枚举（K线样式）
 enum BarStyle {
-  hollow,   // 空心
-  filled,   // 实心
+  hollow, // 空心
+  filled, // 实心
 }
 
 /// K线样式选择器（空心/实心）- 展开式下拉选择器
@@ -103,7 +103,8 @@ class _KLineStyleSelectorState extends ConsumerState<KLineStyleSelector> {
   }
 
   void _showStyleOverlay(BuildContext context, FKTheme theme) {
-    final RenderBox? renderBox = _buttonKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox =
+        _buttonKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     // 直接使用Overlay，避免Dialog坐标系统问题
@@ -131,7 +132,8 @@ class _KLineStyleSelectorState extends ConsumerState<KLineStyleSelector> {
     // 计算左对齐和右对齐的位置
     final double leftAlignedLeft = buttonPosition.dx;
     final double leftAlignedRight = leftAlignedLeft + panelWidth;
-    final double rightAlignedLeft = buttonPosition.dx + buttonSize.width - panelWidth;
+    final double rightAlignedLeft =
+        buttonPosition.dx + buttonSize.width - panelWidth;
 
     // 检查左对齐是否超出右边界
     bool leftWouldOverflow = leftAlignedRight > screenSize.width - margin;
@@ -159,7 +161,8 @@ class _KLineStyleSelectorState extends ConsumerState<KLineStyleSelector> {
     // 2. 垂直对齐判断：检查向下显示是否超出底部边界
     double panelTop;
 
-    final double downwardTop = buttonPosition.dy + buttonSize.height + widget.panelOffset;
+    final double downwardTop =
+        buttonPosition.dy + buttonSize.height + widget.panelOffset;
     if (downwardTop + panelHeight <= screenSize.height - margin) {
       // 向下显示不会超出底部边界
       panelTop = downwardTop;
@@ -234,8 +237,9 @@ class _KLineStyleSelectorState extends ConsumerState<KLineStyleSelector> {
         mainAxisSize: MainAxisSize.min,
         children: BarStyle.values.map((style) {
           final isSelected = widget.value == style;
-          final isLast = BarStyle.values.indexOf(style) == BarStyle.values.length - 1;
-          
+          final isLast =
+              BarStyle.values.indexOf(style) == BarStyle.values.length - 1;
+
           return Column(
             children: [
               GestureDetector(
@@ -246,7 +250,9 @@ class _KLineStyleSelectorState extends ConsumerState<KLineStyleSelector> {
                 child: Container(
                   height: itemHeight,
                   decoration: BoxDecoration(
-                    color: isSelected ? theme.long.withValues(alpha: 0.1) : Colors.transparent,
+                    color: isSelected
+                        ? theme.long.withValues(alpha: 0.1)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
@@ -312,7 +318,7 @@ class BarStyleSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-    
+
     return GestureDetector(
       onTap: () => _showBarStylePicker(context, theme),
       child: Container(
@@ -379,7 +385,7 @@ class BarStyleSelector extends ConsumerWidget {
                 _getBarStyleName(style),
                 style: TextStyle(color: theme.t1, fontSize: 14.sp),
               ),
-              trailing: value == style 
+              trailing: value == style
                   ? Icon(Icons.check, color: theme.long, size: 16.r)
                   : null,
               onTap: () {
@@ -422,9 +428,9 @@ class BarStylePainter extends CustomPainter {
       ..strokeWidth = strokeWidth;
 
     final rect = Rect.fromLTWH(
-      size.width * 0.2, 
-      size.height * 0.2, 
-      size.width * 0.6, 
+      size.width * 0.2,
+      size.height * 0.2,
+      size.width * 0.6,
       size.height * 0.6,
     );
 
@@ -433,7 +439,7 @@ class BarStylePainter extends CustomPainter {
         paint.style = PaintingStyle.stroke;
         canvas.drawRect(rect, paint);
         break;
-        
+
       case BarStyle.filled:
         paint.style = PaintingStyle.fill;
         canvas.drawRect(rect, paint);
@@ -443,6 +449,8 @@ class BarStylePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant BarStylePainter oldDelegate) {
-    return style != oldDelegate.style || color != oldDelegate.color || strokeWidth != oldDelegate.strokeWidth;
+    return style != oldDelegate.style ||
+        color != oldDelegate.color ||
+        strokeWidth != oldDelegate.strokeWidth;
   }
 }

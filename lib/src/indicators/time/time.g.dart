@@ -19,8 +19,7 @@ abstract class _$TimeIndicatorCWProxy {
 
   TimeIndicator clipToDrawableRect(bool clipToDrawableRect);
 
-  TimeIndicator tickFormatter(
-      String Function(DateTime, [ITimeInterval?])? tickFormatter);
+  TimeIndicator tickFormatter(String Function(DateTime, [ITimeInterval?])? tickFormatter);
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `TimeIndicator(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -58,16 +57,13 @@ class _$TimeIndicatorCWProxyImpl implements _$TimeIndicatorCWProxy {
   TimeIndicator position(DrawPosition position) => this(position: position);
 
   @override
-  TimeIndicator timeLabel(TextAreaConfig timeLabel) =>
-      this(timeLabel: timeLabel);
+  TimeIndicator timeLabel(TextAreaConfig timeLabel) => this(timeLabel: timeLabel);
 
   @override
-  TimeIndicator clipToDrawableRect(bool clipToDrawableRect) =>
-      this(clipToDrawableRect: clipToDrawableRect);
+  TimeIndicator clipToDrawableRect(bool clipToDrawableRect) => this(clipToDrawableRect: clipToDrawableRect);
 
   @override
-  TimeIndicator tickFormatter(
-          String Function(DateTime, [ITimeInterval?])? tickFormatter) =>
+  TimeIndicator tickFormatter(String Function(DateTime, [ITimeInterval?])? tickFormatter) =>
       this(tickFormatter: tickFormatter);
 
   @override
@@ -130,32 +126,25 @@ extension $TimeIndicatorCopyWith on TimeIndicator {
 // JsonSerializableGenerator
 // **************************************************************************
 
-TimeIndicator _$TimeIndicatorFromJson(Map<String, dynamic> json) =>
-    TimeIndicator(
+TimeIndicator _$TimeIndicatorFromJson(Map<String, dynamic> json) => TimeIndicator(
       zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
-      height:
-          (json['height'] as num?)?.toDouble() ?? defaultTimeIndicatorHeight,
+      height: (json['height'] as num?)?.toDouble() ?? defaultTimeIndicatorHeight,
       padding: json['padding'] == null
           ? EdgeInsets.zero
-          : const EdgeInsetsConverter()
-              .fromJson(json['padding'] as Map<String, dynamic>),
+          : const EdgeInsetsConverter().fromJson(json['padding'] as Map<String, dynamic>),
       position: json['position'] == null
           ? DrawPosition.middle
           : const DrawPositionConverter().fromJson(json['position'] as String),
       timeLabel: json['timeLabel'] == null
           ? const TextAreaConfig(
-              style: TextStyle(
-                  fontSize: defaultTextSize,
-                  overflow: TextOverflow.ellipsis,
-                  height: defaultTextHeight),
+              style: TextStyle(fontSize: defaultTextSize, overflow: TextOverflow.ellipsis, height: defaultTextHeight),
               textWidth: 80,
               textAlign: TextAlign.center)
           : TextAreaConfig.fromJson(json['timeLabel'] as Map<String, dynamic>),
       clipToDrawableRect: json['clipToDrawableRect'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$TimeIndicatorToJson(TimeIndicator instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$TimeIndicatorToJson(TimeIndicator instance) => <String, dynamic>{
       'height': instance.height,
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'zIndex': instance.zIndex,

@@ -53,8 +53,7 @@ class PendingOrderData {
   }
 
   @override
-  String toString() =>
-      'PendingOrder(id: $id, side: $side, price: $price, qty: $quantity)';
+  String toString() => 'PendingOrder(id: $id, side: $side, price: $price, qty: $quantity)';
 }
 
 /// 委托订单叠加对象
@@ -189,13 +188,13 @@ class PendingOrderOverlay extends BusinessOverlayObject {
   }
 
   @override
-  FlexiNum? onDragEnd(BusinessOverlayPaintContext ctx) {
+  BusinessOverlayDragResult? onDragEnd(BusinessOverlayPaintContext ctx) {
     FlexiNum? newPrice;
     if (_draggingDy != null) {
       newPrice = ctx.dyToValue(_draggingDy!);
     }
     _draggingDy = null;
-    return newPrice;
+    return BusinessOverlayDragResult(value: newPrice);
   }
 
   @override
@@ -267,13 +266,14 @@ class PendingOrderOverlay extends BusinessOverlayObject {
 
     final labelW = tp.width + labelPaddingH * 2;
     final labelH = tp.height + labelPaddingV * 2;
-    final left = isEditing
-        ? ctx.chartRect.left + handleSize + 20
-        : ctx.chartRect.left + 8;
+    final left = isEditing ? ctx.chartRect.left + handleSize + 20 : ctx.chartRect.left + 8;
     final top = dy - labelH / 2;
 
     final rrect = RRect.fromLTRBR(
-      left, top, left + labelW, top + labelH,
+      left,
+      top,
+      left + labelW,
+      top + labelH,
       Radius.circular(labelBorderRadius),
     );
 

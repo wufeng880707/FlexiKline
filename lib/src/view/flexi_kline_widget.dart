@@ -45,7 +45,6 @@ class FlexiKlineWidget extends StatefulWidget {
     this.time,
     this.mainIndicators,
     this.subIndicators,
-    bool? autoAdaptLayout,
     this.alignment,
     this.decoration,
     this.foregroundDecoration,
@@ -168,6 +167,7 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
     if (config is IIndicatorConfig) {
       return config as IIndicatorConfig;
     }
+    return null;
   }
 
   CandleBaseIndicator resolveCandle(FlexiKlineWidget widget) {
@@ -371,14 +371,14 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
                   onDoubleTap: widget.onDoubleTap,
                 ),
           _buildMagnifier(context, canvasRect),
-          Positioned.fromRect(
-            rect: mainRect,
-            child: _buildExitZoomButton(context, mainRect),
-          ),
           _buildDrawToolbar(context, canvasRect),
           Positioned.fromRect(
             rect: mainRect,
             child: _buildMainForgroundView(context),
+          ),
+          Positioned.fromRect(
+            rect: mainRect,
+            child: _buildExitZoomButton(context, mainRect),
           ),
         ],
       ),

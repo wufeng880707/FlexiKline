@@ -23,7 +23,7 @@ class HorizontalLineDrawObject extends DrawObject {
   HorizontalLineDrawObject(super.overlay, super.config);
 
   @override
-  bool hitTest(IDrawContext context, Offset position, {bool isMove = false}) {
+  bool hitTest(DrawContext context, Offset position, {bool isMove = false}) {
     assert(
       points.length == 1,
       'HorizontalLine only takes one point, but it has ${points.length}',
@@ -43,7 +43,7 @@ class HorizontalLineDrawObject extends DrawObject {
   }
 
   @override
-  void draw(IDrawContext context, Canvas canvas, Size size) {
+  void draw(DrawContext context, Canvas canvas, Size size) {
     assert(
       points.length == 1,
       'HorizontalLine only takes one point, but it has ${points.length}',

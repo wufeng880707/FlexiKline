@@ -50,10 +50,10 @@ mixin FlexiKlinePageMixin<T extends StatefulWidget> on State<T> implements IFlex
   bool get isResume => _state == AppLifecycleState.resumed;
 
   /// 当前KlineData
-  KlineData get curKlineData => klineController.curKlineData;
+  KlineData get klineData => klineController.klineData;
 
   /// 当前KlineData的刷新规格
-  KlineSpec get refreshSpec => curKlineData.getRefreshSpec(isResetKlineDataWhenResume);
+  KlineSpec get refreshSpec => klineData.getRefreshSpec(isResetKlineDataWhenResume);
 
   /// 当回到前台时，是否需要重置当前KlineData所有数据
   bool get isResetKlineDataWhenResume => false;

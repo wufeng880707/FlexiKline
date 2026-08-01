@@ -19,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../providers/kline_controller_state_provider.dart';
+import '../../../providers/indicator_config_controller_ext.dart';
 import '../../../theme/flexi_theme.dart';
 import '../common/base_indicator_setting_page.dart';
 import '../common/color_selector.dart';
@@ -38,7 +39,7 @@ class EMASettingPage extends BaseIndicatorSettingPage {
 
 class _EMASettingPageState
     extends BaseIndicatorSettingPageState<EMASettingPage> {
-  static const _emaKey = DataIndicatorKey('ema');
+  static const _emaKey = ComputedIndicatorKey('ema');
 
   static const _defaultColors = [
     Color(0xFF2196F3),
@@ -116,10 +117,10 @@ class _EMASettingPageState
     final controller = klineState.controller;
 
     try {
-      _enabled = controller.mainIndicatorKeys.contains(_emaKey) ||
-          controller.subIndicatorKeys.contains(_emaKey);
+      _enabled = controller.mainIndicatorKeys.contains(_emaKey);
 
-      final indicator = controller.getIndicator<EMAIndicator>(_emaKey);
+      final indicator =
+          controller.configuredMainIndicator<EMAIndicator>(_emaKey);
       if (indicator != null && indicator.calcParam.lines.isNotEmpty) {
         _currentParam = indicator.calcParam;
       } else {
@@ -144,17 +145,13 @@ class _EMASettingPageState
     final lines = _currentParam.lines;
     return [
       buildSectionTitle('指标线设置', theme),
-
       _buildLineTableHeader(theme),
-
       ...lines.asMap().entries.map((entry) {
         final index = entry.key;
         final line = entry.value;
         return _buildEMALineRow(index, line, theme);
       }),
-
       SizedBox(height: 8.r),
-
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.r),
         child: ElevatedButton.icon(
@@ -169,7 +166,6 @@ class _EMASettingPageState
           ),
         ),
       ),
-
       SizedBox(height: 16.r),
     ];
   }
@@ -242,7 +238,6 @@ class _EMASettingPageState
               ],
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -289,7 +284,6 @@ class _EMASettingPageState
               ),
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -304,7 +298,6 @@ class _EMASettingPageState
               ),
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -318,7 +311,6 @@ class _EMASettingPageState
               ),
             ),
           ),
-
           SizedBox(
             width: 24.r,
             child: _currentParam.lines.length > 1
@@ -396,18 +388,18 @@ class _EMASettingPageState
       final klineState = ref.read(klineStateProvider(widget.controller));
       final controller = klineState.controller;
 
-      if (_enabled) {
-        final oldIndicator = controller.getIndicator<EMAIndicator>(_emaKey);
-        if (oldIndicator != null) {
-          final newIndicator = EMAIndicator(
-            height: oldIndicator.height,
-            padding: oldIndicator.padding,
-            calcParam: _currentParam,
-            tipsPadding: oldIndicator.tipsPadding,
-          );
-          controller.updateIndicator(newIndicator);
-          debugPrint('EMA指标参数已更新');
-        }
+      final oldIndicator =
+          controller.configuredMainIndicator<EMAIndicator>(_emaKey);
+      if (oldIndicator != null) {
+        final newIndicator = EMAIndicator(
+          height: oldIndicator.height,
+          padding: oldIndicator.padding,
+          calcParam: _currentParam,
+          tipsPadding: oldIndicator.tipsPadding,
+        );
+        await controller.saveAndSetMainIndicator(newIndicator,
+            enabled: _enabled);
+        debugPrint('EMA指标参数已更新');
       }
     } catch (e) {
       debugPrint('保存EMA设置失败: $e');

@@ -26,7 +26,7 @@ part 'avl_param.g.dart';
 final class AVLParam extends Equatable {
   // 外观配置
   final AVLAppearanceConfig appearance;
-  
+
   // 显示配置
   final AVLDisplayConfig display;
 
@@ -105,4 +105,4 @@ final class AVLDisplayConfig extends Equatable {
 
   @override
   List<Object?> get props => [precision, showInTips, tipsLabel];
-} 
+}

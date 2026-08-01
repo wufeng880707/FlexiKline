@@ -89,31 +89,28 @@ final class MACDParam extends Equatable {
       s: periods['short'] ?? 12,
       l: periods['long'] ?? 26,
       m: periods['signal'] ?? 9,
-      difLine: lines['dif'] != null
-          ? MACDLineConfig.fromJson(lines['dif'])
-          : const MACDLineConfig(color: Color(0xffffff00)),
-      deaLine: lines['dea'] != null
-          ? MACDLineConfig.fromJson(lines['dea'])
-          : const MACDLineConfig(color: Color(0xff9c27b0)),
+      difLine:
+          lines['dif'] != null ? MACDLineConfig.fromJson(lines['dif']) : const MACDLineConfig(color: Color(0xffffff00)),
+      deaLine:
+          lines['dea'] != null ? MACDLineConfig.fromJson(lines['dea']) : const MACDLineConfig(color: Color(0xff9c27b0)),
       histogramEnabled: histogram['enabled'] ?? true,
-      bullishIncreasing: _parseHistogramState(
-          histogram, ['bullish', 'increasing'], const Color(0xff4caf50), HistogramStyle.hollow),
-      bullishDecreasing: _parseHistogramState(
-          histogram, ['bullish', 'decreasing'], const Color(0xff4caf50), HistogramStyle.solid),
-      bearishIncreasing: _parseHistogramState(
-          histogram, ['bearish', 'increasing'], const Color(0xfff44336), HistogramStyle.hollow),
-      bearishDecreasing: _parseHistogramState(
-          histogram, ['bearish', 'decreasing'], const Color(0xfff44336), HistogramStyle.solid),
+      bullishIncreasing:
+          _parseHistogramState(histogram, ['bullish', 'increasing'], const Color(0xff4caf50), HistogramStyle.hollow),
+      bullishDecreasing:
+          _parseHistogramState(histogram, ['bullish', 'decreasing'], const Color(0xff4caf50), HistogramStyle.solid),
+      bearishIncreasing:
+          _parseHistogramState(histogram, ['bearish', 'increasing'], const Color(0xfff44336), HistogramStyle.hollow),
+      bearishDecreasing:
+          _parseHistogramState(histogram, ['bearish', 'decreasing'], const Color(0xfff44336), HistogramStyle.solid),
       precision: display['precision'] ?? 2,
       showZeroLine: display['showZeroLine'] ?? true,
-      zeroLineColor:
-          Color(int.tryParse(display['zeroLineColor']?.toString() ?? '0xff666666') ?? 0xff666666),
+      zeroLineColor: Color(int.tryParse(display['zeroLineColor']?.toString() ?? '0xff666666') ?? 0xff666666),
       zeroLineWidth: (display['zeroLineWidth'] ?? 0.5).toDouble(),
     );
   }
 
-  static MACDHistogramState _parseHistogramState(Map<String, dynamic> histogram, List<String> path,
-      Color defaultColor, HistogramStyle defaultStyle) {
+  static MACDHistogramState _parseHistogramState(
+      Map<String, dynamic> histogram, List<String> path, Color defaultColor, HistogramStyle defaultStyle) {
     dynamic current = histogram;
     for (String key in path) {
       if (current is Map<String, dynamic> && current.containsKey(key)) {
@@ -125,8 +122,7 @@ final class MACDParam extends Equatable {
 
     if (current is Map<String, dynamic>) {
       return MACDHistogramState(
-        color:
-            Color(int.tryParse(current['color']?.toString() ?? '0xff4caf50') ?? defaultColor.value),
+        color: Color(int.tryParse(current['color']?.toString() ?? '0xff4caf50') ?? defaultColor.value),
         style: HistogramStyle.fromString(current['style']?.toString() ?? 'solid'),
       );
     }
@@ -216,8 +212,7 @@ final class MACDHistogramState extends Equatable {
     this.style = HistogramStyle.solid,
   });
 
-  factory MACDHistogramState.fromJson(Map<String, dynamic> json) =>
-      _$MACDHistogramStateFromJson(json);
+  factory MACDHistogramState.fromJson(Map<String, dynamic> json) => _$MACDHistogramStateFromJson(json);
   Map<String, dynamic> toJson() => _$MACDHistogramStateToJson(this);
 
   @override
