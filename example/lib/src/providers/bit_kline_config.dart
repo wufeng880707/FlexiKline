@@ -47,39 +47,14 @@ abstract class BaseBitFlexiKlineTheme implements IFlexiKlineTheme {
   Color get long => longColor;
   Color get short => shortColor;
 
-  Color get countDownTextBg;
-  Color get latestPriceTextBg;
-  Color get lastPriceTextBg;
-  Color get gridLine;
-  Color get crossColor => const Color(0xFFF6A701);
-  Color get drawColor => Colors.blueAccent;
+  @override
+  Color get crosshairColor => const Color(0xFFF6A701);
+
   Color get drawTextBg => Colors.blue;
   Color get drawTextColor => const Color(0xFFFFFFFF);
   Color get themeColor;
-  Color get lastPriceTextColor;
 
   Color transparent = Colors.transparent;
-
-  @override
-  Color get latestPriceBg => latestPriceTextBg;
-
-  @override
-  Color get lastPriceBg => lastPriceTextBg;
-
-  @override
-  Color get countdownBg => countDownTextBg;
-
-  @override
-  Color get gridLineColor => gridLine;
-
-  @override
-  Color get crosshairColor => crossColor;
-
-  @override
-  Color get drawToolColor => drawColor;
-
-  @override
-  Color get lastPriceColor => lastPriceTextColor;
 
   double? _scale;
   double get scale => _scale ??= math.min(
@@ -118,16 +93,16 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   Color get tooltipBg => const Color(0xFFFFFFFF);
 
   @override
-  Color get countDownTextBg => const Color(0xFFF5F5F5);
+  Color get countdownBg => const Color(0xFFF5F5F5);
 
   @override
   Color get crossTextBg => const Color(0xFF444444);
 
   @override
-  Color get lastPriceTextBg => Colors.black54;
+  Color get lastPriceBg => Colors.black54;
 
   @override
-  Color get gridLine => const Color(0xFFB0B0B0);
+  Color get gridLineColor => const Color(0xFFB0B0B0);
 
   Color get markLine => const Color(0xFF949494);
 
@@ -141,7 +116,7 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   Color get ticksTextColor => const Color(0xFF949494);
 
   @override
-  Color get lastPriceTextColor => crossTextColor;
+  Color get lastPriceColor => crossTextColor;
 
   @override
   Color get crossTextColor => const Color(0xFFF9F8F8);
@@ -150,7 +125,7 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   Color get tooltipTextColor => textColor;
 
   @override
-  Color get drawColor => Colors.blue;
+  Color get drawToolColor => Colors.blue;
 
   @override
   Color get drawTextColor => const Color(0xFF000000);
@@ -162,7 +137,7 @@ class BitFlexiKlineLightTheme extends BaseBitFlexiKlineTheme {
   Color get dragBg => const Color(0x33000000);
 
   @override
-  Color get latestPriceTextBg => const Color(0xFF000000);
+  Color get latestPriceBg => const Color(0xFF000000);
 
   @override
   Color get lineChartColor => const Color(0xFF2196F3);
@@ -199,13 +174,13 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   Color get tooltipBg => const Color(0xFF16181A);
 
   @override
-  Color get countDownTextBg => const Color(0xFF333333);
+  Color get countdownBg => const Color(0xFF333333);
 
   @override
   Color get crossTextBg => const Color(0xFF404040);
 
   @override
-  Color get gridLine => const Color(0xFF333333);
+  Color get gridLineColor => const Color(0xFF333333);
 
   Color get markLine => const Color(0xFFA0A0A0);
 
@@ -219,7 +194,7 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   Color get ticksTextColor => const Color(0xFF949494);
 
   @override
-  Color get latestPriceTextBg => const Color(0xFF5F5F5F);
+  Color get latestPriceBg => const Color(0xFF5F5F5F);
 
   @override
   Color get crossTextColor => const Color(0xFFFFFFFF);
@@ -228,16 +203,16 @@ class BitFlexiKlineDarkTheme extends BaseBitFlexiKlineTheme {
   Color get tooltipTextColor => const Color(0xFF9D9DA1);
 
   @override
-  Color get drawColor => Colors.lightBlue;
+  Color get drawToolColor => Colors.lightBlue;
 
   @override
   Color get drawTextColor => const Color(0xFFFFFFFF);
 
   @override
-  Color get lastPriceTextBg => latestPriceTextBg;
+  Color get lastPriceBg => latestPriceBg;
 
   @override
-  Color get lastPriceTextColor => crossTextColor;
+  Color get lastPriceColor => crossTextColor;
 }
 
 final bitFlexiKlineThemeProvider = StateProvider<BaseBitFlexiKlineTheme>((ref) {
@@ -407,8 +382,8 @@ class BitFlexiKlineConfiguration
           candleFixedSpacing: null,
           candleSpacingParts: 7,
           loading: config.loading.copyWith(
-            backgroundColor: theme.countDownTextBg,
-            valueColor: theme.crossColor,
+            backgroundColor: theme.countdownBg,
+            valueColor: theme.crosshairColor,
           ),
         );
   }

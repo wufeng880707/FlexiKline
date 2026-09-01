@@ -31,8 +31,6 @@ class VolMaIndicator extends ComputedIndicator {
   final EdgeInsets tipsPadding;
   final int ticksCount;
 
-  dynamic getCalcParam() => calcParam;
-
   @override
   ComputedPaintObject<VolMaIndicator> createPaintObject() {
     return VolMaPaintObject();

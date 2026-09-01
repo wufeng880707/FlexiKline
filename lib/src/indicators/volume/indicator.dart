@@ -30,8 +30,6 @@ class VolumeIndicator extends ComputedIndicator {
   final EdgeInsets tipsPadding;
   final int tickCount;
 
-  dynamic getCalcParam() => calcParam;
-
   /// 控制参数(Volume可用于主图和副图, 以下开关控制在主/副图的展示效果)
   // final bool showYAxisTick;
   // final bool showCrossMark;

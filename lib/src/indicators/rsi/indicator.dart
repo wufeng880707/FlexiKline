@@ -30,8 +30,6 @@ class RSIIndicator extends ComputedIndicator {
   final EdgeInsets tipsPadding;
   final int tickCount;
 
-  dynamic getCalcParam() => calcParam;
-
   @override
   ComputedPaintObject<RSIIndicator> createPaintObject() {
     return RSIPaintObject();

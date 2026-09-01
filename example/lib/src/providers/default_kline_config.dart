@@ -55,23 +55,14 @@ class DefaultFlexiKlineTheme implements IFlexiKlineTheme {
   }
 
   Color get transparent => theme.transparent;
-  Color get long => theme.long;
-  Color get short => theme.short;
-  Color get latestPriceTextBg => theme.translucentBg;
-  Color get countDownTextBg => theme.markBg;
-  Color get lastPriceTextBg => theme.translucentBg;
-  Color get gridLine => theme.gridLine;
-  Color get crossColor => theme.t1;
-  Color get drawColor => Colors.blueAccent;
   Color get drawTextColor => theme.t1;
   Color get themeColor => theme.themeColor;
-  Color get lastPriceTextColor => theme.t1;
 
   @override
-  Color get longColor => long;
+  Color get longColor => theme.long;
 
   @override
-  Color get shortColor => short;
+  Color get shortColor => theme.short;
 
   @override
   Color get chartBg => theme.pageBg;
@@ -83,25 +74,25 @@ class DefaultFlexiKlineTheme implements IFlexiKlineTheme {
   Color get crossTextBg => theme.lightBg;
 
   @override
-  Color get latestPriceBg => latestPriceTextBg;
+  Color get latestPriceBg => theme.translucentBg;
 
   @override
-  Color get lastPriceBg => lastPriceTextBg;
+  Color get lastPriceBg => theme.translucentBg;
 
   @override
-  Color get countdownBg => countDownTextBg;
+  Color get countdownBg => theme.markBg;
 
   @override
   Color get dragBg => theme.translucentBg;
 
   @override
-  Color get gridLineColor => gridLine;
+  Color get gridLineColor => theme.gridLine;
 
   @override
-  Color get crosshairColor => crossColor;
+  Color get crosshairColor => theme.t1;
 
   @override
-  Color get drawToolColor => drawColor;
+  Color get drawToolColor => Colors.blueAccent;
 
   @override
   Color get markLineColor => theme.t1;
@@ -116,7 +107,7 @@ class DefaultFlexiKlineTheme implements IFlexiKlineTheme {
   Color get ticksTextColor => theme.t2;
 
   @override
-  Color get lastPriceColor => lastPriceTextColor;
+  Color get lastPriceColor => theme.t1;
 
   @override
   Color get crossTextColor => theme.themeColor;

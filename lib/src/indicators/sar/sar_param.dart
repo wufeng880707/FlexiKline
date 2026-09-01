@@ -55,11 +55,6 @@ final class SARParam extends Equatable {
   /// 验证参数是否有效
   bool isValid(int len) => len > 1 && periods.start > 0 && periods.max > periods.start && periods.step > 0;
 
-  // 为了兼容旧代码，保留这些getter
-  double get startAf => periods.start;
-  double get step => periods.step;
-  double get maxAf => periods.max;
-
   factory SARParam.fromJson(Map<String, dynamic> json) => _$SARParamFromJson(json);
   Map<String, dynamic> toJson() => _$SARParamToJson(this);
 

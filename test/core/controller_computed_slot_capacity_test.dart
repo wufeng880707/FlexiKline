@@ -76,7 +76,7 @@ void main() {
       ];
 
       // 挂载 specA，声明 2 个 computed 指标 → 容量 2。
-      // mount 前的 updateKlineData 只入队 waiting，可安全 await。
+      // mount 前的 replaceKlineData 只入队 waiting，可安全 await。
       final ctrl = scene.controller;
       await scene.initWithData(_specA, _candles(3), subIndicators: oldSub);
       ctrl.flushPendingKlineData();
@@ -85,7 +85,7 @@ void main() {
       expect(ctrl.computedDataCapacity, 2);
 
       // 切到 specB 并加载数据 → B 成为当前，A 进缓存。
-      // mount 后 updateKlineData 走异步 scheduleTask，不能直接 await（需靠 pump 驱动）。
+      // mount 后 replaceKlineData 走异步 scheduleTask，不能直接 await（需靠 pump 驱动）。
       ctrl.switchKlineData(_specB);
       ctrl.replaceKlineData(_specB, _candles(3));
       await tester.pumpAndSettle();

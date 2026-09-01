@@ -55,10 +55,8 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color tooltipBg = const Color(0xFFF2F2F2);
 
-  Color countDownTextBg = const Color(0xFFBDBDBD);
-
   @override
-  Color get countdownBg => countDownTextBg;
+  Color countdownBg = const Color(0xFFBDBDBD);
 
   @override
   Color crossTextBg = const Color(0xFF111111);
@@ -68,16 +66,17 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
 
   Color transparent = Colors.transparent;
 
-  Color lastPriceTextBg = Colors.black54;
+  @override
+  Color lastPriceBg = Colors.black54;
 
   @override
-  Color get lastPriceBg => lastPriceTextBg;
+  Color gridLineColor = const Color(0xffE9EDF0);
 
-  Color gridLine = const Color(0xffE9EDF0);
+  @override
+  Color crosshairColor = const Color(0xFF000000);
 
-  Color crossColor = const Color(0xFF000000);
-
-  Color get drawColor => Colors.blue;
+  @override
+  Color drawToolColor = Colors.blue;
 
   Color get drawTextColor => const Color(0xFFFFFFFF);
 
@@ -92,10 +91,8 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color ticksTextColor = const Color(0xFF949494);
 
-  Color lastPriceTextColor = const Color(0xFF5F5F5F);
-
   @override
-  Color get lastPriceColor => lastPriceTextColor;
+  Color lastPriceColor = const Color(0xFF5F5F5F);
 
   @override
   Color crossTextColor = const Color(0xFFFFFFFF);
@@ -103,25 +100,14 @@ class TestFlexiKlineTheme implements IFlexiKlineTheme {
   @override
   Color tooltipTextColor = const Color(0xFF949494);
 
-  Color get latestPriceTextBg => const Color(0xFF000000);
-
   @override
-  Color get latestPriceBg => latestPriceTextBg;
+  Color get latestPriceBg => const Color(0xFF000000);
 
   @override
   Color get dragBg => const Color(0x33000000);
 
   @override
   Color get lineChartColor => const Color(0xFF2196F3);
-
-  @override
-  Color get gridLineColor => gridLine;
-
-  @override
-  Color get crosshairColor => crossColor;
-
-  @override
-  Color get drawToolColor => drawColor;
 }
 
 class TestFlexiKlineConfiguration with FlexiKlineConfigurationMixin {
