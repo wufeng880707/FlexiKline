@@ -20,7 +20,7 @@ part of 'core.dart';
 typedef OnLoadMoreCandles = Future<void> Function(KlineSpec spec);
 
 /// 将蜡烛图从[begin]动画移动到[end].
-typedef MoveToPositionCallback = void Function(
+typedef MoveToPositionCallback = Future<bool> Function(
   double begin,
   double end,
 );
@@ -32,6 +32,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     super.init();
     logd('init state');
     _klineDataCache = FIFOHashMap(capacity: klineDataCacheCapacity);
+    _pipeline = _createPipeline(_klineData);
   }
 
   @override
@@ -42,12 +43,12 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
 
   @override
   void dispose() {
+    _pipeline.dispose();
     super.dispose();
     logd('dispose state');
     _klineSpecNotifier.dispose();
     _loadingStateNotifier.dispose();
     _isFirstCandleMovedOffScreenNotifier.dispose();
-    _isMultiTouchNotifier.dispose();
     _intervalNotifier.dispose();
     _paintRangeNotifier.dispose();
     _klineDataCache.forEach((key, data) {
@@ -69,15 +70,6 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   final _isFirstCandleMovedOffScreenNotifier = ValueNotifier(false);
   ValueListenable<bool> get isFirstCandleMovedOffScreenListenable {
     return _isFirstCandleMovedOffScreenNotifier;
-  }
-
-  /// 当前是否处于多指触摸（双指缩放）状态.
-  final _isMultiTouchNotifier = ValueNotifier<bool>(false);
-  ValueListenable<bool> get isMultiTouchListenable => _isMultiTouchNotifier;
-  void setMultiTouch(bool value) {
-    if (_isMultiTouchNotifier.value != value) {
-      _isMultiTouchNotifier.value = value;
-    }
   }
 
   /// 当前 KlineData 的 TimeInterval listenable。
@@ -103,20 +95,23 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     return _paintRangeNotifier;
   }
 
-  void _notifySpecChange(KlineSpec spec) {
-    logd('_notifySpecChange $klineDataKey, spec:$spec');
-    if (spec.key == klineDataKey) {
-      onKlineSpecChanged(_klineSpecNotifier.value);
-      _klineSpecNotifier.value = spec;
-      _intervalNotifier.value = spec.interval;
-    }
+  /// 广播当前 [klineData] 的 spec 变更。
+  ///
+  /// 调用前 [klineData] 已切换为新数据，其 spec 即新值；此处捕获旧 spec 供下游 diff，
+  /// 先对齐 notifier 与 interval（使两者与 [klineData] 一致），再触发 [onKlineSpecChanged]。
+  void _notifySpecChange() {
+    final oldSpec = _klineSpecNotifier.value;
+    final newSpec = klineData.spec;
+    logd('_notifySpecChange $newSpec');
+    _klineSpecNotifier.value = newSpec;
+    _intervalNotifier.value = newSpec.interval;
+    onKlineSpecChanged(oldSpec);
   }
 
-  void _notifyLoadingState(KlineLoadingState state, String key) {
-    logd('_notifyLoadingState key:$key, state:$state');
-    if (key == klineDataKey) {
-      _loadingStateNotifier.value = state;
-    }
+  /// 广播当前 [klineData] 的加载状态。
+  void _notifyLoadingState() {
+    logd('_notifyLoadingState ${klineData.loadingState}');
+    _loadingStateNotifier.value = klineData.loadingState;
   }
 
   late final FIFOHashMap<String, KlineData> _klineDataCache;
@@ -128,6 +123,18 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   /// 当前 K 线数据缓存 key。
   String get klineDataKey => klineData.key;
 
+  KlineDataPipeline _createPipeline(KlineData data) {
+    return KlineDataPipeline(
+      data,
+      _paintObjectManager,
+      interval: calculationInterval,
+      logger: logger,
+      onCandlesMerged: _onCandlesMerged,
+      onComputed: _onComputed,
+    );
+  }
+
+  @override
   void evictInactiveKlineDataCache() {
     final retainedKey = klineDataKey;
     _klineDataCache.removeWhere((key, data) {
@@ -140,12 +147,19 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   }
 
   @override
+  void constrainPaintDxOffset() {
+    // 经 setter 走一遍 clampPaintDxOffset，把越界的旧偏移收回合法区间。
+    paintDxOffset = _paintDxOffset;
+  }
+
+  @override
   @protected
   void syncComputedSlotCapacity() {
     // 当前数据：按最新容量扩容已有蜡烛的 slots。
     klineData.rebuildSlots(computedDataCapacity);
     // 其余缓存：指标声明已变，其 slot 值已陈旧，直接丢弃，下次切换重新加载。
     evictInactiveKlineDataCache();
+    _pipeline.invalidateAll();
   }
 
   /// 设置当前KlineData:
@@ -154,9 +168,14 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   /// 3. 重绘图表
   /// 4. 取消Cross绘制(如果有)
   void _setKlineData(KlineData data, {bool resetPaintDxOffset = true}) {
-    _klineData = data;
-    _notifySpecChange(data.spec);
-    _notifyLoadingState(data.loadingState, data.key);
+    if (!identical(_klineData, data)) {
+      _pipeline.dispose();
+      _klineData = data;
+      _pipeline = _createPipeline(data);
+      if (isMounted) _pipeline.start();
+    }
+    _notifySpecChange();
+    _notifyLoadingState();
     if (resetPaintDxOffset && isMounted) {
       paintDxOffset = getInitPaintDxOffset();
     }
@@ -184,6 +203,16 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   @override
   double? indexToDx(int index, {bool check = false}) {
     return mainPaintObject.indexToDx(index, check: check);
+  }
+
+  /// 将 [index] 转换为蜡烛中心的 X 坐标。
+  double? indexToCandleDx(int index, {bool check = false}) {
+    final dx = indexToDx(index, check: false);
+    if (dx == null) return null;
+
+    final candleDx = dx - candleWidthHalf;
+    if (check && !mainChartRect.includeDx(candleDx)) return null;
+    return candleDx;
   }
 
   /// 将[dx]精确转换为蜡烛的时间戳ts, 差异部分补充到ts中.
@@ -287,49 +316,58 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   /// 将视口移动到[target]对应的绘制偏移.
   ///
   /// 优先通过[moveToPositionCallback]走动画; 无回调时立即更新[paintDxOffset]并重绘.
-  void _moveToPaintDxOffset(double target) {
-    if (!isMounted) return;
+  /// 返回动画是否完整完成.
+  Future<bool> _moveToPaintDxOffset(double target) async {
+    if (!isMounted) return false;
 
     final begin = paintDxOffset;
     final end = clampPaintDxOffset(target);
 
     final callback = moveToPositionCallback;
     if (callback != null) {
-      callback(begin, end);
-      return;
+      return callback(begin, end);
     }
 
-    if ((begin - end).abs() < precisionError) return;
-    paintDxOffset = end;
-    markRepaintChart(reset: true);
-    markRepaintDraw();
+    if ((begin - end).abs() >= precisionError) {
+      paintDxOffset = end;
+      markRepaintChart(reset: true);
+      markRepaintDraw();
+    }
+    return true;
   }
 
   /// 移动到不晚于[dateTime]的最近一根已加载蜡烛.
   ///
   /// 数据充足时目标蜡烛居中; 靠近数据两端时沿用当前绘制边界.
-  /// 未挂载、无数据或[dateTime]超出已加载时间范围时返回false.
-  bool moveToDateTime(DateTime dateTime) {
+  /// 未挂载、无数据、动画中断或目标蜡烛发生变化时返回null.
+  ///
+  /// 成功时返回目标蜡烛在当前[KlineData]中的下标.
+  Future<int?> moveToDateTime(DateTime dateTime) async {
     if (!isMounted || klineData.isEmpty || mainChartWidth <= 0) {
-      return false;
+      return null;
     }
 
-    final index = klineData.indexAtOrBefore(
+    final data = klineData;
+    final index = data.indexAtOrBefore(
       dateTime.millisecondsSinceEpoch,
     );
-    if (index == null) return false;
+    if (index == null) return null;
+    final targetTimestamp = data.get(index)?.ts;
+    if (targetTimestamp == null) return null;
 
     final target = index * candleActualWidth + candleWidthHalf - mainChartWidthHalf;
     requestCancelCross();
-    _moveToPaintDxOffset(target);
-    return true;
+    if (!await _moveToPaintDxOffset(target)) return null;
+    if (!isMounted || !identical(klineData, data)) return null;
+    if (klineData.get(index)?.ts != targetTimestamp) return null;
+    return index;
   }
 
   /// 请求移动蜡烛图回到初始位置。
   @override
   void requestMoveToInitialPosition() {
     if (!isMounted) return;
-    _moveToPaintDxOffset(getInitPaintDxOffset());
+    unawaited(_moveToPaintDxOffset(getInitPaintDxOffset()));
   }
 
   /// 计算绘制蜡烛图的范围
@@ -399,9 +437,7 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     );
     final old = _klineDataCache.append(spec.key, data);
     if (old != null) Future(() => old.dispose());
-    _klineData = data;
-    _notifySpecChange(data.spec);
-    _notifyLoadingState(KlineLoadingState.initLoading, data.key);
+    _setKlineData(data);
     return false;
   }
 
@@ -414,140 +450,60 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
     if (specKey == klineDataKey) {
       if (klineData.loadingState != KlineLoadingState.none) {
         klineData.updateState(state: KlineLoadingState.none);
-        _notifyLoadingState(KlineLoadingState.none, specKey);
+        _notifyLoadingState();
       }
     } else {
       _klineDataCache.getItem(specKey)?.updateState(state: KlineLoadingState.none);
     }
   }
 
-  /// 更新[list]到[spec]规格指定的[KlineData]中
-  Future<void> updateKlineData(
-    KlineSpec spec,
-    List<ICandleModel> list, {
-    bool reset = false,
-  }) async {
-    // 数据为空, 无需要更新.
+  /// 完整替换[spec]对应的蜡烛数据.
+  void replaceKlineData(KlineSpec spec, List<ICandleModel> list) {
+    if (!_acceptKlineDataUpdate(spec, list)) return;
+    _pipeline.replace(list);
+  }
+
+  /// 更新[spec]对应的最新方向蜡烛数据.
+  void updateLatestKlineData(KlineSpec spec, List<ICandleModel> list) {
+    if (!_acceptKlineDataUpdate(spec, list)) return;
+    _pipeline.updateLatest(list);
+  }
+
+  /// 追加[spec]对应的历史方向蜡烛数据.
+  void appendHistoryKlineData(KlineSpec spec, List<ICandleModel> list) {
+    if (!_acceptKlineDataUpdate(spec, list)) return;
+    _pipeline.appendHistory(list);
+  }
+
+  bool _acceptKlineDataUpdate(KlineSpec spec, List<ICandleModel> list) {
+    if (spec.key != klineDataKey) {
+      logd('ignore inactive KlineData update: ${spec.key}');
+      return false;
+    }
     if (list.isEmpty) {
       stopLoading(spec: spec);
-      return;
+      return false;
     }
-
-    final data = _klineDataCache[spec.key];
-    if (data == null) {
-      logw('updateKlineData: cannot found klineData by $spec');
-      return;
-    }
-
-    reset = reset || data.isEmpty;
-
-    stopLoading(spec: data.spec);
-
-    await _schedulePrecomputeKlineData(
-      data,
-      newList: list,
-      reset: reset,
-    );
-
-    if (spec.key == klineDataKey) {
-      if (reset) {
-        _setKlineData(data);
-      } else {
-        _notifySpecChange(data.spec);
-        // final newLen = data.length;
-        // if (paintDxOffset < 0 && newLen > oldLen) {
-        //   /// 当数据合并后
-        //   /// 1. 如果paintDxOffset > 0 说明满足一屏, 且最新蜡烛被用户移动到绘制区域外面, 无需调整偏移量paintDxOffset, 重绘时, 仍按此偏移量计算后, 当前首根蜡烛向左移动一个蜡烛.
-        //   /// 2. 如果paintDxOffset == 0 说明当前最新蜡烛在屏幕第一位(最右边)展示. 无需调整偏移量paintDxOffset, 重绘时calculateCandleIndexAndOffset, 会计算startIndex = 0;
-        //   /// 2. 如果paintDxOffset < 0 说明未满足一屏, 需要减小偏移量, 以保证新数据能够展示.
-        //   ///    注: 如果调整后 paintDxOffset > 0 则要置为0, 以保证最新蜡烛在最右边展示.
-        //   paintDxOffset = math.min(
-        //     0,
-        //     paintDxOffset + (newLen - oldLen) * candleActualWidth,
-        //   );
-        // }
-
-        markRepaintChart();
-        markRepaintCross();
-        markRepaintDraw();
-      }
-    }
+    stopLoading(spec: klineData.spec);
+    return true;
   }
 
-  /// 开始预计算Kline指标数据
-  /// [data] 待计算的Kline蜡烛数据
-  /// [newList] 待计算的蜡烛数据范围
-  /// [reset] 是否重置[data],
-  /// 1. true: 重新计算[data]的指标数据;
-  /// 2. false: 仅计算[data]与[newList]合并后的部分.
-  /// 数据合并更新结果的处理:
-  /// 1. 对于历史数据追加, 像EMA这类依赖于历史数据会适时考虑从头计算.
-  /// 2. 对于实时数据更新, 会仅计算[newList]部分.
-  Future<void> _schedulePrecomputeKlineData(
-    KlineData data, {
-    List<ICandleModel> newList = const [],
-    bool reset = false,
-  }) async {
-    if (!reset && newList.isEmpty && !data.hasWaitingData) {
-      // 无需计算; 直接返回
+  void _onCandlesMerged({required bool replace}) {
+    if (replace) {
+      _setKlineData(klineData);
       return;
     }
-
-    // Widget 未挂载完成前，mainPaintObject 尚未初始化。
-    // 此时只暂存数据，等 flushPendingKlineData 统一处理。
-    if (!isMounted) {
-      data.enqueueWaitingData(newList);
-      return;
-    }
-
-    final beginTime = DateTime.now().millisecondsSinceEpoch;
-    final precomputeLabel = 'Precompute-$beginTime-${newList.length}-$reset';
-
-    logd('startPrecompute Begin: $precomputeLabel');
-
-    /// 使用scheduleTask方式运行预计算
-    await SchedulerBinding.instance.scheduleTask(
-      () => data.precomputeKlineData(
-        slotCount: computedDataCapacity,
-        newList: newList,
-        mainPaintObjects: mainPaintObject.children,
-        subPaintObjects: subPaintObjects,
-        reset: reset,
-      ),
-      Priority.animation,
-      debugLabel: precomputeLabel,
-    );
-    logd(
-      'startPrecompute End:$precomputeLabel spent:${DateTime.now().millisecondsSinceEpoch - beginTime}ms',
-    );
+    _notifySpecChange();
+    markRepaintAll();
   }
 
-  /// 刷新挂载前暂存的待处理数据
-  ///
-  /// 在 FlexiKlineWidget.initState 完成（mountIndicators + controller.initState 之后）时调用。
-  /// 检查 [klineData] 中是否有未合并的 `_waitingData`，若有则使用当前已确定的
-  /// [computedDataCapacity] 合并数据并对所有已激活指标执行 precompute，最后触发 markRepaintChart。
-  ///
-  /// 场景：Widget 挂载前调用 switchKlineData 和 updateKlineData，数据暂存到 _waitingData；
-  /// Widget initState 完成后调用此方法，使用已确定的 computedDataCapacity 处理暂存数据。
+  void _onComputed() {
+    markRepaintAll();
+  }
+
+  /// 启动流水线并处理挂载前暂存的数据.
   @override
   void flushPendingKlineData() {
-    // 检查当前 KlineData 是否有待合并的数据
-    if (!klineData.hasWaitingData) {
-      logd('flushPendingKlineData: no waiting data');
-      return;
-    }
-
-    logd('flushPendingKlineData: flushing ${klineData.waitingDataLength} pending data');
-
-    // 使用当前 computedDataCapacity 合并数据并执行 precompute
-    _schedulePrecomputeKlineData(
-      klineData,
-      newList: const [],
-      reset: false,
-    ).then((_) {
-      // precompute 完成后触发重绘
-      markRepaintChart();
-    });
+    _pipeline.start();
   }
 }

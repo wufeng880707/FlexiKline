@@ -162,7 +162,6 @@ class DefaultFlexiKlineConfiguration
   @override
   IFlexiKlineTheme get theme => ref.read(defaultKlineThemeProvider);
 
-  @override
   String get configKey => 'default';
 
   // ========== JSON配置加载 ==========
@@ -230,7 +229,6 @@ class DefaultFlexiKlineConfiguration
         .toList(growable: false);
   }
 
-  @override
   Map<IIndicatorKey, IndicatorBuilder> get mainIndicatorBuilders {
     // 三层配置加载策略: 缓存 -> JSON -> 代码默认值
     Map<IIndicatorKey, IndicatorBuilder> result = {};
@@ -285,7 +283,6 @@ class DefaultFlexiKlineConfiguration
     }
   }
 
-  @override
   Map<IIndicatorKey, IndicatorBuilder> get subIndicatorBuilders {
     // 三层配置加载策略: 缓存 -> JSON -> 代码默认值
     try {

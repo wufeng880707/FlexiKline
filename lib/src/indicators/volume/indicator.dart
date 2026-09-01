@@ -42,6 +42,13 @@ class VolumeIndicator extends ComputedIndicator {
   ComputedPaintObject<VolumeIndicator> createPaintObject() {
     return VolumePaintObject();
   }
+
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _VolumeCalculator(this, dataIndex);
+}
+
+class _VolumeCalculator extends ComputedIndicatorCalculator<VolumeIndicator> with VolumeDataMixin<VolumeIndicator> {
+  _VolumeCalculator(super.indicator, super.dataIndex);
 }
 
 class VolumePaintObject<T extends VolumeIndicator> extends ComputedPaintObject<T>

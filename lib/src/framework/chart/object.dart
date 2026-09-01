@@ -65,6 +65,16 @@ abstract class IndicatorObject<T extends Indicator>
   EdgeInsets? _tmpPadding;
   EdgeInsets get padding => _tmpPadding ?? indicator.padding;
 
+  /// 本对象几何计算要让出的 tips 区域高度; 0 表示不让出。
+  ///
+  /// 绘制期产物, 不参与序列化。主区在 [MainPaintDelegateExt.doPaintTips] 汇总子指标实测
+  /// 高度、量化后写入, 并同步下发给所有子对象——combine 子对象与主区共享 chartRect,
+  /// 必须让出同样的高度。副区指标无人写入, 恒为 0, 其 tips 叠加绘制在图表之上。
+  ///
+  /// 与 tips 高度写入 [padding] 的旧实现不同: 绘制期不再回写布局, 收缩也不需要在激活集合
+  /// 变化等离散时机记得复位——汇总每帧无条件同步, 量化保证稳定态不触发边界缓存失效。
+  double _tipsAreaHeight = 0;
+
   PaintMode get paintMode => indicator.paintMode;
   int get zIndex => indicator.zIndex;
 
@@ -173,7 +183,55 @@ abstract class PaintObject<T extends Indicator<IIndicatorKey>> extends Indicator
   /// 处理 Tap 事件
   ///
   /// 注：自行处理 [position] 位置的点击事件。
+  ///
+  /// 返回 true 表示消费本次点击，框架停止询问后续对象；返回 false 表示未命中，
+  /// 框架继续按 zIndex 从高到低询问。选中等业务状态由绘制对象自行维护。
+  ///
+  /// [position] 已由框架按位置分派: 主区指标只会收到 `mainRect` 内的点击,
+  /// 副区指标只会收到 `subRect` 内的点击, 但具体命中区仍需自行判断。命中区
+  /// 必须落在本对象所在大区内, 否则收不到对应位置的点击。
+  ///
+  /// [handleTap]、[hitTestDragStart] 与 [handleDragStart] 均按 zIndex 倒序询问，
+  /// 即视觉最上层优先。
   bool handleTap(Offset position) => false;
+
+  /// 询问 [position] 是否落在本对象的可拖动区域内，必须无副作用。
+  ///
+  /// 仅用于框架在 `PointerDown` 阶段判断是否需要提前抢占手势竞技场——图表嵌在可滚动
+  /// 容器内时，单指拖动的接受阈值恒为外层 Scrollable 的两倍，不抢占就永远拿不到手势。
+  ///
+  /// 每次 `PointerDown` 都会调用，包括最终只是点击或长按的情形，因此不得修改状态、
+  /// 触发重绘或产生任何业务回调；[handleDragStart] 才是允许提交副作用的入口。
+  ///
+  /// 返回 true 不代表拖动已开始，真正的认领仍由 [handleDragStart] 决定，两者判据应当
+  /// 一致（建议抽成共用的私有方法）；不一致时框架会白抢一次手势，表现为该次拖动既不
+  /// 滚动外层也不平移图表，下一次手势恢复正常。
+  ///
+  /// 默认返回 false：只重写 [handleDragStart] 的指标在非滚动容器内行为不变，但在可
+  /// 滚动容器内拿不到手势。
+  bool hitTestDragStart(Offset position) => false;
+
+  /// 处理拖动开始。框架按 zIndex 从高到低询问当前位置所属大区内的可绘制对象。
+  ///
+  /// 返回 true 认领本次拖动：框架随后抑制蜡烛图平移、惯性平移、loadMore 检查
+  /// 与 cross 更新, 并把后续的 [handleDragUpdate] / [handleDragEnd] /
+  /// [handleDragCancel] 只发给本对象。
+  ///
+  /// 返回 false 必须不保留拖动副作用，框架会继续询问后续对象。
+  bool handleDragStart(Offset position) => false;
+
+  /// 处理拖动中。
+  ///
+  /// [position] 为当前指针的 canvas 坐标, [delta] 为相对上一次的增量。
+  /// 框架不对 [position] 做区域钳制, 需要时自行使用 `clampDyInChart` 等。
+  void handleDragUpdate(Offset position, Offset delta) {}
+
+  /// 处理拖动正常结束, 应在此提交结果。
+  void handleDragEnd() {}
+
+  /// 处理拖动被打断（指针取消、多指介入、进入 cross/手绘、本对象退出绘制树）,
+  /// 应在此回滚未提交状态。
+  void handleDragCancel() {}
 
   /// 触发重新绘制
   void setState([VoidCallback? fn]) {
@@ -207,15 +265,16 @@ abstract class PaintObject<T extends Indicator<IIndicatorKey>> extends Indicator
 /// 普通指标绘制对象，不占 slot，无需预计算。
 ///
 /// 内置的 Candle、Time、Volume 等均基于此，自定义指标也可继承。
-abstract class DirectPaintObject<T extends DirectIndicator> extends PaintObject<T> implements IDirectPainter {}
+abstract class DirectPaintObject<T extends DirectIndicator> extends PaintObject<T> {}
 
 /// 数据指标绘制对象
 ///
 /// 用于 KDJ、MACD、MA 等需要 precompute 并写入 FlexiCandleModel.slots 的指标。
 /// 持有 [dataIndex]，用于在 slots 中存取计算数据。
+/// 参数变更由 manager 检测 [ComputedIndicator.shouldRecompute] 并重建 calculator，
+/// 再由 controller 驱动 [KlineDataPipeline.recompute]；绘制对象不负责触发重算。
 abstract class ComputedPaintObject<T extends ComputedIndicator> extends PaintObject<T>
-    with PaintObjectComputedMixin<T>
-    implements IComputedPainter {
+    implements IndicatorCalculationScope<T> {
   int? _dataIndex;
 
   /// 当前绘制对象的指标计算数据存储下标，用于在 FlexiCandleModel.slots 中存取计算数据。
@@ -233,17 +292,6 @@ abstract class ComputedPaintObject<T extends ComputedIndicator> extends PaintObj
   void mount(T indicator, PaintContext context) {
     super.mount(indicator, context);
     _dataIndex = context.getComputedDataIndex(indicator.key);
-  }
-
-  /// 指标配置发生变改
-  @mustCallSuper
-  @override
-  @protected
-  void didUpdateIndicator(covariant T oldIndicator) {
-    super.didUpdateIndicator(oldIndicator);
-    if (shouldRecompute(oldIndicator)) {
-      this.compute(klineData.computableRange, reset: true);
-    }
   }
 }
 
@@ -299,7 +347,7 @@ abstract class TimeBasePaintObject<T extends TimeBaseIndicator> extends DirectPa
 ///
 /// 使用 [DirectIndicatorKey]，属于基础/系统指标，不占 slot。
 /// [children] 存储主区内的所有子绘制对象。
-final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObject<T> implements IComputedPainter {
+final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObject<T> {
   // 需要显式构造函数，因为需要在构造函数体中初始化 children
   MainPaintObject() : super() {
     children = SortableHashSet<PaintObject>.from(
@@ -310,11 +358,23 @@ final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObj
 
   late final SortableHashSet<PaintObject> children;
 
-  Set<PaintObject> get paintableChildren {
+  /// 参与绘制的子对象，按 zIndex 升序（视觉自下而上）。
+  ///
+  /// 返回惰性视图而非集合快照：调用方只需顺序遍历，[isPaintable] 才是成员查询入口。
+  /// [children] 的增删是「重建缓存列表」而非原地改，因此遍历期间的增删不会打断迭代。
+  Iterable<PaintObject> get paintableChildren {
     if (onlyMainChart) {
-      return children.where((object) => object.key == candleIndicatorKey).toSet();
+      return children.where((object) => object.key == candleIndicatorKey);
     }
     return children;
+  }
+
+  /// [paintableChildren] 的反向绘制顺序（视觉自上而下），命中分发按此顺序询问。
+  Iterable<PaintObject> get reversedPaintableChildren {
+    if (onlyMainChart) {
+      return children.reversed.where((object) => object.key == candleIndicatorKey);
+    }
+    return children.reversed;
   }
 
   /// 获取蜡烛图绘制对象
@@ -340,30 +400,15 @@ final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObj
     return _drawableRect ??= Offset.zero & size;
   }
 
-  @override
-  bool handleTap(Offset position) {
-    for (final object in children) {
-      if (object.handleTap(position)) return true;
-    }
-    return false;
-  }
-
-  @override
-  bool shouldRecompute(MainPaintObjectIndicator oldIndicator) {
-    if (oldIndicator.children != indicator.children) {
-      return true;
-    }
-    return false;
-  }
-
-  /// 委托子对象的 precompute 方法
+  /// [object] 当前是否会被绘制。
   ///
-  /// MainPaintObject 本身不需要 precompute，但需要将调用委托给子对象。
-  @override
-  void compute(Range range, {bool reset = false}) {
-    for (final computable in children.whereType<IComputedPainter>()) {
-      computable.compute(range, reset: reset);
-    }
+  /// 线图模式（[onlyMainChart]）下主区仅绘制蜡烛, 其余主区子对象不可绘制;
+  /// 非主区子对象（副区）恒可绘制。与 [paintableChildren] 同源, 但为 O(1) 查询。
+  ///
+  /// 注: 隐藏并不使对象出树，但不可绘制期间不应参与任何手势。
+  bool isPaintable(PaintObject object) {
+    if (!children.contains(object)) return true;
+    return !onlyMainChart || object.key == candleIndicatorKey;
   }
 
   @override
@@ -380,16 +425,6 @@ final class MainPaintObject<T extends MainPaintObjectIndicator> extends PaintObj
 
   @override
   void paint(Canvas canvas, Size size) {}
-
-  @override
-  Size? paintTips(
-    Canvas canvas, {
-    FlexiCandleModel? model,
-    Offset? offset,
-    Rect? tipsRect,
-  }) {
-    return topRect.size;
-  }
 
   @override
   void dispose() {

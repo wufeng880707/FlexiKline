@@ -55,6 +55,10 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   /// 长按监听数据
   GestureData? _longData;
 
+  /// PaintObject 是否已认领本次拖动.
+  /// 认领期间蜡烛图不平移、不更新 cross, 松手也不做惯性平移.
+  bool _isObjectDragging = false;
+
   final _mouseCursor = ValueNotifier(SystemMouseCursors.precise);
 
   void setCursorToPrecise() {
@@ -156,7 +160,11 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
       // onPointerMove: onPointerMove,
       // onPointerDown: onPointerDown,
-      // onPointerCancel: onPointerCancel,
+
+      /// 指针取消: 仅用于回滚 PaintObject 拖动.
+      /// [onPanEnd] 在指针被取消时同样会派发(见 monodrag.dart 的 accepted 分支),
+      /// 无法从 [DragEndDetails] 区分, 故在此先行回滚, 避免把中断当成提交.
+      onPointerCancel: onPointerCancel,
       child: ValueListenableBuilder(
         valueListenable: _mouseCursor,
         builder: (context, cursor, child) => MouseRegion(
@@ -169,6 +177,11 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
           onExit: onExit,
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
+
+            /// 按下即作为平移起点: [onPanStart] 收到 PointerDown 位置而非手势识别时刻位置,
+            /// PaintObject 才能按用户实际按下的点命中小尺寸把手.
+            /// Flutter 随后会补发一次携带识别前位移的 [onPanUpdate], 累积位移不丢.
+            dragStartBehavior: DragStartBehavior.down,
 
             /// 点击
             onTapUp: onTapUp,
@@ -220,6 +233,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         /// 纵向缩放图表(zoom)
         if (gestureConfig.enableZoom && controller.chartZoomSlideBarRect.include(offset)) {
           // 如果命中ZommSlideBar区域, 即代表要进行缩放图表
+          cancelPositionAnimation();
           if (!controller.isChartZooming && controller.onChartZoomStart(offset, false)) {
             Future.delayed(const Duration(milliseconds: 1000), () {
               assert(() {
@@ -248,22 +262,10 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         /// 横向缩放图表(scale)，与触摸缩放手势一致受 [GestureConfig.enableScale] 约束.
         if (gestureConfig.enableScale) {
           if (_scaleData == null) {
-            ScalePosition position = gestureConfig.scalePosition;
-            if (position == ScalePosition.auto) {
-              final third = controller.canvasRect.width / 3;
-              if (offset.dx < third) {
-                position = ScalePosition.left;
-              } else if (offset.dx > (third + third)) {
-                position = ScalePosition.right;
-              } else {
-                position = ScalePosition.middle;
-              }
-            }
-
             /// 转换滚轮为touch设备的缩放速度[0 ~ 1 ~ n]
             _scaleData = GestureData.signal(
               offset,
-              position: position,
+              position: _resolveScalePosition(offset),
             );
 
             /// 由于没有开始结束事件回调, 此处1秒后将[_scaleData]置空, 重新开始测量位置.
@@ -294,6 +296,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
           }());
 
           if (newScale != null) {
+            cancelPositionAnimation();
             _scaleData!.update(offset, newScale: newScale);
             controller.onChartScale(_scaleData!);
           }
@@ -306,6 +309,19 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         }());
       }
     }
+  }
+
+  /// 解析缩放的锚定位置：[ScalePosition.auto] 按 [offset] 所在的三分之一区域就近锚定。
+  ///
+  /// 不缓存：非触摸端每次滚轮或触控板手势都是独立的一段，没有触摸端那种「一轮 pointer
+  /// session 内锚点不得改变」的约束。
+  ScalePosition _resolveScalePosition(Offset offset) {
+    final configured = gestureConfig.scalePosition;
+    if (configured != ScalePosition.auto) return configured;
+    final third = controller.canvasRect.width / 3;
+    if (offset.dx < third) return ScalePosition.left;
+    if (offset.dx > third + third) return ScalePosition.right;
+    return ScalePosition.middle;
   }
 
   /// 鼠标Hover进入事件.
@@ -336,7 +352,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
     if (controller.isDrawVisible && drawState.isOngoing) {
       if (drawState.isEditing) {
-        /// 已完成的DrawObject通过平移[_panScaleData]或长按[_longData]事件进行修正.
+        // 已完成的 DrawObject 由平移([_panData])或长按([_longData])事件修正, hover 不参与.
         return;
       }
       final pointer = drawState.pointer;
@@ -381,13 +397,6 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
   /// 点击
   void onTapUp(TapUpDetails details) {
-    // Business Overlay 编辑态优先消费点击：空白处只退出编辑，不继续触发绘图。
-    if (controller.businessOverlayState.isEditing && controller.onBusinessOverlayTap(details.localPosition)) {
-      logd('onTapUp business overlay handled before draw! :$details');
-      controller.requestCancelCross();
-      return;
-    }
-
     if (controller.isDrawVisible) {
       switch (drawState) {
         case Drawing():
@@ -437,18 +446,27 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       }
     }
 
-    // Business Overlay: tap 选中/取消选中
     if (controller.onBusinessOverlayTap(details.localPosition)) {
-      logd('onTapUp business overlay handled! :$details');
-      controller.requestCancelCross();
+      logd('onTapUp businessOverlay handled! :$details');
       return;
     }
 
+    // 这里检测是否命中指标图定制位置
     final ret = controller.onTap(details.localPosition);
     if (ret) {
       logd('onTapUp handled! :$details');
       return;
     }
+  }
+
+  /// 放弃当前 PaintObject 拖动并清理其手势数据. 未在拖动时为空操作.
+  void _cancelObjectDragging() {
+    if (!_isObjectDragging) return;
+    _isObjectDragging = false;
+    controller.onPaintObjectDragCancel();
+    _panData?.end();
+    _panData = null;
+    setCursorToPrecise();
   }
 
   /// 平移开始.
@@ -458,10 +476,13 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       logd('onPanStart Currently still panning, ignore!!!');
       return;
     }
+    // 由 [DragStartBehavior.down] 保证: 这是 PointerDown 位置, 不含手势识别前的位移.
     final position = details.localPosition;
     final businessPanData = GestureData.pan(position);
     if (controller.businessOverlayState.isEditing && controller.onBusinessOverlayDragStart(businessPanData)) {
-      logd('onPanStart business drag > details:$details');
+      logd('onPanStart businessOverlay drag local:$position');
+      cancelPositionAnimation();
+      setCursorToGrabbing();
       _panData = businessPanData;
     } else if (controller.isDrawVisible && drawState.isOngoing) {
       if (drawState.isDrawing) {
@@ -476,8 +497,16 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         _panData?.end();
         _panData = null;
       }
+    } else if (controller.onPaintObjectDragStart(position)) {
+      // PaintObject 优先按落点认领拖动.
+      logd('onPanStart paintObject drag local:$position');
+      cancelPositionAnimation();
+      setCursorToGrabbing();
+      _panData = GestureData.pan(position);
+      _isObjectDragging = true;
     } else {
       logd('onPanStart pan local:$position');
+      cancelPositionAnimation();
       if (controller.isChartZooming) {
         setCursorToMove();
         _panData = GestureData.move(position);
@@ -501,10 +530,11 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
     if (controller.isDraggingBusinessOverlay) {
       _panData!.update(details.localPosition);
       controller.onBusinessOverlayDragUpdate(_panData!);
-      return;
-    }
-
-    if (controller.isDrawVisible && drawState.isOngoing) {
+    } else if (_isObjectDragging) {
+      // 不做区域钳制: 是否限制在图表内由绘制对象自行决定.
+      _panData!.update(details.localPosition);
+      controller.onPaintObjectDragUpdate(_panData!);
+    } else if (controller.isDrawVisible && drawState.isOngoing) {
       _panData!.update(details.localPosition.clamp(controller.mainRect));
       controller.onDrawMoveUpdate(_panData!);
     } else {
@@ -525,9 +555,22 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
     }
 
     if (controller.isDraggingBusinessOverlay) {
+      logd('onPanEnd businessOverlay drag end.');
       controller.onBusinessOverlayDragEndAction();
       _panData?.end();
       _panData = null;
+      setCursorToPrecise();
+      return;
+    }
+
+    if (_isObjectDragging) {
+      logd('onPanEnd paintObject drag end.');
+      _isObjectDragging = false;
+      controller.onPaintObjectDragEnd();
+      _panData?.end();
+      _panData = null;
+      setCursorToPrecise();
+      // 拖动的是绘制对象而非蜡烛图: 不做惯性平移, 也不检查 loadMore.
       return;
     }
 
@@ -543,59 +586,31 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       return;
     }
 
-    // <0: 负数代表从右向左滑动.
-    // >0: 正数代表从左向右滑动.
+    // <0: 从右向左滑动; >0: 从左向右滑动.
     final velocity = details.velocity.pixelsPerSecond.dx;
-
-    if (!gestureConfig.enableInertialPan ||
-        controller.klineData.isEmpty ||
-        (velocity < 0 && !controller.canPanRTL) ||
-        (velocity > 0 && !controller.canPanLTR)) {
-      logd('onPanEnd currently can not pan!');
-      _panData?.end();
-      _panData = null;
-      controller.onPanEnd();
-
-      setCursorToPrecise();
-
-      /// 检查并加载更多蜡烛数据
-      controller.checkAndLoadMoreCandlesWhenPanEnd();
-      return;
-    }
-
-    final tolerance = controller.gestureConfig.tolerance;
-
-    /// 惯性平移的最大距离.
+    final tolerance = gestureConfig.tolerance;
     final panDistance = velocity * tolerance.distanceFactor;
+    final panDuration = calcuInertialPanDuration(panDistance, maxDuration: tolerance.maxDuration);
+    final canInertialPan = gestureConfig.enableInertialPan &&
+        controller.klineData.isNotEmpty &&
+        !(velocity < 0 && !controller.canPanRTL) &&
+        !(velocity > 0 && !controller.canPanLTR) &&
+        // 平移距离为 0 或不足 1ms, 无需继续平移.
+        panDistance.abs() >= precisionError &&
+        panDuration > 1;
 
-    final panDuration = calcuInertialPanDuration(
-      panDistance,
-      maxDuration: tolerance.maxDuration,
-    );
-
-    // 平移距离为0 或者 不足1ms, 无需继续平移
-    if (panDistance.abs() < precisionError || panDuration <= 1) {
-      logd('onPanEnd currently not need for inertial movement!');
+    if (!canInertialPan) {
+      logd('onPanEnd no inertial movement, velocity:$velocity distance:$panDistance');
       _panData?.end();
       _panData = null;
       controller.onPanEnd();
-
       setCursorToPrecise();
-
-      /// 检查并加载更多蜡烛数据
       controller.checkAndLoadMoreCandlesWhenPanEnd();
       return;
     }
 
-    /// 检查并加载更多蜡烛数据
-    controller.checkAndLoadMoreCandlesWhenPanEnd(
-      panDistance: panDistance,
-      panDuration: panDuration,
-    );
-
-    logi(
-      'onPanEnd inertial movement, velocity:$velocity, panDistance:$panDistance, panDuration:$panDuration',
-    );
+    controller.checkAndLoadMoreCandlesWhenPanEnd(panDistance: panDistance, panDuration: panDuration);
+    logi('onPanEnd inertial movement, velocity:$velocity distance:$panDistance duration:$panDuration');
 
     animateToPosition(
       _panData!.offset.dx,
@@ -622,21 +637,11 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
     }
 
     if (gestureConfig.enableScale) {
+      cancelPositionAnimation();
       logd('onPointerPanZoomStart $event > ${event.localPosition}');
-      ScalePosition position = gestureConfig.scalePosition;
-      if (position == ScalePosition.auto) {
-        final third = controller.canvasRect.width / 3;
-        if (offset.dx < third) {
-          position = ScalePosition.left;
-        } else if (offset.dx > (third + third)) {
-          position = ScalePosition.right;
-        } else {
-          position = ScalePosition.middle;
-        }
-      }
       _scaleData = GestureData.scale(
         offset,
-        position: position,
+        position: _resolveScalePosition(offset),
       );
     }
   }
@@ -694,16 +699,15 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   }
 
   /// 长按
-  ///
-  /// 如果当前正在crossing中时, 不触发后续的长按逻辑.
   void onLongPressStart(LongPressStartDetails details) {
     if (!gestureConfig.enableLongPress) {
-      logd('onLongPressStart ignore! > crossing:${controller.isCrossing}');
+      logd('onLongPressStart ignore! > longPress disabled');
       return;
     }
 
     if (controller.isDrawVisible && drawState.isOngoing) {
       if (drawState.isDrawing) {
+        // 未完成的暂不允许移动
         return;
       }
       if (drawState.object?.lock == true) return;
@@ -716,14 +720,6 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       } else {
         setCursorToNone();
       }
-    } else if (controller.businessOverlayState.isEditing) {
-      final businessLongData = GestureData.long(details.localPosition);
-      if (!controller.onBusinessOverlayDragStart(businessLongData)) {
-        logd('onLongPressStart ignore: in business editing state');
-        return;
-      }
-      logd('onLongPressStart business drag > details:$details');
-      _longData = businessLongData;
     } else if (controller.onGridResizeStart(details.localPosition)) {
       _longData = GestureData.long(details.localPosition);
       controller.requestCancelCross();
@@ -743,23 +739,18 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   }
 
   void onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
-    if (!gestureConfig.enableLongPress || _longData == null) {
-      return;
-    }
+    final data = _longData;
+    if (!gestureConfig.enableLongPress || data == null) return;
+    // 三条分支共用同一份长按数据, 位置更新与分派无关, 提到分支之前.
+    data.update(details.localPosition);
     if (controller.isDraggingBusinessOverlay) {
-      _longData!.update(details.localPosition);
-      controller.onBusinessOverlayDragUpdate(_longData!);
-      return;
-    }
-    if (controller.isDrawVisible && drawState.isOngoing) {
-      _longData!.update(details.localPosition);
-      controller.onDrawMoveUpdate(_longData!);
+      controller.onBusinessOverlayDragUpdate(data);
+    } else if (controller.isDrawVisible && drawState.isOngoing) {
+      controller.onDrawMoveUpdate(data);
     } else if (controller.isStartDragGrid) {
-      _longData!.update(details.localPosition);
-      controller.onGridResizeUpdate(_longData!);
+      controller.onGridResizeUpdate(data);
     } else {
-      _longData!.update(details.localPosition);
-      controller.onCrossUpdate(_longData!);
+      controller.onCrossUpdate(data);
     }
   }
 
@@ -768,13 +759,14 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
       logd('onLongPressEnd ignore! > details:$details');
       return;
     }
+    // assert(() {
+    //   logd("onLongPressEnd details:$details");
+    //   return true;
+    // }());
     if (controller.isDraggingBusinessOverlay) {
       controller.onBusinessOverlayDragEndAction();
-      _longData?.end();
-      _longData = null;
-      return;
-    }
-    if (controller.isDrawVisible && drawState.isOngoing) {
+      setCursorToPrecise();
+    } else if (controller.isDrawVisible && drawState.isOngoing) {
       controller.onDrawMoveEnd();
       if (drawState.isEditing) setCursorToClick();
     } else if (controller.isStartDragGrid) {
@@ -812,6 +804,15 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
   void onPointerCancel(PointerCancelEvent event) {
     logd('onPointerCancel $event');
+    if (controller.isDraggingBusinessOverlay) {
+      controller.onBusinessOverlayDragCancel();
+      _panData?.end();
+      _panData = null;
+      setCursorToPrecise();
+      return;
+    }
+    // 回滚正在进行的 PaintObject 拖动, 避免 [onPanEnd] 把中断当成提交.
+    _cancelObjectDragging();
   }
 
   void onKeyEvent(KeyEvent event) {

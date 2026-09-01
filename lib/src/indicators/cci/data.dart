@@ -39,11 +39,10 @@ extension on FlexiCandleModel {
       (double.parse(high.toString()) + double.parse(low.toString()) + double.parse(close.toString())) / 3.0;
 }
 
-mixin CciDataMixin<T extends CCIIndicator> on ComputedPaintObject<T> {
+mixin CciDataMixin<T extends CCIIndicator> on IndicatorCalculationScope<T> {
   CCIParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheCci(
       calcParam,
       start: range.start,

@@ -45,9 +45,16 @@ class MACDIndicator extends ComputedIndicator {
     return MACDPaintObject();
   }
 
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _MACDCalculator(this, dataIndex);
+
   factory MACDIndicator.fromJson(Map<String, dynamic> json) => _$MACDIndicatorFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$MACDIndicatorToJson(this);
+}
+
+class _MACDCalculator extends ComputedIndicatorCalculator<MACDIndicator> with MacdDataMixin<MACDIndicator> {
+  _MACDCalculator(super.indicator, super.dataIndex);
 }
 
 class MACDPaintObject<T extends MACDIndicator> extends ComputedPaintObject<T>

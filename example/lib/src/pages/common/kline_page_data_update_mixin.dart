@@ -58,7 +58,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget>
     );
     cancelToken = null;
     if (resp.success && resp.data != null && resp.data!.isNotEmpty) {
-      await flexiKlineController.updateKlineData(request, resp.data!);
+      flexiKlineController.replaceKlineData(request, resp.data!);
       if (realTimeUpdateKlineData) {
         _startMockPushTimer(flexiKlineController.klineData.spec); // 假装推送
       }
@@ -77,7 +77,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget>
     );
     cancelToken = null;
     if (resp.success && resp.data != null && resp.data!.isNotEmpty) {
-      await flexiKlineController.updateKlineData(request, resp.data!);
+      flexiKlineController.appendHistoryKlineData(request, resp.data!);
     } else if (resp.msg.isNotEmpty) {
       SmartDialog.showToast(resp.msg);
     }
@@ -107,7 +107,7 @@ mixin KlinePageDataUpdateMixin<T extends ConsumerStatefulWidget>
       cancelToken: cancelToken = CancelToken(),
     );
     if (resp.success && resp.data != null && resp.data!.isNotEmpty) {
-      await flexiKlineController.updateKlineData(request, resp.data!);
+      flexiKlineController.updateLatestKlineData(request, resp.data!);
     } else if (resp.msg.isNotEmpty) {
       SmartDialog.showToast(resp.msg);
     }

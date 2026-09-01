@@ -110,7 +110,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
       SmartDialog.showToast(resp.msg);
     }
 
-    await controller.updateKlineData(request, list ?? const []);
+    controller.replaceKlineData(request, list ?? const []);
     emitLatestMarketCandle();
   }
 
@@ -122,7 +122,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
     // );
     // cancelToken = null;
     // if (resp.success && resp.data != null && resp.data!.isNotEmpty) {
-    //   await controller.updateKlineData(request, resp.data!);
+    //   controller.appendHistoryKlineData(request, resp.data!);
     // } else if (resp.msg.isNotEmpty) {
     //   SmartDialog.showToast(resp.msg);
     // }
@@ -253,7 +253,7 @@ class _MyDemoPageState extends ConsumerState<MyKlineDemoPage> {
           );
 
           controller.logd('Add $dateTime, ${req.key}, ${newList.length}');
-          controller.updateKlineData(req, newList);
+          controller.updateLatestKlineData(req, newList);
 
           emitLatestMarketCandle();
         },

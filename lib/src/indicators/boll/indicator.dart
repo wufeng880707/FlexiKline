@@ -39,6 +39,13 @@ class BOLLIndicator extends ComputedIndicator {
   ComputedPaintObject<BOLLIndicator> createPaintObject() {
     return BOLLPaintObject();
   }
+
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _BOLLCalculator(this, dataIndex);
+}
+
+class _BOLLCalculator extends ComputedIndicatorCalculator<BOLLIndicator> with BollDataMixin<BOLLIndicator> {
+  _BOLLCalculator(super.indicator, super.dataIndex);
 }
 
 class BOLLPaintObject<T extends BOLLIndicator> extends ComputedPaintObject<T>

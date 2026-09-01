@@ -47,11 +47,10 @@ extension CandleBollExt on FlexiCandleModel {
   }
 }
 
-mixin BollDataMixin<T extends BOLLIndicator> on ComputedPaintObject<T> {
+mixin BollDataMixin<T extends BOLLIndicator> on IndicatorCalculationScope<T> {
   BOLLParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheBoll(
       calcParam,
       start: range.start,

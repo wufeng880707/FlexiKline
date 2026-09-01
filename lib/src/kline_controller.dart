@@ -25,11 +25,11 @@ class FlexiKlineController extends KlineBindingBase
         BusinessOverlayBinding {
   FlexiKlineController({
     required super.configuration,
-    super.autoSave,
     super.initialLayoutMode,
     super.initialFixedSize,
     super.subIndicatorMaxCount,
     super.logger,
     super.klineDataCacheCapacity,
+    super.calculationInterval,
   });
 }

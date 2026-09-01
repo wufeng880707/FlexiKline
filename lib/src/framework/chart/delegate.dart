@@ -149,8 +149,11 @@ extension PaintDelegateExt<T extends Indicator> on PaintObject<T> {
   void onEnterTree() => doAttach();
 
   /// 框架内部：被移出绘制树时调用。
-  /// 先触发 didDetach，再按 [keepAlive] 决定是否真销毁。
+  /// 先让各 Binding 释放对本对象的持有，再触发 didDetach，最后按 [keepAlive] 决定是否真销毁。
   void onExitTree() {
+    // 框架侧持有本对象的引用(当前是拖动归属, 后续可能是 hover / 焦点等)由各 Binding
+    // 自行释放, 本处不逐项枚举。
+    if (_mounted) context.requestReleasePaintObject(this);
     doDetach();
     if (!keepAlive) dispose();
   }
@@ -278,19 +281,29 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintO
     return indicator.drawBelowTipsArea && !context.isChartZooming;
   }
 
+  /// 按视觉层级从上到下分发点击，首个返回 true 的对象消费事件并终止分发。
+  bool doHandleTap(Offset position) {
+    return reversedPaintableChildren.any((object) => object.handleTap(position));
+  }
+
+  /// 按视觉层级从上到下询问是否存在可拖动对象，与 [doHandleDragStart] 同序且无副作用。
+  bool doHitTestDragStart(Offset position) {
+    return reversedPaintableChildren.any((object) => object.hitTestDragStart(position));
+  }
+
+  /// 按视觉层级从上到下寻找认领拖动的对象，首个返回 true 的对象终止分发。
+  PaintObject? doHandleDragStart(Offset position) {
+    return reversedPaintableChildren.firstWhereOrNull(
+      (object) => object.handleDragStart(position),
+    );
+  }
+
   void doPaintChart(Canvas canvas, Size size) {
     if (isFirstDrawTipsArea) {
       // 如果设置总是要在Tips区域下绘制指标图, 则要首先绘制完所有Tips.
+      // doPaintTips 内部同步 _tipsAreaHeight, 子对象随后取到的 chartRect 已让出 tips 区域。
       if (!context.isCrossing) {
-        final tipsHeight = doPaintTips(canvas, model: klineData.latest);
-
-        if (indicator.padding.top + tipsHeight > padding.top) {
-          doUpdateLayout(
-            padding: indicator.padding.copyWith(
-              top: indicator.padding.top + tipsHeight,
-            ),
-          );
-        }
+        doPaintTips(canvas, model: klineData.latest);
       }
       for (final object in paintableChildren) {
         object.paint(canvas, size);
@@ -314,15 +327,7 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintO
   void doPaintCross(Canvas canvas, Offset offset, {FlexiCandleModel? model}) {
     if (isFirstDrawTipsArea) {
       if (context.isCrossing) {
-        final tipsHeight = doPaintTips(canvas, offset: offset, model: model);
-
-        if (indicator.padding.top + tipsHeight > padding.top) {
-          doUpdateLayout(
-            padding: indicator.padding.copyWith(
-              top: indicator.padding.top + tipsHeight,
-            ),
-          );
-        }
+        doPaintTips(canvas, offset: offset, model: model);
       }
       for (final object in paintableChildren) {
         object.paintCross(canvas, offset, model: model);
@@ -337,8 +342,14 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintO
     }
   }
 
-  double doPaintTips(Canvas canvas, {FlexiCandleModel? model, Offset? offset}) {
-    // 每次绘制前, 重置Tips区域大小为0
+  /// 逐个绘制子指标的 Tips, 并把总高同步进 [_tipsAreaHeight]。
+  ///
+  /// 累计高度即汇总结果, 无需先存进各子对象再求和。量化只在汇总结果上做一次: 逐子项取整会
+  /// 累积每项不足 1px 的浪费(N 个指标最多 N px), 汇总后取整的误差恒小于 1px 且与子项个数无关。
+  ///
+  /// 量化是双向同步的前提: 它让同一视觉状态每帧得到同一离散值, 稳定态因此提前 return、不触发
+  /// 边界缓存失效。没有量化, 每帧按实测值回写就是 commit 1ed90ce 修掉的那种绘制期抖动。
+  void doPaintTips(Canvas canvas, {FlexiCandleModel? model, Offset? offset}) {
     double height = 0;
     for (final object in paintableChildren) {
       final size = object.paintTips(
@@ -349,7 +360,17 @@ extension MainPaintDelegateExt<T extends MainPaintObjectIndicator> on MainPaintO
       );
       if (size != null) height += size.height;
     }
-    return height;
+
+    // drawBelowTipsArea 为 false 时 Tips 叠加绘制在图表之上, 不让出区域。
+    final double next = indicator.drawBelowTipsArea ? height.ceilToDouble() : 0;
+    if (next == _tipsAreaHeight) return;
+    _tipsAreaHeight = next;
+    resetPaintBounding();
+    // combine 子对象与主区共享 chartRect, 同步让出同样的高度。
+    for (final object in children) {
+      object._tipsAreaHeight = next;
+      object.resetPaintBounding();
+    }
   }
 }
 

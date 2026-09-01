@@ -121,6 +121,17 @@ abstract interface class PaintRuntimeScope {
   /// 请求移动到初始位置。
   void requestMoveToInitialPosition();
 
+  /// 请求框架释放对 [object] 的持有（当前是拖动归属，后续可能是 hover、焦点等）。
+  ///
+  /// PaintObject 与框架的通用沟通通道，两个时机共用、无需区分：
+  /// - 退出绘制树：框架在 `PaintObject.onExitTree` 内自动调用；
+  /// - 仍在树内但要主动中止进行中的交互（如被拖动的业务目标已从数据中消失）：
+  ///   不调用则框架会继续把 [PaintObject.handleDragUpdate] 发给它，并把抬手当成一次提交。
+  ///
+  /// 各 Binding 的实现带对象身份守卫，传入非当前持有对象时为空操作，因此对象在
+  /// 任意时机调用都是安全的。
+  void requestReleasePaintObject(PaintObject object);
+
   /// 上报指标图缩放滑竿区域。
   void reportChartZoomSlideBarRect(Rect rect);
 }

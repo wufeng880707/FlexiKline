@@ -46,10 +46,17 @@ class SARIndicator extends ComputedIndicator {
     return SARPaintObject();
   }
 
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _SARCalculator(this, dataIndex);
+
   factory SARIndicator.fromJson(Map<String, dynamic> json) => _$SARIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$SARIndicatorToJson(this);
+}
+
+class _SARCalculator extends ComputedIndicatorCalculator<SARIndicator> with SarDataMixin<SARIndicator> {
+  _SARCalculator(super.indicator, super.dataIndex);
 }
 
 class SARPaintObject<T extends SARIndicator> extends ComputedPaintObject<T>

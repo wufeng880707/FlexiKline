@@ -39,11 +39,10 @@ extension CandleSarExt on FlexiCandleModel {
   void cleanSar(int dataIndex) => clean(dataIndex);
 }
 
-mixin SarDataMixin<T extends SARIndicator> on ComputedPaintObject<T> {
+mixin SarDataMixin<T extends SARIndicator> on IndicatorCalculationScope<T> {
   SARParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheSar(
       calcParam,
       start: range.start,

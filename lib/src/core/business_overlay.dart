@@ -267,6 +267,19 @@ mixin BusinessOverlayBinding on KlineBindingBase, SettingBinding, StateBinding, 
 
   bool get isDraggingBusinessOverlay => _boState.value.isDragging;
 
+  /// 拖拽开始命中测试：只判断当前编辑对象是否可拖，不改变状态。
+  bool hitTestBusinessOverlayDragStart(Offset position) {
+    final state = _boState.value;
+    if (!state.isEditing) return false;
+
+    final ctx = _buildPaintContext();
+    if (ctx == null) return false;
+
+    final obj = state.object!;
+    final hit = obj.hitTest(position, ctx);
+    return hit != null && obj.canStartDrag(hit);
+  }
+
   /// 拖拽开始：仅当处于 Editing 态且命中当前对象可拖区域时生效。
   bool onBusinessOverlayDragStart(GestureData data) {
     final state = _boState.value;

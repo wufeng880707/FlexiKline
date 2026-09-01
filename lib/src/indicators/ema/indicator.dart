@@ -35,6 +35,13 @@ class EMAIndicator extends ComputedIndicator {
   ComputedPaintObject<EMAIndicator> createPaintObject() {
     return EMAPaintObject();
   }
+
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _EMACalculator(this, dataIndex);
+}
+
+class _EMACalculator extends ComputedIndicatorCalculator<EMAIndicator> with EmaDataMixin<EMAIndicator> {
+  _EMACalculator(super.indicator, super.dataIndex);
 }
 
 class EMAPaintObject<T extends EMAIndicator> extends ComputedPaintObject<T> with EmaDataMixin<T> {

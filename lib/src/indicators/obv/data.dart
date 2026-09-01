@@ -39,11 +39,10 @@ extension on FlexiCandleModel {
   }
 }
 
-mixin ObvDataMixin<T extends OBVIndicator> on ComputedPaintObject<T> {
+mixin ObvDataMixin<T extends OBVIndicator> on IndicatorCalculationScope<T> {
   OBVParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheObv(
       calcParam,
       start: range.start,

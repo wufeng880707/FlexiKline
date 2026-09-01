@@ -34,11 +34,10 @@ extension on FlexiCandleModel {
   }
 }
 
-mixin RsiDataMixin<T extends RSIIndicator> on ComputedPaintObject<T> {
+mixin RsiDataMixin<T extends RSIIndicator> on IndicatorCalculationScope<T> {
   RsiParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheRsi(
       calcParam,
       start: range.start,

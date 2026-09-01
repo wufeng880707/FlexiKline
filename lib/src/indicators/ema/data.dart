@@ -23,11 +23,10 @@ extension CandleEmaExt on FlexiCandleModel {
   void cleanEma(int dataIndex) => clean(dataIndex);
 }
 
-mixin EmaDataMixin<T extends EMAIndicator> on ComputedPaintObject<T> {
+mixin EmaDataMixin<T extends EMAIndicator> on IndicatorCalculationScope<T> {
   EmaParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheEma(
       calcParam,
       start: range.start,

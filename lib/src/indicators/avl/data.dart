@@ -25,11 +25,10 @@ extension CandleAvlExt on FlexiCandleModel {
   MinMax get avlMinmax => MinMax(max: avl, min: avl);
 }
 
-mixin AvlDataMixin<T extends AVLIndicator> on ComputedPaintObject<T> {
+mixin AvlDataMixin<T extends AVLIndicator> on IndicatorCalculationScope<T> {
   AVLParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheAvl(
       calcParam,
       start: range.start,

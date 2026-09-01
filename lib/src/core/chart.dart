@@ -33,6 +33,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding {
 
   @override
   void dispose() {
+    onPaintObjectDragCancel();
     super.dispose();
     logd('dispose chart');
     _repaintChart.dispose();
@@ -56,6 +57,7 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding {
     super.onKlineSpecChanged(oldSpec);
     // 仅 symbol/interval（spec.key）变化才通知 external 重载业务数据。
     if (klineData.spec.key != oldSpec.key) {
+      onPaintObjectDragCancel();
       _paintObjectManager.notifySpecChanged(oldSpec);
     }
   }
@@ -231,10 +233,10 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding {
       Future.delayed(
         // Duration(milliseconds: panDuration),
         Duration.zero,
-        () => _notifyLoadingState(newState, klineDataKey),
+        _notifyLoadingState,
       );
     } else {
-      _notifyLoadingState(newState, klineDataKey);
+      _notifyLoadingState();
     }
 
     if (!oldState.isLoadMore && newState.isLoadMore) {
@@ -424,12 +426,76 @@ mixin ChartBinding on KlineBindingBase, SettingBinding, StateBinding {
     }
   }
 
+  /// 按位置把点击分派给主区或副区，首个消费者终止分发。
+  ///
+  /// 主区子对象在几何上层叠, 顺序由 [MainPaintObject.doHandleTap] 按反向绘制顺序决定;
+  /// 副区各占独立 subRect, 同一位置只可能落进一个, 因此正序遍历即可。
+  ///
+  /// Cross 自身的点击（tooltip 项）由 CrossBinding.onTap 在本方法之前消费, 不会到这里,
+  /// 所以「PaintObject 消费点击 => 关闭 crossing」可以无条件成立。
   @override
   bool onTap(Offset position) {
     if (super.onTap(position)) return true;
-    for (final paintObject in [mainPaintObject, ...subPaintObjects]) {
-      if (paintObject.handleTap(position)) return true;
-    }
-    return false;
+    final handled = mainRect.include(position)
+        ? mainPaintObject.doHandleTap(position)
+        : subPaintObjects.any((object) => object.handleTap(position));
+    if (handled) requestCancelCross();
+    return handled;
+  }
+
+  /// PaintObject 拖动 ///
+
+  PaintObject? _draggingObject;
+
+  /// 是否有绘制对象正在被拖动。手势层据此短路蜡烛图平移与 cross 更新。
+  bool get isPaintObjectDragging => _draggingObject != null;
+
+  /// 询问 [position] 是否存在可拖动的绘制对象，不产生任何状态变更。
+  ///
+  /// 命中规则与 [onPaintObjectDragStart] 严格同源，只是不认领。
+  bool hitTestPaintObjectDrag(Offset position) {
+    if (_draggingObject != null) return false;
+    return mainRect.include(position)
+        ? mainPaintObject.doHitTestDragStart(position)
+        : subPaintObjects.any((object) => object.hitTestDragStart(position));
+  }
+
+  /// 询问可绘制对象是否认领 [position] 位置发起的拖动，命中规则与 [onTap] 一致。
+  bool onPaintObjectDragStart(Offset position) {
+    if (_draggingObject != null) return false;
+    final object = mainRect.include(position)
+        ? mainPaintObject.doHandleDragStart(position)
+        : subPaintObjects.firstWhereOrNull((object) => object.handleDragStart(position));
+    if (object == null) return false;
+    logd('onPaintObjectDragStart ${object.key} > $position');
+    _draggingObject = object;
+    requestCancelCross();
+    return true;
+  }
+
+  void onPaintObjectDragUpdate(GestureData data) {
+    _draggingObject?.handleDragUpdate(data.offset, data.delta);
+  }
+
+  void onPaintObjectDragEnd() {
+    final object = _draggingObject;
+    _draggingObject = null;
+    object?.handleDragEnd();
+  }
+
+  @override
+  void onPaintObjectDragCancel() {
+    final object = _draggingObject;
+    if (object == null) return;
+    _draggingObject = null;
+    object.handleDragCancel();
+  }
+
+  /// 释放 ChartBinding 对 [object] 的持有：当前只有拖动归属。
+  @override
+  void requestReleasePaintObject(PaintObject object) {
+    super.requestReleasePaintObject(object);
+    // 带对象守卫: 传入对象不是当前拖动所有者时不能误取消他人的拖动。
+    if (identical(_draggingObject, object)) onPaintObjectDragCancel();
   }
 }

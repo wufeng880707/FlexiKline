@@ -36,9 +36,16 @@ class MAIndicator extends ComputedIndicator {
   ComputedPaintObject<MAIndicator> createPaintObject() {
     return MAPaintObject();
   }
+
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _MACalculator(this, dataIndex);
 }
 
-class MAPaintObject<T extends MAIndicator> extends ComputedPaintObject<T> with MaDataMixin {
+class _MACalculator extends ComputedIndicatorCalculator<MAIndicator> with MaDataMixin<MAIndicator> {
+  _MACalculator(super.indicator, super.dataIndex);
+}
+
+class MAPaintObject<T extends MAIndicator> extends ComputedPaintObject<T> with MaDataMixin<T> {
   MAPaintObject();
 
   @override

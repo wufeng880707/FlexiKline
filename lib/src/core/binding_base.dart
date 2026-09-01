@@ -20,9 +20,6 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
 
   final IConfiguration configuration;
 
-  /// 是否自动保存 Kline 配置。
-  final bool autoSave;
-
   /// 初始布局模式。默认 [FlexiLayoutMode.adapt]（覆盖大多数场景）。
   final FlexiLayoutMode _initialLayoutMode;
 
@@ -35,25 +32,32 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
   /// KlineData 缓存容量。
   final int? klineDataCacheCapacity;
 
+  /// latest 指标计算的固定节拍。
+  final Duration calculationInterval;
+
   /// 副区指标最大数量。
   final int subIndicatorMaxCount;
 
   /// 指标绘制对象管理器。
   final IndicatorPaintObjectManager _paintObjectManager;
 
+  /// 绘制工具对象管理器。
   final OverlayDrawObjectManager _drawObjectManager;
 
   /// 业务指标外部数据存储
   final Map<IIndicatorKey, Object> _businessDataMap = {};
 
+  /// 蜡烛合并与指标计算流水线，由 [StateBinding.init] 初始化。
+  late KlineDataPipeline _pipeline;
+
   KlineBindingBase({
     required this.configuration,
-    this.autoSave = true,
     FlexiLayoutMode initialLayoutMode = FlexiLayoutMode.adapt,
     Size? initialFixedSize,
     this.subIndicatorMaxCount = defaultSubIndicatorMaxCount,
     IFlexiLogger? logger,
     this.klineDataCacheCapacity,
+    this.calculationInterval = const Duration(milliseconds: 500),
   })  : _initialLayoutMode = initialLayoutMode,
         _initialFixedSize = initialFixedSize,
         _paintObjectManager = IndicatorPaintObjectManager(
@@ -86,7 +90,8 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
   @mustCallSuper
   void dispose() {
     logd('dispose base');
-    if (autoSave) storeFlexiKlineConfig();
+    // 不在此落盘：时机由业务侧决定（见 storeFlexiKlineConfig）。
+    // 多个 Controller 共享同一份配置时，自动落盘会让从属侧用自己的运行时状态覆盖对侧。
     _paintObjectManager.dispose();
     _drawObjectManager.dispose();
     _businessDataMap.clear();
@@ -96,7 +101,8 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
   @mustCallSuper
   void onThemeChanged([covariant IFlexiKlineTheme? oldTheme]) {
     logd('onThemeChanged base');
-    storeFlexiKlineConfig();
+    // 不在此落盘：主题变化只让各 PaintObject / DrawObject 重建主题派生资源，
+    // 不修改 [FlexiKlineConfig] 的任何字段。
   }
 
   @protected
@@ -156,7 +162,11 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
     return data is T ? data : null;
   }
 
-  /// 保存当前 FlexiKline 配置。
+  /// 落盘当前 FlexiKline 配置。
+  ///
+  /// 框架不代为决定时机：既不在 [dispose] 也不在 [onThemeChanged] 自动调用，
+  /// 由业务侧在合适的时机（如页面销毁前、用户显式保存）调用。
+  /// 多个 Controller 共享同一份配置时，应只由配置拥有者一侧落盘。
   void storeFlexiKlineConfig({
     bool storeDrawOverlays = true,
   });
@@ -177,6 +187,30 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
   @protected
   void markRepaintDraw();
 
+  /// 取消当前 PaintObject 拖动并通知认领对象回滚临时状态。
+  void onPaintObjectDragCancel();
+
+  /// 释放框架对 [object] 的持有：退树与对象主动中止交互共用本通道。
+  ///
+  /// 框架侧任何按对象粒度持有的引用（当前是 ChartBinding 的拖动归属）都应在本方法的
+  /// 覆写中释放。覆写方必须先调 `super`，由 mixin 链保证每个 Binding 只清理自己持有
+  /// 的部分；每个覆写都必须带对象身份守卫，不能误释放他人的持有。
+  @mustCallSuper
+  @override
+  void requestReleasePaintObject(PaintObject object) {
+    logd('requestReleasePaintObject base ${object.key}');
+  }
+
+  /// 请求重绘 Chart / Cross / Draw 三个绘制层（不含 Grid）。
+  ///
+  /// 用于数据合并、指标计算完成等需要整体刷新绘制层的场景。
+  @protected
+  void markRepaintAll() {
+    markRepaintChart();
+    markRepaintCross();
+    markRepaintDraw();
+  }
+
   /// 处理 Widget 挂载前暂存的数据。由 StateBinding 实现，view 层在 initState 后调用。
   void flushPendingKlineData();
 
@@ -187,6 +221,22 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
   /// 下次切换时重新加载。由 StateBinding 实现。
   @protected
   void syncComputedSlotCapacity();
+
+  /// 丢弃非当前的缓存 KlineData（指标声明/参数变更后其 slot 值已陈旧），
+  /// 下次切换时重新加载。由 StateBinding 实现。
+  void evictInactiveKlineDataCache();
+
+  /// 把当前绘制偏移约束回合法区间。由 StateBinding 实现。
+  ///
+  /// `paintDxOffset` 的取值区间由 `maxPaintWidth`（数据量 × 单根蜡烛实际宽度）、
+  /// 主图宽度与最小留白共同决定，因此下列任一变化都可能让当前偏移越界：
+  /// 蜡烛宽度改变、数据量减少、主图变宽、`minPaintBlankRate` 改变。
+  ///
+  /// 手势路径在赋值 `paintDxOffset` 时已顺带夹取；非赋值路径（如
+  /// `reloadFlexiKlineConfig` 直接换掉蜡烛宽度）改变了区间却没有新偏移可赋，
+  /// 需要主动调用本方法，否则越界的旧偏移会让用户只能向一个方向平移才能恢复。
+  @protected
+  void constrainPaintDxOffset();
 }
 
 /// KlineController 内部访问扩展。
@@ -251,8 +301,18 @@ class FlexiStateNotifier<T> extends ValueNotifier<T> {
     _silent = false;
   }
 
+  /// 赋值并保证恰好通知一次。
+  ///
+  /// 与直接赋值 [value] 的区别: 当新值与旧值 `==` 时（典型场景是同一实例被
+  /// 就地修改, 如 draw 的 [Point] 被 `onUpdateDrawPoint` 改写）,
+  /// [ValueNotifier] 的 setter 会静默早退, 本方法仍会通知一次。
+  ///
+  /// 若新值必然与旧值不同, 直接赋值 [value] 即可, 无需本方法。
   void updateValue(T val) {
-    value = val;
-    super.notifyListeners();
+    if (value == val) {
+      notifyListeners();
+    } else {
+      value = val;
+    }
   }
 }

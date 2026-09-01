@@ -91,14 +91,14 @@ class _AccurateKlinePageState extends ConsumerState<AccurateKlineDemoPage> {
   Future<void> initKlineData1(KlineSpec request) async {
     controller1.switchKlineData(request);
     final list = await genLocalMinusculeCandleList();
-    await controller1.updateKlineData(request, list);
+    controller1.replaceKlineData(request, list);
   }
 
   /// 初始化加载K线蜡烛数据.
   Future<void> initKlineData2(KlineSpec request) async {
     controller2.switchKlineData(request);
     final list = await genLocalCandleList();
-    await controller2.updateKlineData(request, list);
+    controller2.replaceKlineData(request, list);
   }
 
   Future<void> loadMoreCandles(KlineSpec request) async {

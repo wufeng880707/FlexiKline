@@ -14,6 +14,17 @@
 
 part of 'indicator.dart';
 
+/// 配置重载引起的指标激活集合差异。
+///
+/// 由 [IndicatorPaintObjectManager.reloadFlexiKlineConfig] 产出，交由 Controller 走
+/// `show*/hide*` 收敛——激活需要指标重算与布局校验能力，只有 Controller 层具备。
+typedef IndicatorActivationDiff = ({
+  Set<IIndicatorKey> mainToShow,
+  Set<IIndicatorKey> mainToHide,
+  Set<IIndicatorKey> subToShow,
+  Set<IIndicatorKey> subToHide,
+});
+
 /// [PaintObject] 管理器。
 ///
 /// 负责声明指标缓存、激活对象创建，以及 ComputedIndicator slot 分配。
@@ -41,6 +52,35 @@ final class IndicatorPaintObjectManager with FlexiLog {
   ///
   /// 仅对 [ComputedIndicatorKey]（数据指标）分配 slot。
   final Map<ComputedIndicatorKey, int> _computedDataIndexes = {};
+
+  /// ComputedIndicator 的计算器缓存，与 [_computedDataIndexes] 平行。
+  ///
+  /// 在 `dataIndex` 确认后即时创建（见 [_bindCalculator]），slot 回收时同步移除。
+  /// 同一批计算器可复用于多份 [KlineData]（dataIndex 布局稳定），是后台预加载的基础。
+  final Map<ComputedIndicatorKey, IndicatorCalculator> _calculators = {};
+
+  /// 获取 [key] 对应的计算器。
+  IndicatorCalculator? getCalculator(ComputedIndicatorKey key) => _calculators[key];
+
+  /// 当前绘制树里（显示中的）computed 指标的计算器，供计算引擎遍历。
+  ///
+  /// 顺序与原 precompute 遍历面一致：主区（children 已按 zIndex 有序）后副区。
+  Iterable<IndicatorCalculator> get visibleCalculators sync* {
+    for (final obj in _mainPaintObject.children.whereType<ComputedPaintObject>()) {
+      final c = _calculators[obj.key as ComputedIndicatorKey];
+      if (c != null) yield c;
+    }
+    for (final obj in subPaintObjects.whereType<ComputedPaintObject>()) {
+      final c = _calculators[obj.key as ComputedIndicatorKey];
+      if (c != null) yield c;
+    }
+  }
+
+  /// slot 已分配且声明 indicator 就绪后调用，创建/重建计算器。
+  void _bindCalculator(ComputedIndicatorKey key, ComputedIndicator indicator) {
+    final slot = _computedDataIndexes[key];
+    if (slot != null) _calculators[key] = indicator.createCalculator(slot);
+  }
 
   /// 已回收的 slot，按 FIFO 复用。
   final Queue<int> _recycledSlots = Queue<int>();
@@ -144,6 +184,7 @@ final class IndicatorPaintObjectManager with FlexiLog {
   /// 不清理蜡烛数据中对应位置的值（惰性清理，下次复用时自然覆盖）。
   void releaseComputedDataIndex(ComputedIndicatorKey key) {
     final index = _computedDataIndexes.remove(key);
+    _calculators.remove(key);
     if (index != null) {
       _recycledSlots.addLast(index);
       logi('releaseComputedDataIndex $key:$index');
@@ -171,19 +212,27 @@ final class IndicatorPaintObjectManager with FlexiLog {
     ];
     allocateComputedDataIndexes(dataKeys);
 
-    // 缓存声明层指标。
+    // 缓存声明层指标，并为 computed 指标即时创建计算器。
     for (final indicator in mainIndicators) {
       _mainIndicatorRegistry[indicator.key] = indicator;
+      if (indicator is ComputedIndicator) {
+        _bindCalculator(indicator.key, indicator);
+      }
     }
     for (final indicator in subIndicators) {
       _subIndicatorRegistry[indicator.key] = indicator;
+      if (indicator is ComputedIndicator) {
+        _bindCalculator(indicator.key, indicator);
+      }
     }
 
     // 创建系统级 PaintObject。
     _candlePaintObject = _inflateIndicator<CandleBaseIndicator, CandleBasePaintObject>(candle, context);
     _timePaintObject = _inflateIndicator<TimeBaseIndicator, TimeBasePaintObject>(time, context);
 
-    // 隔离运行时 indicator，避免布局更新污染配置尺寸。
+    // copyWith 隔离 size（值类型字段，独立存储），避免布局更新污染配置尺寸；
+    // children 有意与配置共享同一 Set（copyWith 对其传引用、构造函数不复制），
+    // 主区激活集合因此实时写入配置，无需在 add/removePaintObject 处额外同步。
     final mainIndicator = flexiKlineConfig.mainIndicator.copyWith();
     _mainPaintObject = _inflateIndicator<MainPaintObjectIndicator, MainPaintObject>(mainIndicator, context);
 
@@ -207,7 +256,12 @@ final class IndicatorPaintObjectManager with FlexiLog {
   }
 
   /// 按 Widget 新旧声明增量同步指标。
-  ({List<IIndicatorKey> main, List<IIndicatorKey> sub}) updateIndicators({
+  ({
+    List<IIndicatorKey> main,
+    List<IIndicatorKey> sub,
+    List<ComputedIndicatorKey> recompute,
+    bool slotLayoutChanged,
+  }) updateIndicators({
     required PaintContext context,
     required CandleBaseIndicator oldCandle,
     required CandleBaseIndicator newCandle,
@@ -218,16 +272,22 @@ final class IndicatorPaintObjectManager with FlexiLog {
     required List<Indicator> oldSubIndicators,
     required List<Indicator> newSubIndicators,
   }) {
+    final oldComputedDataIndexes = Map<ComputedIndicatorKey, int>.of(_computedDataIndexes);
+
     // candle/time 无条件更新。
     _candlePaintObject.doDidUpdateIndicator(newCandle);
 
     _timePaintObject.doDidUpdateIndicator(newTime);
+
+    // 参数变化需重算的 computed key（由 controller 驱动 KlineDataPipeline.recompute）。
+    final recompute = <ComputedIndicatorKey>[];
 
     // 同步主区声明集合。
     final mainKeys = _mainDiffAndSync(
       context: context,
       oldIndicators: oldMainIndicators,
       newIndicators: newMainIndicators,
+      recompute: recompute,
     );
 
     // 同步副区声明集合。
@@ -235,10 +295,18 @@ final class IndicatorPaintObjectManager with FlexiLog {
       context: context,
       oldIndicators: oldSubIndicators,
       newIndicators: newSubIndicators,
+      recompute: recompute,
     );
 
+    final slotLayoutChanged = oldComputedDataIndexes.length != _computedDataIndexes.length ||
+        oldComputedDataIndexes.entries.any((entry) => _computedDataIndexes[entry.key] != entry.value);
     logi('updateIndicators 完成: computedDataCapacity=$computedDataCapacity');
-    return (main: mainKeys, sub: subKeys);
+    return (
+      main: mainKeys,
+      sub: subKeys,
+      recompute: recompute,
+      slotLayoutChanged: slotLayoutChanged,
+    );
   }
 
   /// 同步主区声明集合；新增只缓存，不自动激活。
@@ -248,6 +316,7 @@ final class IndicatorPaintObjectManager with FlexiLog {
     required PaintContext context,
     required List<Indicator> oldIndicators,
     required List<Indicator> newIndicators,
+    required List<ComputedIndicatorKey> recompute,
   }) {
     final toActivate = <IIndicatorKey>[];
     final oldMap = {for (final ind in oldIndicators) ind.key: ind};
@@ -274,8 +343,9 @@ final class IndicatorPaintObjectManager with FlexiLog {
       final newIndicator = entry.value;
 
       if (!oldMap.containsKey(key)) {
-        if (key is ComputedIndicatorKey) {
+        if (key is ComputedIndicatorKey && newIndicator is ComputedIndicator) {
           allocateComputedDataIndexes([key]);
+          _bindCalculator(key, newIndicator);
         }
         _mainIndicatorRegistry[key] = newIndicator;
         if (newIndicator.autoActivate) toActivate.add(key);
@@ -283,6 +353,13 @@ final class IndicatorPaintObjectManager with FlexiLog {
       } else {
         final oldIndicator = oldMap[key]!;
         _mainIndicatorRegistry[key] = newIndicator;
+        if (key is ComputedIndicatorKey &&
+            newIndicator is ComputedIndicator &&
+            oldIndicator is ComputedIndicator &&
+            newIndicator.shouldRecompute(oldIndicator)) {
+          _bindCalculator(key, newIndicator);
+          recompute.add(key);
+        }
         final paintObject = getMainPaintObject(key, includeKeepAlive: true);
         if (paintObject != null) {
           paintObject.doDidUpdateIndicator(newIndicator);
@@ -306,6 +383,7 @@ final class IndicatorPaintObjectManager with FlexiLog {
     required List<Indicator> oldIndicators,
     required List<Indicator> newIndicators,
     required PaintContext context,
+    required List<ComputedIndicatorKey> recompute,
   }) {
     final toActivate = <IIndicatorKey>[];
     final oldMap = {for (final ind in oldIndicators) ind.key: ind};
@@ -332,8 +410,9 @@ final class IndicatorPaintObjectManager with FlexiLog {
       final newIndicator = entry.value;
 
       if (!oldMap.containsKey(key)) {
-        if (key is ComputedIndicatorKey) {
+        if (key is ComputedIndicatorKey && newIndicator is ComputedIndicator) {
           allocateComputedDataIndexes([key]);
+          _bindCalculator(key, newIndicator);
         }
         _subIndicatorRegistry[key] = newIndicator;
         if (newIndicator.autoActivate) toActivate.add(key);
@@ -341,6 +420,13 @@ final class IndicatorPaintObjectManager with FlexiLog {
       } else {
         final oldIndicator = oldMap[key]!;
         _subIndicatorRegistry[key] = newIndicator;
+        if (key is ComputedIndicatorKey &&
+            newIndicator is ComputedIndicator &&
+            oldIndicator is ComputedIndicator &&
+            newIndicator.shouldRecompute(oldIndicator)) {
+          _bindCalculator(key, newIndicator);
+          recompute.add(key);
+        }
         final paintObject = getSubPaintObject(key, includeKeepAlive: true);
         if (paintObject != null) {
           paintObject.doDidUpdateIndicator(newIndicator);
@@ -494,6 +580,9 @@ final class IndicatorPaintObjectManager with FlexiLog {
       if (_subPaintObjectQueue.isNotEmpty) {
         final evicted = _subPaintObjectQueue.first;
         if (evicted.keepAlive) _keepAlivePaintObjects[evicted.key] = evicted;
+        // 被驱逐的 key 必须同步摘出配置：配置是激活集合的实时镜像，
+        // 留着会让 sub 超出队列容量，reload 的差异永不收敛（每次补一个又驱逐一个）。
+        flexiKlineConfig.sub.remove(evicted.key);
         evicted.onExitTree();
       }
     }
@@ -509,6 +598,9 @@ final class IndicatorPaintObjectManager with FlexiLog {
   }
 
   /// 删除已激活的副区指标。
+  ///
+  /// 返回值只表示"是否从绘制队列摘除"；配置侧无条件清理，使历史持久化数据里
+  /// 因驱逐而残留的 key 也能被显式隐藏清除。
   bool removeSubPaintObject(IIndicatorKey key) {
     bool hasRemove = false;
     _subPaintObjectQueue.removeWhere((obj) {
@@ -516,11 +608,11 @@ final class IndicatorPaintObjectManager with FlexiLog {
         if (obj.keepAlive) _keepAlivePaintObjects[key] = obj;
         obj.onExitTree();
         hasRemove = true;
-        flexiKlineConfig.sub.remove(key);
         return true;
       }
       return false;
     });
+    flexiKlineConfig.sub.remove(key);
     return hasRemove;
   }
 
@@ -531,14 +623,62 @@ final class IndicatorPaintObjectManager with FlexiLog {
     }
   }
 
-  /// 保存当前激活状态和已同步的布局配置。
+  /// 落盘当前配置。
+  ///
+  /// 配置对象始终是运行时状态的实时镜像——激活集合由 add/remove PaintObject 直接写入
+  /// 配置的集合（主区 children 与运行时 indicator 共享同一 Set，见 [mountIndicators]），
+  /// 主区尺寸由布局路径同步，蜡烛宽度由 Controller 在缩放结束时写回——因此此处不做
+  /// 任何状态收集，只把当前配置交给 [configuration] 持久化。
   void storeFlexiKlineConfig() {
     if (!_isInitialized) return;
-    flexiKlineConfig.sub = subIndicatorKeys.toSet();
-    flexiKlineConfig.mainIndicator = mainPaintObject.indicator.copyWith(
-      size: flexiKlineConfig.mainIndicator.size,
-    );
     configuration.saveFlexiKlineConfig(_flexiKlineConfig);
+  }
+
+  /// 未挂载时的空差异。
+  IndicatorActivationDiff get _emptyActivationDiff => (
+        mainToShow: <IIndicatorKey>{},
+        mainToHide: <IIndicatorKey>{},
+        subToShow: <IIndicatorKey>{},
+        subToHide: <IIndicatorKey>{},
+      );
+
+  /// 重新载入配置，并让主区运行时 indicator 跟随新配置。
+  ///
+  /// [config] 为空时由 [configuration] 提供；实现返回共享实例时为自赋值，返回新实例时
+  /// 为换指针，两种情况下后续处理相同。
+  ///
+  /// 返回激活集合差异，由 Controller 走 `show*/hide*` 收敛，以复用其中的指标重算与
+  /// 布局校验。未挂载时只替换配置，不触碰绘制树。
+  IndicatorActivationDiff reloadFlexiKlineConfig([FlexiKlineConfig? config]) {
+    _flexiKlineConfig = config ?? configuration.getFlexiKlineConfig();
+
+    if (!_isInitialized) return _emptyActivationDiff;
+
+    final currentMain = mainIndicatorKeys.toSet();
+    final currentSub = subIndicatorKeys.toSet();
+    // 目标集合必须是复制的快照：children 就是运行时那个 Set（见 [mountIndicators]），
+    // 后续 show/hide 会改它。
+    final targetMain = _flexiKlineConfig.mainIndicator.children.where(hasRegisteredInMain).toSet();
+    final targetSub = _flexiKlineConfig.sub.where(hasRegisteredInSub).toSet();
+
+    // 不传 children：copyWith 沿用新配置的 children 引用，重建"运行时 indicator 与
+    // 配置共享同一 Set"的关系。配置返回共享实例时是自赋值；返回新实例时把运行时接到
+    // 新 Set 上——否则 [_flexiKlineConfig] 换了指针而运行时仍改着旧 Set，落盘会陈旧。
+    // size 显式保留运行时持久值：它是窗口局部状态，不随配置回灌。取 indicator.size 而非
+    // [MainPaintObject.size]，后者是 `_tmpSize ?? indicator.size`，fixed 下会把临时
+    // 尺寸写成持久尺寸。
+    _mainPaintObject.doDidUpdateIndicator(
+      _flexiKlineConfig.mainIndicator.copyWith(size: _mainPaintObject.indicator.size),
+    );
+
+    return (
+      // candle 由 mountIndicators 直接挂载，来自旧版持久化的配置可能不含它，
+      // 不排除会把它判为待隐藏。
+      mainToHide: currentMain.difference(targetMain)..remove(candleIndicatorKey),
+      mainToShow: targetMain.difference(currentMain),
+      subToHide: currentSub.difference(targetSub),
+      subToShow: targetSub.difference(currentSub),
+    );
   }
 
   /// K 线 spec.key 变化时，通知 attached 树对象与 detached keepAlive 常驻对象（去重）。

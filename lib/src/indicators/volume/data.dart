@@ -14,9 +14,8 @@
 
 part of 'volume.dart';
 
-mixin VolumeDataMixin<T extends VolumeIndicator> on ComputedPaintObject<T> {
-  @override
-  void compute(Range range, {bool reset = false}) {}
+mixin VolumeDataMixin<T extends VolumeIndicator> on IndicatorCalculationScope<T> {
+  void computeIndicatorData(Range range, {bool reset = false}) {}
 
   MinMax? calculateVolMinmax({
     int? start,

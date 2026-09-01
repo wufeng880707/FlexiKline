@@ -62,7 +62,6 @@ class _LandscapeKlinePageState extends ConsumerState<LandscapeKlinePage>
         );
     controller = FlexiKlineController(
       configuration: configuration,
-      autoSave: false,
       logger: LoggerImpl(
         tag: "LandscapeFlexiKline",
         debug: kDebugMode,

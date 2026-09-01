@@ -66,12 +66,40 @@ class FakeFlexiKlineConfiguration with FlexiKlineConfigurationMixin {
     Set<IIndicatorKey>? mainChildren,
     Set<IIndicatorKey>? subKeys,
     this.mainIndicatorDefaultSize,
+    this.mainIndicatorDefaultPadding,
+    this.drawBelowTipsArea = false,
+    this.shareConfigInstance = false,
   })  : _mainChildren = mainChildren,
         _subKeys = subKeys;
 
   final Set<IIndicatorKey>? _mainChildren;
   final Set<IIndicatorKey>? _subKeys;
   final Size? mainIndicatorDefaultSize;
+
+  /// 主区声明 padding，即 tips 撑高的基准值。
+  final EdgeInsets? mainIndicatorDefaultPadding;
+
+  /// 是否总在 tips 区域下方绘制指标图，决定绘制期是否参与 `padding.top` 计算。
+  final bool drawBelowTipsArea;
+
+  /// 是否让 [getFlexiKlineConfig] 返回同一缓存实例，用于模拟多 Controller 共享配置。
+  final bool shareConfigInstance;
+  FlexiKlineConfig? _sharedConfig;
+
+  /// [saveFlexiKlineConfig] 收到的配置，按调用顺序记录，供落盘时机断言。
+  final List<FlexiKlineConfig> savedConfigs = [];
+
+  @override
+  FlexiKlineConfig getFlexiKlineConfig() {
+    if (!shareConfigInstance) return super.getFlexiKlineConfig();
+    return _sharedConfig ??= super.getFlexiKlineConfig();
+  }
+
+  @override
+  void saveFlexiKlineConfig(FlexiKlineConfig config) {
+    savedConfigs.add(config);
+    super.saveFlexiKlineConfig(config);
+  }
 
   @override
   IFlexiKlineTheme get theme => FakeFlexiKlineTheme();
@@ -85,7 +113,8 @@ class FakeFlexiKlineConfiguration with FlexiKlineConfigurationMixin {
   ) {
     return MainPaintObjectIndicator(
       size: mainIndicator?.size ?? mainIndicatorDefaultSize ?? const Size(0, 300),
-      padding: mainIndicator?.padding ?? EdgeInsets.zero,
+      padding: mainIndicator?.padding ?? mainIndicatorDefaultPadding ?? EdgeInsets.zero,
+      drawBelowTipsArea: drawBelowTipsArea,
       children: _mainChildren,
     );
   }

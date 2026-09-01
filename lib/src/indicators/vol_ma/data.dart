@@ -38,11 +38,10 @@ extension on FlexiCandleModel {
   void cleanVolMa(int dataIndex) => clean(dataIndex);
 }
 
-mixin VolmaDataMixin<T extends VolMaIndicator> on ComputedPaintObject<T> {
+mixin VolmaDataMixin<T extends VolMaIndicator> on IndicatorCalculationScope<T> {
   VolMaParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheVolMa(
       calcParam,
       start: range.start,

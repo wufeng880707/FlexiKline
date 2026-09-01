@@ -44,10 +44,17 @@ class AVLIndicator extends ComputedIndicator {
     return AVLPaintObject();
   }
 
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _AVLCalculator(this, dataIndex);
+
   factory AVLIndicator.fromJson(Map<String, dynamic> json) => _$AVLIndicatorFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$AVLIndicatorToJson(this);
+}
+
+class _AVLCalculator extends ComputedIndicatorCalculator<AVLIndicator> with AvlDataMixin<AVLIndicator> {
+  _AVLCalculator(super.indicator, super.dataIndex);
 }
 
 class AVLPaintObject<T extends AVLIndicator> extends ComputedPaintObject<T>

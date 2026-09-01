@@ -150,6 +150,5 @@ class TestFlexiKlineConfiguration with FlexiKlineConfigurationMixin {
     throw UnimplementedError();
   }
 
-  @override
   String get configKey => 'test';
 }

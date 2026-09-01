@@ -46,11 +46,10 @@ extension CandleKdjExt on FlexiCandleModel {
   }
 }
 
-mixin KdjDataMixin<T extends KDJIndicator> on ComputedPaintObject<T> {
+mixin KdjDataMixin<T extends KDJIndicator> on IndicatorCalculationScope<T> {
   KDJParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheKdj(
       calcParam,
       start: range.start,

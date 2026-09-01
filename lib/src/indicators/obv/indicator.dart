@@ -42,6 +42,13 @@ class OBVIndicator extends ComputedIndicator {
   ComputedPaintObject<OBVIndicator> createPaintObject() {
     return OBVPaintObject();
   }
+
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _OBVCalculator(this, dataIndex);
+}
+
+class _OBVCalculator extends ComputedIndicatorCalculator<OBVIndicator> with ObvDataMixin<OBVIndicator> {
+  _OBVCalculator(super.indicator, super.dataIndex);
 }
 
 class OBVPaintObject<T extends OBVIndicator> extends ComputedPaintObject<T>

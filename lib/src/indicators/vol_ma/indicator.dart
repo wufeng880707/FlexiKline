@@ -37,6 +37,13 @@ class VolMaIndicator extends ComputedIndicator {
   ComputedPaintObject<VolMaIndicator> createPaintObject() {
     return VolMaPaintObject();
   }
+
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _VolMaCalculator(this, dataIndex);
+}
+
+class _VolMaCalculator extends ComputedIndicatorCalculator<VolMaIndicator> with VolmaDataMixin<VolMaIndicator> {
+  _VolMaCalculator(super.indicator, super.dataIndex);
 }
 
 class VolMaPaintObject<T extends VolMaIndicator> extends ComputedPaintObject<T>

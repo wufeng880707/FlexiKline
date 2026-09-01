@@ -42,11 +42,10 @@ extension on FlexiCandleModel {
   void cleanMa(int dataIndex) => clean(dataIndex);
 }
 
-mixin MaDataMixin<T extends MAIndicator> on ComputedPaintObject<T> {
+mixin MaDataMixin<T extends MAIndicator> on IndicatorCalculationScope<T> {
   MaParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheMa(
       calcParam,
       start: range.start,

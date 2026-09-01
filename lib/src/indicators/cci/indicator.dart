@@ -42,6 +42,13 @@ class CCIIndicator extends ComputedIndicator {
   ComputedPaintObject<CCIIndicator> createPaintObject() {
     return CCIPaintObject();
   }
+
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _CCICalculator(this, dataIndex);
+}
+
+class _CCICalculator extends ComputedIndicatorCalculator<CCIIndicator> with CciDataMixin<CCIIndicator> {
+  _CCICalculator(super.indicator, super.dataIndex);
 }
 
 class CCIPaintObject<T extends CCIIndicator> extends ComputedPaintObject<T>

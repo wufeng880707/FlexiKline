@@ -34,6 +34,12 @@ abstract class _$GestureConfigCWProxy {
 
   GestureConfig isManualSetZoomRect(bool isManualSetZoomRect);
 
+  GestureConfig panClaimRatio(double panClaimRatio);
+
+  GestureConfig dragClaimSlopFactor(double dragClaimSlopFactor);
+
+  GestureConfig scaleClaimSlopFactor(double scaleClaimSlopFactor);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GestureConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -54,6 +60,9 @@ abstract class _$GestureConfigCWProxy {
     int zoomStartMinDistance,
     int zoomSpeed,
     bool isManualSetZoomRect,
+    double panClaimRatio,
+    double dragClaimSlopFactor,
+    double scaleClaimSlopFactor,
   });
 }
 
@@ -113,6 +122,18 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
       this(isManualSetZoomRect: isManualSetZoomRect);
 
   @override
+  GestureConfig panClaimRatio(double panClaimRatio) =>
+      this(panClaimRatio: panClaimRatio);
+
+  @override
+  GestureConfig dragClaimSlopFactor(double dragClaimSlopFactor) =>
+      this(dragClaimSlopFactor: dragClaimSlopFactor);
+
+  @override
+  GestureConfig scaleClaimSlopFactor(double scaleClaimSlopFactor) =>
+      this(scaleClaimSlopFactor: scaleClaimSlopFactor);
+
+  @override
 
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `GestureConfig(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
@@ -134,6 +155,9 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
     Object? zoomStartMinDistance = const $CopyWithPlaceholder(),
     Object? zoomSpeed = const $CopyWithPlaceholder(),
     Object? isManualSetZoomRect = const $CopyWithPlaceholder(),
+    Object? panClaimRatio = const $CopyWithPlaceholder(),
+    Object? dragClaimSlopFactor = const $CopyWithPlaceholder(),
+    Object? scaleClaimSlopFactor = const $CopyWithPlaceholder(),
   }) {
     return GestureConfig(
       enableLongPress: enableLongPress == const $CopyWithPlaceholder()
@@ -191,6 +215,18 @@ class _$GestureConfigCWProxyImpl implements _$GestureConfigCWProxy {
           ? _value.isManualSetZoomRect
           // ignore: cast_nullable_to_non_nullable
           : isManualSetZoomRect as bool,
+      panClaimRatio: panClaimRatio == const $CopyWithPlaceholder()
+          ? _value.panClaimRatio
+          // ignore: cast_nullable_to_non_nullable
+          : panClaimRatio as double,
+      dragClaimSlopFactor: dragClaimSlopFactor == const $CopyWithPlaceholder()
+          ? _value.dragClaimSlopFactor
+          // ignore: cast_nullable_to_non_nullable
+          : dragClaimSlopFactor as double,
+      scaleClaimSlopFactor: scaleClaimSlopFactor == const $CopyWithPlaceholder()
+          ? _value.scaleClaimSlopFactor
+          // ignore: cast_nullable_to_non_nullable
+          : scaleClaimSlopFactor as double,
     );
   }
 }
@@ -229,6 +265,11 @@ GestureConfig _$GestureConfigFromJson(Map<String, dynamic> json) =>
           (json['zoomStartMinDistance'] as num?)?.toInt() ?? 5,
       zoomSpeed: (json['zoomSpeed'] as num?)?.toInt() ?? 1,
       isManualSetZoomRect: json['isManualSetZoomRect'] as bool? ?? false,
+      panClaimRatio: (json['panClaimRatio'] as num?)?.toDouble() ?? 2,
+      dragClaimSlopFactor:
+          (json['dragClaimSlopFactor'] as num?)?.toDouble() ?? 0.5,
+      scaleClaimSlopFactor:
+          (json['scaleClaimSlopFactor'] as num?)?.toDouble() ?? 1,
     );
 
 Map<String, dynamic> _$GestureConfigToJson(GestureConfig instance) =>
@@ -248,4 +289,7 @@ Map<String, dynamic> _$GestureConfigToJson(GestureConfig instance) =>
       'zoomStartMinDistance': instance.zoomStartMinDistance,
       'zoomSpeed': instance.zoomSpeed,
       'isManualSetZoomRect': instance.isManualSetZoomRect,
+      'panClaimRatio': instance.panClaimRatio,
+      'dragClaimSlopFactor': instance.dragClaimSlopFactor,
+      'scaleClaimSlopFactor': instance.scaleClaimSlopFactor,
     };

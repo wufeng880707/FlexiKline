@@ -41,11 +41,10 @@ extension CandleMacdExt on FlexiCandleModel {
   void cleanMacd(int dataIndex) => clean(dataIndex);
 }
 
-mixin MacdDataMixin<T extends MACDIndicator> on ComputedPaintObject<T> {
+mixin MacdDataMixin<T extends MACDIndicator> on IndicatorCalculationScope<T> {
   MACDParam get calcParam => indicator.calcParam;
 
-  @override
-  void compute(Range range, {bool reset = false}) {
+  void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheMacd(
       calcParam,
       reset: reset,

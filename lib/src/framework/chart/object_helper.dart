@@ -140,7 +140,7 @@ mixin PaintObjectBoundingMixin<T extends Indicator<IIndicatorKey>> on IndicatorO
       drawableRect.left + padding.left,
       drawableRect.top,
       drawableRect.right - padding.right,
-      drawableRect.top + padding.top,
+      drawableRect.top + padding.top + _tipsAreaHeight,
     );
   }
 
@@ -283,23 +283,6 @@ mixin PaintObjectGeometryStateMixin<T extends Indicator<IIndicatorKey>> on Indic
     // 默认实现返回 null，表示使用当前 minMax
     // 子类可以 override 此方法提供自定义实现
     return null;
-  }
-}
-
-/// 绘制对象混入数据预计算的扩展
-///
-/// 提供数据预计算能力，仅用于 ComputedPaintObject。
-mixin PaintObjectComputedMixin<T extends ComputedIndicator> on PaintObject<T> {
-  /// 判断是否需要重新预计算
-  ///
-  /// 当指标配置参数发生变化时，判断是否需要重新计算。
-  bool shouldRecompute(covariant T oldIndicator) {
-    return oldIndicator.calcParam != indicator.calcParam && indicator.calcParam != null;
-  }
-
-  /// 数据预计算（空实现，供子类 override）
-  void compute(Range range, {bool reset = false}) {
-    // 空实现
   }
 }
 

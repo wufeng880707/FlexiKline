@@ -162,6 +162,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding {
         _drawState = const Prepared();
       }
     }
+    onPaintObjectDragCancel();
     requestCancelCross();
     _markRepaintDraw();
   }
@@ -237,6 +238,16 @@ mixin DrawBinding on KlineBindingBase, SettingBinding {
     }
 
     _markRepaintDraw();
+  }
+
+  /// 判据与 [onDrawMoveStart] 严格同源，只是不认领。
+  ///
+  /// 只覆盖 `Editing`：`Drawing` 的移动由 `onPointerMove` 直接驱动，不经竞技场。
+  bool hitTestDrawObjectDrag(Offset position) {
+    if (!isDrawVisible || !drawState.isEditing) return false;
+    final object = drawState.object;
+    if (object == null || object.lock) return false;
+    return object.hitTestPoint(this, position) != null || object.hitTest(this, position, isMove: true);
   }
 
   bool onDrawMoveStart(GestureData data) {
@@ -323,6 +334,7 @@ mixin DrawBinding on KlineBindingBase, SettingBinding {
       updateDrawObjectPointsData(drawState.object!);
     }
     _drawState = DrawState.edit(object);
+    onPaintObjectDragCancel();
     requestCancelCross();
     _markRepaintDraw();
   }

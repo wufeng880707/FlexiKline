@@ -43,6 +43,13 @@ class KDJIndicator extends ComputedIndicator {
   ComputedPaintObject<KDJIndicator> createPaintObject() {
     return KDJPaintObject();
   }
+
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _KDJCalculator(this, dataIndex);
+}
+
+class _KDJCalculator extends ComputedIndicatorCalculator<KDJIndicator> with KdjDataMixin<KDJIndicator> {
+  _KDJCalculator(super.indicator, super.dataIndex);
 }
 
 class KDJPaintObject<T extends KDJIndicator> extends ComputedPaintObject<T>

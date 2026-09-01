@@ -36,6 +36,13 @@ class RSIIndicator extends ComputedIndicator {
   ComputedPaintObject<RSIIndicator> createPaintObject() {
     return RSIPaintObject();
   }
+
+  @override
+  IndicatorCalculator createCalculator(int dataIndex) => _RSICalculator(this, dataIndex);
+}
+
+class _RSICalculator extends ComputedIndicatorCalculator<RSIIndicator> with RsiDataMixin<RSIIndicator> {
+  _RSICalculator(super.indicator, super.dataIndex);
 }
 
 class RSIPaintObject<T extends RSIIndicator> extends ComputedPaintObject<T>
