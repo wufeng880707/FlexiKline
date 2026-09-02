@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -21,6 +23,7 @@ import '../extension/functions_ext.dart';
 import '../extension/geometry_ext.dart';
 import '../framework/chart/indicator.dart';
 import '../framework/draw/overlay.dart';
+import '../kline_controller.dart';
 import '../model/gesture_data.dart';
 import '../utils/algorithm_util.dart';
 import 'gesture_detector_widget.dart';
@@ -61,6 +64,12 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
 
   final _mouseCursor = ValueNotifier(SystemMouseCursors.precise);
 
+  /// 滚轮缩放(zoom)的结束检查定时器：滚轮没有开始/结束事件，滚动停止 1 秒后触发结束动作。
+  Timer? _zoomEndTimer;
+
+  /// 滚轮缩放(scale)的数据重置定时器：滚动停止 1 秒后清空 [_scaleData] 并结束本轮缩放。
+  Timer? _scaleResetTimer;
+
   void setCursorToPrecise() {
     _mouseCursor.value = SystemMouseCursors.precise;
   }
@@ -88,42 +97,54 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      controller.drawStateListenable.addListener(() {
-        /// 控制指针形状
-        switch (drawState) {
-          case Editing():
-            setCursorToClick();
-          case Drawing():
-          case Prepared():
-          case Exited():
-            setCursorToPrecise();
-        }
+    controller.drawStateListenable.addListener(_onDrawStateChanged);
+  }
 
-        if (gestureConfig.supportKeyboardShortcuts) {
-          /// 控制KeyboardListener的焦点获取与释放
-          switch (drawState) {
-            case Drawing():
-            case Editing():
-              if (!_keyboardFocusNode.hasFocus) {
-                _keyboardFocusNode.requestFocus();
-              }
-              break;
-            case Prepared():
-            case Exited():
-              if (_keyboardFocusNode.hasFocus) {
-                _keyboardFocusNode.unfocus();
-              }
-              // FocusManager.instance.primaryFocus?.unfocus();
-              break;
+  @override
+  void onControllerReplaced(FlexiKlineController oldController, FlexiKlineController newController) {
+    oldController.drawStateListenable.removeListener(_onDrawStateChanged);
+    newController.drawStateListenable.addListener(_onDrawStateChanged);
+  }
+
+  void _onDrawStateChanged() {
+    if (!mounted) return;
+
+    /// 控制指针形状
+    switch (drawState) {
+      case Editing():
+        setCursorToClick();
+      case Drawing():
+      case Prepared():
+      case Exited():
+        setCursorToPrecise();
+    }
+
+    if (gestureConfig.supportKeyboardShortcuts) {
+      /// 控制KeyboardListener的焦点获取与释放
+      switch (drawState) {
+        case Drawing():
+        case Editing():
+          if (!_keyboardFocusNode.hasFocus) {
+            _keyboardFocusNode.requestFocus();
           }
-        }
-      });
-    });
+          break;
+        case Prepared():
+        case Exited():
+          if (_keyboardFocusNode.hasFocus) {
+            _keyboardFocusNode.unfocus();
+          }
+          // FocusManager.instance.primaryFocus?.unfocus();
+          break;
+      }
+    }
   }
 
   @override
   void dispose() {
+    _zoomEndTimer?.cancel();
+    _scaleResetTimer?.cancel();
+    controller.drawStateListenable.removeListener(_onDrawStateChanged);
+    _mouseCursor.dispose();
     _keyboardFocusNode.dispose();
     super.dispose();
   }
@@ -222,6 +243,7 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
         logw('onPointerSignal $offset is not in the canvas.');
         _scaleData?.end();
         _scaleData = null;
+        return;
       }
 
       final scrollDelta = event.scrollDelta;
@@ -235,12 +257,13 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
           // 如果命中ZommSlideBar区域, 即代表要进行缩放图表
           cancelPositionAnimation();
           if (!controller.isChartZooming && controller.onChartZoomStart(offset, false)) {
-            Future.delayed(const Duration(milliseconds: 1000), () {
+            // 由于没有开始结束事件回调, 此处1秒后执行缩放结束动作-检查.
+            _zoomEndTimer?.cancel();
+            _zoomEndTimer = Timer(const Duration(milliseconds: 1000), () {
               assert(() {
                 logd('onPointerSignal V>Zoom onChartZoomEnd()');
                 return true;
               }());
-              // 由于没有开始结束事件回调, 此处1秒后执行缩放结束动作-检查.
               controller.onChartZoomEnd();
             });
           }
@@ -269,7 +292,8 @@ class _NonTouchGestureDetectorState extends GestureDetectorState<NonTouchGesture
             );
 
             /// 由于没有开始结束事件回调, 此处1秒后将[_scaleData]置空, 重新开始测量位置.
-            Future.delayed(const Duration(milliseconds: 1000), () {
+            _scaleResetTimer?.cancel();
+            _scaleResetTimer = Timer(const Duration(milliseconds: 1000), () {
               assert(() {
                 logd(
                   'onPointerSignal V>Scale clean _scaleData${_scaleData?.initPosition}',

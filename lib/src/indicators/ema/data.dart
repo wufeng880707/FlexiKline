@@ -99,6 +99,12 @@ mixin EmaDataMixin<T extends EMAIndicator> on IndicatorCalculationScope<T> {
     final maxPeriod = param.maxPeriod;
     if (maxPeriod == null || len < maxPeriod) return;
 
+    // updateLatest 等局部脏区间：[end, len) 未被本次更新影响，其中 index=end 处
+    // 已存的 EMA 可作为递推锚点，仅重算 [start, end)。
+    if (!reset && end < len && _tryIncrementalEma(enabledLines, start: start, end: end)) {
+      return;
+    }
+
     // klineData.list 是从新到旧的, 需要反转为从旧到新来计算.
     final closeValues = list.map((c) => c.close).toList().reversed.toList();
 
@@ -132,6 +138,45 @@ mixin EmaDataMixin<T extends EMAIndicator> on IndicatorCalculationScope<T> {
         }
       }
     }
+  }
+
+  /// 增量计算 [start, end) 区间的 EMA。
+  ///
+  /// list 按时间从新到旧排列，EMA 递推方向为旧→新（下标递减）：
+  /// `ema[i] = close[i] * k + ema[i+1] * (1 - k)`。
+  /// index [end] 是本次更新未触及的最旧一根变更蜡烛，其已存 EMA 值即递推锚点；
+  /// 任一线在锚点处无值（seed 未到达或布局不符）时返回 false，由调用方回退全量。
+  bool _tryIncrementalEma(
+    List<EMALineConfig> enabledLines, {
+    required int start,
+    required int end,
+  }) {
+    final list = klineData.list;
+
+    // 布局校验：全量路径只存储 period>0 的线，锚点列表长度必须一致。
+    final validLines = [for (final line in enabledLines) if (line.period > 0) line];
+    if (validLines.isEmpty) return false;
+    final anchorList = list[end].getEmaList(dataIndex);
+    if (anchorList == null || anchorList.length != validLines.length) return false;
+    for (final anchor in anchorList) {
+      if (anchor == null) return false;
+    }
+
+    final multipliers = [
+      for (final line in validLines) FlexiNum.fromNum(2.0 / (line.period + 1)),
+    ];
+
+    // 从旧到新（下标递减）递推；每根蜡烛的锚点取下一根（更旧）刚写入或已存的值。
+    for (int i = end - 1; i >= start; i--) {
+      final prevList = list[i + 1].getEmaList(dataIndex)!;
+      final close = list[i].close;
+      final emaValues = <FlexiNum?>[
+        for (int j = 0; j < validLines.length; j++)
+          close * multipliers[j] + prevList[j]! * (FlexiNum.one - multipliers[j]),
+      ];
+      list[i].setList(dataIndex, emaValues);
+    }
+    return true;
   }
 
   MinMax? calcuEmaMinmax(

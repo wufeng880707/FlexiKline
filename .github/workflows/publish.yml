@@ -1,5 +1,8 @@
 name: Publish to pub.dev
 
+# Fork note:
+# 本仓库是 FlexiKline 的 fork，包名 flexi_kline 与上游冲突。
+# 默认不触发发布；如 fork 改名后确需发布，删除下方 `if` 条件即可。
 on:
   push:
     tags:
@@ -7,6 +10,7 @@ on:
 
 jobs:
   publish:
+    if: github.repository == 'FlexiKline/FlexiKline' # 上游仓库名，fork 下永远为 false，等效禁用
     permissions:
       id-token: write
     uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1

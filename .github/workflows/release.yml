@@ -1,4 +1,9 @@
 name: Flutter Web
+
+# Fork note:
+# - Flutter 版本通过 .fvmrc 锁定，与 pubspec 的 SDK 约束（>=3.6.0 / Flutter >=3.27.0）保持一致。
+# - gh-pages 构建产物推送目标由 COMMIT_SECRET 对应账号的仓库决定；如需推送到本 fork，
+#   请确认 secret 指向 wufeng880707/FlexiKline 而非上游 FlexiKline/FlexiKline。
 on:
   push:
     # branches:
@@ -20,8 +25,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.19.4
-          # flutter-version-file: pubspec_1.yaml # path to pubspec_1.yaml
+          flutter-version-file: .fvmrc
 
       - run: flutter --version
 
@@ -29,20 +33,17 @@ jobs:
       - run: |
           cd example
           flutter config --enable-web
-          # flutter channel master
           flutter pub get
           flutter build web --release
 
       - run: |
           cd example/build/web
           git init
-          # 改成你的提交邮箱
-          git config --global user.email kangqiao610@gmail.com
-          # 改成你的提交用户名
-          git config --global user.name Andy.Zhao
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
           git status
-          # 更改此远程URL，例如查看您的远程URL是 https://github.com/FlexiKline/FlexiKline.git 然后改成以下内容
-          git remote add origin https://${{secrets.commit_secret}}@github.com/FlexiKline/FlexiKline.git
+          # 目标仓库由 COMMIT_SECRET 决定（见文件头部 Fork note）
+          git remote add origin https://${{secrets.commit_secret}}@github.com/${{ github.repository }}.git
           git checkout -b gh-pages
           git add --all
           git commit -m "update"

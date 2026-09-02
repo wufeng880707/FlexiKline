@@ -58,6 +58,12 @@ mixin FlexiKlinePageMixin<T extends StatefulWidget> on State<T> implements IFlex
   /// 当回到前台时，是否需要重置当前KlineData所有数据
   bool get isResetKlineDataWhenResume => false;
 
+  /// 是否由本页面拥有 [klineController] 的生命周期（dispose 时随之释放）。
+  ///
+  /// 默认 true。若 controller 由父级创建并被多页面共享，必须覆写为 false，
+  /// 由拥有方在合适的时机释放，否则本页面 dispose 会误杀共享的 controller。
+  bool get ownsKlineController => true;
+
   @override
   void initState() {
     super.initState();
@@ -83,7 +89,7 @@ mixin FlexiKlinePageMixin<T extends StatefulWidget> on State<T> implements IFlex
   @override
   void dispose() {
     _listener.dispose();
-    klineController.dispose();
+    if (ownsKlineController) klineController.dispose();
     super.dispose();
   }
 

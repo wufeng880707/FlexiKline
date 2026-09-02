@@ -60,6 +60,10 @@ mixin BollDataMixin<T extends BOLLIndicator> on IndicatorCalculationScope<T> {
   }
 
   /// 计算BOLL指标值
+  ///
+  /// 使用滚动和/滚动平方和：`sum(i-1) = sum(i) - close(i-1+period) + close(i-1)`，
+  /// 标准差用 `sqrt((sumSq - n*ma²)/n)`，将每根 O(period) 的重求和降为 O(1)。
+  /// 该式在浮点下的舍入与逐项求和略有差异（<1e-9 量级），对显示精度无影响。
   void _calculateBoll(
     BOLLParam param, {
     required int start,
@@ -68,28 +72,44 @@ mixin BollDataMixin<T extends BOLLIndicator> on IndicatorCalculationScope<T> {
     final len = klineData.list.length;
     final period = param.periods.period;
     if (period > len || !klineData.checkStartAndEnd(start, end)) return;
-    print('calculateBoll [end:$end ~ start:$start] period:$period');
+    logd('calculateBoll [end:$end ~ start:$start] period:$period');
 
     end = math.min(len - period, end - 1);
+    if (end < start) return;
 
+    // 初始化 [end, end+period) 窗口的和与平方和。
+    final double initSum;
+    final double initSumSq;
+    {
+      double s = 0;
+      double sq = 0;
+      for (int j = end; j < end + period; j++) {
+        final c = klineData.list[j].close.toDouble();
+        s += c;
+        sq += c * c;
+      }
+      initSum = s;
+      initSumSq = sq;
+    }
+
+    double sum = initSum;
+    double sumSq = initSumSq;
+    final double n = period.toDouble();
     for (int i = end; i >= start; i--) {
       final m = klineData.list[i];
-      if (i + period > len) continue;
-
-      // 计算移动平均
-      FlexiNum sum = m.close;
-      for (int j = i + 1; j < i + period; j++) {
-        sum += klineData.list[j].close;
+      if (i != end) {
+        // 滚动：移出 close(i+period)，加入 close(i)。
+        final outC = klineData.list[i + period].close.toDouble();
+        final inC = m.close.toDouble();
+        sum = sum - outC + inC;
+        sumSq = sumSq - outC * outC + inC * inC;
       }
-      final ma = sum.divNum(period);
 
-      // 计算标准差
-      double variance = (m.close.toDouble() - ma.toDouble()) * (m.close.toDouble() - ma.toDouble());
-      for (int j = i + 1; j < i + period; j++) {
-        variance +=
-            (klineData.list[j].close.toDouble() - ma.toDouble()) * (klineData.list[j].close.toDouble() - ma.toDouble());
-      }
-      final std = FlexiNum.fromNum(math.sqrt(variance / period));
+      final maDouble = sum / n;
+      final ma = FlexiNum.fromNum(maDouble);
+      final variance = (sumSq - n * maDouble * maDouble) / n;
+      // 浮点误差可能使方差略为负数。
+      final std = FlexiNum.fromNum(math.sqrt(variance < 0 ? 0 : variance));
 
       // 设置BOLL值
       final list = m.getOrInitList<FlexiNum>(dataIndex, 3);

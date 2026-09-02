@@ -35,7 +35,16 @@ void main() async {
   final themeMode = ThemeManager().init();
 
   initOkxHttpClient();
-  initPolygonHttpClient(apiKey: 'tCylSupTcgle8GUM0c1wPMZ_AboQsoZ2');
+
+  // Polygon API Key 通过 --dart-define 注入，避免硬编码进仓库：
+  // flutter run --dart-define=POLYGON_API_KEY=your_key
+  const polygonApiKey = String.fromEnvironment('POLYGON_API_KEY');
+  if (polygonApiKey.isNotEmpty) {
+    initPolygonHttpClient(apiKey: polygonApiKey);
+  } else {
+    debugPrint('未配置 POLYGON_API_KEY，Polygon 数据源不可用。'
+        '运行时请使用 --dart-define=POLYGON_API_KEY=your_key 注入。');
+  }
 
   runApp(ProviderScope(
     overrides: [

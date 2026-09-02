@@ -114,8 +114,8 @@ mixin SettingBinding on KlineBindingBase {
     return Rect.fromLTRB(
       mainRect.left,
       mainRect.top,
-      mainRect.width,
-      mainRect.height + subRectHeight,
+      mainRect.right,
+      mainRect.bottom + subRectHeight,
     );
   }
 
@@ -421,11 +421,15 @@ mixin SettingBinding on KlineBindingBase {
       return settingConfig.candleFixedSpacing!;
     }
     if (_candleSpacing != null && _candleSpacing! > 0) return _candleSpacing!;
+    // 先赋原始值：clamp 的上界 candleWidthHalf 会递归调用本 getter，
+    // 依赖 _candleSpacing 已赋值时提前返回。
     _candleSpacing = candleWidth / settingConfig.spacingCandleParts;
-    _candleSpacing!.clamp(
-      candleMinWidth,
-      math.max(candleMinWidth, candleWidthHalf),
-    );
+    _candleSpacing = _candleSpacing!
+        .clamp(
+          candleMinWidth,
+          math.max(candleMinWidth, candleWidthHalf),
+        )
+        .toDouble();
     return _candleSpacing!;
   }
 

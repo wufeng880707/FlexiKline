@@ -144,9 +144,9 @@ mixin GridBinding on KlineBindingBase, SettingBinding {
     );
 
     // 主区网格线
-    final step = main.bottom / gridConfig.horizontal.count;
+    final step = main.height / gridConfig.horizontal.count;
     for (int i = 1; i < gridConfig.horizontal.count; i++) {
-      dy = i * step;
+      dy = main.top + i * step;
       canvas.drawLineByConfig(
         Path()
           ..moveTo(main.left, dy)
@@ -186,7 +186,7 @@ mixin GridBinding on KlineBindingBase, SettingBinding {
     final main = mainRect;
     final sub = subRect;
     double dx = main.left;
-    final step = main.right / gridConfig.vertical.count;
+    final step = main.width / gridConfig.vertical.count;
 
     // 左边框线
     canvas.drawLineByConfig(
@@ -209,7 +209,7 @@ mixin GridBinding on KlineBindingBase, SettingBinding {
 
     // 主区与副区纵向网格线
     for (int i = 1; i < gridConfig.vertical.count; i++) {
-      dx = i * step;
+      dx = main.left + i * step;
 
       // 主区竖线
       canvas.drawLineByConfig(

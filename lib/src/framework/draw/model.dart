@@ -98,12 +98,15 @@ class Overlay implements Comparable<Overlay> {
     required LineConfig line,
   }) =>
       Overlay(
-        id: DateTime.now().millisecondsSinceEpoch,
+        // 毫秒时间戳作 id 在同一毫秒内会撞号，叠加单调递增计数器保证唯一。
+        id: DateTime.now().millisecondsSinceEpoch * 1000 + (_idSeq = (_idSeq + 1) % 1000),
         key: key,
         type: type,
         line: line,
         points: List.filled(type.steps, null),
       );
+
+  static int _idSeq = 0;
 
   final int id;
   final String key;

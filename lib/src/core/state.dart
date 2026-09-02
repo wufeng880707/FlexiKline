@@ -476,6 +476,13 @@ mixin StateBinding on KlineBindingBase, SettingBinding {
   }
 
   bool _acceptKlineDataUpdate(KlineSpec spec, List<ICandleModel> list) {
+    // Controller 已 dispose 时（如异步行情推送晚到），忽略更新，
+    // 防止对已释放的 repaint Notifier 赋值抛出异常。
+    // 注意：挂载前（initial）必须放行，mount 前的数据更新走暂存机制。
+    if (lifecycleListenable.value == FlexiKlineLifecycle.disposed) {
+      logd('ignore KlineData update after dispose: ${spec.key}');
+      return false;
+    }
     if (spec.key != klineDataKey) {
       logd('ignore inactive KlineData update: ${spec.key}');
       return false;

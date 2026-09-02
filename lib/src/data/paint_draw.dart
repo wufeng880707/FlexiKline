@@ -42,7 +42,6 @@ mixin PaintDrawData on BaseData {
   /// 如果ts > 最新价, 将为负
   double? timestampToIndex(int ts) {
     if (list.isEmpty || !spec.interval.isValid) return null;
-    const latestIndex = 0; // 后续性能优化考虑数据方向
     final timespans = spec.interval.milliseconds;
     final first = list.first;
     final last = list.last;
@@ -50,27 +49,40 @@ mixin PaintDrawData on BaseData {
       // 超出蜡烛数据时间范围, 不予考虑交易时间问题
       final distance = first.ts - ts;
       final value = distance / timespans;
-      return latestIndex + value;
+      return value; // 比最新一根更晚，返回负数（0 + value）
     } else if (ts <= last.ts) {
       // 超出蜡烛数据时间范围, 不予考虑交易时间问题
       final distance = last.ts - ts;
       final value = distance / timespans;
       return list.length - 1 + value;
     } else {
-      int i = latestIndex;
+      // 数据按 ts 降序，二分定位不晚于 ts 的锚点，再按 interval 换算 patch。
       final distance = first.ts - ts;
       final indexValue = distance / timespans;
       final index = indexValue.truncate();
       final patch = indexValue - index;
-      for (; i < list.length; i++) {
-        if (ts == list[i].ts) break;
-        if (ts > list[i].ts) {
-          i--;
-          break;
-        }
-      }
+
+      int i = _indexAtOrBeforeDesc(ts) ?? 0;
       return i + patch;
     }
+  }
+
+  /// 降序 ts 列表中二分查找不晚于 [ts]（即 ts >= list[i].ts 且最大）的下标。
+  /// ts 严格晚于全部数据时返回 null（由调用方决定回退值）。
+  int? _indexAtOrBeforeDesc(int ts) {
+    final items = list;
+    var low = 0;
+    var high = items.length - 1;
+    if (items[low].ts < ts) return null;
+    while (low < high) {
+      final mid = low + ((high - low + 1) >> 1);
+      if (items[mid].ts <= ts) {
+        high = mid - 1;
+      } else {
+        low = mid;
+      }
+    }
+    return low;
   }
 
   /// 将[indexValue]转换为以当前KlineData数据范围为基础的timestamp

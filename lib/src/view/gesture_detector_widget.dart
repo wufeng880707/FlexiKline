@@ -44,6 +44,21 @@ abstract class GestureDetectorState<T extends GestureDetectorWidget> extends Sta
   }
 
   @override
+  void didUpdateWidget(covariant T oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.moveToPositionCallback = null;
+      logger = widget.controller.logger;
+      widget.controller.moveToPositionCallback = moveToPosition;
+      onControllerReplaced(oldWidget.controller, widget.controller);
+    }
+  }
+
+  /// Controller 被父组件替换时回调，子类可重写以迁移绑定在旧 controller 上的监听器。
+  @protected
+  void onControllerReplaced(FlexiKlineController oldController, FlexiKlineController newController) {}
+
+  @override
   void dispose() {
     cancelPositionAnimation();
     controller.moveToPositionCallback = null;

@@ -47,6 +47,8 @@ mixin MacdDataMixin<T extends MACDIndicator> on IndicatorCalculationScope<T> {
   void computeIndicatorData(Range range, {bool reset = false}) {
     calcuAndCacheMacd(
       calcParam,
+      start: range.start,
+      end: range.end,
       reset: reset,
     );
   }
@@ -95,6 +97,8 @@ mixin MacdDataMixin<T extends MACDIndicator> on IndicatorCalculationScope<T> {
 
   void calcuAndCacheMacd(
     MACDParam param, {
+    required int start,
+    required int end,
     bool reset = false,
   }) {
     final list = klineData.list;
@@ -113,6 +117,11 @@ mixin MacdDataMixin<T extends MACDIndicator> on IndicatorCalculationScope<T> {
     // 📋 验证配置参数的有效性
     if (!param.isValid(len)) {
       // 参数无效时直接返回，避免无效计算
+      return;
+    }
+
+    // updateLatest 等局部脏区间：以 [end] 处已存的内部锚点(emaS/emaL/dea)递推 [start, end)。
+    if (!reset && end < len && _tryIncrementalMacd(param, start: start, end: end)) {
       return;
     }
 
@@ -150,28 +159,95 @@ mixin MacdDataMixin<T extends MACDIndicator> on IndicatorCalculationScope<T> {
     final finalDif = difList.reversed.toList();
     final finalDea = deaList.reversed.toList();
     final finalMacd = macdList.reversed.toList();
+    final finalEmaS = emaS.reversed.toList();
+    final finalEmaL = emaL.reversed.toList();
 
     // 6. 根据配置存储计算结果
+    // 布局: [dif?, dea?, macd?, emaS, emaL, dea] —— 后三位为增量递推锚点，
+    // 不受线条开关影响始终存储（0~2 位按配置可置 null）。
     for (int i = 0; i < len; i++) {
       final dif = finalDif[i];
       final dea = finalDea[i];
       final macd = finalMacd[i];
+      final emaSValue = finalEmaS[i];
+      final emaLValue = finalEmaL[i];
+
+      final hasInternal = emaSValue != null && emaLValue != null;
 
       // 📊 根据线条配置决定是否存储相应数据
       final shouldStoreDif = param.difLine.enabled && dif != null;
       final shouldStoreDea = param.deaLine.enabled && dea != null;
       final shouldStoreMacd = param.histogramEnabled && macd != null;
 
-      if (shouldStoreDif || shouldStoreDea || shouldStoreMacd) {
+      if (shouldStoreDif || shouldStoreDea || shouldStoreMacd || hasInternal) {
         list[i].setList<FlexiNum>(dataIndex, [
           shouldStoreDif ? dif : null,
           shouldStoreDea ? dea : null,
           shouldStoreMacd ? macd : null,
+          emaSValue,
+          emaLValue,
+          dea,
         ]);
       } else if (reset) {
         list[i].clean(dataIndex);
       }
     }
+  }
+
+  /// 增量计算 [start, end) 区间的 MACD。
+  ///
+  /// list 按时间从新到旧排列，递推方向为旧→新（下标递减）：
+  /// - `emaS[i] = close[i]*kS + emaS[i+1]*(1-kS)`（emaL 同理）
+  /// - `dif[i] = emaS[i] - emaL[i]`
+  /// - `dea[i] = dif[i]*kM + dea[i+1]*(1-kM)`
+  /// - `macd[i] = (dif[i] - dea[i]) * 2`
+  ///
+  /// index [end] 未被本次更新影响，其已存锚点(emaS/emaL/dea)启动递推；
+  /// 锚点缺失（seed 区/布局不符）时返回 false，由调用方回退全量。
+  bool _tryIncrementalMacd(
+    MACDParam param, {
+    required int start,
+    required int end,
+  }) {
+    final list = klineData.list;
+    final anchorList = list[end].macdList(dataIndex);
+    if (anchorList == null || anchorList.length < 6) return false;
+    final anchorEmaS = anchorList[3];
+    final anchorEmaL = anchorList[4];
+    final anchorDea = anchorList[5];
+    if (anchorEmaS == null || anchorEmaL == null || anchorDea == null) return false;
+
+    final multS = FlexiNum.fromNum(2.0 / (param.s + 1));
+    final multL = FlexiNum.fromNum(2.0 / (param.l + 1));
+    final multM = FlexiNum.fromNum(2.0 / (param.m + 1));
+
+    for (int i = end - 1; i >= start; i--) {
+      final prevList = list[i + 1].macdList(dataIndex)!;
+      final prevEmaS = prevList[3]!;
+      final prevEmaL = prevList[4]!;
+      final prevDea = prevList[5]!;
+
+      final close = list[i].close;
+      final emaSValue = close * multS + prevEmaS * (FlexiNum.one - multS);
+      final emaLValue = close * multL + prevEmaL * (FlexiNum.one - multL);
+      final dif = emaSValue - emaLValue;
+      final dea = dif * multM + prevDea * (FlexiNum.one - multM);
+      final macd = (dif - dea) * FlexiNum.two;
+
+      final shouldStoreDif = param.difLine.enabled;
+      final shouldStoreDea = param.deaLine.enabled;
+      final shouldStoreMacd = param.histogramEnabled;
+
+      list[i].setList<FlexiNum>(dataIndex, [
+        shouldStoreDif ? dif : null,
+        shouldStoreDea ? dea : null,
+        shouldStoreMacd ? macd : null,
+        emaSValue,
+        emaLValue,
+        dea,
+      ]);
+    }
+    return true;
   }
 
   MinMax? calcuMacdMinmax(

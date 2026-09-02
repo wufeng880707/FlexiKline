@@ -117,163 +117,168 @@ extension FlexiDrawImageText on Canvas {
       strutStyle: strutStyle,
     );
 
-    final limitWidth = drawableRect != null && textWidth == null && (maxLines == null || maxLines > 1);
-    final rectMaxWidth = limitWidth
-        ? math.max(0.0, drawableRect.width - padding.horizontal - containerSize.width - spacing)
-        : double.infinity;
-    final layoutMaxWidth = textWidth ?? math.min(maxWidth, rectMaxWidth);
+    try {
+      final limitWidth = drawableRect != null && textWidth == null && (maxLines == null || maxLines > 1);
+      final rectMaxWidth = limitWidth
+          ? math.max(0.0, drawableRect.width - padding.horizontal - containerSize.width - spacing)
+          : double.infinity;
+      final layoutMaxWidth = textWidth ?? math.min(maxWidth, rectMaxWidth);
 
-    textPainter.layout(
-      minWidth: math.min(minWidth, layoutMaxWidth),
-      maxWidth: layoutMaxWidth,
-    );
-    final textSize = textPainter.size;
-
-    containerSize = Size(
-      containerSize.width + spacing + textSize.width,
-      math.max(containerSize.height, textSize.height),
-    );
-
-    final hasPadding = padding.collapsedSize.nonzero;
-    if (hasPadding) {
-      containerSize += Offset(padding.horizontal, padding.vertical);
-    }
-
-    if (drawableRect != null) {
-      final dy = math.max(
-        drawableRect.top,
-        math.min(offset.dy, drawableRect.bottom),
+      textPainter.layout(
+        minWidth: math.min(minWidth, layoutMaxWidth),
+        maxWidth: layoutMaxWidth,
       );
-      double dx;
-      switch (drawDirection) {
-        case DrawDirection.ltr:
-          dx = math.max(
-            drawableRect.left,
-            math.min(offset.dx, drawableRect.right - containerSize.width),
-          );
-          break;
-        case DrawDirection.center:
-          dx = math.max(
-            drawableRect.left,
-            math.min(offset.dx, drawableRect.right - containerSize.width / 2),
-          );
-          break;
-        case DrawDirection.rtl:
-          dx = math.max(
-            drawableRect.left,
-            math.min(
-              drawableRect.right - containerSize.width,
-              offset.dx - containerSize.width,
-            ),
-          );
-          break;
+      final textSize = textPainter.size;
+
+      containerSize = Size(
+        containerSize.width + spacing + textSize.width,
+        math.max(containerSize.height, textSize.height),
+      );
+
+      final hasPadding = padding.collapsedSize.nonzero;
+      if (hasPadding) {
+        containerSize += Offset(padding.horizontal, padding.vertical);
       }
 
-      offset = Offset(dx, dy);
-    } else {
-      if (drawDirection.isrtl) {
-        offset = Offset(
-          offset.dx - containerSize.width,
-          offset.dy,
+      if (drawableRect != null) {
+        final dy = math.max(
+          drawableRect.top,
+          math.min(offset.dy, drawableRect.bottom),
         );
-      } else if (drawDirection.isCenter) {
-        offset = Offset(
-          offset.dx - containerSize.width / 2,
-          offset.dy,
-        );
-      }
-    }
+        double dx;
+        switch (drawDirection) {
+          case DrawDirection.ltr:
+            dx = math.max(
+              drawableRect.left,
+              math.min(offset.dx, drawableRect.right - containerSize.width),
+            );
+            break;
+          case DrawDirection.center:
+            dx = math.max(
+              drawableRect.left,
+              math.min(offset.dx, drawableRect.right - containerSize.width / 2),
+            );
+            break;
+          case DrawDirection.rtl:
+            dx = math.max(
+              drawableRect.left,
+              math.min(
+                drawableRect.right - containerSize.width,
+                offset.dx - containerSize.width,
+              ),
+            );
+            break;
+        }
 
-    final isDrawBg = backgroundColor != null && backgroundColor.a != 0;
-    final isDrawBorder = borderSide != null && borderSide.color.a != 0 && borderSide.width > 0;
-    if (hasPadding || isDrawBg || isDrawBorder) {
-      final Path path = Path();
-      if (borderRadius != null) {
-        path.addRRect(RRect.fromLTRBAndCorners(
-          offset.dx,
-          offset.dy,
-          offset.dx + containerSize.width,
-          offset.dy + containerSize.height,
+        offset = Offset(dx, dy);
+      } else {
+        if (drawDirection.isrtl) {
+          offset = Offset(
+            offset.dx - containerSize.width,
+            offset.dy,
+          );
+        } else if (drawDirection.isCenter) {
+          offset = Offset(
+            offset.dx - containerSize.width / 2,
+            offset.dy,
+          );
+        }
+      }
+
+      final isDrawBg = backgroundColor != null && backgroundColor.a != 0;
+      final isDrawBorder = borderSide != null && borderSide.color.a != 0 && borderSide.width > 0;
+      if (hasPadding || isDrawBg || isDrawBorder) {
+        final Path path = Path();
+        if (borderRadius != null) {
+          path.addRRect(RRect.fromLTRBAndCorners(
+            offset.dx,
+            offset.dy,
+            offset.dx + containerSize.width,
+            offset.dy + containerSize.height,
+            topLeft: borderRadius.topLeft,
+            topRight: borderRadius.topRight,
+            bottomLeft: borderRadius.bottomLeft,
+            bottomRight: borderRadius.bottomRight,
+          ));
+        } else {
+          path.addRRect(RRect.fromLTRBR(
+            offset.dx,
+            offset.dy,
+            offset.dx + containerSize.width,
+            offset.dy + containerSize.height,
+            const Radius.circular(0),
+          ));
+        }
+
+        if (isDrawBg) {
+          drawPath(
+            path,
+            Paint()
+              ..color = backgroundColor
+              ..style = PaintingStyle.fill
+              ..strokeWidth = 1,
+          );
+        }
+
+        if (isDrawBorder) {
+          drawPath(
+            path,
+            Paint()
+              ..color = borderSide.color
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = borderSide.width,
+          );
+        }
+      }
+
+      result = offset & containerSize;
+      if (hasPadding) offset += Offset(padding.left, padding.top);
+      isClip = isClip && borderRadius != null && borderRadius.isValid;
+
+      if (isClip) {
+        save();
+        clipRRect(RRect.fromRectAndCorners(
+          result,
           topLeft: borderRadius.topLeft,
           topRight: borderRadius.topRight,
-          bottomLeft: borderRadius.bottomLeft,
           bottomRight: borderRadius.bottomRight,
+          bottomLeft: borderRadius.bottomLeft,
         ));
+      }
+
+      final imageSrc = srcRect ?? (Offset.zero & originImgSize);
+      imagePaint ??= Paint()..isAntiAlias = true;
+      final txtDy = yAxisAlign.distributeOffset(
+        result.top + padding.top,
+        result.bottom - padding.bottom,
+        textSize.height,
+      );
+      final imgDy = yAxisAlign.distributeOffset(
+        result.top + padding.top,
+        result.bottom - padding.bottom,
+        imgSize.height,
+      );
+
+      if (drawImageFirst) {
+        final dst = Offset(offset.dx, imgDy) & imgSize;
+        drawImageRect(image, imageSrc, dst, imagePaint);
+        final textOffset = Offset(offset.dx + dst.width + spacing, txtDy);
+        textPainter.paint(this, textOffset);
       } else {
-        path.addRRect(RRect.fromLTRBR(
-          offset.dx,
-          offset.dy,
-          offset.dx + containerSize.width,
-          offset.dy + containerSize.height,
-          const Radius.circular(0),
-        ));
+        textPainter.paint(this, Offset(offset.dx, txtDy));
+        final imgOffset = Offset(offset.dx + textSize.width + spacing, imgDy);
+        final dst = imgOffset & imgSize;
+        drawImageRect(image, imageSrc, dst, imagePaint);
       }
 
-      if (isDrawBg) {
-        drawPath(
-          path,
-          Paint()
-            ..color = backgroundColor
-            ..style = PaintingStyle.fill
-            ..strokeWidth = 1,
-        );
+      if (isClip) {
+        restore();
       }
 
-      if (isDrawBorder) {
-        drawPath(
-          path,
-          Paint()
-            ..color = borderSide.color
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = borderSide.width,
-        );
-      }
+      return result;
+    } finally {
+      // TextPainter 持有 native 文本布局资源，用完必须显式释放。
+      textPainter.dispose();
     }
-
-    result = offset & containerSize;
-    if (hasPadding) offset += Offset(padding.left, padding.top);
-    isClip = isClip && borderRadius != null && borderRadius.isValid;
-
-    if (isClip) {
-      save();
-      clipRRect(RRect.fromRectAndCorners(
-        result,
-        topLeft: borderRadius.topLeft,
-        topRight: borderRadius.topRight,
-        bottomRight: borderRadius.bottomRight,
-        bottomLeft: borderRadius.bottomLeft,
-      ));
-    }
-
-    final imageSrc = srcRect ?? (Offset.zero & originImgSize);
-    imagePaint ??= Paint()..isAntiAlias = true;
-    final txtDy = yAxisAlign.distributeOffset(
-      result.top + padding.top,
-      result.bottom - padding.bottom,
-      textSize.height,
-    );
-    final imgDy = yAxisAlign.distributeOffset(
-      result.top + padding.top,
-      result.bottom - padding.bottom,
-      imgSize.height,
-    );
-
-    if (drawImageFirst) {
-      final dst = Offset(offset.dx, imgDy) & imgSize;
-      drawImageRect(image, imageSrc, dst, imagePaint);
-      final textOffset = Offset(offset.dx + dst.width + spacing, txtDy);
-      textPainter.paint(this, textOffset);
-    } else {
-      textPainter.paint(this, Offset(offset.dx, txtDy));
-      final imgOffset = Offset(offset.dx + textSize.width + spacing, imgDy);
-      final dst = imgOffset & imgSize;
-      drawImageRect(image, imageSrc, dst, imagePaint);
-    }
-
-    if (isClip) {
-      restore();
-    }
-
-    return result;
   }
 }

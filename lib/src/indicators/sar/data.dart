@@ -20,18 +20,47 @@ extension CandleSarExt on FlexiCandleModel {
 
   FlexiNum? sarValue(int dataIndex) {
     final list = sarList(dataIndex);
-    return (list != null && list.length == 2) ? list[0] : null;
+    return (list != null && list.isNotEmpty) ? list[0] : null;
   }
 
   int? sarFlag(int dataIndex) {
     final list = sarList(dataIndex);
-    return (list != null && list.length == 2) ? list[1]?.toDouble().toInt() : null;
+    return (list != null && list.length > 1) ? list[1]?.toDouble().toInt() : null;
   }
 
-  void setSar(int dataIndex, FlexiNum? sar, int? flag) {
-    final list = getOrInitList<FlexiNum>(dataIndex, 2);
+  /// SAR 计算的极值点（EP），增量递推的中间状态之一（反转帧为 null）。
+  FlexiNum? sarEp(int dataIndex) {
+    final list = sarList(dataIndex);
+    return (list != null && list.length > 2) ? list[2] : null;
+  }
+
+  /// SAR 计算的加速因子（AF），增量递推的中间状态之一。
+  double? sarAf(int dataIndex) {
+    final list = sarList(dataIndex);
+    return (list != null && list.length > 3) ? list[3]?.toDouble() : null;
+  }
+
+  /// 下一帧趋势方向（1=上涨 0=下跌），增量恢复用（flag=0 的反转帧无法从 flag 判断方向）。
+  int? sarDir(int dataIndex) {
+    final list = sarList(dataIndex);
+    return (list != null && list.length > 4) ? list[4]?.toDouble().toInt() : null;
+  }
+
+  /// slot 布局: [sar, flag, ep, af, dir]，ep/af/dir 为增量递推锚点。
+  void setSar(
+    int dataIndex,
+    FlexiNum? sar,
+    int? flag, {
+    FlexiNum? ep,
+    double? af,
+    int? dir,
+  }) {
+    final list = getOrInitList<FlexiNum>(dataIndex, 5);
     list[0] = sar;
     list[1] = flag != null ? FlexiNum.fromNum(flag) : null;
+    list[2] = ep;
+    list[3] = af != null ? FlexiNum.fromNum(af) : null;
+    list[4] = dir != null ? FlexiNum.fromNum(dir) : null;
   }
 
   bool isValidSarData(int dataIndex) => sarValue(dataIndex) != null && sarFlag(dataIndex) != null;
@@ -52,10 +81,15 @@ mixin SarDataMixin<T extends SARIndicator> on IndicatorCalculationScope<T> {
   }
 
   /// 计算SAR指标值
+  ///
+  /// 增量路径：[anchorIndex] 处已存 [sar, flag, ep, af] 完整状态时，
+  /// 从该状态恢复并只重算 [start, anchorIndex)；
+  /// 否则（首算/锚点不完整）从 [end-1] 用相邻两根蜡烛初始化趋势后全段计算。
   void _calculateSar(
     SARParam param, {
     required int start,
     required int end,
+    int? anchorIndex,
   }) {
     final len = klineData.list.length;
     if (!param.isValid(len) || !klineData.checkStartAndEnd(start, end)) return;
@@ -69,38 +103,55 @@ mixin SarDataMixin<T extends SARIndicator> on IndicatorCalculationScope<T> {
     FlexiNum? ep;
     bool isIncreasing = false;
     FlexiNum sar = FlexiNum.zero;
-    FlexiNum minLow;
-    FlexiNum maxHigh;
     int flag = 0;
 
-    // 修正：正确初始化第一个SAR值和趋势判断
-    if (end < len - 1) {
-      // 从倒数第二根K线开始，判断初始趋势
-      final current = klineData.list[end];
-      final next = klineData.list[end + 1];
+    int i;
+    // 初始化帧（本段最旧一根）：原算法在此帧不与前一根做 clamp（sar 即由前一根初始化而来）。
+    // 增量路径无初始化帧，所有帧都 clamp（与等效全量重算一致）。
+    int? initFrameIndex;
+    if (anchorIndex != null && anchorIndex <= end && anchorIndex < len) {
+      // 增量：从锚点恢复 sar/ep/af/dir 完整状态（ep 为 null 表示反转帧，合法）。
+      final anchor = klineData.list[anchorIndex];
+      final anchorSar = anchor.sarValue(dataIndex);
+      final anchorAf = anchor.sarAf(dataIndex);
+      final anchorDir = anchor.sarDir(dataIndex);
+      if (anchorSar == null || anchorAf == null || anchorDir == null) {
+        // 锚点状态不完整（旧布局/首算），回退全量初始化。
+        return _calculateSarInit(param, start: start, end: end + 1);
+      }
+      sar = anchorSar;
+      ep = anchor.sarEp(dataIndex);
+      af = anchorAf;
+      isIncreasing = anchorDir == 1;
+      i = anchorIndex - 1;
+    } else {
+      // 全量初始化路径。
+      initFrameIndex = end;
+      if (end < len - 1) {
+        final current = klineData.list[end];
+        final next = klineData.list[end + 1];
 
-      // 判断初始趋势：如果当前最高价 > 下一根最高价，则为上涨趋势
-      isIncreasing = current.high > next.high;
+        // 判断初始趋势：如果当前最高价 > 下一根最高价，则为上涨趋势
+        isIncreasing = current.high > next.high;
 
-      if (isIncreasing) {
-        // 上涨趋势：第一个SAR值为前一根K线的最低价
-        sar = next.low;
-        ep = current.high;
-        flag = 1;
+        if (isIncreasing) {
+          sar = next.low;
+          ep = current.high;
+          flag = 1;
+        } else {
+          sar = next.high;
+          ep = current.low;
+          flag = -1;
+        }
       } else {
-        // 下跌趋势：第一个SAR值为前一根K线的最高价
-        sar = next.high;
-        ep = current.low;
+        isIncreasing = false;
+        sar = klineData.list[end].high;
         flag = -1;
       }
-    } else {
-      // 如果只有一根K线，默认为下跌趋势
-      isIncreasing = false;
-      sar = klineData.list[end].high;
-      flag = -1;
+      i = end;
     }
 
-    for (int i = end; i >= start; i--) {
+    for (; i >= start; i--) {
       final m = klineData.list[i];
       if (isIncreasing) {
         flag = 1; // 上涨
@@ -111,8 +162,8 @@ mixin SarDataMixin<T extends SARIndicator> on IndicatorCalculationScope<T> {
         sar = (ep - sar).mulNum(af) + sar;
 
         // 修正：确保SAR不超过前一根K线的最低价
-        if (i < end) {
-          minLow = klineData.list[i + 1].low;
+        if (i != initFrameIndex) {
+          final minLow = klineData.list[i + 1].low;
           if (sar > minLow) {
             sar = minLow;
           }
@@ -135,8 +186,8 @@ mixin SarDataMixin<T extends SARIndicator> on IndicatorCalculationScope<T> {
         sar = (ep - sar).mulNum(af) + sar;
 
         // 修正：确保SAR不低于前一根K线的最高价
-        if (i < end) {
-          maxHigh = klineData.list[i + 1].high;
+        if (i != initFrameIndex) {
+          final maxHigh = klineData.list[i + 1].high;
           if (sar < maxHigh) {
             sar = maxHigh;
           }
@@ -151,8 +202,17 @@ mixin SarDataMixin<T extends SARIndicator> on IndicatorCalculationScope<T> {
           isIncreasing = true;
         }
       }
-      m.setSar(dataIndex, sar, flag);
+      m.setSar(dataIndex, sar, flag, ep: ep, af: af, dir: isIncreasing ? 1 : 0);
     }
+  }
+
+  /// 全量初始化路径（增量锚点不可用时）。
+  void _calculateSarInit(
+    SARParam param, {
+    required int start,
+    required int end,
+  }) {
+    _calculateSar(param, start: start, end: end);
   }
 
   void calcuAndCacheSar(
@@ -162,6 +222,17 @@ mixin SarDataMixin<T extends SARIndicator> on IndicatorCalculationScope<T> {
     bool reset = false,
   }) {
     if (klineData.isEmpty) return;
+    final len = klineData.list.length;
+    // 局部脏区间且锚点状态完整时走增量：index[end] 未被本次更新影响。
+    if (!reset && end < len) {
+      _calculateSar(
+        calcParam,
+        start: start,
+        end: end + 1,
+        anchorIndex: end,
+      );
+      return;
+    }
     _calculateSar(
       calcParam,
       start: math.max(0, start - 1), // 补起上一次未算数据

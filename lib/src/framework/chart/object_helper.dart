@@ -36,53 +36,139 @@ mixin PaintStyleMixin<T extends Indicator<IIndicatorKey>> on IndicatorObject<T> 
   /// 下跌浅色。
   Color get shortTintColor => shortColor.withAlpha(settingConfig.opacity.alpha);
 
+  // 蜡烛画笔缓存：颜色/线宽任一变化时重建。
+  // 蜡烛每帧重绘会大量读取这些画笔，缓存可消除每秒上万次 Paint 分配。
+  Paint? _longBarPaint;
+  Paint? _shortBarPaint;
+  Paint? _longTintBarPaint;
+  Paint? _shortTintBarPaint;
+  Paint? _longHollowBarPaint;
+  Paint? _shortHollowBarPaint;
+  Paint? _longLinePaint;
+  Paint? _shortLinePaint;
+
+  int? _longBarPaintStamp;
+  int? _shortBarPaintStamp;
+  int? _longTintBarPaintStamp;
+  int? _shortTintBarPaintStamp;
+  int? _longHollowBarPaintStamp;
+  int? _shortHollowBarPaintStamp;
+  int? _longLinePaintStamp;
+  int? _shortLinePaintStamp;
+
+  /// 画笔依赖的参数指纹（涨跌色、透明度、蜡烛宽、空心边宽、线宽）。
+  int get _paintStamp => Object.hash(
+        longColor,
+        shortColor,
+        settingConfig.opacity,
+        candleWidth,
+        settingConfig.candleHollowBarBorderWidth,
+        candleLineWidth,
+      );
+
   /// 上涨实心柱画笔。
-  Paint get defLongBarPaint => Paint()
-    ..color = longColor
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = candleWidth;
+  Paint get defLongBarPaint {
+    final stamp = _paintStamp;
+    if (_longBarPaint == null || _longBarPaintStamp != stamp) {
+      _longBarPaintStamp = stamp;
+      _longBarPaint = Paint()
+        ..color = longColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = candleWidth;
+    }
+    return _longBarPaint!;
+  }
 
   /// 下跌实心柱画笔。
-  Paint get defShortBarPaint => Paint()
-    ..color = shortColor
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = candleWidth;
+  Paint get defShortBarPaint {
+    final stamp = _paintStamp;
+    if (_shortBarPaint == null || _shortBarPaintStamp != stamp) {
+      _shortBarPaintStamp = stamp;
+      _shortBarPaint = Paint()
+        ..color = shortColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = candleWidth;
+    }
+    return _shortBarPaint!;
+  }
 
   /// 上涨浅色实心柱画笔。
-  Paint get defLongTintBarPaint => Paint()
-    ..color = longTintColor
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = candleWidth;
+  Paint get defLongTintBarPaint {
+    final stamp = _paintStamp;
+    if (_longTintBarPaint == null || _longTintBarPaintStamp != stamp) {
+      _longTintBarPaintStamp = stamp;
+      _longTintBarPaint = Paint()
+        ..color = longTintColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = candleWidth;
+    }
+    return _longTintBarPaint!;
+  }
 
   /// 下跌浅色实心柱画笔。
-  Paint get defShortTintBarPaint => Paint()
-    ..color = shortTintColor
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = candleWidth;
+  Paint get defShortTintBarPaint {
+    final stamp = _paintStamp;
+    if (_shortTintBarPaint == null || _shortTintBarPaintStamp != stamp) {
+      _shortTintBarPaintStamp = stamp;
+      _shortTintBarPaint = Paint()
+        ..color = shortTintColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = candleWidth;
+    }
+    return _shortTintBarPaint!;
+  }
 
   /// 上涨空心柱画笔。
-  Paint get defLongHollowBarPaint => Paint()
-    ..color = longColor
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = settingConfig.candleHollowBarBorderWidth;
+  Paint get defLongHollowBarPaint {
+    final stamp = _paintStamp;
+    if (_longHollowBarPaint == null || _longHollowBarPaintStamp != stamp) {
+      _longHollowBarPaintStamp = stamp;
+      _longHollowBarPaint = Paint()
+        ..color = longColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = settingConfig.candleHollowBarBorderWidth;
+    }
+    return _longHollowBarPaint!;
+  }
 
   /// 下跌空心柱画笔。
-  Paint get defShortHollowBarPaint => Paint()
-    ..color = shortColor
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = settingConfig.candleHollowBarBorderWidth;
+  Paint get defShortHollowBarPaint {
+    final stamp = _paintStamp;
+    if (_shortHollowBarPaint == null || _shortHollowBarPaintStamp != stamp) {
+      _shortHollowBarPaintStamp = stamp;
+      _shortHollowBarPaint = Paint()
+        ..color = shortColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = settingConfig.candleHollowBarBorderWidth;
+    }
+    return _shortHollowBarPaint!;
+  }
 
   /// 上涨线条画笔。
-  Paint get defLongLinePaint => Paint()
-    ..color = longColor
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = candleLineWidth;
+  Paint get defLongLinePaint {
+    final stamp = _paintStamp;
+    if (_longLinePaint == null || _longLinePaintStamp != stamp) {
+      _longLinePaintStamp = stamp;
+      _longLinePaint = Paint()
+        ..color = longColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = candleLineWidth;
+    }
+    return _longLinePaint!;
+  }
 
   /// 下跌线条画笔。
-  Paint get defShortLinePaint => Paint()
-    ..color = shortColor
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = candleLineWidth;
+  Paint get defShortLinePaint {
+    final stamp = _paintStamp;
+    if (_shortLinePaint == null || _shortLinePaintStamp != stamp) {
+      _shortLinePaintStamp = stamp;
+      _shortLinePaint = Paint()
+        ..color = shortColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = candleLineWidth;
+    }
+    return _shortLinePaint!;
+  }
 
   /// 创建自定义线条画笔。
   Paint getLinePaint({Color? color, double? strokeWidth}) => Paint()

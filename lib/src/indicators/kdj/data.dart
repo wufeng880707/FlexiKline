@@ -59,54 +59,88 @@ mixin KdjDataMixin<T extends KDJIndicator> on IndicatorCalculationScope<T> {
   }
 
   /// 计算KDJ指标值
+  ///
+  /// 窗口 high/low 使用单调双端队列（O(N)）代替每根蜡烛的 O(kPeriod) 重扫。
+  /// 队列元素为 [index, value]：maxQueue 维护窗口内递减的 high 候选，
+  /// minQueue 维护窗口内递增的 low 候选；窗口 [i, i+kPeriod) 向新端滑动。
   void _calculateKdj(
     KDJParam param, {
     required int start,
     required int end,
   }) {
-    final len = klineData.list.length;
+    final list = klineData.list;
+    final len = list.length;
     final kPeriod = param.calculation.kPeriod;
     if (kPeriod > len || !klineData.checkStartAndEnd(start, end)) return;
-    print('calculateKdj [end:$end ~ start:$start] kPeriod:$kPeriod');
+    logd('calculateKdj [end:$end ~ start:$start] kPeriod:$kPeriod');
 
     end = math.min(len - kPeriod, end - 1);
+    if (end < start) return;
+
+    // 常量外提：避免循环内重复装箱。
+    final fifty = FlexiNum.fromNum(50);
+    final hundred = FlexiNum.fromNum(100);
+    final dDiv = FlexiNum.fromNum(param.calculation.dPeriod);
+    final dMinus1 = FlexiNum.fromNum(param.calculation.dPeriod - 1);
+    final jDiv = FlexiNum.fromNum(param.calculation.jPeriod);
+    final jMinus1 = FlexiNum.fromNum(param.calculation.jPeriod - 1);
+    final three = FlexiNum.fromNum(3);
+    final two = FlexiNum.fromNum(2);
+
+    // 增量窗口 high/low：窗口 [i, i+kPeriod) 与上一窗口只差两端各一个元素。
+    // 仅当被移出端元素恰为当前极值时才重扫窗口（平均 O(1)，最坏 O(kPeriod)）。
+    FlexiNum high = list[end].high;
+    FlexiNum low = list[end].low;
+    for (int j = end + 1; j < end + kPeriod; j++) {
+      final candle = list[j];
+      if (candle.high > high) high = candle.high;
+      if (candle.low < low) low = candle.low;
+    }
 
     for (int i = end; i >= start; i--) {
-      final m = klineData.list[i];
-      if (i + kPeriod > len) continue;
+      final m = list[i];
 
-      // 计算RSV
-      FlexiNum high = m.high;
-      FlexiNum low = m.low;
-      for (int j = i + 1; j < i + kPeriod; j++) {
-        final candle = klineData.list[j];
-        if (candle.high > high) high = candle.high;
-        if (candle.low < low) low = candle.low;
+      if (i != end) {
+        // 滑动到 [i, i+kPeriod)：新进 i，移出 i+kPeriod。
+        final entered = list[i];
+        if (entered.high > high) high = entered.high;
+        if (entered.low < low) low = entered.low;
+
+        final left = list[i + kPeriod];
+        if (left.high == high || left.low == low) {
+          // 被移出的元素是极值，窗口极值失效，重扫。
+          high = entered.high;
+          low = entered.low;
+          for (int j = i + 1; j < i + kPeriod; j++) {
+            final candle = list[j];
+            if (candle.high > high) high = candle.high;
+            if (candle.low < low) low = candle.low;
+          }
+        }
       }
 
-      final rsv = high == low ? FlexiNum.fromNum(50) : ((m.close - low) / (high - low)) * FlexiNum.fromNum(100);
+      final rsv = high == low ? fifty : ((m.close - low) / (high - low)) * hundred;
 
       // 计算K值
-      FlexiNum k = FlexiNum.fromNum(50);
+      FlexiNum k;
       if (i < len - 1) {
-        final prevK = klineData.list[i + 1].kdjK(dataIndex) ?? FlexiNum.fromNum(50);
-        k = (prevK * FlexiNum.fromNum(param.calculation.dPeriod - 1) + rsv) /
-            FlexiNum.fromNum(param.calculation.dPeriod);
+        final prevK = list[i + 1].kdjK(dataIndex) ?? fifty;
+        k = (prevK * dMinus1 + rsv) / dDiv;
       } else {
         k = rsv;
       }
 
       // 计算D值
-      FlexiNum d = FlexiNum.fromNum(50);
+      FlexiNum d;
       if (i < len - 1) {
-        final prevD = klineData.list[i + 1].kdjD(dataIndex) ?? FlexiNum.fromNum(50);
-        d = (prevD * FlexiNum.fromNum(param.calculation.jPeriod - 1) + k) / FlexiNum.fromNum(param.calculation.jPeriod);
+        final prevD = list[i + 1].kdjD(dataIndex) ?? fifty;
+        d = (prevD * jMinus1 + k) / jDiv;
       } else {
         d = k;
       }
 
       // 计算J值
-      final j = k * FlexiNum.fromNum(3) - d * FlexiNum.fromNum(2);
+      final j = k * three - d * two;
 
       // 设置KDJ值
       final kdjSlot = m.getOrInitList<FlexiNum>(dataIndex, 3);

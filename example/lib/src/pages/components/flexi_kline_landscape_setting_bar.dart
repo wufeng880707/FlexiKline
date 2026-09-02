@@ -18,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import 'chart_type_menu_button.dart';
+
 class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
   const FlexiKlineLandscapeSettingBar({
     super.key,
@@ -46,6 +48,7 @@ class FlexiKlineLandscapeSettingBar extends ConsumerWidget {
               child: _buildPreferTimeBarList(context, ref),
             ),
           ),
+          ChartTypeMenuButton(controller: controller),
           GestureDetector(
             onTap: onTapDraw,
             child: Container(

@@ -209,12 +209,31 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
     _drawToolbarPosition = ValueNotifier(
       configuration.getDrawToolbarPosition(),
     );
+
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void didUpdateWidget(covariant FlexiKlineWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     logd('didUpdateWidget');
+
+    // 父组件更换 controller 时，完成新旧 controller 的生命周期交接。
+    if (oldWidget.controller != widget.controller) {
+      final oldController = oldWidget.controller;
+      oldController.dispose();
+      logger = controller.logger;
+
+      controller.mountIndicators(
+        candle: resolveCandle(widget),
+        time: resolveTime(widget),
+        mainIndicators: resolveMainIndicators(widget),
+        subIndicators: resolveSubIndicators(widget),
+      );
+      controller.initState();
+      controller.flushPendingKlineData();
+      return;
+    }
 
     // 按 Widget 新旧声明增量同步指标。
     controller.updateIndicators(
@@ -242,7 +261,9 @@ class _FlexiKlineWidgetState extends State<FlexiKlineWidget> with WidgetsBinding
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     configuration.saveDrawToolbarPosition(drawToolbarPosition);
+    _drawToolbarPosition.dispose();
     _drawToolbarKey = null;
     super.dispose();
   }

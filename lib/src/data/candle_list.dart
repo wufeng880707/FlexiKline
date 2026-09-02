@@ -28,8 +28,10 @@ mixin CandleListData on BaseData {
   FlexiCandleModel? get(int? index) => index != null && checkIndex(index) ? _list[index] : null;
 
   int? tsToIndex(int ts) {
-    final index = list.indexWhere((m) => m.ts == ts);
-    return checkIndex(index) ? index : null;
+    if (list.isEmpty) return null;
+    // 数据按 ts 降序，二分定位后校验精确匹配。
+    final index = indexAtOrBefore(ts);
+    return index != null && list[index].ts == ts ? index : null;
   }
 
   /// 返回不晚于[ts]的最近一根真实蜡烛下标.

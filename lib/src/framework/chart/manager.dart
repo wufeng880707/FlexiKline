@@ -66,7 +66,7 @@ final class IndicatorPaintObjectManager with FlexiLog {
   ///
   /// 顺序与原 precompute 遍历面一致：主区（children 已按 zIndex 有序）后副区。
   Iterable<IndicatorCalculator> get visibleCalculators sync* {
-    for (final obj in _mainPaintObject.children.whereType<ComputedPaintObject>()) {
+    for (final obj in mainPaintObject.children.whereType<ComputedPaintObject>()) {
       final c = _calculators[obj.key as ComputedIndicatorKey];
       if (c != null) yield c;
     }
@@ -97,23 +97,35 @@ final class IndicatorPaintObjectManager with FlexiLog {
 
   late final FixedHashQueue<PaintObject> _subPaintObjectQueue;
 
-  late final MainPaintObject _mainPaintObject;
+  /// null 表示未挂载或已 dispose（late final 无法重挂载，改为可空 + getter 断言）。
+  MainPaintObject? _mainPaintObject;
 
-  late final CandleBasePaintObject _candlePaintObject;
-  late final TimeBasePaintObject _timePaintObject;
+  CandleBasePaintObject? _candlePaintObject;
 
-  MainPaintObject get mainPaintObject => _mainPaintObject;
+  TimeBasePaintObject? _timePaintObject;
 
-  CandleBasePaintObject get candlePaintObject => _candlePaintObject;
-  TimeBasePaintObject get timePaintObject => _timePaintObject;
+  MainPaintObject get mainPaintObject {
+    assert(_mainPaintObject != null, 'mainPaintObject accessed before mount or after dispose.');
+    return _mainPaintObject!;
+  }
+
+  CandleBasePaintObject get candlePaintObject {
+    assert(_candlePaintObject != null, 'candlePaintObject accessed before mount or after dispose.');
+    return _candlePaintObject!;
+  }
+
+  TimeBasePaintObject get timePaintObject {
+    assert(_timePaintObject != null, 'timePaintObject accessed before mount or after dispose.');
+    return _timePaintObject!;
+  }
 
   Iterable<PaintObject> get subPaintObjects {
     final objects = _subPaintObjectQueue;
     switch (timePaintObject.position) {
       case DrawPosition.middle:
-        return [_timePaintObject, ...objects];
+        return [timePaintObject, ...objects];
       case DrawPosition.bottom:
-        return [...objects, _timePaintObject];
+        return [...objects, timePaintObject];
     }
   }
 
@@ -134,7 +146,7 @@ final class IndicatorPaintObjectManager with FlexiLog {
   }
 
   Iterable<IIndicatorKey> get mainIndicatorKeys {
-    return _mainPaintObject.children.map((obj) => obj.key);
+    return mainPaintObject.children.map((obj) => obj.key);
   }
 
   Iterable<IIndicatorKey> get subIndicatorKeys {
@@ -237,12 +249,12 @@ final class IndicatorPaintObjectManager with FlexiLog {
     _mainPaintObject = _inflateIndicator<MainPaintObjectIndicator, MainPaintObject>(mainIndicator, context);
 
     // 恢复已激活指标：持久化恢复的 key ∪ autoActivate 声明，去重后入树。
-    _mainPaintObject.appendPaintObject(_candlePaintObject);
+    _mainPaintObject!.appendPaintObject(_candlePaintObject!);
 
     final autoMainKeys = mainIndicators.where((i) => i.autoActivate).map((i) => i.key);
     for (final key in {...mainIndicator.children, ...autoMainKeys}) {
       if (key == candleIndicatorKey) continue; // candle 已单独挂载
-      if (_mainPaintObject.getChildPaintObject(key) == null) {
+      if (_mainPaintObject!.getChildPaintObject(key) == null) {
         addMainPaintObject(key, context);
       }
     }
@@ -275,9 +287,9 @@ final class IndicatorPaintObjectManager with FlexiLog {
     final oldComputedDataIndexes = Map<ComputedIndicatorKey, int>.of(_computedDataIndexes);
 
     // candle/time 无条件更新。
-    _candlePaintObject.doDidUpdateIndicator(newCandle);
+    candlePaintObject.doDidUpdateIndicator(newCandle);
 
-    _timePaintObject.doDidUpdateIndicator(newTime);
+    timePaintObject.doDidUpdateIndicator(newTime);
 
     // 参数变化需重算的 computed key（由 controller 驱动 KlineDataPipeline.recompute）。
     final recompute = <ComputedIndicatorKey>[];
@@ -367,7 +379,7 @@ final class IndicatorPaintObjectManager with FlexiLog {
         }
         if (!oldIndicator.autoActivate &&
             newIndicator.autoActivate &&
-            _mainPaintObject.getChildPaintObject(key) == null) {
+            mainPaintObject.getChildPaintObject(key) == null) {
           toActivate.add(key);
         }
       }
@@ -466,7 +478,7 @@ final class IndicatorPaintObjectManager with FlexiLog {
   /// 优先返回主区绘制树中的激活对象；[includeKeepAlive] 为 true 时，
   /// 若树中没有则回退到 keepAlive 缓存（可能是已 detach 的常驻对象）。
   PaintObject? getMainPaintObject(IIndicatorKey key, {bool includeKeepAlive = false}) {
-    final obj = _mainPaintObject.getChildPaintObject(key);
+    final obj = mainPaintObject.getChildPaintObject(key);
     if (obj != null) return obj;
     return includeKeepAlive ? _keepAlivePaintObjects[key] : null;
   }
@@ -476,7 +488,7 @@ final class IndicatorPaintObjectManager with FlexiLog {
   /// 用于声明移除等需要彻底销毁的场景；与 [removeMainPaintObject] 的隐藏保活相区别。
   bool disposeMainPaintObject(IIndicatorKey key) {
     final obj = getMainPaintObject(key, includeKeepAlive: true);
-    final removed = _mainPaintObject.removePaintObject(key);
+    final removed = mainPaintObject.removePaintObject(key);
     _keepAlivePaintObjects.remove(key);
     if (obj != null && !obj.isDisposed) obj.dispose();
     return obj != null || removed;
@@ -499,7 +511,7 @@ final class IndicatorPaintObjectManager with FlexiLog {
     if (reset) {
       removeMainPaintObject(key);
     } else {
-      final object = _mainPaintObject.getChildPaintObject(key);
+      final object = mainPaintObject.getChildPaintObject(key);
       if (!reset && object != null) {
         logw('addMainPaintObject $key is loaded, cannot be added!');
         return null;
@@ -511,15 +523,15 @@ final class IndicatorPaintObjectManager with FlexiLog {
 
     final newObj = _resolvePaintObject(indicator, context);
     if (newObj == null) return null;
-    _mainPaintObject.appendPaintObject(newObj);
+    mainPaintObject.appendPaintObject(newObj);
     return newObj;
   }
 
   /// 删除已激活的主区指标。
   bool removeMainPaintObject(IIndicatorKey key) {
-    final obj = _mainPaintObject.getChildPaintObject(key);
+    final obj = mainPaintObject.getChildPaintObject(key);
     if (obj != null && obj.keepAlive) _keepAlivePaintObjects[key] = obj;
-    return _mainPaintObject.removePaintObject(key);
+    return mainPaintObject.removePaintObject(key);
   }
 
   /// 查找副区指标 [key] 的 PaintObject。
@@ -667,8 +679,8 @@ final class IndicatorPaintObjectManager with FlexiLog {
     // size 显式保留运行时持久值：它是窗口局部状态，不随配置回灌。取 indicator.size 而非
     // [MainPaintObject.size]，后者是 `_tmpSize ?? indicator.size`，fixed 下会把临时
     // 尺寸写成持久尺寸。
-    _mainPaintObject.doDidUpdateIndicator(
-      _flexiKlineConfig.mainIndicator.copyWith(size: _mainPaintObject.indicator.size),
+    _mainPaintObject!.doDidUpdateIndicator(
+      _flexiKlineConfig.mainIndicator.copyWith(size: _mainPaintObject!.indicator.size),
     );
 
     return (
@@ -683,10 +695,10 @@ final class IndicatorPaintObjectManager with FlexiLog {
 
   /// K 线 spec.key 变化时，通知 attached 树对象与 detached keepAlive 常驻对象（去重）。
   void notifySpecChanged(KlineSpec oldSpec) {
-    // 未初始化时尚无任何 PaintObject（含 late 的 _mainPaintObject），直接跳过。
+    // 未初始化时尚无任何 PaintObject（含 _mainPaintObject），直接跳过。
     if (!_isInitialized) return;
     final targets = <PaintObject>{
-      ..._mainPaintObject.children,
+      ...mainPaintObject.children,
       ..._subPaintObjectQueue,
       ..._keepAlivePaintObjects.values,
     };
@@ -708,5 +720,9 @@ final class IndicatorPaintObjectManager with FlexiLog {
       if (!obj.isDisposed) obj.dispose();
     }
     _keepAlivePaintObjects.clear();
+    // 置空以允许重新 mountIndicators（late final 二次赋值会抛 LateInitializationError）。
+    _mainPaintObject = null;
+    _candlePaintObject = null;
+    _timePaintObject = null;
   }
 }

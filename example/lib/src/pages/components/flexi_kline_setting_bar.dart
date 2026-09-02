@@ -29,6 +29,7 @@ import '../../widgets/no_thumb_scroll_behavior.dart';
 import '../../widgets/shrink_icon_button.dart';
 import '../../widgets/text_arrow_button.dart';
 import '../common/wide_screen_mixin.dart';
+import 'chart_type_menu_button.dart';
 import 'flexi_kline_draw_menubar.dart';
 
 class FlexiKlineSettingBar extends ConsumerStatefulWidget {
@@ -216,6 +217,7 @@ class _FlexiKlineSettingBarState extends ConsumerState<FlexiKlineSettingBar>
             height: 18.r,
             margin: EdgeInsets.symmetric(horizontal: 4.r),
           ),
+          ChartTypeMenuButton(controller: widget.controller),
           ShrinkIconButton(
             onPressed: onTapDrawTool,
             content: Icons.edit_rounded,

@@ -146,12 +146,14 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
     final old = _businessDataMap[key];
     if (identical(old, data)) return;
     _businessDataMap[key] = data;
+    if (!isMounted) return;
     markRepaintChart(reset: true);
   }
 
   /// 清除 [key] 指定的业务数据
   void removeBusinessData(IIndicatorKey key) {
     if (_businessDataMap.remove(key) != null) {
+      if (!isMounted) return;
       markRepaintChart(reset: true);
     }
   }
@@ -170,6 +172,10 @@ abstract class KlineBindingBase with FlexiLog implements PaintContext, DrawConte
   void storeFlexiKlineConfig({
     bool storeDrawOverlays = true,
   });
+
+  /// Controller 是否处于已挂载状态（由 SettingBinding 提供）。
+  /// 公开的变更 API 在 dispose 后应早退，避免操作已释放的 repaint Notifier。
+  bool get isMounted;
 
   /// 请求重绘 Grid 图层。
   @protected
@@ -297,8 +303,11 @@ class FlexiStateNotifier<T> extends ValueNotifier<T> {
   /// 用于 build 阶段设置初始值，避免触发订阅者 setState。
   void setSilently(T val) {
     _silent = true;
-    value = val;
-    _silent = false;
+    try {
+      value = val;
+    } finally {
+      _silent = false;
+    }
   }
 
   /// 赋值并保证恰好通知一次。

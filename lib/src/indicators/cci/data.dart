@@ -35,8 +35,7 @@ extension on FlexiCandleModel {
     );
   }
 
-  double get tp =>
-      (double.parse(high.toString()) + double.parse(low.toString()) + double.parse(close.toString())) / 3.0;
+  double get tp => (high.toDouble() + low.toDouble() + close.toDouble()) / 3.0;
 }
 
 mixin CciDataMixin<T extends CCIIndicator> on IndicatorCalculationScope<T> {

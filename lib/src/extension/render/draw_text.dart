@@ -76,6 +76,41 @@ extension FlexiDrawTextExt on Canvas {
       strutStyle: strutStyle,
     );
 
+    try {
+      return _paintTextPainter(
+        textPainter,
+        offset,
+        drawDirection: drawDirection,
+        drawableRect: drawableRect,
+        maxLines: maxLines,
+        textWidth: textWidth,
+        minWidth: minWidth,
+        maxWidth: maxWidth,
+        backgroundColor: backgroundColor,
+        borderRadius: borderRadius,
+        borderSide: borderSide,
+        padding: padding,
+      );
+    } finally {
+      // TextPainter 持有 native 文本布局资源，用完必须显式释放。
+      textPainter.dispose();
+    }
+  }
+
+  Size _paintTextPainter(
+    TextPainter textPainter,
+    Offset offset, {
+    required DrawDirection drawDirection,
+    required Rect? drawableRect,
+    required int? maxLines,
+    required double? textWidth,
+    required double minWidth,
+    required double maxWidth,
+    required Color? backgroundColor,
+    required BorderRadius? borderRadius,
+    required BorderSide? borderSide,
+    required EdgeInsets? padding,
+  }) {
     final limitWidth = drawableRect != null && textWidth == null && (maxLines == null || maxLines > 1);
     final rectMaxWidth = limitWidth ? math.max(0.0, drawableRect.width - (padding?.horizontal ?? 0)) : double.infinity;
     final layoutMaxWidth = textWidth ?? math.min(maxWidth, rectMaxWidth);
